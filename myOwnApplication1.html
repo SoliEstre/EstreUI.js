@@ -1,0 +1,222 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>My own EstreUI.js sample application 1</title>
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, viewport-fit=cover">
+	<meta name="mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="EstreUI app 1" />
+    <meta name="description" content="My own EstreUI.js application sample 1" />
+	<meta name="theme-color" content="#F1F1FA">
+    <script>
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./scripts/serviceWorker.js").catch (ex => {
+            console.log(ex);
+        });
+    });
+}
+    </script>
+
+	<link rel="apple-touch-startup-image" href="./images/EstreUI-flatter-512x512.png">
+	<link rel="apple-touch-icon" href="./images/EstreUI-flatter-144x144.png">
+	<link rel="apple-touch-icon" sizes="152x152" href="./images/EstreUI-flatter-152x152.png">
+	<link rel="apple-touch-icon" sizes="180x180" href="./images/EstreUI-flatter-180x180.png">
+	<link rel="apple-touch-icon" sizes="167x167" href="./images/EstreUI-flatter-167x167.png">
+	<link rel="shortcut icon" sizes="144x144" href="./images/EstreUI-flatter-144x144.png" />
+    <link rel="shortcut icon" href="./favicon-flatter.ico">
+    <link rel="icon" type="image/png" sizes="48x48" href="./images/EstreUI-flatter-48x48.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="./images/EstreUI-flatter-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./images/EstreUI-flatter-16x16.png">
+    <!-- <link rel="icon" type="image/svg+xml" href="./images/EstreUI-flatter.svg" /> -->
+    <link rel="manifest" href="./app1.webmanifest.json">
+
+    <link rel="stylesheet" type="text/css" href="./styles/estreUi.css">
+    <link rel="stylesheet" type="text/css" href="./styles/app1.css">
+
+    <style>
+/* in html styles */
+    </style>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
+    <script type="text/javascript" src="./scripts/jcodd.js"></script>
+    <script type="text/javascript" src="./scripts/estreUi.js"></script>
+    <script type="text/javascript" src="./scripts/app1.js"></script>
+    <script>
+// in html scripts
+    </script>
+</head>
+<body class="vfv_scroll">
+    <main id="splashRoot">
+        <section id="splash" data-on-top="0">
+            <div class="container" data-container-id="root">
+                <article class="constraint" data-article-id="main">
+                    <div class="float_center" style="--width: min(50vw, 240px);">
+                        <img src="./images/EstreUI-flatter-512x512.png" style="width: var(--width); " />
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <nav id="mainMenu" class="right" data-opened="">
+        <section id="menuArea" class="vfv_scroll" data-static="1">
+            <div class="container" data-container-id="root" data-static="1">
+                <article class="my_own_user_handle" data-article-id="user_box" data-static="1">
+                    <div class="line_block" style="padding: 0 16px; justify-content: space-between; align-items: center; ">
+                        <label class="user_name">user name</label>
+                        <button class="sign_out">Sign out</button>
+                    </div>
+                </article>
+                <article class="rootMenu" data-article-id="main" data-static="1">
+                    <ul class="maxWidth">
+                        <li><button class="tp_tiled_btn" onclick="myOwnPageHandler.bringPage('something'); ">Menu item 01</button></li>
+                        <li><button class="tp_tiled_btn" onclick="myOwnPageHandler.bringPage('something'); ">Menu item 02</button></li>
+                        <li><button class="tp_tiled_btn" onClick="myOwnPageHandler.bringPage('something'); ">Menu item 03</button></li>
+                        <li><button class="tp_tiled_btn" onClick="myOwnPageHandler.bringPage('something'); ">Menu item 04</button></li>
+                        <li><button class="tp_tiled_btn" onClick="myOwnPageHandler.bringPage('something'); ">Menu item 05</button></li>
+                        <li><button class="tp_tiled_btn" onClick="myOwnPageHandler.bringPage('something'); ">Menu item 06</button></li>
+                        <li><button class="tp_tiled_btn" onClick="myOwnPageHandler.bringPage('something'); ">Menu item 07</button></li>
+                        <li><button class="tp_tiled_btn" onClick="myOwnPageHandler.bringPage('something'); ">Menu item 08</button></li>
+                        <li><button class="tp_tiled_btn" onClick="myOwnPageHandler.bringPage('something'); ">Menu item 09</button></li>
+                        <li><button class="tp_tiled_btn" onClick="myOwnPageHandler.bringPage('something'); ">Menu item 10</button></li>
+                        <li><button class="tp_tiled_btn" onClick="myOwnPageHandler.bringPage('something'); ">Menu item 11</button></li>
+                        <li><button class="tp_tiled_btn" onClick="myOwnPageHandler.bringPage('something'); ">Menu item 12</button></li>
+                        <li><button class="tp_tiled_btn" onClick="myOwnPageHandler.bringPage('something'); ">Menu item 13</button></li>
+                        <li><button class="tp_tiled_btn" onClick="myOwnPageHandler.bringPage('something'); ">Menu item 14</button></li>
+                        <li><button class="tp_tiled_btn" onClick="myOwnPageHandler.bringPage('something'); ">Menu item 15</button></li>
+                        <li><button class="tp_tiled_btn" onClick="myOwnPageHandler.bringPage('something'); ">Menu item 16</button></li>
+                        <li><button class="tp_tiled_btn" onClick="myOwnPageHandler.bringPage('something'); ">Menu item 17</button></li>
+                        <li><button class="tp_tiled_btn" onClick="myOwnPageHandler.bringPage('something'); ">Menu item 18</button></li>
+                        <li><button class="tp_tiled_btn" onClick="myOwnPageHandler.bringPage('something'); ">Menu item 19</button></li>
+                        <li><button class="tp_tiled_btn" onClick="myOwnPageHandler.bringPage('something'); ">Menu item 20</button></li>
+                        <li><button class="tp_tiled_btn" onClick="myOwnPageHandler.bringPage('something'); ">Menu item 21</button></li>
+                    </ul>
+                </article>
+            </div>
+        </section>
+        <section id="grabArea" data-static="1"><div class="pad"></div></section>
+    </nav>
+    <header id="fixedTop">
+        <nav id="appbar">
+            <button id="home" class="tp_tiled_btn" title="go to main">
+                <span style="font-family: 'Cute Font'; font-size: 40px; font-weight: 600; ">My own app 1</span>
+            </button>
+            <nav id="appbarLeft" class="float_area">
+                <button class="tp_tiled_btn padded back_nav" title="return to back" style="font-size: 24px; ">
+                    <span class="square_icon" style="background-image: var(--svg-back); background-size: contain; background-position: center; background-repeat: no-repeat; " ></span>
+                </button>
+            </nav>
+            <nav id="appbarRight" class="float_area">
+                <button id="mainMenuBtn" class="tp_tiled_btn closer" title="toggle menu">
+                    <dotlottie-player src="./lotties/menu_and_close_btn.json" background="transparent" speed="1" direction="1" mode="normal"></dotlottie-player>
+                </button>
+            </nav>
+        </nav>
+    </header>
+    <div id="ptr"><div><dotlottie-player src="./lotties/ptr_indic.json" background="transparent" speed="1" direction="1" mode="normal"></dotlottie-player></div></div>
+    <main id="staticDoc">
+        <!-- Main tabs content - must be match id of button on fixedBottom navs -->
+        <section id="home" class="root_tab_content" data-static="1" data-on-top="1">
+            <div class="container vfv_scroll" data-container-id="root" data-static="1">
+                <article id="app" class="constraint" data-article-id="main" data-static="1">
+                    <div class="line_block" style="text-align: left; "><span>home tab<br />constaint (single fullscreen article)</span></div>
+                </article>
+            </div>
+        </section>
+        <section id="tab1" class="root_tab_content" data-static="1">
+            <div class="container vfv_scroll" data-container-id="root" data-static="1" style="background-color: #DEF; ">
+                <article class="constraint vertical_fit" data-article-id="main" data-static="1">
+                    <div class="line_block" style="text-align: center; "><span>tab 1<br />constaint (single fullscreen article)</span></div>
+                </article>
+                <article class="constraint" data-article-id="tab1_next" data-static="" onclick="this.pageHandle?.close(); ">
+                </article>
+            </div>
+        </section>
+        <section id="tab2" class="root_tab_content" data-static="1">
+            <div class="container vfv_scroll" data-container-id="root" data-static="1">
+                <article class="constraint vertical_fit" data-article-id="main" data-static="1" style="background-color: #DEF; ">
+                    <div class="line_block" style="text-align: right; "><span>tab 2<br />constaint (single fullscreen article)</span></div>
+                </article>
+                <article class="fwvs" data-article-id="tab2_next" data-static="">
+                </article>
+            </div>
+        </section>
+        <section id="activity1" class="root_tab_content" data-static="1">
+            <div class="container vfv_scroll" data-container-id="root" data-static="1" style="background-color: #EEE; ">
+                <article class="fwvs" data-article-id="item1" data-static="1">
+                    <div class="float_center">
+                        <div class="line_block"><span>activity 1<br />(static)<br />article 1</span></div>
+                    </div>
+                </article>
+                <article class="fwvs" data-article-id="item2" data-static="1">
+                    <div class="float_center">
+                        <div class="line_block"><span>article 2</span></div>
+                    </div>
+                </article>
+                <article class="fwvs" data-article-id="item3" data-static="1">
+                    <div class="float_center">
+                        <div class="line_block"><span>article 3</span></div>
+                    </div>
+                </article>
+            </div>
+        </section>
+        <section id="activity2" class="" data-static="">
+            <div class="container vfv_scroll" data-container-id="root" data-static="1">
+                <article class="fwvs" data-article-id="main" data-static="1">
+                    <div class="float_center">
+                        <div class="line_block"><span>activity 2<br />(instant)</span></div>
+                    </div>
+                </article>
+            </div>
+        </section>
+        <!-- For access to additional root component(out of tabs) -->
+        <section id="more" class="modal fit bottom right stickyRootbar" data-static="1">
+            <div class="container vfv_scroll" data-container-id="root" data-static="1">
+                <article class="session_manager session_group_holder" data-article-id="main" data-static="1" style="text-align: left; ">
+                    <div class="linear_block hide_block_when_empty_list sessions_holder fixed_pages">
+                        <label>Fixed activities</label>
+                        <!-- <div class="line_block on_empty">No any activities</div> -->
+                        <ul class="session_list">
+                            <li class="page_short_cut" data-contained="root" data-container-type="root_tab_content" data-container-id="activity1"><button class="tp_tiled_btn">Activity 1</button></li>
+                        </ul>
+                    </div>
+                    <div class="linear_block hide_block_when_empty_list sessions_holder opened_pages">
+                        <label>Instant activities</label>
+                        <!-- <div class="line_block on_empty">No any activities</div> -->
+                        <ul class="session_list" description="Don't insert anything. has to be managed automatically."></ul>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
+    <footer id="fixedBottom">
+        <nav id="customFixedSections">
+        </nav>
+        <nav id="rootbar">
+            <button class="tp_tiled_btn" data-tab-id="home" data-active="1" title="home">HOME</button>
+            <button class="tp_tiled_btn" data-tab-id="tab1" title="tab 1">Tab 1</button>
+            <button class="tp_tiled_btn" data-tab-id="tab2" title="tab 2">Tab 2</button>
+            <button class="tp_tiled_btn" data-tab-id="activity1" data-is-hidden="1" title="activity 1">Activity 1</button>
+            <div class="dummy_spacer fit_for_icon"><img src="./vactors/more_vertical_slim_icon.svg"></div>
+            <button class="tp_tiled_btn fit_for_icon" data-tab-id="more" title="more activities"><img src="./vactors/more_vertical_slim_icon.svg"></button>
+        </nav>
+        <nav id="instantSections" description="Don't insert anything. has to be managed automatically.">
+        </nav>
+    </footer>
+
+    <main id="instantDoc">
+        <section id="wait" class="tpbg" data-static="" data-on-top="">
+            <div class="container" data-container-id="root" data-static="1" data-on-top="1" style="background-color: rgb(0 0 0 / 50%);">
+                <article class="constraint" data-article-id="main" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
+                    <div class="float_center">
+                        <dotlottie-player src="./lotties/loading_circle.json" background="transparent" speed="1" style="width: 100px; height: 100px; " loop autoplay></dotlottie-player>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
+</body>
+<script>doc.ebi("splash").dataset.onTop = t1; //trigger for fade in splash</script>
+</html>
