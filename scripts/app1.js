@@ -403,19 +403,19 @@ class EstreUiExampleSessionManager {
                 if (resp instanceof Response) return;
                 console.log(resp);
                 
-                if (resp.resultOk != null) {
+                if (resp?.resultOk != null) {
 
-                    callbackSuccess(resp);
-                    // if (resp.resultOk == "0000") {
-                    //     callbackSuccess(resp);
-                    // } else {
-                    //     switch (resp.resultOk) {
-                    //         case "000?":
-                    //             break;
-                    //     }
-                    //     console.log(fetchKind + " Failure : (" + head.resultOk + ")\n" + head.ResultMessage);
-                    //     callbackFailure(resp);
-                    // }
+                    if (resp.resultOk) {
+                        callbackSuccess(resp);
+                    } else {
+                        switch (resp.resultCode) {
+                            case 1:
+                                //process each resultCode cases
+                                break;
+                        }
+                        console.log(fetchKind + " Failure : (" + resp.resultCode + ")\n" + resp.resultMessage);
+                        callbackFailure(resp);
+                    }
                 } else {
                     console.log(fetchKind + " Failure : Null resultOk");
                     callbackFailure({ error: "no result", response: response });
