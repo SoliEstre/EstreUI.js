@@ -5,6 +5,9 @@
     Established: 2024.06.10
 
     NOTE: Required jQuery latest version
+
+    Visit this rim-work's official site(GitHub)
+    https://estreui.mpsolutions.kr
 */
 
 // common constants
