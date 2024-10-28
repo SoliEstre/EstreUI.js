@@ -111,15 +111,6 @@ html {
     
 
 
-/* 
-    --svg-from-minimum: url("../vactors/from_minimum_icon.svg");
-    --svg-from-medium-to-larger: url("../vactors/from_medium_to_larger_icon.svg");
-    --svg-from-medium-to-smaller: url("../vactors/from_medium_to_smaller_icon.svg");
-    --svg-from-maximum: url("../vactors/from_maximum_icon.svg");
-
-    --svg-to-collapsed: url("../vactors/to_collapsed_icon.svg");
-    --svg-to-expanded: url("../vactors/to_expanded_icon.svg");
- */
     --svg-empty-18x18: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' version='1.1' viewBox='0 0 18 18'%3E%3C/svg%3E");
     
     --svg-back: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg' style='width: 20px; height: 20px; '%3E%3Cpath d='M9.98529 0.807617L11.3995 2.22183L2.20712 11.4142L0.792903 10L9.98529 0.807617Z' fill='black'/%3E%3Cpath d='M0.792908 10L2.20712 8.58579L11.3995 17.7782L9.9853 19.1924L0.792908 10Z' fill='black'/%3E%3Cpath d='M2.20709 9L19.2071 9V11H2.20709V9Z' fill='black'/%3E%3C/svg%3E%0A");
@@ -716,7 +707,7 @@ article .toggle_block.hide_block_when_empty:empty { display: none; }
 article :not(.inner_space[data-content-collapsed]) > .toggle_block { position: relative; }
 article :not(.inner_space[data-content-collapsed]) > .toggle_block:not([data-collapsed="1"]) { scroll-snap-align: start end; }
 article .toggle_block > button.toggle { top: 0; right: 0; background-image: var(--svg-to-collapsed); background-size: 80%; background-position: center; background-repeat: no-repeat; }
-article .toggle_block > label { display: block; margin: 2px 2px 6px; font-size: 1rem; text-decoration: underline; text-decoration-style: double; text-decoration-color: var(--color-mango-vivid-lighter); }
+article .toggle_block > label { display: block; margin: 2px 2px 6px; font-size: 1rem; text-decoration: underline; text-decoration-style: double; text-decoration-color: var(--color-point-light); }
 article .toggle_block > :not(button.toggle, label, .basic) { opacity: 1; transition-duration: 0.2s; }
 article .toggle_block[data-collapsed="1"] > button.toggle { background-image: var(--svg-to-expanded); }
 article .toggle_block[data-collapsed="1"] > :not(button.toggle, label, .basic) { margin: 0; padding: 0; opacity: 0; }
