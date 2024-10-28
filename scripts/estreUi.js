@@ -363,15 +363,22 @@ const eds = {
     // for page handle
     bind: "data-bind",
     bindAmount: "data-bind-amount",
+    bindValue: "data-bind-value",
     bindAttr: "data-bind-attr",
     bindArray: "data-bind-array",
     bindArrayIndex: "data-bind-array-index",
     bindArrayItem: "data-bind-array-item",
     bindArrayAmount: "data-bind-array-amount",
+    bindArrayValue: "data-bind-array-value",
     bindArrayAttr: "data-bind-array-attr",
     bindObjectArrayItem: "data-bind-object-array-item",
     bindObjectArrayAmount: "data-bind-object-array-amount",
+    bindObjectArrayValue: "data-bind-object-array-value",
     bindObjectArrayAttr: "data-bind-object-array-attr",
+    showOnExists: "data-show-on-exists",
+    showOnEquals: "data-show-on-equals",
+    showOnExistsObjectArrayItem: "data-show-on-exists-object-array-item",
+    showOnEqualsObjectArrayItem: "data-show-on-equals-object-array-item",
 
     // for estre ui attribute
     prefix: "data-prefix",
@@ -1217,7 +1224,7 @@ class EstreUiPageManager {
         return length;
     }
 
-    bringPage(pid, intent) {
+    bringPage(pid, intent, instanceOrigin) {
         if (pid.indexOf("*") > -1) pid = this.extPidMap[pid.replace("\*", "")];
         if (pid == null) return null;
         if (pid.indexOf("$") < 0) pid = this.foundPid(pid);
@@ -1227,7 +1234,7 @@ class EstreUiPageManager {
         if (sections == null) return null;
 
         //check open component
-        let isIntentNone = typeof intent == "undefined";
+        let isIntentNone = typeof intent == U;
         var componentIntentPushed = false;
         var component = sections[page.component];
         var existComponent = false;
@@ -1304,7 +1311,7 @@ class EstreUiPageManager {
         return success;
     }
 
-    showPage(pid) {
+    showPage(pid, intent, instanceOrigin) {
         if (pid.indexOf("*") > -1) pid = this.extPidMap[pid.replace("\*", "")];
         if (pid == null) return null;
         if (pid.indexOf("$") < 0) pid = this.foundPid(pid);
@@ -1313,6 +1320,7 @@ class EstreUiPageManager {
         let sections = page.sections;
         if (sections == null) return null;
 
+        let isIntentNone = typeof intent == U;
         var component = sections[page.component];
         if (component == null) return null;
         var container = null;
@@ -1328,24 +1336,32 @@ class EstreUiPageManager {
         var success = true;
         switch (page.hostType) {
             case "article":
+                if (!isIntentNone && (page.isArticle || page.article == "main")) article.pushIntent(intent);
                 success = article.show();
             case "container":
-                if (success) success = container.show();
+                if (success) {
+                    if (!isIntentNone && (page.isContainer || (page.article == "main" && page.container == "root"))) container.pushIntent(intent);
+                    success = container.show();
+                }
             case "component":
                 if (success) {
+                    let isRootMain = page.container == "root" && page.article == "main";
                     if (page.isBlinded) {
+                        if (!isIntentNone && (page.isComponent || isRootMain)) component.pushIntent();
                         success = estreUi.showInstantBlinded(page.component);
                     } else if (component.isModal) {
-                        success = estreUi.openModalTab(page.component, component);
+                        if (!isIntentNone && (page.isComponent || isRootMain)) success = estreUi.openModalTab(page.component, component, intent);
+                        else success = estreUi.openModalTab(page.component, component);
                     } else {
-                        success = estreUi.switchRootTab(page.component, intent);
+                        if (!isIntentNone && (page.isComponent || isRootMain)) success = estreUi.switchRootTab(page.component, intent);
+                        else success = estreUi.switchRootTab(page.component, intent);
                     }
                 }
         }
         return success;
     }
 
-    hidePage(pid, hideHost = false) {
+    hidePage(pid, hideHost = false, instanceOrigin = null) {
         if (pid.indexOf("*") > -1) pid = this.extPidMap[pid.replace("\*", "")];
         if (pid == null) return null;
         if (pid.indexOf("$") < 0) pid = this.foundPid(pid);
@@ -1377,7 +1393,7 @@ class EstreUiPageManager {
         }
     }
 
-    closePage(pid, closeHost = false) {
+    closePage(pid, closeHost = false, instanceOrigin = null) {
         if (pid.indexOf("*") > -1) pid = this.extPidMap[pid.replace("\*", "")];
         if (pid == null) return null;
         if (pid.indexOf("$") < 0) pid = this.foundPid(pid);
@@ -1449,20 +1465,20 @@ class EstreUiCustomPageManager {
     }
 
 
-    bringPage(id, intent) {
-        pageManager.bringPage("*" + id, intent);
+    bringPage(id, intent, instanceOrigin) {
+        pageManager.bringPage("*" + id, intent, instanceOrigin);
     }
 
-    showPage(id, intent) {
-        pageManager.showPage("*" + id, intent);
+    showPage(id, intent, instanceOrigin) {
+        pageManager.showPage("*" + id, intent, instanceOrigin);
     }
 
-    hidePage(id) {
-        pageManager.hidePage("*" + id);
+    hidePage(id, hideHost = false, instanceOrigin = null) {
+        pageManager.hidePage("*" + id, hideHost, instanceOrigin);
     }
 
-    closePage(id) {
-        pageManager.closePage("*" + id);
+    closePage(id, closeHost = false, instanceOrigin = null) {
+        pageManager.closePage("*" + id, closeHost, instanceOrigin);
     }
 
 }
@@ -1550,7 +1566,11 @@ class EstrePageHandle {
     }
     
     pushIntent(intent) {
-        if (typeof intent != "undefined") this.#intent = intent;
+        if (typeof intent != U) {
+            if (this.#intent == null) this.#intent = intent;
+            else for (var key in intent) this.#intent[key] = intent[key];
+            if (this.intent != null) console.log("pushed intent on " + this.hostType + " " + EstreUiPage.from(this).pid + "\n", this.intent);
+        }
     }
 
 
@@ -2428,6 +2448,7 @@ class EstreArticle extends EstrePageHandle {
 
                 this.$host.find(aiv(eds.bind, item)).html(value);
                 this.$host.find(aiv(eds.bindAmount, item)).html(v2a(value));
+                this.$host.find(aiv(eds.bindValue, item)).val(value);
 
                 this.$host.find(acv(eds.bindAttr, item + "@")).each((i, elem) => {
                     let $elem = $(elem);
@@ -2436,9 +2457,9 @@ class EstreArticle extends EstrePageHandle {
                         let targets = attr.split(" ");
                         for (var target of targets) {
                             let targetInfos = target.split("@");
-                            let item = targetInfos[0];
-                            let attr = targetInfos[1];
-                            if (attr == item) $elem.attr(attr, value);
+                            let targetItem = targetInfos[0];
+                            let targetAttr = targetInfos[1];
+                            if (targetItem == item) $elem.attr(targetAttr, value);
                         }
                     }
                 });
@@ -2472,6 +2493,7 @@ class EstreArticle extends EstrePageHandle {
 
                                 $li.find(aiv(eds.bindObjectArrayItem, objItem)).html(value);
                                 $li.find(aiv(eds.bindObjectArrayAmount, objItem)).html(v2a(value));
+                                $li.find(aiv(eds.bindObjectArrayValue, objItem)).val(value);
 
                                 $li.find(acv(eds.bindObjectArrayAttr, objItem + "@")).each((i, elem) => {
                                     let $elem = $(elem);
@@ -2480,9 +2502,9 @@ class EstreArticle extends EstrePageHandle {
                                         let targets = attr.split(" ");
                                         for (var target of targets) {
                                             let targetInfos = target.split("@");
-                                            let item = targetInfos[0];
-                                            let attr = targetInfos[1];
-                                            if (item == objItem) $elem.attr(attr, value);
+                                            let targetItem = targetInfos[0];
+                                            let targetAttr = targetInfos[1];
+                                            if (targetItem == objItem) $elem.attr(targetAttr, value);
                                         }
                                     }
                                 });
@@ -2491,6 +2513,7 @@ class EstreArticle extends EstrePageHandle {
 
                         $li.find(ax(eds.bindArrayItem)).html(arrayItemValue);
                         $li.find(ax(eds.bindArrayAmount)).html(v2a(arrayItemValue));
+                        $li.find(ax(eds.bindArrayValue)).val(arrayItemValue);
 
                         if (valueIsObject) arrayItemValue = btoa(Jcodd.toCodd(arrayItemValue));
                         $li.find(ax(eds.bindArrayAttr)).each((i, elem) => {
@@ -2501,9 +2524,28 @@ class EstreArticle extends EstrePageHandle {
                                 for (var target of targets) $elem.attr(target, arrayItemValue);
                             }
                         });
+
+
+                        $li.find(ax(eds.showOnExistsObjectArrayItem)).each((i, elem) => {
+                            if (arrayItem == null || arrayItem[elem.dataset.showOnExistsObjectArrayItem] == null || arrayItem[elem.dataset.showOnExistsObjectArrayItem] == "") $(elem).css("display", "none");
+                        });
+            
+                        $li.find(acv(eds.showOnEqualsObjectArrayItem, "=")).each((i, elem) => {
+                            let divided = elem.dataset.showOnEqualsObjectArrayItem.split("=");
+                            if (arrayItem == null || arrayItem[divided[0]] != divided[1]) $(elem).css("display", "none");
+                        });            
                     }
                 });
             }
+
+            this.$host.find(ax(eds.showOnExists)).each((i, elem) => {
+                if (data == null || data[elem.dataset.showOnExists] == null || data[elem.dataset.showOnExists] == "") $(elem).css("display", "none");
+            });
+
+            this.$host.find(acv(eds.showOnEquals, "=")).each((i, elem) => {
+                let divided = elem.dataset.showOnEquals.split("=");
+                if (data == null || data[divided[0]] != divided[1]) $(elem).css("display", "none");
+            });            
         }
     }
 
@@ -2803,49 +2845,49 @@ class EstreHandle {
  */
 const Ecal = {
 
-    getLastDate(year, month) {
+    getLastDate(year, month0) {
         if (year instanceof Date) {
-            month = year.getMonth();
+            month0 = year.getMonth();
             year = year.getFullYear();
         }
-        return new Date(year, month + 1, 0);
+        return new Date(year, month0 + 1, 0);
     },
 
-    getLastDay(year, month) {
-        return this.getLastDate(year, month).getDate();
+    getLastDay(year, month0) {
+        return this.getLastDate(year, month0).getDate();
     },
 
 
-    getLastWeek(year, month) {
-        let lastDay = this.getLastDate(year, month);
+    getLastWeek(year, month0) {
+        let lastDay = this.getLastDate(year, month0);
         let ymw = this.getYearMonthWeek(lastDay);
 
-        if (ymw.year == year && ymw.month == month) return ymw.week;
+        if (ymw.year == year && ymw.month0 == month0) return ymw.week;
         else {
             lastDay.setDate(lastDay.getDate() - 7);
             return this.getYearMonthWeek(lastDay).week;
         }
     },
 
-    getWeek(year, month, date) {
+    getWeek(year, month0, date) {
         var ddate;
         if (year instanceof Date) {
             ddate = year;
             year = ddate.getFullYear();
-            month = ddate.getMonth();
+            month0 = ddate.getMonth();
             date = ddate.getDate();
-        } else ddate = new Date(year, month, date);
+        } else ddate = new Date(year, month0, date);
 
         let ymw = this.getYearMonthWeek(ddate);
 
-        if (ymw.year > year || (ymw.year == year && ymw.month > month)) return this.getYearMonthWeek(year, month, date - 7).week + 1;
-        else if (ymw.year < year || (ymw.year == year && ymw.month < month)) return Ecal.getBeginSundayAndWeek(ddate).week;
+        if (ymw.year > year || (ymw.year == year && ymw.month0 > month0)) return this.getYearMonthWeek(year, month0, date - 7).week + 1;
+        else if (ymw.year < year || (ymw.year == year && ymw.month0 < month0)) return Ecal.getBeginSundayAndWeek(ddate).week;
         else return ymw.week;
     },
 
-    getYearMonthWeek(year, month, date) {
+    getYearMonthWeek(year, month0, date) {
         if (year instanceof Date) date = new Date(year.getFullYear(), year.getMonth(), year.getDate());
-        else date = new Date(year, month, date);
+        else date = new Date(year, month0, date);
 
         let forYear = date.getFullYear();
         let forMonth = date.getMonth();
@@ -2857,7 +2899,7 @@ const Ecal = {
                 firstDateOfWeek.setDate(firstDateOfWeek.getDate() + 4);
                 let thisYear = firstDateOfWeek.getFullYear();
                 let thisMonth = firstDateOfWeek.getMonth();
-                return { year: thisYear, month: thisMonth, week: 1 };
+                return { year: thisYear, month: thisMonth + 1, month0: thisMonth, week: 1 };
         } else {
             let forDate = date.getDate();
             let forDay = date.getDay();
@@ -2874,29 +2916,30 @@ const Ecal = {
 
             if (beginWeek > 0) {
                 date.setDate(date.getDate() + 4);
-                return { year: date.getFullYear(), month: date.getMonth(), week: beginWeek };
+                let m0 = date.getMonth();
+                return { year: date.getFullYear(), month: m0 + 1, month0: m0, week: beginWeek };
             } else {
                 let thisYear = beginDate.getFullYear();
                 let thisMonth = beginDate.getMonth();
                 let thisWeek = this.getYearMonthWeek(thisYear, thisMonth, beginDate.getDate() - 14).week + 2;
-                return { year: thisYear, month: thisMonth, week: thisWeek };
+                return { year: thisYear, month: thisMonth + 1, month0: thisMonth, week: thisWeek };
             }
         }
     },
 
 
-    getDateSundayOfWeek(year, month, week) {
-        return this.getDateWeekSundayOfWeek(year, month, week).date;
+    getDateSundayOfWeek(year, month0, week) {
+        return this.getDateWeekSundayOfWeek(year, month0, week).date;
     },
 
-    getBeginSundayAndWeek(year, month) {
-        return this.getDateWeekSundayOfWeek(year, month);
+    getBeginSundayAndWeek(year, month0) {
+        return this.getDateWeekSundayOfWeek(year, month0);
     },
 
-    getDateWeekSundayOfWeek(year, month, week) {
-        if (year instanceof Date) return this.getDateWeekSundayOfWeek(year.getFullYear(), month == null ? year.getMonth() : month, week);
+    getDateWeekSundayOfWeek(year, month0, week) {
+        if (year instanceof Date) return this.getDateWeekSundayOfWeek(year.getFullYear(), month0 == null ? year.getMonth() : month0, week);
 
-        let lastDateOfPrevMonth = new Date(year, month, 0);
+        let lastDateOfPrevMonth = new Date(year, month0, 0);
         let lastDayOfPrevMonth = lastDateOfPrevMonth.getDay();
         var baseWeek;
         var justBegin = false;
@@ -2927,11 +2970,11 @@ const Ecal = {
         }
         let addDays = 7 * (week - adjustOffset);
         
-        return { date: new Date(year, month, firstSunday + addDays), week: week };
+        return { date: new Date(year, month0, firstSunday + addDays), week: week };
     },
 
-    getDateSetSundayOfWeek(year, month, week) {
-        return this.getDateSet(Ecal.getDateSundayOfWeek(year, month, week));
+    getDateSetSundayOfWeek(year, month0, week) {
+        return this.getDateSet(Ecal.getDateSundayOfWeek(year, month0, week));
     },
 
     getNearPosition(criteria, offset = 0, unit = "day") {
@@ -3031,9 +3074,9 @@ const Ecal = {
         else return this.getDateSet(this.getNearPosition(criteria, offset, unit));
     },
 
-    getDateOffset(year, month, date) {
+    getDateOffset(year, month0, date) {
         if (year instanceof Date) date = new Date(year.getFullYear(), year.getMonth(), year.getDate());
-        else date = new Date(year, month, date);
+        else date = new Date(year, month0, date);
         
         return parseInt(((date.getTime() / 60 / 60 / 1000) + (date.getTimezoneOffset() / -60)) / 24);
     },
@@ -3185,9 +3228,9 @@ const Escd = {
             case "weekly":
                 let pw = Ecal.getYearMonthWeek(new Date(d.year, d.month0, d.date - 7));
                 let nw = Ecal.getYearMonthWeek(new Date(d.year, d.month0, d.date + 7));
-                bounds[0] = d.ymw.year + "." + v2d(d.ymw.month + 1) + "w" + d.ymw.week;
-                bounds[-1] = pw.year + "." + v2d(pw.month + 1) + "w" + pw.week;
-                bounds[1] = nw.year + "." + v2d(nw.month + 1) + "w" + nw.week;
+                bounds[0] = d.ymw.year + "." + v2d(d.ymw.month) + "w" + d.ymw.week;
+                bounds[-1] = pw.year + "." + v2d(pw.month) + "w" + pw.week;
+                bounds[1] = nw.year + "." + v2d(nw.month) + "w" + nw.week;
                 break;
 
             case "daily":
@@ -5571,7 +5614,7 @@ class EstreVariableCalendar extends EstreCalendar {
     checkSetDayFocused(toScaledBe) {
         let fd = this.dateSetFocused;
         this.setYearIndic(fd.ymw.year);
-        this.setMonthIndic(fd.ymw.month + 1);
+        this.setMonthIndic(fd.ymw.month);
         this.setWeekIndic(fd.ymw.week);
         this.setDateIndic(fd.year, fd.month, fd.date);
         this.setDayIndic(fd.dayText);
@@ -5936,7 +5979,7 @@ class EstreUnifiedScheduler {
         ruby.append(doc.ce(sp, "date", dateSet.date));
         let rubytext = doc.ce(rt, "week");
         //rubytext.append(doc.ce(sp, "year", info.ymw.year));
-        rubytext.append(doc.ce(sp, "month", dateSet.ymw.month + 1));
+        rubytext.append(doc.ce(sp, "month", dateSet.ymw.month));
         rubytext.append(doc.ce(sp, "week", dateSet.ymw.week));
         ruby.append(rubytext);
         datetime.append(ruby);
