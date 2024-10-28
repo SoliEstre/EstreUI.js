@@ -220,11 +220,14 @@ const LS_ESTRE_UI_EXAMPLE_SESSION_BLOCK = "ESTRE_UI_EXAMPLE_SESSION_BLOCK";
 // Authed API communication manager example
 const MY_OWN_API_SERVER = "https://my.own.api.server/api";
 
-const PATH_LOGIN = "/Employee/Login";
+const PATH_LOGIN = "/login";
+
+const PATH_SEND_NOTHING = "/takeNothing";
 
 
 class MyOwnApiUrl {
     static get login() { return MY_OWN_API_SERVER + PATH_LOGIN; }
+    static get sendNothing() { return MY_OWN_API_SERVER + PATH_SEND_NOTHING; }
 }
 
 
@@ -450,7 +453,7 @@ class EstreUiExampleSessionManager {
     #fetchApiAuthedWithBody(url, data, callbackSuccess = (data) => {}, callbackFailure = (data) => {}, request = "POST", fetchKind = "communication") {
         if (this.#session.loginToken != null && this.#session.loginToken != "") {
             if (data == null) data = {};
-            data.LoginToken = this.#session.loginToken;
+            data.loginToken = this.#session.loginToken;
             this.#fetchApiWithBody(url, data, callbackSuccess, callbackFailure, request, fetchKind);
         } else callbackFailure({ error: "Login token not exist" });
     }
@@ -462,7 +465,7 @@ class EstreUiExampleSessionManager {
         this.#fetchApiPost(MyOwnApiUrl.login, data, (data) => {
             
             if (data.resultOk) {
-                this.#session.loginToken = data.LoginToken;
+                this.#session.loginToken = data.loginToken;
 
                 this.#setUser({ name: data.userName });
 
@@ -473,7 +476,7 @@ class EstreUiExampleSessionManager {
                 
                 callbackSuccess(data);
             } else {
-                console.log("Sign in Failure : (" + head.resultOk + ")\n" + head.ResultMessage);
+                console.log("Sign in Failure : (" + head.resultCode + ")\n" + head.ResultMessage);
                 callbackFailure(data);
             }
         }, (data) => {
@@ -487,33 +490,8 @@ class EstreUiExampleSessionManager {
         location.reload(); 
     }
 
-    checkAttendCode(code, callbackSuccess = (data) => {}, callbackFailure = (data) => {}) {
-        this.#fetchApiAuthedPost(MyOwnApiUrl.attend, { CertCode: code, CertType: "1406" }, callbackSuccess, callbackFailure);
-    }
-
-    inquiryStudentsByPhoneNumber(PhoneNumber, callbackSuccess = (data) => {}, callbackFailure = (data) => {}) {
-        this.#fetchApiAuthedPost(MyOwnApiUrl.inquiryStudents, { PhoneNumber }, callbackSuccess, callbackFailure);
-    }
-
-    inquiryBills(StudentCode, callbackSuccess = (data) => {}, callbackFailure = (data) => {}) {
-        this.#fetchApiAuthedPost(MyOwnApiUrl.inquiryBills, { StudentCode }, callbackSuccess, callbackFailure);
-    }
-
-    billPayPreRun(preData, callbackSuccess = (data) => {}, callbackFailure = (data) => {}) {
-        this.#fetchApiAuthedPost(MyOwnApiUrl.payBillPreRun, preData, callbackSuccess, callbackFailure);
-    }
-
-    billPayPostRun(postData, callbackSuccess = (data) => {}, callbackFailure = (data) => {}) {
-        this.#fetchApiAuthedPost(MyOwnApiUrl.payBillPostRun, postData, callbackSuccess, callbackFailure);
-    }
-    
-
-    billPayCancelPreRun(preData, callbackSuccess = (data) => {}, callbackFailure = (data) => {}) {
-        this.#fetchApiAuthedPost(MyOwnApiUrl.cancelPayBillPreRun, preData, callbackSuccess, callbackFailure);
-    }
-
-    billPayCancelPostRun(postData, callbackSuccess = (data) => {}, callbackFailure = (data) => {}) {
-        this.#fetchApiAuthedPost(MyOwnApiUrl.cancelPayBillPostRun, postData, callbackSuccess, callbackFailure);
+    sendNothing(nothing, callbackSuccess = (data) => {}, callbackFailure = (data) => {}) {
+        this.#fetchApiAuthedPost(MyOwnApiUrl.sendNothing, { nothing }, callbackSuccess, callbackFailure);
     }
 }
 
