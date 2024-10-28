@@ -12,7 +12,7 @@
     <script>
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./scripts/serviceWorker.js").catch (ex => {
+        navigator.serviceWorker.register("./scripts/app1.serviceWorker.js").catch (ex => {
             console.log(ex);
         });
     });

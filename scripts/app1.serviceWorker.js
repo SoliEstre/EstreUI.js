@@ -2,8 +2,6 @@ const CACHE_VERSION_NAME = "cache-v1.0";
  
 const CACHE_LIST = [
     "/app1.webmanifest.json",
-    // "/app2.webmanifest.json",
-    // "/app3.webmanifest.json",
 
     "/lotties/menu_and_back_btn.json",
     "/lotties/menu_and_close_btn.json",
@@ -12,17 +10,13 @@ const CACHE_LIST = [
 
     "/styles/estreUi.css",
     "/styles/app1.css",
-    // "/styles/app2.css",
-    // "/styles/app3.css",
 
-    "/scripts/serviceWorker.js",
+    "/scripts/app1.serviceWorker.js",
     "https://code.jquery.com/jquery-3.7.1.js",
     "https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs",
     "/scripts/jcodd.js",
     "/scripts/estreUi.js",
     "/scripts/app1.js",
-    // "/scripts/app2.js",
-    // "/scripts/app3.js",
 
     "/vactors/more_vertical_slim_icon.svg",
 
