@@ -159,23 +159,6 @@ class EstreUiExapmlePageManager extends EstreUiCustomPageManager {
         return super.init(extPidMap, pageHandlers);
     }
 
-
-    bringPage(id, intent) {
-        pageManager.bringPage("*" + id, intent);
-    }
-
-    showPage(id, intent) {
-        pageManager.showPage("*" + id, intent);
-    }
-
-    hidePage(id) {
-        pageManager.hidePage("*" + id);
-    }
-
-    closePage(id) {
-        pageManager.closePage("*" + id);
-    }
-
 }
 
 const myOwnPageHandler = new EstreUiExapmlePageManager().init(myOwnPages, myOwnPageHandlers);
