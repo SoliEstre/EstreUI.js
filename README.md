@@ -54,7 +54,7 @@ and has three page handles be sequenced layer as: **Component > Container > Arti
 Pages be managed(bring and close) by EstreUiPageManager(pageManager obejct).
 
 Pages to be had unique PID(Page ID) on initialized Estre UI.   
-it formatted as: ${statement}&{sectionBound}={component id}#{container id}@{article id}   
+it formatted as: **${statement}&{sectionBound}={component id}#{container id}@{article id}**   
 that needs for bring and close pages.
 can you see imported pages refers on pageManager.pages when after Estre UI initialized.
 
@@ -65,21 +65,21 @@ Component can be had many containers.
 
 #### Container
 Conatiner is full screen content holder.   
-It's query specfied as: **div\[data-container-id\="{container id}"]**   
-container pages only shows one in component has data-on-top="1" attribute.
+It's query specfied as: **div.container\[data-container-id\="{container id}"]**   
+container pages only shows one in component has **data-on-top="1"** attribute.
 and component can be had many articles.
-Defailt ID is "root".
+Single or initial container's ID is **"root"**.
 
 #### Article
 Article is minimum unit of page.   
 It's query specfied as: **article\[data-article-id="{article id}"\]**   
 article can be shoing on full screes(in safe area) or part of container.
-Default ID is "main".
+Single or initial article's ID is **"main"**.
 
 
 ### Page Handle
 Page handle is implementation of page works.
-it's own element be called "host".
+it's own element be called **"host"**.
 Page handle like as provided Activity/Fragment implementation of Android framework.
 
 #### statement
@@ -89,12 +89,13 @@ When instant page's child page was static, that be released together when parent
 Instnt pages has to be sampled HTML and remove from DOM when intialize Estre UI(page handle).
 and append(be created) to DOM on page has bring.
 Pages statement has to be never changed when browser loaded.
-It's assigned by attribute data-static="1" or not.
+It's assigned by attribute  ***data-static="1"*** or not.
 
 #### intent
 Estre UI can push intent datas on bring(open) page or on show page.
 intent can contains your cusom data for pages want bring. and can assign provided specific actions on any lifecycle on times.
 currently provided actions is very little bit.
+Intent is little like as intent of Android fremework.
 
 ### Page Handler
 Page handler is controller. has be called each lifecycle items by page handle's lifecycle.
@@ -107,7 +108,7 @@ Page handler implementation has probably not be changed.
 ### Handle (EstreHandle)
 Handle is operation controller of specfied bound.
 Estre UI provided stock handles and can register custom handle before init of Estre UI.
-Handles own element be called "bound".
+Handles own element be called **"bound"**.
 Handle is like as View of Android framework.
 
 
@@ -146,7 +147,7 @@ be triggered by popstate event of window
 
 this is like as onBackPressed() in Android fragment lifecycle.
 
-(* This is diffrent as an lifecycle things. but this rimwork take same as lifecycle. and on go to forward request-pushstate- is not implemented currently.)
+    * This is diffrent as an lifecycle things. but this rimwork take same as lifecycle. and on go to forward request(pushstate) is not implemented currently.
 
 ### onBlur()
 Be called on blur page and current application(window of DOM. but currently not implemented).
