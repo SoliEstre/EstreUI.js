@@ -13,8 +13,12 @@
 // common constants
 const N = "null";
 const U = "undefined";
+const T = "true";
+const F = "false";
 const n = null;
 const u = undefined;
+const t = true;
+const f = false;
 const eoo = u;
 
 // document aliases
@@ -351,7 +355,10 @@ const eds = {
     onTop: "data-on-top",
     static: "data-static",
 
-    //for container
+    // for bind data
+    index: "data-index",
+
+    // for container
     articleStepsId: "data-article-steps-id",
 
     // for page manager,
@@ -512,7 +519,7 @@ const eds = {
 
 
 //common methods
-function v2a(value) {
+const v2a = function (value) {
     value += "";
     
 	var regex = /(^[+-]?\d+)(\d{3})/;
@@ -521,13 +528,33 @@ function v2a(value) {
 	return value;
 }
 
-function v2d(value, length = 2) {
+const v2d = function (value, length = 2) {
     return (value + "").padStart(length, "0");
 }    
 
-function f4f(value, length = 2) {
+const f4f = function (value, length = 2) {
     return parseFloat(value).toFixed(length);
-}    
+}
+
+
+const parseBoolean = function (value) {
+    switch (value) {
+        default:        
+        case U:
+            return u;
+
+        case "":
+        case N:
+            return n;
+
+        case F:
+            return f;
+
+        case T:
+            return t;
+    }
+};
+
 
 function getUA(lowercase = true) {
     var ua = navigator.userAgent;
@@ -1337,31 +1364,39 @@ class EstreUiPageManager {
             }
         }
         var success = true;
+        var targetProcessed = { component: null, container: null, article: null };
         switch (page.hostType) {
             case "article":
                 if (!isIntentNone && (page.isArticle || page.article == "main")) article.pushIntent(intent);
-                success = article.show();
+                targetProcessed.article = article.show();
+                success = targetProcessed.article;
             case "container":
                 if (success) {
                     if (!isIntentNone && (page.isContainer || (page.article == "main" && page.container == "root"))) container.pushIntent(intent);
-                    success = container.show();
+                    targetProcessed.container = container.show();
+                    success = targetProcessed.container;
                 }
             case "component":
                 if (success) {
                     let isRootMain = page.container == "root" && page.article == "main";
                     if (page.isBlinded) {
                         if (!isIntentNone && (page.isComponent || isRootMain)) component.pushIntent();
-                        success = estreUi.showInstantBlinded(page.component);
+                        targetProcessed.component = estreUi.showInstantBlinded(page.component);
                     } else if (component.isModal) {
-                        if (!isIntentNone && (page.isComponent || isRootMain)) success = estreUi.openModalTab(page.component, component, intent);
-                        else success = estreUi.openModalTab(page.component, component);
+                        if (!isIntentNone && (page.isComponent || isRootMain)) targetProcessed.component = estreUi.openModalTab(page.component, component, intent);
+                        else targetProcessed.component = estreUi.openModalTab(page.component, component);
                     } else {
-                        if (!isIntentNone && (page.isComponent || isRootMain)) success = estreUi.switchRootTab(page.component, intent);
-                        else success = estreUi.switchRootTab(page.component, intent);
+                        if (!isIntentNone && (page.isComponent || isRootMain)) targetProcessed.component = estreUi.switchRootTab(page.component, intent);
+                        else targetProcessed.component = estreUi.switchRootTab(page.component, intent);
                     }
+                    success = targetProcessed.component;
                 }
         }
-        return success;
+        return targetProcessed[page.hostType];
+    }
+
+    showOrBringPage(pid, intent, instanceOrigin) {
+        return this.showPage(pid, intent, instanceOrigin) || this.bringPage(pid, intent, instanceOrigin);
     }
 
     hidePage(pid, hideHost = false, instanceOrigin = null) {
@@ -1469,19 +1504,24 @@ class EstreUiCustomPageManager {
 
 
     bringPage(id, intent, instanceOrigin) {
-        pageManager.bringPage("*" + id, intent, instanceOrigin);
+        return pageManager.bringPage("*" + id, intent, instanceOrigin);
     }
 
     showPage(id, intent, instanceOrigin) {
-        pageManager.showPage("*" + id, intent, instanceOrigin);
+        return pageManager.showPage("*" + id, intent, instanceOrigin);
+    }
+
+    showOrBringPage(id, intent, instanceOrigin) {
+        pid = "*" + id;
+        return pageManager.showPage(id, intent, instanceOrigin) || pageManager.bringPage(id, intent, instanceOrigin);
     }
 
     hidePage(id, hideHost = false, instanceOrigin = null) {
-        pageManager.hidePage("*" + id, hideHost, instanceOrigin);
+        return pageManager.hidePage("*" + id, hideHost, instanceOrigin);
     }
 
     closePage(id, closeHost = false, instanceOrigin = null) {
-        pageManager.closePage("*" + id, closeHost, instanceOrigin);
+        return pageManager.closePage("*" + id, closeHost, instanceOrigin);
     }
 
 }
@@ -1570,8 +1610,8 @@ class EstrePageHandle {
     
     pushIntent(intent) {
         if (typeof intent != U) {
-            if (this.#intent == null) this.#intent = intent;
-            else for (var key in intent) this.#intent[key] = intent[key];
+            if (this.intent == null) this.#intent = intent;
+            else for (var key in intent) this.intent[key] = intent[key];
             if (this.intent != null) console.log("pushed intent on " + this.hostType + " " + EstreUiPage.from(this).pid + "\n", this.intent);
         }
     }
@@ -1679,7 +1719,7 @@ class EstrePageHandle {
     }
 
     onBack() {
-        if (this.#isShowing) {
+        if (this.isShowing) {
             return this.back(false);
         } else return false;
     }
@@ -1887,7 +1927,7 @@ class EstreComponent extends EstrePageHandle {
             if (container != null) {
                 container.close(false);
                 if (!container.isStatic) this.unregisterConatiner(container);
-                //this.$containers.last().attr(eds.onTop, "1");
+                this.$containers.last()[0]?.pageHandle?.show();
                 return true;
             }
         }
@@ -2376,7 +2416,7 @@ class EstreContainer extends EstrePageHandle {
             if (article != null) {
                 article.close(false);
                 if (!article.isStatic) this.unregisterArticle(article);
-                //this.$articles.last().attr(eds.onTop, "1");
+                this.$articles.last()[0]?.pageHandle?.show();
                 return true;
             }
         }
