@@ -85,45 +85,45 @@ const myOwnPages = {
 const myOwnPageHandlers = {
     //"same name in extPidMap": "function type object constructer",
 
-    "wait": function () {},
+    "wait": class extends EstrePageHandler {},
 
-    "home": function () {},
+    "home": class extends EstrePageHandler {},
 
-    "tab1": function () {},
-    "tab1Next": function () {},
+    "tab1": class extends EstrePageHandler {},
+    "tab1Next": class extends EstrePageHandler {},
 
-    "attend_success": function () {},
+    "attend_success": class extends EstrePageHandler {},
     
-    "tab2": function () {},
-    "tab2Next": function () {
-        this.onOpen = function (handle) {
+    "tab2": class extends EstrePageHandler {},
+    "tab2Next": class extends EstrePageHandler {
+        onOpen(handle) {
         };
         
-        this.onBack = function (handle) {
+        onBack(handle) {
             return handle.close();
         }
     },
 
-    "activity1": function () {
-        this.onOpen = function (handle) {
+    "activity1": class extends EstrePageHandler {
+        onOpen(handle) {
             myOwnActionHandler.somethingDoWhileAnything();
         }
         
-        this.onBack = function (handle) {
+        onBack(handle) {
             return handle.close();
         }
     },
 
-    "activity2": function () {
-        this.onOpen = function (handle) {
+    "activity2": class extends EstrePageHandler {
+        onOpen(handle) {
             this.myOwnFunction();
         }
         
-        this.onBack = function (handle) {
+        onBack(handle) {
             return handle.close();
         }
 
-        this.myOwnFunction = function () {
+        myOwnFunction() {
             //do anything
         }
     },
@@ -161,7 +161,7 @@ class EstreUiExapmlePageManager extends EstreUiCustomPageManager {
 
 }
 
-const myOwnPageHandler = new EstreUiExapmlePageManager().init(myOwnPages, myOwnPageHandlers);
+const myOwnPageManager = new EstreUiExapmlePageManager().init(myOwnPages, myOwnPageHandlers);
 
 
 
@@ -172,7 +172,7 @@ class MyOwnActionHandler {
 
     somethingDoWhileAnything() {
         //show blinded loading indicator
-        myOwnPageHandler.bringPage("wait");
+        myOwnPageManager.bringPage("wait");
         //register to async manager for monitor async work for prevent leak
         let currentWid = EstreAsyncManager.beginWork("[" + "work title" + "]" + "detail", this.hostId);
 
@@ -185,7 +185,7 @@ class MyOwnActionHandler {
             //unregister from async manager
             EstreAsyncManager.endOfWork(currentWid);
             //hide blinded loading indicator
-            myOwnPageHandler.closePage("wait");
+            myOwnPageManager.closePage("wait");
         }, 3000);
         //<= You must catch error case for do unregister from async manager and close loading indicator
     }
@@ -494,14 +494,14 @@ $(document).ready((e) => {
         //initialize Estre UI after checked user session
         estreUi.init(false);
         //something do while intializes on splash page
-        myOwnPageHandler.init();
+        myOwnPageManager.init();
     
         //ready to begin page if han not login token
-        if (!isTokenExist) myOwnPageHandler.bringPage("login");
+        if (!isTokenExist) myOwnPageManager.bringPage("login");
     }, (isOnAuth) => {
         //bitfurcation user auth when checked only has login token
-        if (!isOnAuth) myOwnPageHandler.bringPage("login");
-        else myOwnPageHandler.bringPage("home");
+        if (!isOnAuth) myOwnPageManager.bringPage("login");
+        else myOwnPageManager.bringPage("home");
     }, (isStraight) => {
         //notification finished loading my own app to Estre UI
         if (isStraight) setTimeout(() => estreUi.checkOnReady(), 0);

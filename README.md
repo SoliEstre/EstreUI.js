@@ -98,6 +98,8 @@ currently provided actions is very little bit.
 Intent is little like as intent of Android fremework.
 
 ### Page Handler
+> extends EstrePageHandler or custom page handler based empty class
+
 Page handler is controller. has be called each lifecycle items by page handle's lifecycle.
 that like as custom implementation of Activity/Fragment of Android framework.
 handler callback provided page handle object. can you access handle host DOM and intent data from handle object.
@@ -105,14 +107,18 @@ handler callback provided page handle object. can you access handle host DOM and
 Page handler implementation has probably not be changed.
 
 
-### Handle (extends EstreHandle)
+### Handle
+> extends EstreHandle
+
 Handle is operation controller of specfied bound.
 Estre UI provided stock handles and can register custom handle before init of Estre UI.
 Handles own element be called **"bound"**.
 Handle is like as View of Android framework.
 
 
-### Handler (each implementations, class name begins "Estre" and ends "Handler")
+### Handler
+> each implementations, class name begins "Estre" and ends "Handler"
+
 Handler is independent attachable functional controller.
 Estre UI has to be provided continuously more stock handlers.
 
@@ -141,13 +147,21 @@ Be called on focus page and current application(window of DOM. but currently not
 
 this is like as onResume() in Android fragment lifecycle.
 
+### onReload()*
+Be pressed F5 key for refresh by user, refresh current top showing Estre UI page has be reloaded instead reload Estre UI site. (prevented refresh by user press F5 key)   
+developer can override action when called onReload event by custom page handler.   
+but Ctrl+F5 only allowed for user.
+
+> \* This is diffrent as a lifecycle things. but this rimwork take similar as lifecycle.
+
 ### onBack()*
-Be called on back(web browser back press or android back button press or iOS swipe to back) requested.
+Be called the back(web browser back press or android back button press or iOS swipe to back) requested.
 be triggered by popstate event of window
 
 this is like as onBackPressed() in Android fragment lifecycle.
 
-> \* This is diffrent as an lifecycle things. but this rimwork take same as lifecycle. and on go to forward request(pushstate) is not implemented currently.
+> \* This is diffrent as a lifecycle things. but this rimwork take similar as lifecycle. 
+> \* On go to forward request(pushstate) is not implemented currently.
 
 ### onBlur()
 Be called on blur page and current application(window of DOM. but currently not implemented).
