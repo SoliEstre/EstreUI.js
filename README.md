@@ -51,12 +51,12 @@ Structure
 ### Page
 Page is a unit of managed section(such as a component) with lifecycle.   
 and has three page handles be sequenced layer as: **Component > Container > Article**   
-Pages be managed(bring and close) by EstreUiPageManager(pageManager obejct).
+Pages be managed(bring and close) by pageManager(EstreUiPageManager's obejct).
 
-Pages to be had unique PID(Page ID) on initialized Estre UI.   
+Pages has to be got unique PID(Page ID) on initialize Estre UI.   
 it formatted as: **${statement}&{sectionBound}={component id}#{container id}@{article id}**   
-that needs for bring and close pages.
-can you see imported pages refers on pageManager.pages when after Estre UI initialized.
+PID needs to calling bring and close pages.
+can you see imported pages refers on **pageManager.pages** when after Estre UI initialized.
 
 #### Component
 Component is root item of Page structure.   
@@ -105,7 +105,7 @@ handler callback provided page handle object. can you access handle host DOM and
 Page handler implementation has probably not be changed.
 
 
-### Handle (EstreHandle)
+### Handle (extends EstreHandle)
 Handle is operation controller of specfied bound.
 Estre UI provided stock handles and can register custom handle before init of Estre UI.
 Handles own element be called **"bound"**.
@@ -147,7 +147,7 @@ be triggered by popstate event of window
 
 this is like as onBackPressed() in Android fragment lifecycle.
 
-    * This is diffrent as an lifecycle things. but this rimwork take same as lifecycle. and on go to forward request(pushstate) is not implemented currently.
+> \* This is diffrent as an lifecycle things. but this rimwork take same as lifecycle. and on go to forward request(pushstate) is not implemented currently.
 
 ### onBlur()
 Be called on blur page and current application(window of DOM. but currently not implemented).
