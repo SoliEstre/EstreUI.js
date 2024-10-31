@@ -2820,11 +2820,11 @@ class EstreArticle extends EstrePageHandle {
  */
 class EstrePageHandler {
 
-    handler = null;
-    get intent() { this.handler.intent; }
+    handle = null;
+    get intent() { this.handle.intent; }
 
-    constructor (handler) {
-        this.handler = handler;
+    constructor (handle) {
+        this.handle = handle;
     }
     
 
