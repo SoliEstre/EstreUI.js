@@ -62,6 +62,7 @@ can you see imported pages refers on **pageManager.pages** when after Estre UI i
 Component is root item of Page structure.   
 It's query specfied as: **section#{component id}**   
 Component can be had many containers.
+Initial component's ID is **"home"** or not exist home tab in main sections, all of sections is root tab (exit app on back pressed any tab) except modal tab.
 
 #### Container
 Conatiner is full screen content holder.   

@@ -564,8 +564,23 @@ main#instantDoc > section > div.container > article { }
 main#instantDoc > section > div.container > article[data-on-top="1"] { z-index: 111; }
 
 
+/* managed overlay content page area */
+nav#managedOverlay { }
+nav#managedOverlay > section { }
+nav#managedOverlay > section > div.container { position: fixed; z-index: 200; left: 0; right: 0; height: 0; overflow: visible; box-sizing: border-box; }
+nav#managedOverlay > section > div.container.top { top: 0; width: fit-content; height: fit-content; margin: 0 auto; }
+nav#managedOverlay > section > div.container.bottom { bottom: 0; width: fit-content; height: fit-content; margin: 0 auto; }
+nav#managedOverlay > section > div.container.slider { transition-timing-function: ease; transition-duration: 0.5s; will-change: auto; }
+nav#managedOverlay > section > div.container.blind:is([data-on-top="1"], [data-on-top="0*"]) { height: 100vh; }
+nav#managedOverlay > section > div.container:not(.blind):is([data-on-top="1"], [data-on-top="0*"]) { height: fit-content; }
+nav#managedOverlay > section > div.container[data-on-top=""] { display: none; }
+nav#managedOverlay > section > div.container[data-on-top="1"] { z-index: 210; }
+nav#managedOverlay > section > div.container > article { }
+nav#managedOverlay > section > div.container > article[data-on-top="1"] { z-index: 211; }
+
+
 /* splash page area */
-main#splashRoot { position: fixed; z-index: 120; display: flex; padding: 0; background-color: var(--common-bg-color); transition-duration: 0.5s; }
+main#splashRoot { position: fixed; z-index: 300; display: flex; padding: 0; background-color: var(--common-bg-color); transition-duration: 0.5s; }
 body[data-on-ready="0"] main#splashRoot { opacity: 0; }
 body[data-on-ready="1"] main#splashRoot { display: none; }
 main#splashRoot > section { }

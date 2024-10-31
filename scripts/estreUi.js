@@ -27,7 +27,7 @@ const doc = {
     get $b() { return $(this.b); },
 
     ce: (tagName, className, innerHTML) => {
-        let element = document.createElement(tagName);
+        const element = document.createElement(tagName);
         if (className != null) element.setAttribute(m.cls, className);
         if (innerHTML != null) element.innerHTML = innerHTML;
         return element;
@@ -556,6 +556,9 @@ const parseBoolean = function (value) {
 };
 
 
+function isKorean() { return navigator.language.indexOf("ko") > -1; }
+
+
 function getUA(lowercase = true) {
     var ua = navigator.userAgent;
     if (lowercase) ua = ua.toLowerCase();
@@ -568,7 +571,7 @@ function isAndroid() {
 }
 
 function isAppleMobile() {
-    let ua = getUA();
+    const ua = getUA();
     return ua.indexOf("ipad") > -1 || ua.indexOf("iphone") > -1 || ua.indexOf("ipod") > -1;
 }
 
@@ -577,13 +580,89 @@ function isSafari() {
 }
 
 function getIosVersion() {
-    let ua = getUA();
-    let matches = ua.match(/os (\d+(_\d+)+)\s/);
+    const ua = getUA();
+    const matches = ua.match(/os (\d+(_\d+)+)\s/);
     if (matches != null) {
-        let raw = matches[1];
+        const raw = matches[1];
         return raw != null ? raw.replace(/_/g, ".") : null;
     } else return null;
 }
+
+
+
+//override global(window) methods
+classicAlert = alert;
+classicConfirm = confirm;
+classicPrompt = prompt;
+
+
+async function estreAlert(options = {}) {
+    return new Promise((resolve) => pageManager.bringPage("!alert", {
+        data: options,
+        onOk() {
+            resolve(t);
+        },
+        onDissmiss() {
+            resolve(u);
+        },
+     }));
+}
+
+alert = (async (title, message,
+    callbackOk = () => {},
+    callbackDissmiss = () => {},
+    ok = isKorean() ? "확인" : "OK",
+) => estreAlert({...arguments}));
+
+
+async function estreConfirm(options = {}) {
+    return new Promise((resolve) => pageManager.bringPage("!confirm", {
+        data: options,
+        onPositive() {
+            resolve(t);
+        },
+        onNegative() {
+            resolve(f);
+        },
+        onNeutral() {
+            resolve(n);
+        },
+        onDissmiss() {
+            resolve(u);
+        },
+    }));
+}
+
+confirm = (async (title, message,
+    callbackPositive = () => {},
+    callbackNegative = () => {},
+    callbackDissmiss = () => {},
+    callbackNeutral = () => {},
+    positive = isKorean() ? "예" : "OK",
+    negative = isKorean() ? "아니오" : "NO",
+    neutral = isKorean() ? "나중에" : "Later",
+) => estreAlert({...arguments}));
+
+
+async function estrePrompt(options = {}) {
+    return new Promise((resolve) => pageManager.bringPage("!prompt", {
+        data: options,
+        onConfirm(text) {
+            resolve(text);
+        },
+        onDissmiss() {
+            resolve(u);
+        },
+     }));
+}
+
+prompt = (async (title, message,
+    callbackConfirm = () => {},
+    callbackDissmiss = () => {},
+    ok = isKorean() ? "확인" : "Confirm",
+    type = "text",//number, password
+) => estreAlert({...arguments}));
+
 
 
 /**
@@ -634,7 +713,7 @@ class ES {
     
     #get(key, type = "string", def) {
         if (key == null | key == "") return;
-        let value = this.#storage.getItem(this.#getFullKey(key));
+        const value = this.#storage.getItem(this.#getFullKey(key));
         switch (type) {
 
             case "boolean":
@@ -699,7 +778,7 @@ class ES {
 
     #set(key, type = "string", value) {
         if (key == null | key == "") return undefined;
-        let valueString = null;
+        const valueString = null;
         switch (type) {
 
             case "object":
@@ -779,7 +858,7 @@ class EstreAsyncManager {
     static get workIs() { return Array.from(this.works).length; }
     
     static beginWork(specifier, host, just = Date.now()) {
-        let id = just + "@" + host + "#" + specifier;
+        const id = just + "@" + host + "#" + specifier;
 
         this.works.add(id);
 
@@ -789,7 +868,7 @@ class EstreAsyncManager {
     static endOfWork(id) {
         this.works.delete(id);
 
-        let lefts = this.workIs
+        const lefts = this.workIs
         if (lefts < 1) this.bringFinishCallback();
 
         return lefts;
@@ -801,8 +880,8 @@ class EstreAsyncManager {
     }
 
     static bringFinishCallback() {
-        let callbacks = Array.from(this.onClears);
-        let lefts = this.workIs;
+        const callbacks = Array.from(this.onClears);
+        const lefts = this.workIs;
 
         for (var callback of callbacks) callback(lefts);
     }
@@ -877,15 +956,16 @@ class EstreUiPage {
         }
     }
 
-    #sectionBound = null;//main/blinded
+    #sectionBound = null;//main/blind/menu/overlay
     get sectionBound() { return this.#sectionBound; }
-    get isBlinded() { return this.sectionBound == "blinded"; }
+    get isOverlay() { return this.sectionBound == "overlay"; }
+    get isBlinded() { return this.sectionBound == "blind"; }
     get isMain() { return this.sectionBound == "main"; }
     get isMenu() { return this.sectionBound == "menu"; }
 
     get sections() {
         switch (this.sectionBound) {
-            case "blinded":
+            case "blind":
                 return estreUi.blindSections;
 
             case "main":
@@ -929,7 +1009,7 @@ class EstreUiPage {
             case "main":
                 return estreUi.mainSections[this.id];
 
-            case "blinded":
+            case "blind":
                 return estreUi.blindSectionList[this.id];
 
             default:
@@ -959,7 +1039,7 @@ class EstreUiPage {
     get pid() {
         var pid = "";
         pid += "$" + (this.statement == "static" ? "s" : (this.statement == "instant" ? "i" : ""));
-        pid += "&" + (this.sectionBound == "menu" ? "u" : (this.sectionBound == "main" ? "m" : (this.sectionBound == "blinded" ? "b" : "")));
+        pid += "&" + (this.sectionBound == "menu" ? "u" : (this.sectionBound == "main" ? "m" : (this.sectionBound == "blind" ? "b" : (this.sectionBound == "overlay" ? "o" : ""))));
         pid += "=";
         pid += this.#component;
         if (this.#container != null) pid += "#" + this.#container;
@@ -968,19 +1048,19 @@ class EstreUiPage {
     }
 
     static getPidComponent(id, sectionBound, statement) {
-        let stc = statement == "instant" ? "$i" : (statement == "static" ? "$s" : "");
-        let sbc = sectionBound == "blinded" ? "&b" : (sectionBound == "main" ? "&m" : (sectionBound == "menu" ? "&u" : null));
+        const stc = statement == "instant" ? "$i" : (statement == "static" ? "$s" : "");
+        const sbc = sectionBound == "overlay" ? "&o" : (sectionBound == "blind" ? "&b" : (sectionBound == "main" ? "&m" : (sectionBound == "menu" ? "&u" : null)));
         if (id != null && id != "" && sbc != null) return stc + sbc + "=" + id;
         else return null;
     }
 
     static getPidContainer(id, componentId, sectionBound, statement) {
-        let basePid = this.getPidComponent(componentId, sectionBound, statement);
+        const basePid = this.getPidComponent(componentId, sectionBound, statement);
         if (basePid != null) return basePid + "#" + id;
     }
 
     static getPidArticle(id, containerId, componentId, sectionBound, statement) {
-        let basePid = this.getPidContainer(containerId, componentId, sectionBound, statement);
+        const basePid = this.getPidContainer(containerId, componentId, sectionBound, statement);
         if (basePid != null) return basePid + "@" + id;
     }
 
@@ -989,7 +1069,7 @@ class EstreUiPage {
     }
 
     static registerOrCommit(euiPage) {
-        let exist = pageManager.get(euiPage.pid);
+        const exist = pageManager.get(euiPage.pid);
         if (exist == null) return euiPage.commit();
         else if (euiPage.statement == "instant") return exist.register(euiPage.$element);
         else return null;
@@ -997,8 +1077,8 @@ class EstreUiPage {
     }
 
     static unregisterFrom($element) {
-        let euiPage = this.from($element);
-        let exist = pageManager.get(euiPage);
+        const euiPage = this.from($element);
+        const exist = pageManager.get(euiPage);
         return exist?.unregister(euiPage.$element);
     }
 
@@ -1013,7 +1093,7 @@ class EstreUiPage {
             $element = $($element);
         }
 
-        let page = new EstreUiPage();
+        const page = new EstreUiPage();
         switch (element.tagName) {
             case AR:
                 page.setArticleRefer($element);
@@ -1066,10 +1146,10 @@ class EstreUiPage {
         this.#componentStatement = $component.attr(eds.static) == t1 ? "static" : "instant";
 
         if (this.#sectionBound == null) {
-            let $main = $component.closest("main");
-            let $nav = $component.closest("nav");
-            let mainId = $main.length > 0 ? $main.attr("id") : $nav.attr("id");
-            let sectionBound = mainId == "staticDoc" ? "main" : (mainId == "instantDoc" ? "blinded" : (mainId == "mainMenu" ? "menu" : null));
+            const $main = $component.closest("main");
+            const $nav = $component.closest("nav");
+            const mainId = $main.length > 0 ? $main.attr("id") : $nav.attr("id");
+            const sectionBound = mainId == "staticDoc" ? "main" : (mainId == "instantDoc" ? "blind" : (mainId == "mainMenu" ? "menu" : null));
             this.setSectionBound(sectionBound);
         }
 
@@ -1129,8 +1209,8 @@ class EstreUiPage {
 
         this.#instances.push(host);
 
-        let handle = host.pageHandle;
-        let handler = EstreUiPage.getHandler(this.pid);
+        const handle = host.pageHandle;
+        const handler = EstreUiPage.getHandler(this.pid);
         if (handle != null && handler != null && typeof handler == "function") {
             handle.setHandler(new handler(handle));
         }
@@ -1138,7 +1218,7 @@ class EstreUiPage {
 
     #sampleHTML() {
         if (this.#commited || this.#raw != null) return false;
-        let $element = this.$element;
+        const $element = this.$element;
         this.#raw = $element[0].outerHTML;
         if (this.statement == "instant") {
             $element.remove();
@@ -1151,7 +1231,7 @@ class EstreUiPage {
         pageManager.register(this);
         if (this.isFullyStatic) this.#pushInstance(this.$element);
         if (this.#article == null) this.#checkRegisterSubPages();
-        let removed = this.#sampleHTML() == null;
+        const removed = this.#sampleHTML() == null;
         this.#commited = true;
         if (removed) return false;
         else return this;
@@ -1169,7 +1249,7 @@ class EstreUiPage {
         if (this.isFullyStatic) return false;
         if ($instance instanceof jQuery) for (var item of $instance) this.unregister(item);
         else if ($instance instanceof Element) {
-            let index = this.#instances.indexOf($instance);
+            const index = this.#instances.indexOf($instance);
             this.#instances.splice(index, 1);
         } else return;
         return this.#instances;
@@ -1208,7 +1288,7 @@ class EstreUiPageManager {
     }
     
     register(euiPage) {
-        let pid = euiPage.pid;
+        const pid = euiPage.pid;
         if (this.#pages[pid] == null) {
             this.#pages[pid] = euiPage;
 
@@ -1227,7 +1307,7 @@ class EstreUiPageManager {
         return this.#pages[pid];
     }
 
-    getComponent(id, sectionBound = "blinded", statement) {
+    getComponent(id, sectionBound = "blind", statement) {
         var pid = this.foundPid(EstreUiPage.getPidComponent(id, sectionBound, statement));
         if (pid != null) return this.get(pid);
         else return null;
@@ -1258,13 +1338,13 @@ class EstreUiPageManager {
         if (pid.indexOf("*") > -1) pid = this.extPidMap[pid.replace("\*", "")];
         if (pid == null) return null;
         if (pid.indexOf("$") < 0) pid = this.foundPid(pid);
-        let page = this.get(pid);
+        const page = this.get(pid);
         if (page == null) return null;
-        let sections = page.sections;
+        const sections = page.sections;
         if (sections == null) return null;
 
         //check open component
-        let isIntentNone = typeof intent == U;
+        const isIntentNone = typeof intent == U;
         var componentIntentPushed = false;
         var component = sections[page.component];
         var existComponent = false;
@@ -1315,23 +1395,23 @@ class EstreUiPageManager {
         }
         var success = true;
         var targetProcessed = { component: null, container: null, article: null };
+        const isRootMain = page.container == "root" && page.article == "main";
         switch (page.hostType) {
             case "article":
-                if (!isIntentNone && existArticle && (page.isArticle || page.article == "main")) article.pushIntent(intent);
-                targetProcessed.article = article.show();
+                if (!isIntentNone && existArticle && (page.isArticle || page.article == "main")) targetProcessed.article = container.showArticle(page.article, intent);
+                else targetProcessed.article = article.show();
                 success = targetProcessed.article;
             case "container":
                 if (success) {
-                    if (!isIntentNone && existContainer && (page.isContainer || (page.article == "main" && page.container == "root"))) container.pushIntent(intent);
-                    targetProcessed.container = container.show();
+                    if (!isIntentNone && existContainer && (page.isContainer || isRootMain)) targetProcessed.container = component.showContainer(page.container, intent);
+                    else targetProcessed.container = container.show();
                     success = targetProcessed.container;
                 }
             case "component":
                 if (success) {
-                    let isRootMain = page.container == "root" && page.article == "main";
                     if (page.isBlinded) {
-                        if (!isIntentNone && existComponent && (page.isComponent || isRootMain)) component.pushIntent(intent);
-                        targetProcessed.component = estreUi.showInstantBlinded(page.component);
+                        if (!isIntentNone && existComponent && (page.isComponent || isRootMain)) targetProcessed.component = estreUi.showInstantBlinded(page.component, intent);
+                        else targetProcessed.component = estreUi.showInstantBlinded(page.component);
                     } else if (component.isModal) {
                         if (!isIntentNone && existComponent && (page.isComponent || isRootMain)) targetProcessed.component = estreUi.openModalTab(page.component, component, intent);
                         else targetProcessed.component = estreUi.openModalTab(page.component, component);
@@ -1350,12 +1430,12 @@ class EstreUiPageManager {
         if (pid.indexOf("*") > -1) pid = this.extPidMap[pid.replace("\*", "")];
         if (pid == null) return null;
         if (pid.indexOf("$") < 0) pid = this.foundPid(pid);
-        let page = this.get(pid);
+        const page = this.get(pid);
         if (page == null) return null;
-        let sections = page.sections;
+        const sections = page.sections;
         if (sections == null) return null;
 
-        let isIntentNone = typeof intent == U;
+        const isIntentNone = typeof intent == U;
         var component = sections[page.component];
         if (component == null) return null;
         var container = null;
@@ -1372,21 +1452,21 @@ class EstreUiPageManager {
         var targetProcessed = { component: null, container: null, article: null };
         switch (page.hostType) {
             case "article":
-                if (!isIntentNone && (page.isArticle || page.article == "main")) article.pushIntent(intent);
-                targetProcessed.article = article.show();
+                if (!isIntentNone && (page.isArticle || page.article == "main")) targetProcessed.article = container.showArticle(page.article, intent);
+                else targetProcessed.article = article.show();
                 success = targetProcessed.article;
             case "container":
                 if (success) {
-                    if (!isIntentNone && (page.isContainer || (page.article == "main" && page.container == "root"))) container.pushIntent(intent);
-                    targetProcessed.container = container.show();
+                    if (!isIntentNone && (page.isContainer || (page.article == "main" && page.container == "root"))) targetProcessed.container = component.showContainer(page.container, intent);
+                    else targetProcessed.container = container.show();
                     success = targetProcessed.container;
                 }
             case "component":
                 if (success) {
-                    let isRootMain = page.container == "root" && page.article == "main";
+                    const isRootMain = page.container == "root" && page.article == "main";
                     if (page.isBlinded) {
-                        if (!isIntentNone && (page.isComponent || isRootMain)) component.pushIntent(intent);
-                        targetProcessed.component = estreUi.showInstantBlinded(page.component);
+                        if (!isIntentNone && (page.isComponent || isRootMain)) targetProcessed.component = estreUi.showInstantBlinded(page.component, intent);
+                        else targetProcessed.component = estreUi.showInstantBlinded(page.component);
                     } else if (component.isModal) {
                         if (!isIntentNone && (page.isComponent || isRootMain)) targetProcessed.component = estreUi.openModalTab(page.component, component, intent);
                         else targetProcessed.component = estreUi.openModalTab(page.component, component);
@@ -1409,68 +1489,82 @@ class EstreUiPageManager {
         if (pid.indexOf("*") > -1) pid = this.extPidMap[pid.replace("\*", "")];
         if (pid == null) return null;
         if (pid.indexOf("$") < 0) pid = this.foundPid(pid);
-        let page = this.get(pid);
+        const page = this.get(pid);
         if (page == null) return null;
-        let sections = page.sections;
+        const sections = page.sections;
         if (sections == null) return null;
 
         var component = sections[page.component];
         if (component == null) return null;
         var container = null;
         var article = null;
+        var targetProcessed = { component: null, container: null, article: null };
         if (page.container != null) {
             container = component.containers[page.container];
             if (container != null) {
                 if (page.article != null) {
                     article = container.articles[page.article];
                     if (article != null) {
-                        article.hide();
+                        targetProcessed.article = article.hide();
                     }
                 }
                 if (page.isContainer || hideHost || (page.isArticle && page.articleIsStatic && container.isArticlesAllyStatic)) {
-                    container.hide();
+                    targetProcessed.container = container.hide();
                 }
             }
         }
         if (page.isComponent || hideHost || (!page.isComponent && page.containerIsStatic && component.isContainersAllyStatic)) {
-            component.hide();
+            if (page.isBlinded) {
+                targetProcessed.component = component.hide();
+            } else if (component.isModal) {
+                targetProcessed.component = estreUi.closeModalTab(page.component, component);
+            } else {
+                targetProcessed.component = estreUi.switchRootTab("home");
+            }
         }
+        // console.log("targetProcessed: ", targetProcessed);
+        return targetProcessed[page.hostType];
     }
 
     closePage(pid, closeHost = false, instanceOrigin = null) {
         if (pid.indexOf("*") > -1) pid = this.extPidMap[pid.replace("\*", "")];
         if (pid == null) return null;
         if (pid.indexOf("$") < 0) pid = this.foundPid(pid);
-        let page = this.get(pid);
+        const page = this.get(pid);
         if (page == null) return null;
-        let sections = page.sections;
+        const sections = page.sections;
         if (sections == null) return null;
 
         var component = sections[page.component];
         if (component == null) return null;
         var container = null;
         var article = null;
+        var targetProcessed = { component: null, container: null, article: null };
         if (page.container != null) {
             container = component.containers[page.container];
             if (container != null) {
                 if (page.article != null) {
                     article = container.articles[page.article];
                     if (article != null) {
-                        container.closeArticle(page.article);
+                        targetProcessed.article = container.closeArticle(page.article);
                     }
                 }
                 if (page.isContainer || closeHost || (page.isArticle && page.articleIsStatic && container.isArticlesAllyStatic)) {
-                    component.closeContainer(page.container);
+                    targetProcessed.container = component.closeContainer(page.container);
                 }
             }
         }
         if (page.isComponent || closeHost || (!page.isComponent && page.containerIsStatic && component.isContainersAllyStatic)) {
             if (page.isBlinded) {
-                estreUi.closeInstantBlinded(page.component);
+                targetProcessed.component = estreUi.closeInstantBlinded(page.component);
             } else if (component.isModal) {
-                estreUi.closeModalTab(page.component, component);
+                targetProcessed.component = estreUi.closeModalTab(page.component, component);
+            } else {
+                targetProcessed.component = estreUi.switchRootTab("home");
             }
         }
+        // console.log("targetProcessed: ", targetProcessed);
+        return targetProcessed[page.hostType];
     }
 }
 
@@ -1550,12 +1644,12 @@ class EstrePageHandle {
     get isStatic() { return this.$host?.attr(eds.static) == t1; }
     get isModal() { return this.$host?.hasClass("modal"); }
     get isOnTop() {
-        let onTop = this.$host?.attr(eds.onTop);
+        const onTop = this.$host?.attr(eds.onTop);
         return onTop == t1 || onTop == "1*";
     }
 
     get isFullyHided() {
-        let onTop = this.$host?.attr(eds.onTop);
+        const onTop = this.$host?.attr(eds.onTop);
         return onTop == "" || onTop == t0;
     }
 
@@ -1615,11 +1709,13 @@ class EstrePageHandle {
     }
     
     pushIntent(intent) {
-        if (typeof intent != U) {
-            if (this.intent == null) this.#intent = intent;
+        if (intent != n) {
+            if (intent === f) this.#intent = null;
+            else if (this.intent == null) this.#intent = intent;
             else for (var key in intent) this.intent[key] = intent[key];
             if (this.intent != null) console.log("pushed intent on " + this.hostType + " " + EstreUiPage.from(this).pid + "\n", this.intent);
-        }
+            return true;
+        } else false;
     }
 
 
@@ -1629,7 +1725,7 @@ class EstrePageHandle {
             this.onShow();
             this.$host.attr(eds.onTop, t1 + "*");
             setTimeout(() => {
-                let $host = this?.$host;
+                const $host = this?.$host;
                 if ($host != null && $host.attr(eds.onTop) == t1 + "*") {
                     $host.attr(eds.onTop, t1);
                     if (setFocus) this?.focus();
@@ -1649,8 +1745,8 @@ class EstrePageHandle {
     reload(isRequest = true) {
         if (isRequest) return this.onReload();
         else if (this.#isOpened) {
-            let onTop = this.currentOnTop;
-            let onReload = this.handler?.onReload;
+            const onTop = this.currentOnTop;
+            const onReload = this.handler?.onReload;
             return (onTop != null && onTop.onReload()) || (onReload != null && onReload(this));
         } else return false;
     }
@@ -1658,8 +1754,8 @@ class EstrePageHandle {
     back(isRequest = true) {
         if (isRequest) return this.onBack();
         else if (this.isShowing) {
-            let onTop = this.currentOnTop;
-            let onBack = this.handler?.onBack;
+            const onTop = this.currentOnTop;
+            const onBack = this.handler?.onBack;
             return (onTop != null && onTop.onBack()) || (onBack != null && onBack(this));
         } else return false;
     }
@@ -1678,7 +1774,7 @@ class EstrePageHandle {
             if (fullyHide) {
                 this.$host.attr(eds.onTop, t0);
                 setTimeout(() => {
-                    let $host = this?.$host;
+                    const $host = this?.$host;
                     if ($host != null && $host.attr(eds.onTop) == t0) {
                         $host.attr(eds.onTop, "");
                     }
@@ -1776,7 +1872,7 @@ class EstrePageHandle {
     }
 
     onRelease(remove) {
-        let removal = remove == null ? "leave" : (remove ? "remove" : "empty")
+        const removal = remove == null ? "leave" : (remove ? "remove" : "empty")
         console.log("[onRelease(" + removal + ")] " + this.hostType + " " + EstreUiPage.from(this).pid.split("=")[1], this.host);
         if (this.handler?.onRelease != null) this.handler.onRelease(this, remove);
         if (this.intent?.onRelease != null) for (var item of this.intent.onRelease) if (item.from == this.hostType && !item.disabled) this.processAction(item);
@@ -1788,7 +1884,7 @@ class EstrePageHandle {
             switch (data.action) {
                 case "autoClose":
                     if (data.host != null) {
-                        let handle = this.getHost(data.host);
+                        const handle = this.getHost(data.host);
                         if (data.time != null && !isNaN(time)) {
                             setTimeout(() => handle?.close(), parseInt(data.time));
                         }
@@ -1812,9 +1908,52 @@ class EstrePageHandle {
 
 
 /**
+ * Page host's handle (page handles sub pages)
+ */
+class EstrePageHostHandle extends EstrePageHandle {
+
+    get subPages() { return {}; }
+    get subPageList() { return []; }
+    get $subPages() { return $(); }
+    get $subPage() { return {}; }
+
+
+    initSubPages(intent) {
+
+    }
+
+    registerSubPage(element, intent) {
+
+    }
+
+    unregisterConatiner(pageHandle) {
+
+    }
+
+
+    showSubPage(id, intent) {
+
+    }
+
+    openSubPage(id, intent) {
+        
+    }
+
+    closeSubPage(id) {
+
+    }
+
+    terminate() {
+
+    }
+
+}
+
+
+/**
  * Main section component
  */
-class EstreComponent extends EstrePageHandle {
+class EstreComponent extends EstrePageHostHandle {
     // constants
     hostType = "component";
     get sectionBound() { return "main" };
@@ -1826,7 +1965,7 @@ class EstreComponent extends EstrePageHandle {
 
     // static methods;
     static register(component) {
-        let registered = EstreUiPage.registerOrCommitFrom(component);
+        const registered = EstreUiPage.registerOrCommitFrom(component);
         if (registered === false) return false;
         this.unregister(component);
         this.componentList.push(component);
@@ -1836,13 +1975,18 @@ class EstreComponent extends EstrePageHandle {
 
     static unregister(component) {
         if (this.components[component.id] != null) delete this.components[component.id];
-        let index = this.componentList.indexOf(component);
+        const index = this.componentList.indexOf(component);
         if (index > -1) this.componentList.splice(index, 1);
         EstreUiPage.unregisterFrom(component);
     }
 
 
     // instance property
+    get subPages() { return this.containers; }
+    get subPageList() { return this.containerList; }
+    get $subPages() { return this.$containers; }
+    get $subPage() { return this.$container; }
+
     containers = {};
     containerList = [];
     get $containers() { return this.$host.find(c.c + uis.container); };
@@ -1886,9 +2030,21 @@ class EstreComponent extends EstrePageHandle {
     }
 
     
+    initSubPages(intent) {
+        return this.initContainers(intent);
+    }
+
+    registerSubPage(element, intent) {
+        return this.registerContainer(element, intent);
+    }
+
+    unregisterConatiner(pageHandle) {
+        return this.unregisterConatiner(pageHandle);
+    }
+
     initContainers(intent) {
         for (var container of this.$containers) {
-            let $container = $(container);
+            const $container = $(container);
             this.$container[$container.attr(eds.containerId)] = $container;
             this.registerContainer(container, intent);
         }
@@ -1896,7 +2052,7 @@ class EstreComponent extends EstrePageHandle {
 
     registerContainer(element, intent) {
         this.unregisterConatiner(element.pageHandle);
-        let container = new EstreContainer(element, this);
+        const container = new EstreContainer(element, this);
         this.$container[container.id] = container.$host;
         this.containers[container.id] = container;
         this.containerList.push(container);
@@ -1912,19 +2068,32 @@ class EstreComponent extends EstrePageHandle {
         container.release(container.$host.attr(eds.static) != t1 ? true : null);
         if (this.$container[container.id] != null) delete this.$container[container.id];
         if (this.containers[container.id] != null) delete this.containers[container.id];
-        let index = this.containerList.indexOf(container);
+        const index = this.containerList.indexOf(container);
         if (index > -1) this.containerList.splice(index, 1);
     }
 
 
     // handles
-    showContainer(id) {
+    showSubPage(id, intent) {
+        return this.showContainer(id, intent);
+    }
+
+    openSubPage(id, intent) {
+        return this.openContainer(id, intent);
+    }
+
+    closeSubPage(id) {
+        return this.closeContainer(id);
+    }
+
+    showContainer(id, intent) {
         if (id != null) {
-            let container = this.containers[id];
+            const container = this.containers[id];
             if (container != null) {
                 for (var current of this.containerList) if (current.isOnTop && current != container) {
                     current.hide();
                 }
+                container.pushIntent(intent);
                 container.show(false);
                 this.currentOnTop = container;
                 return true;
@@ -1934,22 +2103,22 @@ class EstreComponent extends EstrePageHandle {
     }
 
     openContainer(id, intent) {
-        let page = pageManager.getConatiner(id, this.id, this.sectionBound);
+        const page = pageManager.getConatiner(id, this.id, this.sectionBound);
         if (page == null) return null;
         if (page.statement == "static") return null;
         this.$host.append(page.raw);
-        let $container = this.$containers.filter(aiv(eds.containerId, id));
+        const $container = this.$containers.filter(aiv(eds.containerId, id));
         if ($container == null || $container.length < 1) return null;
         return this.registerContainer($container[0], intent);
     }
 
     closeContainer(id) {
         if (id != null) {
-            let container = this.containers[id];
+            const container = this.containers[id];
             if (container != null) {
                 container.close(false);
                 if (!container.isStatic) this.unregisterConatiner(container);
-                let $containers = this.$containers;
+                const $containers = this.$containers;
                 $containers[$containers.length - 1]?.pageHandle?.show();
                 return true;
             }
@@ -1966,7 +2135,7 @@ class EstreComponent extends EstrePageHandle {
     focus() {
         super.focus();
 
-        let $containers = this.$containers;
+        const $containers = this.$containers;
         let $top = $containers.filter(asv(eds.onTop, t1));
         var $targetContainer = null;
         if ($top != null) $targetContainer = $top;
@@ -1977,10 +2146,14 @@ class EstreComponent extends EstrePageHandle {
         } else return false;
     }
 
+    back(isRequest = true) {
+        return super.back(isRequest) || (this.sectionBound == "main" && this.isShowing && this.id != "home" && estreUi.switchRootTab("home"));
+    }
+
     blur() {
         super.blur()
 
-        let $containers = this.$containers;
+        const $containers = this.$containers;
         let $top = $containers.filter(asv(eds.onTop, t1));
         var $targetContainer = null;
         if ($top != null && $top.length > 0) $targetContainer = $top;
@@ -2003,7 +2176,7 @@ class EstreComponent extends EstrePageHandle {
 
 
     onShow() {
-        let processed = super.onShow();
+        const processed = super.onShow();
         var $top = this.$containers.filter(asv(eds.onTop), t1);
         if ($top.length < 1) $top = this.$containers;
         $top[$top.length - 1]?.pageHandle?.show();
@@ -2028,7 +2201,7 @@ class EstreComponent extends EstrePageHandle {
 
 class EstreInstantComponent extends EstreComponent {
     // constants
-    get sectionBound() { return "blinded"; };
+    get sectionBound() { return "blind"; };
 
     // class property
     static components = {};
@@ -2086,7 +2259,67 @@ class EstreInstantComponent extends EstreComponent {
 }
 
 
-class EstreContainer extends EstrePageHandle {
+class EstreOverlayComponent extends EstreInstantComponent {
+    // constants
+    get sectionBound() { return "overlay"; };
+
+    // class property
+    static components = {};
+    static componentList = [];
+
+
+    // static methods
+    
+
+
+    // instance property
+
+
+
+
+    constructor(component) {
+        super(component);
+    }
+
+    release(remove) {
+
+
+        super.release(remove);
+    }
+
+    init(intent) {
+
+
+        super.init(intent);
+
+        
+
+        return this;
+    }
+
+    register() {
+        return EstreOverlayComponent.register(this);
+    }
+
+    unregister() {
+        EstreOverlayComponent.unregister(this);
+    }
+
+    show(isRequest = true, setFocus = true) {
+        if (isRequest) {
+            return estreUi.showManagedOverlay(this.id);
+        } else super.show(false, setFocus);
+    }
+
+    close(isRequest = true) {
+        if (isRequest) {
+            return estreUi.closeManagedOverlay(this.id);
+        } else return super.close(false);
+    }
+}
+
+
+class EstreContainer extends EstrePageHostHandle {
     
     hostType = "container";
 
@@ -2105,6 +2338,11 @@ class EstreContainer extends EstrePageHandle {
     #$masterButton = null;
     #$masterButtonTitle = null;
 
+    get subPages() { return this.articles; }
+    get subPageList() { return this.articleList; }
+    get $subPages() { return this.$articles; }
+    get $subPage() { return this.$article; }
+
     articles = {};
     articleList = [];
     get $articles() { return this.$host.find(c.c + ar); };
@@ -2116,8 +2354,8 @@ class EstreContainer extends EstrePageHandle {
     }
 
     get $currentArticle() {
-        let $articles = this.$articles;
-        let $onTop = $articles.filter(asv(eds.onTop, t1));
+        const $articles = this.$articles;
+        const $onTop = $articles.filter(asv(eds.onTop, t1));
         if ($onTop.length < 1) return $($articles[$articles.length - 1]);
         return $onTop;
     }
@@ -2148,14 +2386,14 @@ class EstreContainer extends EstrePageHandle {
     }
 
     setEventHandle() {
-        let inst = this;
+        const inst = this;
         
         this.$host.find(".back_navigation").click(function (e) {
             e.preventDefault();
 
-            let index = inst.currentArticleStepIndex;
+            const index = inst.currentArticleStepIndex;
             if (index != NaN) {
-                let prevIndex = index - 1;
+                const prevIndex = index - 1;
                 if (prevIndex > -1) inst.showArticle(inst.#articleStepsId + "%" + prevIndex);
             }
 
@@ -2170,10 +2408,10 @@ class EstreContainer extends EstrePageHandle {
             return false;
         });
 
-        let $masterFloat = this.$host.find(".container_master_float");
+        const $masterFloat = this.$host.find(".container_master_float");
         if ($masterFloat.length > 0) {
             this.#$masterFloat = $masterFloat;
-            let $masterButton = $masterFloat.find(".container_master_button");
+            const $masterButton = $masterFloat.find(".container_master_button");
             if ($masterButton.length > 0) {
                 this.#$masterButton = $masterButton;
                 this.#$masterButtonTitle = $masterButton.find(".container_master_action");
@@ -2181,13 +2419,13 @@ class EstreContainer extends EstrePageHandle {
                 $masterButton.click(function (e) {
                     e.preventDefault();
 
-                    let articleStepsId = inst.#articleStepsId;
+                    const articleStepsId = inst.#articleStepsId;
                     if (articleStepsId != null) {
-                        let current = inst.currentArticleStepIndex;
+                        const current = inst.currentArticleStepIndex;
                         if (current != NaN) {
-                            let length = inst.stepPagesLength;
-                            let next = current + 1;
-                            let nextId = articleStepsId + "%" + next;
+                            const length = inst.stepPagesLength;
+                            const next = current + 1;
+                            const nextId = articleStepsId + "%" + next;
                             if (next < length) pageManager.bringPage(EstreUiPage.getPidArticle(nextId, inst.id, inst.component.id, inst.component.sectionBound));
                         }
                     }
@@ -2201,15 +2439,27 @@ class EstreContainer extends EstrePageHandle {
             setTimeout(() => this.#$masterFloatPad.css("height",  + this.#$masterFloat.height() + "px"), 0);
         }
     }
+    
+    initSubPages(intent) {
+        return this.initArticles(intent);
+    }
+
+    registerSubPage(element, intent) {
+        return this.registerArticle(element, intent);
+    }
+
+    unregisterConatiner(pageHandle) {
+        return this.unregisterArticle(pageHandle);
+    }
 
     initArticles(intent) {
 
-        let articleStepsId = this.$host.attr(eds.articleStepsId);
+        const articleStepsId = this.$host.attr(eds.articleStepsId);
         if (articleStepsId != null && articleStepsId != "") this.#initStepNavigation(articleStepsId);
 
         for (var article of this.$articles) this.registerArticle(article, intent);
 
-        let $scalables = this.$host.find(c.c + ar + uis.scalable);
+        const $scalables = this.$host.find(c.c + ar + uis.scalable);
         if (this.host.innerWidth >= 740) {//반응형 와이드 모드 기본값 적용
             $scalables.attr(eds.lookScale, t2);
         } else switch ($scalables.length) { //섹션 컴포넌트의 메인 항목 갯수에 따른 초기 표시 모드 적용
@@ -2233,6 +2483,28 @@ class EstreContainer extends EstrePageHandle {
         $scalables.filter(opa + eds.registered + equ + v0 + cla).attr(eds.lookScale, t0);
     }
 
+    registerArticle(element, intent) {
+        this.unregisterArticle(element.pageHandle);
+        const article = new EstreArticle(element, this);
+        this.$article[article.id] = article.$host;
+        this.articles[article.id] = article;
+        this.articleList.push(article);
+        EstreUiPage.registerOrCommitFrom(article);
+        article.init(intent);
+        //if (article.isOnTop) article.show(false);
+        return article;
+    }
+
+    unregisterArticle(article) {
+        if (article == null) return;
+        EstreUiPage.unregisterFrom(article);
+        article.release(article.$host.attr(eds.static) != t1 ? true : null);
+        if (this.$article[article.id] != null) delete this.$article[article.id];
+        if (this.articles[article.id] != null) delete this.articles[article.id];
+        const index = this.articleList.indexOf(article);
+        if (index > -1) this.articleList.splice(index, 1);
+    }
+
     #initStepNavigation(articleStepsId) {
         this.#articleStepsId = articleStepsId;
         this.#$stepNavigation = this.$host.find(c.c + uis.stepNavigation);
@@ -2244,13 +2516,13 @@ class EstreContainer extends EstrePageHandle {
     }
 
     #updateStepNavigation(articleStepsId = this.#articleStepsId) {
-        let $currentArticle = this.$currentArticle;
+        const $currentArticle = this.$currentArticle;
 
         if (this.#$stepIndicator != null) { 
-            let $articleSteps = this.$host.find(asv(eds.articleId, articleStepsId + "%"));
-            let $stepPointers = this.#$stepPointers;
-            let $stepDividers = this.#$stepDividers;
-            let length = Math.max(this.stepPagesLength, $articleSteps.length);
+            const $articleSteps = this.$host.find(asv(eds.articleId, articleStepsId + "%"));
+            const $stepPointers = this.#$stepPointers;
+            const $stepDividers = this.#$stepDividers;
+            const length = Math.max(this.stepPagesLength, $articleSteps.length);
             var steps = $stepPointers.length;
             if ($stepDividers.length != steps - 1) {
                 this.#$stepIndicator.empty();
@@ -2260,15 +2532,15 @@ class EstreContainer extends EstrePageHandle {
                 if (i > 0) this.#$stepIndicator.append(doc.ce(div, "step_divider"));
                 this.#$stepIndicator.append(doc.ce(div, "step_pointer"));
             } else if (steps > length) {
-                let diff = steps - length;
+                const diff = steps - length;
                 for (var i=0; i<diff; i++) {
                     this.#$stepIndicator.last().remove();
                     if (this.#$stepPointers.length > 0) this.#$stepIndicator.last().remove();
                 }
             }
 
-            let index = this.currentArticleStepIndex;
-            let $pointers = this.#$stepPointers;
+            const index = this.currentArticleStepIndex;
+            const $pointers = this.#$stepPointers;
             if (index != NaN) {
                 $pointers.filter(aiv(eds.active, t1)).attr(eds.active, null);
                 $($pointers[index]).attr(eds.active, t1);
@@ -2294,7 +2566,7 @@ class EstreContainer extends EstrePageHandle {
     focus() {
         super.focus();
 
-        let $articles = this.$articles;
+        const $articles = this.$articles;
         let $top = $articles.filter(asv(eds.onTop, t1));
         var $targetArticle = null;
         if ($top != null && $top.length > 0) $targetArticle = $top;
@@ -2308,7 +2580,7 @@ class EstreContainer extends EstrePageHandle {
     blur() {
         this.onBlur();
 
-        let $articles = this.$articles;
+        const $articles = this.$articles;
         let $top = $articles.filter(asv(eds.onTop, t1));
         var $targetArticle = null;
         if ($top != null && $top.length > 0) $targetArticle = $top;
@@ -2328,7 +2600,7 @@ class EstreContainer extends EstrePageHandle {
     }
 
     onShow() {
-        let processed = super.onShow();
+        const processed = super.onShow();
         var $top = this.$articles.filter(asv(eds.onTop), t1);
         if ($top.length < 1) $top = this.$articles;
         $top[$top.length - 1]?.pageHandle?.show();
@@ -2344,10 +2616,10 @@ class EstreContainer extends EstrePageHandle {
 
     onClose() {
         if (super.onClose()) { 
-            let stepped = [];
+            const stepped = [];
             for (var id in this.articles) if (id.indexOf(this.#articleStepsId + "%") === 0) stepped.push(id);
             if (stepped.length > 0) {
-                let sorted = stepped.sort();
+                const sorted = stepped.sort();
                 for (var i=sorted.length-1; i>-1; i--) this.closeArticle(sorted[i]);
             } else {
                 for (var article of this.articleList.reverse()) article.close();
@@ -2357,46 +2629,37 @@ class EstreContainer extends EstrePageHandle {
         } else return false;
     }
 
-    registerArticle(element, intent) {
-        this.unregisterArticle(element.pageHandle);
-        let article = new EstreArticle(element, this);
-        this.$article[article.id] = article.$host;
-        this.articles[article.id] = article;
-        this.articleList.push(article);
-        EstreUiPage.registerOrCommitFrom(article);
-        article.init(intent);
-        //if (article.isOnTop) article.show(false);
-        return article;
-    }
-
-    unregisterArticle(article) {
-        if (article == null) return;
-        EstreUiPage.unregisterFrom(article);
-        article.release(article.$host.attr(eds.static) != t1 ? true : null);
-        if (this.$article[article.id] != null) delete this.$article[article.id];
-        if (this.articles[article.id] != null) delete this.articles[article.id];
-        let index = this.articleList.indexOf(article);
-        if (index > -1) this.articleList.splice(index, 1);
-    }
-
 
     // handles
-    showArticle(id) {
+    showSubPage(id, intent) {
+        return this.showArticle(id, intent);
+    }
+
+    openSubPage(id, intent) {
+        return this.openArticle(id, intent);
+    }
+
+    closeSubPage(id) {
+        return this.closeArticle(id);
+    }
+
+    showArticle(id, intent) {
         if (id != null) {
-            let $target = this.$article[id];
+            const $target = this.$article[id];
             if ($target != null && $target.length > 0) {
-                let onlyOne = this.$articles.filter(ntc("dummy")).length === 1;
-                let $currentTop = this.$articles.filter(asv(eds.onTop, t1));
+                const onlyOne = this.$articles.filter(ntc("dummy")).length === 1;
+                const $currentTop = this.$articles.filter(asv(eds.onTop, t1));
                 //console.log($currentTop);
                 if (this.$host.hasClass("v_stack") || this.$host.hasClass("h_stack")) {
+                    $target[0]?.pageHandle?.pushIntent(intent);
                     if (onlyOne || $currentTop.length > 0) {
-                        let current = this.currentArticleStepIndex;
-                        let target = this.getArticleStepIndex($target);
+                        const current = this.currentArticleStepIndex;
+                        const target = this.getArticleStepIndex($target);
                         if (onlyOne || target != current) {
-                            let isNext = onlyOne || target > current;
-                            let currentOnTop1 = isNext ? "-1" : "+1";
-                            let targetOnTop1 = isNext ? "+1" : "-1";
-                            let targetOnTop2 = isNext ? "+" : "-";
+                            const isNext = onlyOne || target > current;
+                            const currentOnTop1 = isNext ? "-1" : "+1";
+                            const targetOnTop1 = isNext ? "+1" : "-1";
+                            const targetOnTop2 = isNext ? "+" : "-";
                             $currentTop.attr(eds.onTop, currentOnTop1);
                             setTimeout(() => {
                                 for (var currentTop of $currentTop) if (currentTop.dataset.onTop == currentOnTop1) {
@@ -2424,13 +2687,14 @@ class EstreContainer extends EstrePageHandle {
                         }
                     }
                 } else {
-                    let targetArticle = $target[0]?.pageHandle;
+                    const targetArticle = $target[0]?.pageHandle;
                     for (var currentTop of $currentTop) {
-                        let article = currentTop.pageHandle
+                        const article = currentTop.pageHandle
                         if (article != null && (targetArticle == null || article != targetArticle)) {
                             article.hide();
                         }
                     }
+                    targetArticle?.pushIntent(intent);
                     targetArticle?.show(false);
                     this.currentOnTop = targetArticle;
                     return true;
@@ -2441,7 +2705,7 @@ class EstreContainer extends EstrePageHandle {
     }
 
     openArticle(id, intent) {
-        let page = pageManager.getArticle(id, this.id, this.component.id, this.component.sectionBound);
+        const page = pageManager.getArticle(id, this.id, this.component.id, this.component.sectionBound);
         if (page == null) return null;
         if (page.statement == "static") return null;
         var $exist = this.$articles.filter(aiv(eds.articleId, id));
@@ -2453,24 +2717,24 @@ class EstreContainer extends EstrePageHandle {
                 else $exist.remove();
             }
         }
-        let $articles = this.$articles;
+        const $articles = this.$articles;
         //this.$articles.filter(aiv(eds.onTop, t1)).attr(eds.onTop, "");
         if ($articles.length > 0) $($articles[$articles.length - 1]).after(page.raw);
         else this.$host.append(page.raw);
-        let $article = this.$articles.filter(aiv(eds.articleId, id));
+        const $article = this.$articles.filter(aiv(eds.articleId, id));
         if ($article == null || $article.length < 1) return null;
-        let article = this.registerArticle($article[0], intent);
+        const article = this.registerArticle($article[0], intent);
         //this.#updateStepNavigation();
         return article;
     }
 
     closeArticle(id) {
         if (id != null) {
-            let article = this.articles[id];
+            const article = this.articles[id];
             if (article != null) {
                 article.close(false);
                 if (!article.isStatic) this.unregisterArticle(article);
-                let $articles = this.$articles;
+                const $articles = this.$articles;
                 $articles[$articles.length - 1]?.pageHandle?.show();
                 return true;
             }
@@ -2532,76 +2796,77 @@ class EstreArticle extends EstrePageHandle {
     }
 
     pushIntent(intent) {
-        super.pushIntent(intent);
-
-        this.initDataBind();
+        if (super.pushIntent(intent)) {
+            console.log("on called data bind - " + EstreUiPage.from(this).pid);
+            this.initDataBind();
+        }
     }
 
     initDataBind() {
         if (this.intent != null) {
-            let data = this.intent.data;
+            const data = this.intent.data;
 
             if (data != null) for (var item in data) {
-                let value = data[item];
+                const value = data[item];
 
                 this.$host.find(aiv(eds.bind, item)).html(value);
                 this.$host.find(aiv(eds.bindAmount, item)).html(v2a(value));
                 this.$host.find(aiv(eds.bindValue, item)).val(value);
 
                 this.$host.find(acv(eds.bindAttr, item + "@")).each((i, elem) => {
-                    let $elem = $(elem);
-                    let attr = $elem.attr(eds.bindAttr);
+                    const $elem = $(elem);
+                    const attr = $elem.attr(eds.bindAttr);
                     if (attr != null && attr != "") {
-                        let targets = attr.split(" ");
+                        const targets = attr.split(" ");
                         for (var target of targets) {
-                            let targetInfos = target.split("@");
-                            let targetItem = targetInfos[0];
-                            let targetAttr = targetInfos[1];
+                            const targetInfos = target.split("@");
+                            const targetItem = targetInfos[0];
+                            const targetAttr = targetInfos[1];
                             if (targetItem == item) $elem.attr(targetAttr, value);
                         }
                     }
                 });
 
                 if (value instanceof Array) this.$host.find(aiv(eds.bindArray, item)).each((i, elem) => {
-                    let $elem = $(elem);
+                    const $elem = $(elem);
 
-                    let liHtml = $elem.first().html();
+                    const liHtml = $elem.first().html();
                     $elem.empty();
                     
                     for (var index in value) {
-                        let arrayItem = value[index];
+                        const arrayItem = value[index];
 
-                        let li = $.parseHTML(liHtml);
-                        let $li = $(li);
+                        const li = $.parseHTML(liHtml);
+                        const $li = $(li);
                         $elem.append($li);
 
                         $li.find(ax(eds.bindArrayIndex)).each((i, elem) => {
-                            let $elem = $(elem);
+                            const $elem = $(elem);
                             $elem.attr($elem.attr(eds.bindArrayIndex), index);
                         });
 
-                        let valueIsObject = typeof arrayItem == "object";
+                        const valueIsObject = typeof arrayItem == "object";
 
                         var arrayItemValue = arrayItem;
                         if (valueIsObject) {
                             arrayItemValue = JSON.stringify(arrayItem);
 
                             for (var objItem in arrayItem) {
-                                let value = arrayItem[objItem];
+                                const value = arrayItem[objItem];
 
                                 $li.find(aiv(eds.bindObjectArrayItem, objItem)).html(value);
                                 $li.find(aiv(eds.bindObjectArrayAmount, objItem)).html(v2a(value));
                                 $li.find(aiv(eds.bindObjectArrayValue, objItem)).val(value);
 
                                 $li.find(acv(eds.bindObjectArrayAttr, objItem + "@")).each((i, elem) => {
-                                    let $elem = $(elem);
-                                    let attr = $elem.attr(eds.bindObjectArrayAttr);
+                                    const $elem = $(elem);
+                                    const attr = $elem.attr(eds.bindObjectArrayAttr);
                                     if (attr != null && attr != "") {
-                                        let targets = attr.split(" ");
+                                        const targets = attr.split(" ");
                                         for (var target of targets) {
-                                            let targetInfos = target.split("@");
-                                            let targetItem = targetInfos[0];
-                                            let targetAttr = targetInfos[1];
+                                            const targetInfos = target.split("@");
+                                            const targetItem = targetInfos[0];
+                                            const targetAttr = targetInfos[1];
                                             if (targetItem == objItem) $elem.attr(targetAttr, value);
                                         }
                                     }
@@ -2615,10 +2880,10 @@ class EstreArticle extends EstrePageHandle {
 
                         if (valueIsObject) arrayItemValue = btoa(Jcodd.toCodd(arrayItemValue));
                         $li.find(ax(eds.bindArrayAttr)).each((i, elem) => {
-                            let $elem = $(elem);
-                            let attr = $elem.attr(eds.bindArrayAttr);
+                            const $elem = $(elem);
+                            const attr = $elem.attr(eds.bindArrayAttr);
                             if (attr != null && attr != "") {
-                                let targets = attr.split(" ");
+                                const targets = attr.split(" ");
                                 for (var target of targets) $elem.attr(target, arrayItemValue);
                             }
                         });
@@ -2629,7 +2894,7 @@ class EstreArticle extends EstrePageHandle {
                         });
             
                         $li.find(acv(eds.showOnEqualsObjectArrayItem, "=")).each((i, elem) => {
-                            let divided = elem.dataset.showOnEqualsObjectArrayItem.split("=");
+                            const divided = elem.dataset.showOnEqualsObjectArrayItem.split("=");
                             if (arrayItem == null || arrayItem[divided[0]] != divided[1]) $(elem).css("display", "none");
                         });            
                     }
@@ -2641,7 +2906,7 @@ class EstreArticle extends EstrePageHandle {
             });
 
             this.$host.find(acv(eds.showOnEquals, "=")).each((i, elem) => {
-                let divided = elem.dataset.showOnEquals.split("=");
+                const divided = elem.dataset.showOnEquals.split("=");
                 if (data == null || data[divided[0]] != divided[1]) $(elem).css("display", "none");
             });            
         }
@@ -2661,24 +2926,24 @@ class EstreArticle extends EstrePageHandle {
     }
 
     unregisterHandle(specifier, handle) {
-        let index = this.handles[specifier].indexOf(handle);
+        const index = this.handles[specifier].indexOf(handle);
         this.handles[specifier].splice(index, 1);
     }
 
 
     initInternalLink() {
         if (this.$host.is(ax(eds.openTarget) + ax(eds.openContainer) + ax(eds.openId))) this.setEventInternalLink(this.host);
-        let $links = this.$host.find(ax(eds.openTarget) + ax(eds.openContainer) + ax(eds.openId));
+        const $links = this.$host.find(ax(eds.openTarget) + ax(eds.openContainer) + ax(eds.openId));
         for (var item of $links) this.setEventInternalLink(item);
     }
 
     initPageLink() {
         if (this.$host.is(ax(eds.closePage))) this.setEventPageCloseLink(this.host);
-        let $closeLinks = this.$host.find(ax(eds.closePage));
+        const $closeLinks = this.$host.find(ax(eds.closePage));
         for (var item of $closeLinks) this.setEventPageCloseLink(item);
         
         if (this.$host.is(ax(eds.openPage))) this.setEventPageOpenLink(this.host);
-        let $openLinks = this.$host.find(ax(eds.openPage));
+        const $openLinks = this.$host.find(ax(eds.openPage));
         for (var item of $openLinks) this.setEventPageOpenLink(item);
     }
 
@@ -2690,13 +2955,13 @@ class EstreArticle extends EstrePageHandle {
         $(item).click(function(e) {
             e.preventDefault();
 
-            let $this = $(this);
+            const $this = $(this);
 
-            let targetSet = $this.attr(eds.openTarget).split("@");
-            let target = targetSet.length < 2 ? "self" : targetSet[0];//$this.closest(se + uis.rootTabContent).attr("id")
-            let targetBound = targetSet[targetSet.length < 2 ? 0 : 1];
-            let container = $this.attr(eds.openContainer);
-            let id = $this.attr(eds.openId);
+            const targetSet = $this.attr(eds.openTarget).split("@");
+            const target = targetSet.length < 2 ? "self" : targetSet[0];//$this.closest(se + uis.rootTabContent).attr("id")
+            const targetBound = targetSet[targetSet.length < 2 ? 0 : 1];
+            const container = $this.attr(eds.openContainer);
+            const id = $this.attr(eds.openId);
 
             switch (targetBound) {
                 case "root":
@@ -2713,7 +2978,7 @@ class EstreArticle extends EstrePageHandle {
                             if (target == "self") {
                                 inst.showContainer(id);
                             } else {
-                                let targetSection = estreUi.mainSections[target];
+                                const targetSection = estreUi.mainSections[target];
                                 if (targetSection != null) {
                                     var success = targetSection.showContainer(id);
                                     if (!success) {
@@ -2750,9 +3015,9 @@ class EstreArticle extends EstrePageHandle {
         $(item).click(function(e) {
             e.stopPropagation();
 
-            let $this = $(this);
+            const $this = $(this);
 
-            let pid = $this.attr(eds.openPage);
+            const pid = $this.attr(eds.openPage);
 
             pageManager.bringPage(pid);
         });
@@ -2762,9 +3027,9 @@ class EstreArticle extends EstrePageHandle {
         $(item).click(function(e) {
             e.stopPropagation();
 
-            let $this = $(this);
+            const $this = $(this);
 
-            let pid = $this.attr(eds.closePage);
+            const pid = $this.attr(eds.closePage);
 
             pageManager.closePage(pid);
         });
@@ -2787,15 +3052,15 @@ class EstreArticle extends EstrePageHandle {
     focus() {
         if (super.focus()) {
 
-            let $target = this.$host.find(ax(eds.focusOnBring));
+            const $target = this.$host.find(ax(eds.focusOnBring));
             var bigger = 0;
             for (var item of $target) {
-                let index = parseInt($(item).attr(eds.focusOnBring));
+                const index = parseInt($(item).attr(eds.focusOnBring));
                 if (index > bigger) bigger = index;
             }
 
             for (var i=0; i<=bigger; i++) {
-                let $found = $target.filter(aiv(eds.focusOnBring, i));
+                const $found = $target.filter(aiv(eds.focusOnBring, i));
                 if ($found.length > 0) {
                     $($found[0]).focus();
                     break;
@@ -2847,8 +3112,8 @@ class EstrePageHandler {
     onReload(handle) {
         // Rebuild(close and bring) is default action
         if (!handle.isStatic) {
-            let pid = EstreUiPage.from(handle).pid;
-            let intent = handle.intent;
+            const pid = EstreUiPage.from(handle).pid;
+            const intent = handle.intent;
             if (handle.close()) return pageManager.bringPage(pid, intent);
             else {
                 handle.show();
@@ -2932,7 +3197,7 @@ class EstreHandle {
 
     static releaseHandle($host, host, specifier) {
         if ($host.is(specifier)) this.unregisterHandle(host.host, host, specifier);
-        let $bounds = $host.find(specifier);
+        const $bounds = $host.find(specifier);
         for (var bound of $bounds) this.unregisterHandle(bound, host, specifier);
     }
 
@@ -2944,12 +3209,12 @@ class EstreHandle {
 
     static initHandle($host, host, specifier, handleClass) {
         if ($host.is(specifier)) this.registerHandle(host.host, host, specifier, handleClass);
-        let $bounds = $host.find(specifier);
+        const $bounds = $host.find(specifier);
         for (var bound of $bounds) this.registerHandle(bound, host, specifier, handleClass);
     }
 
     static registerHandle(element, host, specifier, handleClass) {
-        let handle = new handleClass(element, host);
+        const handle = new handleClass(element, host);
         host.registerHandle(specifier, handle);
         var loaded = this.activeHandle[specifier];
         if (loaded == null) {
@@ -2962,7 +3227,7 @@ class EstreHandle {
 
     static unregisterHandle(element, host, specifier) {
         host.unregisterHandle(specifier, element.handle);
-        let loaded = this.activeHandle[specifier];
+        const loaded = this.activeHandle[specifier];
         if (loaded != null) loaded.delete(element.handle);
         element.handle.release();
     }
@@ -3019,8 +3284,8 @@ const Ecal = {
 
 
     getLastWeek(year, month0) {
-        let lastDay = this.getLastDate(year, month0);
-        let ymw = this.getYearMonthWeek(lastDay);
+        const lastDay = this.getLastDate(year, month0);
+        const ymw = this.getYearMonthWeek(lastDay);
 
         if (ymw.year == year && ymw.month0 == month0) return ymw.week;
         else {
@@ -3038,7 +3303,7 @@ const Ecal = {
             date = ddate.getDate();
         } else ddate = new Date(year, month0, date);
 
-        let ymw = this.getYearMonthWeek(ddate);
+        const ymw = this.getYearMonthWeek(ddate);
 
         if (ymw.year > year || (ymw.year == year && ymw.month0 > month0)) return this.getYearMonthWeek(year, month0, date - 7).week + 1;
         else if (ymw.year < year || (ymw.year == year && ymw.month0 < month0)) return Ecal.getBeginSundayAndWeek(ddate).week;
@@ -3049,24 +3314,24 @@ const Ecal = {
         if (year instanceof Date) date = new Date(year.getFullYear(), year.getMonth(), year.getDate());
         else date = new Date(year, month0, date);
 
-        let forYear = date.getFullYear();
-        let forMonth = date.getMonth();
-        let firstDateOfNextMonth = new Date(forYear, forMonth + 1, 1);
-        let beginOfNextMonth = Ecal.getBeginSundayAndWeek(firstDateOfNextMonth);
+        const forYear = date.getFullYear();
+        const forMonth = date.getMonth();
+        const firstDateOfNextMonth = new Date(forYear, forMonth + 1, 1);
+        const beginOfNextMonth = Ecal.getBeginSundayAndWeek(firstDateOfNextMonth);
         
         if (date.getTime() >= beginOfNextMonth.date.getTime() && firstDateOfNextMonth.getDay() < 5) {
-            let firstDateOfWeek = beginOfNextMonth.date;
+            const firstDateOfWeek = beginOfNextMonth.date;
                 firstDateOfWeek.setDate(firstDateOfWeek.getDate() + 4);
-                let thisYear = firstDateOfWeek.getFullYear();
-                let thisMonth = firstDateOfWeek.getMonth();
+                const thisYear = firstDateOfWeek.getFullYear();
+                const thisMonth = firstDateOfWeek.getMonth();
                 return { year: thisYear, month: thisMonth + 1, month0: thisMonth, week: 1 };
         } else {
-            let forDate = date.getDate();
-            let forDay = date.getDay();
-            let weekBeginDate = forDate - forDay;
+            const forDate = date.getDate();
+            const forDay = date.getDay();
+            const weekBeginDate = forDate - forDay;
 
-            let monthBeginSunday = Ecal.getBeginSundayAndWeek(date);
-            let beginDate = monthBeginSunday.date;
+            const monthBeginSunday = Ecal.getBeginSundayAndWeek(date);
+            const beginDate = monthBeginSunday.date;
             var beginWeek = monthBeginSunday.week;
             date.setDate(weekBeginDate);
             while (beginDate.getTime() < date.getTime()) {
@@ -3076,12 +3341,12 @@ const Ecal = {
 
             if (beginWeek > 0) {
                 date.setDate(date.getDate() + 4);
-                let m0 = date.getMonth();
+                const m0 = date.getMonth();
                 return { year: date.getFullYear(), month: m0 + 1, month0: m0, week: beginWeek };
             } else {
-                let thisYear = beginDate.getFullYear();
-                let thisMonth = beginDate.getMonth();
-                let thisWeek = this.getYearMonthWeek(thisYear, thisMonth, beginDate.getDate() - 14).week + 2;
+                const thisYear = beginDate.getFullYear();
+                const thisMonth = beginDate.getMonth();
+                const thisWeek = this.getYearMonthWeek(thisYear, thisMonth, beginDate.getDate() - 14).week + 2;
                 return { year: thisYear, month: thisMonth + 1, month0: thisMonth, week: thisWeek };
             }
         }
@@ -3099,8 +3364,8 @@ const Ecal = {
     getDateWeekSundayOfWeek(year, month0, week) {
         if (year instanceof Date) return this.getDateWeekSundayOfWeek(year.getFullYear(), month0 == null ? year.getMonth() : month0, week);
 
-        let lastDateOfPrevMonth = new Date(year, month0, 0);
-        let lastDayOfPrevMonth = lastDateOfPrevMonth.getDay();
+        const lastDateOfPrevMonth = new Date(year, month0, 0);
+        const lastDayOfPrevMonth = lastDateOfPrevMonth.getDay();
         var baseWeek;
         var justBegin = false;
         switch(lastDayOfPrevMonth) {
@@ -3128,7 +3393,7 @@ const Ecal = {
             adjustOffset = baseWeek;
             if (justBegin) firstSunday += 7;
         }
-        let addDays = 7 * (week - adjustOffset);
+        const addDays = 7 * (week - adjustOffset);
         
         return { date: new Date(year, month0, firstSunday + addDays), week: week };
     },
@@ -3140,7 +3405,7 @@ const Ecal = {
     getNearPosition(criteria, offset = 0, unit = "day") {
         if (unit == null) return null;
 
-        let cd = this.getDateSet(criteria);
+        const cd = this.getDateSet(criteria);
 
         var d = null;
         var year = null;
@@ -3242,7 +3507,7 @@ const Ecal = {
     },
 
     getDateFrom(offset) {
-        let date = new Date();
+        const date = new Date();
         return new Date(((offset * 24) + (date.getTimezoneOffset() / 60)) * 60 * 60 * 1000);
     },
 
@@ -3324,10 +3589,10 @@ const Escd = {
         bound += "";
         if (bound.length < 5) return "yearly";
         else {
-            let divided = bound.split(".");
+            const divided = bound.split(".");
             if (divided.length > 2) return "daily";
             else {
-                let monthand = divided[1].split("w");
+                const monthand = divided[1].split("w");
                 if (monthand.length > 1) return "weekly";
                 else return "monthly";
             }
@@ -3335,7 +3600,7 @@ const Escd = {
     },
 
     getDateBeginEndFrom(bound, scope = this.getScopeBy(bound)) {
-        let d = Escd.parseBound(bound, scope);
+        const d = Escd.parseBound(bound, scope);
 
         var beginDate;
         var endDate;
@@ -3351,13 +3616,13 @@ const Escd = {
                 break;
 
             case "weekly":
-                let begin = Ecal.getDateSundayOfWeek(d.year, d.month0, d.week);
+                const begin = Ecal.getDateSundayOfWeek(d.year, d.month0, d.week);
                 beginDate = Ecal.getDateOffset(begin);
                 endDate = Ecal.getDateOffset(new Date(begin.getFullYear(), begin.getMonth(), begin.getDate() + 6));
                 break;
 
             case "daily":
-                let offset = Ecal.getDateOffset(new Date(d.year, d.month0, d.date));
+                const offset = Ecal.getDateOffset(new Date(d.year, d.month0, d.date));
                 beginDate = offset;
                 endDate = offset;
                 break;
@@ -3367,7 +3632,7 @@ const Escd = {
     },
 
     getBounds(scope, date) {
-        let d = Ecal.getDateSet(date);
+        const d = Ecal.getDateSet(date);
 
         var bounds = [];
         switch (scope) {
@@ -3378,24 +3643,24 @@ const Escd = {
                 break;
                 
             case "monthly":
-                let isFirstMonth = d.month == 1;
-                let isLastMonth = d.month == 12;
+                const isFirstMonth = d.month == 1;
+                const isLastMonth = d.month == 12;
                 bounds[0] = d.year + "." + v2d(d.month + "");
                 bounds[-1] = (isFirstMonth ? d.year - 1 : d.year) + "." + v2d(isFirstMonth ? 12 : d.month - 1);
                 bounds[1] = (isLastMonth ? d.year + 1 : d.year) + "." + v2d(isLastMonth ? 1 : d.month + 1);
                 break;
 
             case "weekly":
-                let pw = Ecal.getYearMonthWeek(new Date(d.year, d.month0, d.date - 7));
-                let nw = Ecal.getYearMonthWeek(new Date(d.year, d.month0, d.date + 7));
+                const pw = Ecal.getYearMonthWeek(new Date(d.year, d.month0, d.date - 7));
+                const nw = Ecal.getYearMonthWeek(new Date(d.year, d.month0, d.date + 7));
                 bounds[0] = d.ymw.year + "." + v2d(d.ymw.month) + "w" + d.ymw.week;
                 bounds[-1] = pw.year + "." + v2d(pw.month) + "w" + pw.week;
                 bounds[1] = nw.year + "." + v2d(nw.month) + "w" + nw.week;
                 break;
 
             case "daily":
-                let pd = Ecal.getDateSet(new Date(d.year, d.month0, d.date - 1));
-                let nd = Ecal.getDateSet(new Date(d.year, d.month0, d.date + 1));
+                const pd = Ecal.getDateSet(new Date(d.year, d.month0, d.date - 1));
+                const nd = Ecal.getDateSet(new Date(d.year, d.month0, d.date + 1));
                 bounds[0] = d.year + "." + v2d(d.month) + "." + v2d(d.date);
                 bounds[-1] = pd.year + "." + v2d(pd.month) + "." + v2d(pd.date);
                 bounds[1] = nd.year + "." + v2d(nd.month) + "." + v2d(nd.date);
@@ -3406,7 +3671,7 @@ const Escd = {
     },
 
     getBoundBy(offset, bound, scope) {
-        let d = this.parseBound(bound, scope);
+        const d = this.parseBound(bound, scope);
         var bounds;
         switch (scope) {
             case "yearly":
@@ -3529,7 +3794,7 @@ class EstreUnifiedCalendar extends EstreHandle {
 
     setResizeObserver() {
         this.resizeObserver = new ResizeObserver(entries => {
-            for (let entry of entries) {
+            for (const entry of entries) {
                 if (entry == this.bound) {
                     this.calendar.beginTransition();
                     setTimeout(() => this.calendar.endTransition(), this.calendar.transitionTime);
@@ -3592,34 +3857,34 @@ class EstreYear {
     }
 
     getDays(date, month, year) {
-        let days = [];
+        const days = [];
 
         if (month != null) {
             var m = this.month[month];
             if (m != null) {
-                let ds = m.getDays(date, month, year);
+                const ds = m.getDays(date, month, year);
                 days.push(...ds);
             }
 
             m = this.month[month > 1 ? month - 1 : 12];
             if (m != null) {
-                let w = m.getEndWeek();
+                const w = m.getEndWeek();
                 if (w != null) {
-                    let d = w.getDay(date, month, year);
+                    const d = w.getDay(date, month, year);
                     if (d != null) days.push(d);
                 }
             }
 
             m = this.month[month < 12 ? month + 1 : 1];
             if (m != null) {
-                let w = m.getBeginWeek();
+                const w = m.getBeginWeek();
                 if (w != null) {
-                    let d = w.getDay(date, month, year);
+                    const d = w.getDay(date, month, year);
                     if (d != null) days.push(d);
                 }
             }
         } else for (var m of this.month) {
-            let ds = m.getDays(date, month, year);
+            const ds = m.getDays(date, month, year);
             days.push(...ds);
         }
 
@@ -3699,9 +3964,9 @@ class EstreMonth {
     }
 
     getYM() {
-        let year = this.getYear();
-        let month = this.getMonth();
-        let monthInt = parseInt(month);
+        const year = this.getYear();
+        const month = this.getMonth();
+        const monthInt = parseInt(month);
         return {
             year: year,
             yearInt: parseInt(year),
@@ -3725,18 +3990,18 @@ class EstreMonth {
 
     getLastWeek() {
         for (var w=this.subWeeks.length-1; w>0; w--) {
-            let wk = this.subWeeks[w];
+            const wk = this.subWeeks[w];
             if (wk.$week.attr(eds.week) != "") return wk;
         }
         return null;
     }
 
     getDays(date, month, year) {
-        let days = [];
+        const days = [];
 
         if (this.week != null) {
             for (var w of this.subWeeks) if (w.day != null) {
-                let day = w.getDay(date, month, year);
+                const day = w.getDay(date, month, year);
                 if (day != null) days.push(day);
             }
         }
@@ -3818,10 +4083,10 @@ class EstreWeek {
     }
 
     getYMW() {
-        let year = this.getYear();
-        let month = this.getMonth();
-        let monthInt = parseInt(month);
-        let week = this.getWeek();
+        const year = this.getYear();
+        const month = this.getMonth();
+        const monthInt = parseInt(month);
+        const week = this.getWeek();
         return {
             year: year,
             yearInt: parseInt(year),
@@ -3835,7 +4100,7 @@ class EstreWeek {
 
     getDay(date, month, year) {
         if (this.day != null) {
-            let day = this.day[date];
+            const day = this.day[date];
             if (day != null) {
                 if (month == null || day.$day.attr(eds.month) == month) {
                     if (year == null || day.$day.attr(eds.year) == year) {
@@ -3852,7 +4117,7 @@ class EstreWeek {
     }
 
     forIfDay(work, date, month, year) {
-        let day = this.getDay(date, month, year);
+        const day = this.getDay(date, month, year);
         if (day != null) work(day);
     }
 }
@@ -3926,11 +4191,11 @@ class EstreDay {
     }
 
     getYMD() {
-        let year = this.getYear();
-        let month = this.getMonth();
-        let monthInt = parseInt(month);
-        let day = this.getDay();
-        let date = this.getDate();
+        const year = this.getYear();
+        const month = this.getMonth();
+        const monthInt = parseInt(month);
+        const day = this.getDay();
+        const date = this.getDate();
         return {
             year: year,
             yearInt: parseInt(year),
@@ -3945,11 +4210,11 @@ class EstreDay {
     }
 
     buildItem(data, dataType) {
-        let isData = typeof data == "string";
-        let item = doc.ce(li);
+        const isData = typeof data == "string";
+        const item = doc.ce(li);
         if (!isData && data.category != null) item.setAttribute(eds.category, data.category);
         if (dataType != null) item.setAttribute(eds.type, dataType);
-        let span = doc.ce(sp);
+        const span = doc.ce(sp);
         if (isData) span.innerHTML = data;
         else if (data.subject != null) span.innerText = data.subject;
         item.append(span);
@@ -3957,11 +4222,11 @@ class EstreDay {
     }
 
     buildCustomItem(data, dataType) {
-        let item = doc.ce(li);
+        const item = doc.ce(li);
         item.setAttribute(m.cls, "custom_item");
         if (dataType != null) item.setAttribute(eds.type, dataType);
         for (var info of data) {
-            let span = doc.ce(sp);
+            const span = doc.ce(sp);
             span.setAttribute(eds.id, info.id);
             if (info.text != null) span.innerText = info.text;
             else if (info.html != null) span.innerHTML = info.html;
@@ -3971,18 +4236,18 @@ class EstreDay {
     }
 
     buildGroup(name) {
-        let scheduled = doc.ce(ul);
+        const scheduled = doc.ce(ul);
         scheduled.setAttribute(m.cls, "scheduled");
         scheduled.setAttribute(eds.group, name);
         return scheduled;
     }
 
     appendGroup(name) {
-        let scheduled = this.buildGroup(name);
+        const scheduled = this.buildGroup(name);
         this.scheduled[name] = scheduled;
         this.subScheduleds.push(scheduled);
         this.day.append(scheduled);
-        let scheduleds = this.day.querySelectorAll(uis.scheduled);
+        const scheduleds = this.day.querySelectorAll(uis.scheduled);
         this.scheduleds = scheduleds;
         this.$scheduleds = $(scheduleds);
         return scheduled;
@@ -3990,35 +4255,35 @@ class EstreDay {
 
     pushSchedule(listGrouped) {
         for (var groupId in listGrouped) {
-            let divided = groupId.split("|");
-            let group = divided[0];
-            let originId = divided[1];
+            const divided = groupId.split("|");
+            const group = divided[0];
+            const originId = divided[1];
             var target = this.scheduled[group];
             if (target == null) target = this.appendGroup(group);
             else $(target).empty();
 
-            let list = listGrouped[groupId];
+            const list = listGrouped[groupId];
             if (group == "data") {
-                let dataTypeSet = scheduleDataSet.dataHandler.getDataTypeSet(originId);
-                let dataType = dataTypeSet.dataType;
-                let converted = scheduleDataSet.dataHandler.convertDataToDisplay(list, dataType);
+                const dataTypeSet = scheduleDataSet.dataHandler.getDataTypeSet(originId);
+                const dataType = dataTypeSet.dataType;
+                const converted = scheduleDataSet.dataHandler.convertDataToDisplay(list, dataType);
                 switch (typeof converted) {
                     case "string":
-                        let item = this.buildItem(converted, dataType);
+                        const item = this.buildItem(converted, dataType);
                         target.append(item);
                         break;
 
                     case "object":
                         if (converted instanceof Array) {
                             for (var dataSet of converted) {
-                                let item = this.buildCustomItem(dataSet, dataType);
+                                const item = this.buildCustomItem(dataSet, dataType);
                                 target.append(item);
                             }
                         }
                         break
                 }
             } else for (var data of list) {
-                let item = this.buildItem(data);
+                const item = this.buildItem(data);
                 target.append(item);
             }
         }
@@ -4026,7 +4291,7 @@ class EstreDay {
 
     clearScheduled(groups) {
         for (var group of groups) {
-            let target = this.scheduled[group];
+            const target = this.scheduled[group];
             if (target != null) $(target).empty();
         }
     }
@@ -4075,7 +4340,7 @@ class EstreCalendar {
     }
 
     unregisterScheduler(scheduler) {
-        let index = this.#schedulers.indexOf(scheduler);
+        const index = this.#schedulers.indexOf(scheduler);
         this.#schedulers.splice(index, 1);
     }
 
@@ -4123,22 +4388,22 @@ class EstreCalendar {
     
     //checker
     isSelectedYear(year) {
-        let fd = this.dateFocused;
+        const fd = this.dateFocused;
         return fd.getFullYear() == year;
     }
 
     isSelectedMonth(year, month) {
-        let fd = this.dateFocused;
+        const fd = this.dateFocused;
         return fd.getFullYear() == year && fd.getMonth() + 1 == month;
     }
 
     isSelectedWeek(year, month, week) {
-        let fd = this.dateFocused;
+        const fd = this.dateFocused;
         return fd.getFullYear() == year && fd.getMonth() + 1 == month && Ecal.getWeek(fd) == week;
     }
 
     isSelectedDate(year, month, date) {
-        let fd = this.dateFocused;
+        const fd = this.dateFocused;
         return fd.getDate() == date && fd.getMonth() + 1 == month && fd.getFullYear() == year;
     }
 
@@ -4163,9 +4428,9 @@ class EstreCalendar {
     }
 
     get dateFocused() {
-        let year = this.yearIntFocused;
-        let month = this.month0IntFocused;
-        let date = Math.min(this.dateIntFocused, Ecal.getLastDay(year, month));
+        const year = this.yearIntFocused;
+        const month = this.month0IntFocused;
+        const date = Math.min(this.dateIntFocused, Ecal.getLastDay(year, month));
 
         return new Date(year, month, date);
     }
@@ -4227,16 +4492,16 @@ class EstreCalendar {
         year = parseInt(year);
         month = parseInt(month);
         if (week == "") {
-            let isPrevMonth = parseInt(adjoin) < month;
+            const isPrevMonth = parseInt(adjoin) < month;
             month += isPrevMonth ? -1 : 1
             week = isPrevMonth ? Ecal.getLastWeek(year, month - 1) : 1;
         }
-        let date = Ecal.getDateSundayOfWeek(year, month - 1, parseInt(week));
+        const date = Ecal.getDateSundayOfWeek(year, month - 1, parseInt(week));
         
-        let focused = this.dateFocused;
+        const focused = this.dateFocused;
         date.setDate(date.getDate() + focused.getDay());
 
-        let td = Ecal.getDateSet(date);
+        const td = Ecal.getDateSet(date);
         this.#focusedYear = td.year;
         this.#focusedMonth = td.month;
         this.#focusedDay = td.date;
@@ -4250,8 +4515,8 @@ class EstreCalendar {
         this.$structure.attr(eds.focusMonth, month);
         this.$structure.attr(eds.focusDay, date);
 
-        let fd = this.dateSetFocused;
-        let focusedWeek = fd.ymw.week;
+        const fd = this.dateSetFocused;
+        const focusedWeek = fd.ymw.week;
         this.$structure.attr(eds.focusWeek, "" + focusedWeek);
 
         if (toScaledBe != null) this.setScale(toScaledBe);
@@ -4260,14 +4525,14 @@ class EstreCalendar {
     // for scheduler
     pushUpdateFocused() {
         if (this.unical != null && this.unical.scheduler != null) {
-            let scopes = ["yearly", "monthly", "weekly", "daily"];
+            const scopes = ["yearly", "monthly", "weekly", "daily"];
             
             for (var scope of scopes) this.unical.scheduler.initPages(scope);
         }
     }
 
     pushScopeChanged(scope) {
-        let scale = this.scaleInt;
+        const scale = this.scaleInt;
 
         switch (scope) {
             case "yearly":
@@ -4289,7 +4554,7 @@ class EstreCalendar {
     }
     
     notifyBoundChanged(bound, scope) {
-        let d = Escd.parseBound(bound, scope);
+        const d = Escd.parseBound(bound, scope);
 
         switch (scope) {
             case "yearly":
@@ -4354,10 +4619,10 @@ class EstreVoidCalendarStructure {
 
     setSwipeHandler() {
         this.releaseSwipeHandler();
-        let inst = this;
+        const inst = this;
         this.swipeHandler = new EstreSwipeHandler(this.$structure, false, false).setOnUp(function(grabX, grabY, handled, canceled, directed) {
             //console.log("handled: " + handled + " / canceled: " + canceled + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
-            let handledDirection = this.handledDirection;
+            const handledDirection = this.handledDirection;
             //console.log("handledDirection: " + handledDirection);
             if (handledDirection != null) {
                 var isNext;
@@ -4372,11 +4637,11 @@ class EstreVoidCalendarStructure {
                         isNext = false;
                         break;
                 }
-                let unit = inst.calendar.unitCurrentScale;
+                const unit = inst.calendar.unitCurrentScale;
                 if (unit == null) return;
-                let offset = isNext ? 1 : -1;
-                let dn = inst.calendar.getDateSetNearPositionFocused(offset, unit);
-                let offsetText = offset > 0 ? "+" + offset : offset;
+                const offset = isNext ? 1 : -1;
+                const dn = inst.calendar.getDateSetNearPositionFocused(offset, unit);
+                const offsetText = offset > 0 ? "+" + offset : offset;
 
                 inst.calendar.beginTransition();
                 switch (unit) {
@@ -4529,10 +4794,10 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
 
     init() {
         this.$structure.empty();
-        let years = doc.ce(div, "years");
+        const years = doc.ce(div, "years");
         this.$structure.append(years);
         this.$years = $(years);
-        let today = this.initYears();
+        const today = this.initYears();
 
 
         //this.setEventStructure();
@@ -4549,29 +4814,29 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
             init = true;
         }
 
-        let year = today.getFullYear();
+        const year = today.getFullYear();
 
         if (init) {
             this.$years.empty();
             for (var y=year-4; y<=year+4; y++) {
-                let isJust = y == year;
-                let isRange = y == year - 1 || y == year + 1;
-                let ey = this.initYear(y, true, isJust ? true : (isRange ? null : false));
+                const isJust = y == year;
+                const isRange = y == year - 1 || y == year + 1;
+                const ey = this.initYear(y, true, isJust ? true : (isRange ? null : false));
                 if (this.calendar.isSelectedYear(y)) ey.$year.attr(eds.selected, t1);
                 this.year[y] = ey;
                 this.$years.append(ey.year);
                 this.setEventYear(ey);
             }
         } else {
-            let min = parseInt($(this.$year[0]).attr(eds.year));
-            let max = parseInt($(this.$year[this.$year.length-1]).attr(eds.year));
-            let just = this.$year.filter(aiv(eds.year, year));
+            const min = parseInt($(this.$year[0]).attr(eds.year));
+            const max = parseInt($(this.$year[this.$year.length-1]).attr(eds.year));
+            const just = this.$year.filter(aiv(eds.year, year));
 
             if (year < min) {
                 for (var y=min-1; y>=year-1; y--) {
-                    let isJust = y == year;
-                    let isRange = y == year - 1 || y == year + 1;
-                    let ey = this.initYear(y, true, isJust ? true : (isRange ? today : false));
+                    const isJust = y == year;
+                    const isRange = y == year - 1 || y == year + 1;
+                    const ey = this.initYear(y, true, isJust ? true : (isRange ? today : false));
                     if (this.calendar.isSelectedYear(y)) ey.$year.attr(eds.selected, t1);
                     this.year[y] = ey;
                     this.$years.prepend(ey.year);
@@ -4579,9 +4844,9 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
                 }
             } else if (year > max) {
                 for (var y=max+1; y<=year+1; y++) {
-                    let isJust = y == year;
-                    let isRange = y == year - 1 || y == year + 1;
-                    let ey = this.initYear(y, true, isJust ? true : (isRange ? today : false));
+                    const isJust = y == year;
+                    const isRange = y == year - 1 || y == year + 1;
+                    const ey = this.initYear(y, true, isJust ? true : (isRange ? today : false));
                     if (this.calendar.isSelectedYear(y)) ey.$year.attr(eds.selected, t1);
                     this.year[y] = ey;
                     this.$years.append(ey.year);
@@ -4597,9 +4862,9 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
     }
 
     initYear(year, initMonth = false, withWeek) {
-        let yr = this.buildYear(year);
-        let ms = yr.querySelector(uis.months);
-        let months = initMonth ? this.initMonths(ms, year, withWeek) : null;
+        const yr = this.buildYear(year);
+        const ms = yr.querySelector(uis.months);
+        const months = initMonth ? this.initMonths(ms, year, withWeek) : null;
         return new EstreYear(this, yr, months, ms);
     }
 
@@ -4610,7 +4875,7 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
             months.empty();
         }
 
-        let monthset = {}
+        const monthset = {}
         for (var month=1; month<=12; month++) {
             var initWeek = false;
             var withDay = null;
@@ -4622,13 +4887,13 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
                     initWeek = true;
                     withDay = true;
                 } else if (withWeek instanceof Date) {
-                    let dy = withWeek.getFullYear();
-                    let dm = withWeek.getMonth();
-                    let month0 = month - 1;
-                    let isJust = month0 == dm && year == dy;
-                    let isPrevMonth = month0 == (dm + 11) % 12 && year == dy - 1;
-                    let isNextMonth = month0 == (dm + 1) % 12 && year == dy + 1;
-                    let isRange = isPrevMonth || isNextMonth;
+                    const dy = withWeek.getFullYear();
+                    const dm = withWeek.getMonth();
+                    const month0 = month - 1;
+                    const isJust = month0 == dm && year == dy;
+                    const isPrevMonth = month0 == (dm + 11) % 12 && year == dy - 1;
+                    const isNextMonth = month0 == (dm + 1) % 12 && year == dy + 1;
+                    const isRange = isPrevMonth || isNextMonth;
                     if (isJust || isRange) {
                         initWeek = true;
                         withDay = true;
@@ -4638,7 +4903,7 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
                     withDay = true;
                 }
             }
-            let em = this.initMonth(year, month, initWeek, withDay);
+            const em = this.initMonth(year, month, initWeek, withDay);
             if (this.calendar.isSelectedMonth(year, month)) em.$month.attr(eds.selected, t1);
             monthset[month] = em;
             months.append(em.month);
@@ -4654,9 +4919,9 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
     }
 
     initMonth(year, month, initWeek, withDay) {
-        let mt = this.buildMonth(year, month);
-        let ws = mt.querySelector(uis.weeks);
-        let weeks = initWeek ? this.initWeeks(ws, year, month, withDay) : null;
+        const mt = this.buildMonth(year, month);
+        const ws = mt.querySelector(uis.weeks);
+        const weeks = initWeek ? this.initWeeks(ws, year, month, withDay) : null;
         return new EstreMonth(this, mt, weeks, ws);
     }
 
@@ -4667,31 +4932,31 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
             weeks.empty();
         }
 
-        let month0 = month - 1;
+        const month0 = month - 1;
 
-        let bdw = Ecal.getBeginSundayAndWeek(year, month0);
-        let bday = bdw.date;
+        const bdw = Ecal.getBeginSundayAndWeek(year, month0);
+        const bday = bdw.date;
         var week = bdw.week;
         var weekOrigin = week;
         var bdy = bday.getFullYear();
         var bdm = bday.getMonth();
         var bdd = bday.getDate();
 
-        let weekset = {};
+        const weekset = {};
         do {
-            let isEndPrevYear = bdy == year - 1;
-            let isEndPrevMonth = isEndPrevYear || bdm + 1 < month;
-            let prevMonth = isEndPrevYear ? 12 : month0
-            let endDate = new Date(year, bdm, bdd + 6);
-            let isBeginNextYear = endDate.getFullYear() == year + 1;
-            let isBeginNextMonth = isBeginNextYear || endDate.getMonth() == month;
-            let nextMonth = isBeginNextYear ? 1 : parseInt(month) + 1;
-            let adjoin = isEndPrevMonth ? prevMonth : (isBeginNextMonth ? nextMonth : null);
-            let fd = this.calendar.dateSetFocused;
-            let checkSelected = (fd.year == year && (fd.month == month || (isEndPrevMonth && fd.month == prevMonth) || (isBeginNextMonth && fd.month == nextMonth))) ||
+            const isEndPrevYear = bdy == year - 1;
+            const isEndPrevMonth = isEndPrevYear || bdm + 1 < month;
+            const prevMonth = isEndPrevYear ? 12 : month0
+            const endDate = new Date(year, bdm, bdd + 6);
+            const isBeginNextYear = endDate.getFullYear() == year + 1;
+            const isBeginNextMonth = isBeginNextYear || endDate.getMonth() == month;
+            const nextMonth = isBeginNextYear ? 1 : parseInt(month) + 1;
+            const adjoin = isEndPrevMonth ? prevMonth : (isBeginNextMonth ? nextMonth : null);
+            const fd = this.calendar.dateSetFocused;
+            const checkSelected = (fd.year == year && (fd.month == month || (isEndPrevMonth && fd.month == prevMonth) || (isBeginNextMonth && fd.month == nextMonth))) ||
                 (isEndPrevYear && fd.year == year - 1 && fd.month && prevMonth && week > 3) || (isBeginNextYear && fd.year == year + 1 && fd.month && nextMonth && week < 2);
 
-            let ew = this.initWeek(year, month, week, adjoin, withDay, bdy, bdm, bdd, checkSelected);
+            const ew = this.initWeek(year, month, week, adjoin, withDay, bdy, bdm, bdd, checkSelected);
             if (fd.year == year && (this.calendar.isSelectedWeek(year, month, week) || (isEndPrevMonth && this.calendar.isSelectedWeek(year, prevMonth, week)) || (isBeginNextMonth && this.calendar.isSelectedWeek(year, nextMonth, week))) ||
                 (isEndPrevYear && this.calendar.isSelectedWeek(year - 1, prevMonth, week)) || (isBeginNextYear && this.calendar.isSelectedWeek(year + 1, nextMonth, week))) ew.$week.attr(eds.selected, t1);
             weekset[weekOrigin] = ew;
@@ -4716,9 +4981,9 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
     }
 
     initWeek(year, month, week, adjoin, initDay, bdy, bdm, bdd, checkSelected = false) {
-        let wk = this.buildWeek(year, month, week, adjoin);
-        let ds = wk.querySelector(uis.days);
-        let days = initDay ? this.initDays(ds, bdy, bdm, bdd, checkSelected) : null;
+        const wk = this.buildWeek(year, month, week, adjoin);
+        const ds = wk.querySelector(uis.days);
+        const days = initDay ? this.initDays(ds, bdy, bdm, bdd, checkSelected) : null;
         return new EstreWeek(this, wk, days, ds);
     }
 
@@ -4729,13 +4994,13 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
             days.empty();
         }
 
-        let bday = new Date(bdy, bdm, bdd);
+        const bday = new Date(bdy, bdm, bdd);
 
-        let dayset = {};
+        const dayset = {};
         for (var day=0; day<7; day++) {
             if (day > 0) bday.setDate(bday.getDate() + 1);
-            let set = Ecal.getDateSet(bday);
-            let ed = this.initDay(set.year, set.month, day, set.date);
+            const set = Ecal.getDateSet(bday);
+            const ed = this.initDay(set.year, set.month, day, set.date);
             if (checkSelected) {
                 if(this.calendar.isSelectedDate(set.year, set.month, set.date)) ed.$day.attr(eds.selected, t1);
             }
@@ -4754,9 +5019,9 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
     }
 
     initDay(year, month, day, date) {
-        let dy = this.buildDay(year, month, day, date);
-        let sd = dy.querySelectorAll(uis.scheduled);
-        let groups = {};
+        const dy = this.buildDay(year, month, day, date);
+        const sd = dy.querySelectorAll(uis.scheduled);
+        const groups = {};
         for (var scd of sd) groups[scd.dataset.group] = scd;
         return new EstreDay(this, dy, groups, sd);
     }
@@ -4783,39 +5048,39 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
 
     //builder
     buildYear(year) {
-        let yr = doc.ce(div);
+        const yr = doc.ce(div);
         yr.setAttribute(m.cls, "year");
         yr.setAttribute(eds.year, year);
-        let lb = doc.ce(lbl);
+        const lb = doc.ce(lbl);
         lb.innerText = "" + year;
         yr.append(lb);
-        let mts = doc.ce(div);
+        const mts = doc.ce(div);
         mts.setAttribute(m.cls, "months");
         yr.append(mts);
         return yr;
     }
 
     buildMonth(year, month) {
-        let mt = doc.ce(div);
+        const mt = doc.ce(div);
         mt.setAttribute(m.cls, "month");
         mt.setAttribute(eds.year, year);
         mt.setAttribute(eds.month, month);
-        let lb = doc.ce(lbl);
+        const lb = doc.ce(lbl);
         lb.innerText = "" + month;
         mt.append(lb);
         mt.append(this.buildDaysSubjects(month));
-        let wks = doc.ce(div);
+        const wks = doc.ce(div);
         wks.setAttribute(m.cls, "weeks");
         mt.append(wks);
         return mt;
     }
 
     buildWeek(year, month, week, adjoin) {
-        let adjoinWeek = week === "" ? 1 : (week === 0 ? Ecal.getLastWeek(year, adjoin - 1) : week);
+        const adjoinWeek = week === "" ? 1 : (week === 0 ? Ecal.getLastWeek(year, adjoin - 1) : week);
         // if (week === 0) {
         //     week = "";
         // }
-        let wk = doc.ce(div);
+        const wk = doc.ce(div);
         wk.setAttribute(m.cls, "week");
         wk.setAttribute(eds.year, year);
         wk.setAttribute(eds.month, month);
@@ -4824,42 +5089,42 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
             wk.setAttribute(eds.adjoin, adjoin);
             wk.setAttribute(eds.adjoinWeek, adjoinWeek);
         }
-        let lb = doc.ce(lbl);
+        const lb = doc.ce(lbl);
         lb.innerText = week === 0 ? "" : "" + week;
         if (week === 0 || week === "") {
             lb.setAttribute(eds.prefix, adjoin + "월");
             lb.setAttribute(eds.suffix, adjoinWeek + "주차");
         }
         wk.append(lb);
-        let ds = doc.ce(div);
+        const ds = doc.ce(div);
         ds.setAttribute(m.cls, "days v_scroll");
         wk.append(ds);
         return wk;
     }
 
     buildDay(year, month, day, date) {
-        let dy = doc.ce(div);
+        const dy = doc.ce(div);
         dy.setAttribute(m.cls, "day");
         dy.setAttribute(eds.year, year);
         dy.setAttribute(eds.month, month);
         dy.setAttribute(eds.day, day);
         dy.setAttribute(eds.date, date);
-        let lb = doc.ce(lbl);
+        const lb = doc.ce(lbl);
         lb.innerText = "" + date;
         dy.append(lb);
-        let basic = doc.ce(ul);
+        const basic = doc.ce(ul);
         basic.setAttribute(m.cls, "scheduled");
         basic.setAttribute(eds.group, "basic");
         dy.append(basic);
-        let whole = doc.ce(ul);
+        const whole = doc.ce(ul);
         whole.setAttribute(m.cls, "scheduled");
         whole.setAttribute(eds.group, "whole");
         dy.append(whole);
-        let timely = doc.ce(ul);
+        const timely = doc.ce(ul);
         timely.setAttribute(m.cls, "scheduled");
         timely.setAttribute(eds.group, "timely");
         dy.append(timely);
-        let data = doc.ce(ul);
+        const data = doc.ce(ul);
         data.setAttribute(m.cls, "scheduled");
         data.setAttribute(eds.group, "data");
         dy.append(data);
@@ -4867,16 +5132,16 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
     }
 
     buildDaysSubjects(month = "") {
-        let ds = doc.ce(div);
+        const ds = doc.ce(div);
         ds.setAttribute(m.cls, "days_subjects");
-        let dh = doc.ce(div);
+        const dh = doc.ce(div);
         dh.setAttribute(m.cls, "days_holder");
-        let lb = doc.ce(lbl);
-        let s = doc.ce(sp);
+        const lb = doc.ce(lbl);
+        const s = doc.ce(sp);
         s.innerText = "" + month;
         lb.append(s);
         dh.append(lb);
-        let days = doc.ce(div);
+        const days = doc.ce(div);
         days.setAttribute(m.cls, "days");
         for (var d=0; d<7; d++) days.append(this.buildDaySubject(d));
         dh.append(days);
@@ -4885,10 +5150,10 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
     }
 
     buildDaySubject(day) {
-        let d = doc.ce(div);
+        const d = doc.ce(div);
         d.setAttribute(m.cls, "day");
         d.setAttribute(eds.day, day);
-        let lb = doc.ce(lbl);
+        const lb = doc.ce(lbl);
         lb.setAttribute(eds.fore, Ecal.getDayEmoji(day));
         lb.innerText = Ecal.getDayText(day);
         d.append(lb);
@@ -4897,33 +5162,33 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
 
     //getter and setter
     getMonth(year, month) {
-        let y = this.year[year];
+        const y = this.year[year];
         if (y != null) return y.month[month];
         return null;
     }
 
     forMonth(year, month, work) {
-        let m = this.getMonth(year, month);
+        const m = this.getMonth(year, month);
         if (m != null) work(m);
     }
 
     getDays(year, month, date) {
-        let days = [];
-        let ds = this.year[year].getDays(date, month, year);
+        const days = [];
+        const ds = this.year[year].getDays(date, month, year);
         if (ds != null) days.push(...ds);
         if (date < 7) {
             if (month < 2) {
-                let y = this.year[year - 1];
+                const y = this.year[year - 1];
                 if (y != null) {
-                    let ds = y.getDays(date, month, year);
+                    const ds = y.getDays(date, month, year);
                     if (ds != null) days.push(...ds);
                 }
             }
         } else if (date > 22) {
             if (month > 11) {
-                let y = this.year[year + 1];
+                const y = this.year[year + 1];
                 if (y != null) {
-                    let ds = y.getDays(date, month, year);
+                    const ds = y.getDays(date, month, year);
                     if (ds != null) days.push(...ds);
                 }
             }
@@ -4936,9 +5201,9 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
     }
 
     setEachDay(ed, year, month, date) {
-        let dateId = Ecal.getDateOffset(year, month, date);
+        const dateId = Ecal.getDateOffset(year, month, date);
         if (this.eachDay[dateId] == null) this.eachDay[dateId] = new Set();
-        let daySet = this.eachDay[dateId];
+        const daySet = this.eachDay[dateId];
         daySet.add(ed);
     }
 
@@ -4947,21 +5212,21 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
     }
 
     getEachDayBy(dateId) {
-        let set = this.eachDay[dateId];
+        const set = this.eachDay[dateId];
         if (set != null) return Array.from(set.values());
         else [];
     }
 
     //event handler
     setEventYear(year) {
-        let inst = this;
+        const inst = this;
 
         year.$year.off("click").click(function (e) {
             e.preventDefault();
 
-            let $this = $(this);
-            let selected = $this.attr(eds.year);
-            let isSelected = $this.attr(eds.selected) == t1;
+            const $this = $(this);
+            const selected = $this.attr(eds.year);
+            const isSelected = $this.attr(eds.selected) == t1;
 
             var toScaledBe = null;
             if (inst.calendar.scaleInt < 2 && isSelected) toScaledBe = t2;
@@ -4974,9 +5239,9 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
         year.$year.find(c.c + "label").off("click").click(function (e) {
             e.preventDefault();
 
-            let $this = $(this);
-            let $parent = $this.parent();
-            let selected = $parent.attr(eds.year);
+            const $this = $(this);
+            const $parent = $this.parent();
+            const selected = $parent.attr(eds.year);
 
             var toScaledBe = null;
             if (inst.calendar.scaleInt < 2) toScaledBe = t2;
@@ -4989,7 +5254,7 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
     }
 
     setEventMonth(month, count = 0) {
-        let inst = this;
+        const inst = this;
         if (!month.isAttached()) {
             if (count < 3) setTimeout(() => { inst.setEventMonth(month, count+1); }, 0);
             return;
@@ -4998,10 +5263,10 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
         month.$month.off("click").click(function (e) {
             e.preventDefault();
 
-            let $this = $(this);
-            let year = $this.attr(eds.year);
-            let month = $this.attr(eds.month);
-            let isSelected = $this.attr(eds.selected) == t1;
+            const $this = $(this);
+            const year = $this.attr(eds.year);
+            const month = $this.attr(eds.month);
+            const isSelected = $this.attr(eds.selected) == t1;
 
             var toScaledBe = null;
             if (inst.calendar.scaleInt < 3 && isSelected) toScaledBe = t3;
@@ -5014,10 +5279,10 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
         month.$month.find(c.c + "label" + cor + uis.daysSubjects + c.c + uis.daysHolder + c.c + "label").off("click").click(function (e) {
             e.preventDefault();
 
-            let $this = $(this);
-            let $parent = $this.parent();
-            let year = $parent.attr(eds.year);
-            let month = $parent.attr(eds.month);
+            const $this = $(this);
+            const $parent = $this.parent();
+            const year = $parent.attr(eds.year);
+            const month = $parent.attr(eds.month);
 
             var toScaledBe = null;
             if (inst.calendar.scaleInt < 3) toScaledBe = t3;
@@ -5030,7 +5295,7 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
     }
 
     setEventWeek(week, count = 0) {
-        let inst = this;
+        const inst = this;
         if (!week.isAttached()) {
             if (count < 3) setTimeout(() => { inst.setEventWeek(week, count+1); }, 0);
             return;
@@ -5039,15 +5304,15 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
         week.$week.off("click").click(function (e) {
             e.preventDefault();
 
-            let $this = $(this);
-            let year = $this.attr(eds.year);
-            let month = $this.attr(eds.month);
-            let week = $this.attr(eds.week);
-            let adjoin = $this.attr(eds.adjoin);
-            let isSelected = $this.attr(eds.selected) == t1;
+            const $this = $(this);
+            const year = $this.attr(eds.year);
+            const month = $this.attr(eds.month);
+            const week = $this.attr(eds.week);
+            const adjoin = $this.attr(eds.adjoin);
+            const isSelected = $this.attr(eds.selected) == t1;
 
             var toScaledBe = null;
-            let currentScele = inst.calendar.scaleInt;
+            const currentScele = inst.calendar.scaleInt;
             if (currentScele < 3 && isSelected) toScaledBe = t3;//t4;
             else if (currentScele == 4) toScaledBe = t3;
             else if (currentScele > 4) toScaledBe = t3;//t4;
@@ -5060,16 +5325,16 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
         week.$week.find(c.c + "label").off("click").click(function (e) {
             e.preventDefault();
 
-            let $this = $(this);
-            let $parent = $this.parent();
-            let year = $parent.attr(eds.year);
-            let month = $parent.attr(eds.month);
-            let week = $parent.attr(eds.week);
-            let adjoin = $parent.attr(eds.adjoin);
-            let isSelected = $parent.attr(eds.selected) == t1;
+            const $this = $(this);
+            const $parent = $this.parent();
+            const year = $parent.attr(eds.year);
+            const month = $parent.attr(eds.month);
+            const week = $parent.attr(eds.week);
+            const adjoin = $parent.attr(eds.adjoin);
+            const isSelected = $parent.attr(eds.selected) == t1;
 
             var toScaledBe = null;
-            let currentScele = inst.calendar.scaleInt;
+            const currentScele = inst.calendar.scaleInt;
             if (currentScele < 3) toScaledBe = t3;//t4;
             else if (currentScele == 4) toScaledBe = t3;
             else if (currentScele > 4) toScaledBe = t3;//t4;
@@ -5088,7 +5353,7 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
     }
 
     setEventDay(day, count = 0) {
-        let inst = this;
+        const inst = this;
         if (!day.isAttached()) {
             if (count < 3) setTimeout(() => { inst.setEventDay(day, count+1); }, 0);
             return;
@@ -5097,14 +5362,14 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
         day.$day.off("click").click(function (e) {
             e.preventDefault();
 
-            let $this = $(this);
-            let year = $this.attr(eds.year);
-            let month = $this.attr(eds.month);
-            let date = $this.attr(eds.date);
-            let isSelected = $this.attr(eds.selected) == t1;
+            const $this = $(this);
+            const year = $this.attr(eds.year);
+            const month = $this.attr(eds.month);
+            const date = $this.attr(eds.date);
+            const isSelected = $this.attr(eds.selected) == t1;
 
             var toScaledBe = null;
-            let currentScele = inst.calendar.scaleInt;
+            const currentScele = inst.calendar.scaleInt;
             if (isSelected) {
                 if (currentScele < 3) toScaledBe = t3;
                 //if (currentScele < 4) toScaledBe = t4;
@@ -5121,15 +5386,15 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
         day.$day.find(c.c + "label").off("click").click(function (e) {
             e.preventDefault();
 
-            let $this = $(this);
-            let $parent = $this.parent();
-            let year = $parent.attr(eds.year);
-            let month = $parent.attr(eds.month);
-            let date = $parent.attr(eds.date);
-            let isSelected = $parent.attr(eds.selected) == t1;
+            const $this = $(this);
+            const $parent = $this.parent();
+            const year = $parent.attr(eds.year);
+            const month = $parent.attr(eds.month);
+            const date = $parent.attr(eds.date);
+            const isSelected = $parent.attr(eds.selected) == t1;
 
             var toScaledBe = null;
-            let currentScele = inst.calendar.scaleInt;
+            const currentScele = inst.calendar.scaleInt;
             if (currentScele < 3) toScaledBe = t3;
             else {
                 if (e.originalEvent.pointerType != "touch") {
@@ -5154,24 +5419,24 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
     // for calendar
     releaseDateSelected(fd = this.calendar.dateSetFocused) {
         this.$year.filter(aiv(eds.selected, t1) + naiv(eds.year, fd.year)).attr(eds.selected, "");
-        // let year = this.$year.filter(aiv(eds.year, fd.year));
-        let year = this.year[fd.year];
+        // const year = this.$year.filter(aiv(eds.year, fd.year));
+        const year = this.year[fd.year];
         if (year != null) year.$year.attr(eds.selected, t1);
 
         this.$month.filter(aiv(eds.selected, t1) + nto + aiv(eds.year, fd.year) + aiv(eds.month, fd.month) + clo).attr(eds.selected, "");
-        // let month = year.find(uis.month + aiv(eds.month, fd.month));
-        let month = year.month != null ? year.month[fd.month] : null;
+        // const month = year.find(uis.month + aiv(eds.month, fd.month));
+        const month = year.month != null ? year.month[fd.month] : null;
         if (month != null) month.$month.attr(eds.selected, t1);
 
         this.$week.filter(aiv(eds.selected, t1) + nto + aiv(eds.year, fd.year) + aiv(eds.month, fd.month) + aiv(eds.week, fd.week) + clo).attr(eds.selected, "");
-        //let week = month.find(uis.week + aiv(eds.week, fd.week));
+        //const week = month.find(uis.week + aiv(eds.week, fd.week));
         if (month != null && month.week != null) {
-            let week = month.week[fd.week];
+            const week = month.week[fd.week];
             if (week != null) week.$week.attr(eds.selected, t1);
         }
                 
         this.$day.filter(aiv(eds.selected, t1) + nto + aiv(eds.year, fd.year) + aiv(eds.month, fd.month) + aiv(eds.date, fd.date) + clo).attr(eds.selected, "");
-        // let dateSpecfier = uis.day + aiv(eds.year, fd.year) + aiv(eds.month, fd.month) + aiv(eds.date, fd.date);
+        // const dateSpecfier = uis.day + aiv(eds.year, fd.year) + aiv(eds.month, fd.month) + aiv(eds.date, fd.date);
         // month.$month.find(dateSpecfier).attr(eds.selected, t1);
         // if (fd.date < 7) {
         //     if (fd.month < 2) this.$year.filter(aiv(eds.year, fd.year - 1)).find(dateSpecfier).attr(eds.selected, t1);
@@ -5186,27 +5451,27 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
     }
 
     releaseToday(td = Ecal.getDateSet()) {
-        let tdy = this.$year.filter(aiv(eds.today, t1));
+        const tdy = this.$year.filter(aiv(eds.today, t1));
         if (tdy.length == 0 || tdy.length > 1 || tdy.attr(eds.year) != td.year) {
             tdy.attr(eds.today, null);
             this.$year.filter(aiv(eds.year, td.year)).attr(eds.today, t1);
         }
 
-        let tdm = this.$month.filter(aiv(eds.today, t1));
-        let isDiffTM = tdm.attr(eds.year) != td.year || tdm.attr(eds.month) != td.month;
+        const tdm = this.$month.filter(aiv(eds.today, t1));
+        const isDiffTM = tdm.attr(eds.year) != td.year || tdm.attr(eds.month) != td.month;
         if (tdm.length == 0 || tdm.length > 1 || isDiffTM) {
             tdm.attr(eds.today, null);
             this.$month.filter(aiv(eds.year, td.year) + aiv(eds.month, td.month)).attr(eds.today, t1);
         }
 
-        let tdw = this.$week.filter(aiv(eds.today, t1));
-        let isDiffTW = tdw.attr(eds.year) != td.year || tdw.attr(eds.month) != td.month || tdw.attr(eds.week) != td.week;
+        const tdw = this.$week.filter(aiv(eds.today, t1));
+        const isDiffTW = tdw.attr(eds.year) != td.year || tdw.attr(eds.month) != td.month || tdw.attr(eds.week) != td.week;
         if (tdw.length == 0 || tdw.length > 1 || isDiffTW) {
             tdw.attr(eds.today, null);
             this.$week.filter(aiv(eds.year, td.year) + aiv(eds.month, td.month) + aiv(eds.week, td.week)).attr(eds.today, t1);
         }
 
-        let tdd = this.$day.filter(aiv(eds.today, t1));
+        const tdd = this.$day.filter(aiv(eds.today, t1));
         var isDiffTD = false;
         for (var tddi of tdd) {
             tddi = $(tddi);
@@ -5223,10 +5488,10 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
 
     checkLoadCalendarStructure(toScaledBe, date) {
         if (toScaledBe == null) toScaledBe = this.calendar.scaleInt;
-        let td = Ecal.getDateSet(date);
-        let isNeedLoadDaysSelectedYear = toScaledBe > 0;//toScaledBe > 1;
+        const td = Ecal.getDateSet(date);
+        const isNeedLoadDaysSelectedYear = toScaledBe > 0;//toScaledBe > 1;
 
-        let year = this.year[td.year];
+        const year = this.year[td.year];
         if (year == null) {
             this.initYears(date);
             return true;
@@ -5238,14 +5503,14 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
                 for (var month of year.subMonths) this.setEventMonth(month);
             }
             if (!year.isLoaded()) {
-                let months = this.initMonths(year.$months, td.year, isNeedLoadDaysSelectedYear ? true : null);
+                const months = this.initMonths(year.$months, td.year, isNeedLoadDaysSelectedYear ? true : null);
                 year.setMonth(months);
                 this.releaseStructureHandler("month");
                 return true;
             } else if (isNeedLoadDaysSelectedYear) {
                 var isLoaded = false;
                 for (var mo in year.month) {
-                    let month = year.month[mo];
+                    const month = year.month[mo];
                     if (month.setNode()) {
                         isNeedCareMonth = true;
                         for (var week of month.subWeeks) {
@@ -5254,11 +5519,11 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
                         }
                     }
                     if (!month.isLoaded()) {
-                        let weeks = this.initWeeks(month.$weeks, td.year, mo, true);
+                        const weeks = this.initWeeks(month.$weeks, td.year, mo, true);
                         month.setWeek(weeks);
                         isLoaded = true;
                     } else {
-                        let dayLoaded = true;
+                        const dayLoaded = true;
                         for (var week of month.subWeeks) if (!week.isLoaded()) {
                             dayLoaded = false;
                             break;
@@ -5268,7 +5533,7 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
                         }
 
                         if (!dayLoaded) {
-                            let weeks = this.initWeeks(month.$weeks, td.year, mo, true);
+                            const weeks = this.initWeeks(month.$weeks, td.year, mo, true);
                             month.setWeek(weeks);
                             isLoaded = true;
                         }
@@ -5289,7 +5554,7 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
 
     checkRelaseUnusedCalendarStructure(td, fd, scale) {
         for (var y in this.year) {
-            let year = this.year[y];
+            const year = this.year[y];
             if (scale == 1) {
                 if (year.setNode()) {
                     for (var month of year.subMonths) this.setEventMonth(month);
@@ -5297,10 +5562,10 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
                 }
             } else if (scale >= 2) {
                 if (y == td.year || y == fd.year || y == fd.year - 1 || y == fd.year + 1) {
-                    let isNeedCareYear = year.setNode();
+                    const isNeedCareYear = year.setNode();
                     var isNeedCareMonth = false;
                     for (var m in year.month) {
-                        let month = year.month[m];
+                        const month = year.month[m];
                         if (isNeedCareYear) this.setEventMonth(month);
                         if (y == td.year || y == fd.year ||//if ((y == td.year && m == td.month) || (y == fd.year && m == fd.month) ||
                             (fd.month == 1 && y == fd.year - 1 && m == 12) ||
@@ -5329,17 +5594,17 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
     clearScheduled(groups, year) {
         if (year == null) for (var group of groups) this.$scheduled.filter(aiv(eds.group, group)).empty();
         else {
-            let begin = Ecal.getDateOffset(year, 0, 1);
-            let end = Ecal.getDateOffset(year, 11, 31);
+            const begin = Ecal.getDateOffset(year, 0, 1);
+            const end = Ecal.getDateOffset(year, 11, 31);
             for (var i=begin; i<=end; i++) {
-                let days = this.getEachDayBy(i);
+                const days = this.getEachDayBy(i);
                 for (var day of days) day.clearScheduled(groups);
             }
         }
     }
 
     pushDailySchedule(listGrouped, dateId) {
-        let set = this.getEachDayBy(dateId);
+        const set = this.getEachDayBy(dateId);
         for (var day of set) day.pushSchedule(listGrouped);
     }
 
@@ -5436,7 +5701,7 @@ class EstreVariableCalendar extends EstreCalendar {
 
         this.setEventAreaHandles();
         
-        let today = this.initStructure();
+        const today = this.initStructure();
 
         this.$bound.attr(eds.showToday, "");
         this.$showToday[0].checked = false;
@@ -5468,7 +5733,7 @@ class EstreVariableCalendar extends EstreCalendar {
             case "auto":
                 type = "massive";
                 // if (isAppleMobile()) {
-                //     let iosVersion = getIosVersion();
+                //     const iosVersion = getIosVersion();
                 //     if (iosVersion != null) {
                 //         if (parseInt(iosVersion.split(".")[0]) < 16) type = "simple";
                 //     }
@@ -5515,9 +5780,9 @@ class EstreVariableCalendar extends EstreCalendar {
     setScale(tv) {
         super.setScale(tv);
 
-        let inst = this;
-        let currentScale = this.scaleInt;
-        let v = parseInt(tv);
+        const inst = this;
+        const currentScale = this.scaleInt;
+        const v = parseInt(tv);
         this.beginTransition();
         if (currentScale > 3 && v < 3) {
             setTimeout(() => {
@@ -5536,8 +5801,8 @@ class EstreVariableCalendar extends EstreCalendar {
                 inst.checkLoadSchedule();
             }, v > currentScale ? inst.transitionTime : this.transitionTime / 2);
         }
-        let isSetFit = v > 3;
-        // let isCurrent = this.unical.$calendarArea.attr(eds.fitCalendar) == t1;
+        const isSetFit = v > 3;
+        // const isCurrent = this.unical.$calendarArea.attr(eds.fitCalendar) == t1;
         // if (isSetFit != isCurrent) this.unical.$calendarArea.attr(eds.fitCalendar, isSetFit ? t1 : "");
         this.unical.$calendarArea.attr(eds.scaleOverride, isSetFit ? "" + tv : "");
     }
@@ -5571,11 +5836,11 @@ class EstreVariableCalendar extends EstreCalendar {
 
     //event handler
     setEventScaler() {
-        let inst = this;
+        const inst = this;
 
         this.$scalers.click(function(e) {
-            let $this = $(this);
-            let scaleId = $this.attr(eds.scaleId);
+            const $this = $(this);
+            const scaleId = $this.attr(eds.scaleId);
             if (scaleId != null && scaleId != "") {
                 inst.setScale(scaleId);
                 $this.attr(eds.scaleSelected, t1);
@@ -5590,11 +5855,11 @@ class EstreVariableCalendar extends EstreCalendar {
     }
 
     setEventFilter() {
-        let inst = this;
+        const inst = this;
 
         this.$filterFixed.find(c.c + li).click(function (e) {
-            let $this = $(this);
-            let selected = $this.attr(eds.selected) == t1 ? "" : t1;
+            const $this = $(this);
+            const selected = $this.attr(eds.selected) == t1 ? "" : t1;
             $this.attr(eds.selected, selected);
             inst.$bound.attr(eds.showSchedulePrefix + $this.attr(eds.group), selected);
         });
@@ -5603,7 +5868,7 @@ class EstreVariableCalendar extends EstreCalendar {
     }
 
     setEventAreaHandles() {
-        let inst = this;
+        const inst = this;
 
         this.$areaToSmaller.click(function (e) {
             var current = inst.$area.attr(eds.size);
@@ -5642,7 +5907,7 @@ class EstreVariableCalendar extends EstreCalendar {
 
     setAreaResizeHandler() {
         this.releaseAreaResieHandler();
-        let inst = this;
+        const inst = this;
         var startHeight = null;
         var fallbackSize = null;
         this.areaResizeHandler = new EstreSwipeHandler(this.$areaResizer).unuseX().setThresholdY(1).setDropStrayed(false).setPreventDefault().setPreventAll().setOnDown(function(startX, startY) {
@@ -5654,7 +5919,7 @@ class EstreVariableCalendar extends EstreCalendar {
         }).setOnUp(function(grabX, grabY, handled, canceled, directed) {
             // console.log("handled: " + handled + " / canceled: " + canceled + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
             $(document.body).attr(eds.onResizing, null);
-            let height = parseInt(startHeight + grabY);
+            const height = parseInt(startHeight + grabY);
             if (handled) {
                 // console.log("fixed - height: " + height + " / startHeight: " + startHeight);
                 inst.$area.css("--height", height + "px");
@@ -5672,7 +5937,7 @@ class EstreVariableCalendar extends EstreCalendar {
         }).setOnMove(function(grabX, grabY, handled, dropped, directed) {
             // console.log("handled: " + handled + " / dropped: " + dropped + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
             if (startHeight != null) {
-                let height = parseInt(startHeight + grabY);
+                const height = parseInt(startHeight + grabY);
                 if (handled) {
                     // console.log("height: " + height + " / startHeight: " + startHeight);
                     inst.$area.css("--height", height + "px");
@@ -5728,23 +5993,23 @@ class EstreVariableCalendar extends EstreCalendar {
         year = parseInt(year);
         month = parseInt(month);
         if (week == "") {
-            let isPrevMonth = parseInt(adjoin) < month;
+            const isPrevMonth = parseInt(adjoin) < month;
             month += isPrevMonth ? -1 : 1
             week = isPrevMonth ? Ecal.getLastWeek(year, month - 1) : 1;
         }
-        let date = Ecal.getDateSundayOfWeek(year, month - 1, parseInt(week));
+        const date = Ecal.getDateSundayOfWeek(year, month - 1, parseInt(week));
         
-        let focused = this.dateFocused;
+        const focused = this.dateFocused;
         date.setDate(date.getDate() + focused.getDay());
-        let monthBefore = focused.getMonth();
+        const monthBefore = focused.getMonth();
 
-        let td = Ecal.getDateSet(date);
+        const td = Ecal.getDateSet(date);
         this.$structure.attr(eds.focusYear, td.year);
         this.$structure.attr(eds.focusMonth, td.month);
         this.$structure.attr(eds.focusDay, td.date);
         this.$structure.attr(eds.focusWeek, td.week);
         
-        let onTransition = toScaledBe == null && (this.dateFocused.getMonth() != monthBefore || this.scaleInt > 3);
+        const onTransition = toScaledBe == null && (this.dateFocused.getMonth() != monthBefore || this.scaleInt > 3);
         if (onTransition) this.beginTransition();
         this.checkSetDayFocused(toScaledBe);
         if (onTransition) setTimeout(() => this.endTransition(), this.transitionTime);
@@ -5753,26 +6018,26 @@ class EstreVariableCalendar extends EstreCalendar {
     setSelectedDay(year, month, date, toScaledBe) {
         super.setSelectedDay(year, month, date);
 
-        let fdb = this.dateSetFocused; 
-        let monthBefore = fdb.month0;
-        let weekBefore = fdb.ymw.week;
+        const fdb = this.dateSetFocused; 
+        const monthBefore = fdb.month0;
+        const weekBefore = fdb.ymw.week;
         this.$structure.attr(eds.focusYear, year);
         this.$structure.attr(eds.focusMonth, month);
         this.$structure.attr(eds.focusDay, date);
 
-        let fd = this.dateSetFocused;
-        let focusedWeek = fd.ymw.week;
+        const fd = this.dateSetFocused;
+        const focusedWeek = fd.ymw.week;
         this.$structure.attr(eds.focusWeek, "" + focusedWeek);
 
-        let currentScale = this.scaleInt;
-        let onTransition = toScaledBe == null && (fd.month0 != monthBefore || (currentScale == 5 && focusedWeek != weekBefore) || currentScale > 5);
+        const currentScale = this.scaleInt;
+        const onTransition = toScaledBe == null && (fd.month0 != monthBefore || (currentScale == 5 && focusedWeek != weekBefore) || currentScale > 5);
         if (onTransition) this.beginTransition();
         this.checkSetDayFocused(toScaledBe);
         if (onTransition) setTimeout(() => this.endTransition(), this.transitionTime);
     }
 
     checkSetDayFocused(toScaledBe) {
-        let fd = this.dateSetFocused;
+        const fd = this.dateSetFocused;
         this.setYearIndic(fd.ymw.year);
         this.setMonthIndic(fd.ymw.month);
         this.setWeekIndic(fd.ymw.week);
@@ -5787,33 +6052,33 @@ class EstreVariableCalendar extends EstreCalendar {
     }
 
     setYearIndic(year) {
-        let yearIndic = this.$scalers.filter(uis.years).find(c.c + "label");
+        const yearIndic = this.$scalers.filter(uis.years).find(c.c + "label");
         yearIndic.text(year);
     }
 
     setMonthIndic(month) {
-        let monthIndic = this.$scalers.filter(uis.months).find(c.c + "label");
+        const monthIndic = this.$scalers.filter(uis.months).find(c.c + "label");
         monthIndic.text(month);
     }
 
     setWeekIndic(week) {
-        let weekIndic = this.$scalers.filter(uis.weeks).find(c.c + "label");
+        const weekIndic = this.$scalers.filter(uis.weeks).find(c.c + "label");
         weekIndic.text(week);
     }
 
     setDayIndic(day) {
-        let dayIndic = this.$scalers.filter(uis.days).find(c.c + "label");
+        const dayIndic = this.$scalers.filter(uis.days).find(c.c + "label");
         dayIndic.text(day);
     }
 
     setDateIndic(year, month, date) {
-        let dateIndic = this.$scalers.filter(uis.date).find(c.c + "label");
+        const dateIndic = this.$scalers.filter(uis.date).find(c.c + "label");
         dateIndic.text(("" + date).padStart(2, "0"));
         dateIndic.attr(eds.prefix, (year % 100) + cls + ("" + month).padStart(2, "0") + cls);
     }    
 
     releaseDate(toScaledBe, fd = this.dateSetFocused) {
-        let inst = this;
+        const inst = this;
         if (this.checkLoadCalendarStructure(toScaledBe)) setTimeout(() => {
             inst.structure.releaseDateSelected(fd);
             inst.releaseToday();
@@ -5835,7 +6100,7 @@ class EstreVariableCalendar extends EstreCalendar {
     }
 
     releaseToday() {
-        let td = Ecal.getDateSet();
+        const td = Ecal.getDateSet();
 
         this.releaseDateIndicator(td);
 
@@ -5843,32 +6108,32 @@ class EstreVariableCalendar extends EstreCalendar {
     }
 
     releaseDateIndicator(td) {
-        let $year = this.$scalers.filter(uis.years);
-        let year = parseInt($year.find(c.c + "label").text());
-        let isTodayYear = year == td.year;
+        const $year = this.$scalers.filter(uis.years);
+        const year = parseInt($year.find(c.c + "label").text());
+        const isTodayYear = year == td.year;
         $year.attr(eds.today, isTodayYear ? t1 : "");
 
-        let $month = this.$scalers.filter(uis.months);
-        let month = parseInt($month.find(c.c + "label").text());
-        let isTodayMonth = month == td.month;
+        const $month = this.$scalers.filter(uis.months);
+        const month = parseInt($month.find(c.c + "label").text());
+        const isTodayMonth = month == td.month;
         $month.attr(eds.today, isTodayMonth ? t1 : "");
 
-        let $week = this.$scalers.filter(uis.weeks);
-        let week = parseInt($week.find(c.c + "label").text());
-        let isTodayWeek = week == td.week;
+        const $week = this.$scalers.filter(uis.weeks);
+        const week = parseInt($week.find(c.c + "label").text());
+        const isTodayWeek = week == td.week;
         $week.attr(eds.today, isTodayWeek ? t1 : "");
 
-        let $day = this.$scalers.filter(uis.days);
-        let day = $day.find(c.c + "label").text();
-        let isTodayDay = day == td.dayText;
+        const $day = this.$scalers.filter(uis.days);
+        const day = $day.find(c.c + "label").text();
+        const isTodayDay = day == td.dayText;
         $day.attr(eds.today, isTodayDay ? t1 : "");
 
-        let $date = this.$scalers.filter(uis.date);
-        let date = parseInt($date.find(c.c + "label").text());
-        let isTodayDate = date == td.date;
+        const $date = this.$scalers.filter(uis.date);
+        const date = parseInt($date.find(c.c + "label").text());
+        const isTodayDate = date == td.date;
         $date.attr(eds.today, isTodayDate ? t1 : "");
 
-        let isToday = isTodayYear && isTodayMonth && isTodayDate;
+        const isToday = isTodayYear && isTodayMonth && isTodayDate;
 
         //this.$showToday[0].checked = isToday;
     }
@@ -5879,9 +6144,9 @@ class EstreVariableCalendar extends EstreCalendar {
     }
 
     checkRelaseUnusedCalendarStructure() {
-        let td = Ecal.getDateSet();
-        let fd = this.dateSetFocused;
-        let scale = this.scaleInt;
+        const td = Ecal.getDateSet();
+        const fd = this.dateSetFocused;
+        const scale = this.scaleInt;
         this.structure.checkRelaseUnusedCalendarStructure(td, fd, scale);
     }
 
@@ -5894,29 +6159,29 @@ class EstreVariableCalendar extends EstreCalendar {
     }
 
     beginTransition() {
-        let current = this.$structure.attr(eds.transition);
+        const current = this.$structure.attr(eds.transition);
         if (current == null || current == "") current = 0;
         else current = parseInt(current);
         this.$structure.attr(eds.transition, current + 1);
     }
 
     endTransition() {
-        let current = this.$structure.attr(eds.transition);
+        const current = this.$structure.attr(eds.transition);
         if (current == null || current == "") current = 0;
         else current = parseInt(current);
         this.$structure.attr(eds.transition, Math.max(current - 1, 0));
     }
 
     checkLoadSchedule() {
-        let focusedYear = this.yearIntFocused;
-        let basicOrigin = this.basicOrigin;
-        let dataOrigin = this.dataOrigin;
-        let dateBeginEnd = Escd.getDateBeginEndFrom(focusedYear);
+        const focusedYear = this.yearIntFocused;
+        const basicOrigin = this.basicOrigin;
+        const dataOrigin = this.dataOrigin;
+        const dateBeginEnd = Escd.getDateBeginEndFrom(focusedYear);
         if (focusedYear != this.prevFocusedYear) {
-            let tag = basicOrigin != null && basicOrigin != "" ? "|" + basicOrigin : "";
-            let groups = ["basic" + tag, "whole", "timely"];
+            const tag = basicOrigin != null && basicOrigin != "" ? "|" + basicOrigin : "";
+            const groups = ["basic" + tag, "whole", "timely"];
             if (dataOrigin != "") groups.push("data|" + dataOrigin);
-            let forClear = ["whole", "timely"];
+            const forClear = ["whole", "timely"];
             if (this.prevScheduleBasicOrigin != "") forClear.unshift("basic");
             if (this.prevScheduleDataOrigin != "") forClear.push("data");
             this.structure.clearScheduled(forClear, focusedYear);
@@ -5930,8 +6195,8 @@ class EstreVariableCalendar extends EstreCalendar {
             }
         } else {
             if (basicOrigin != this.prevScheduleBasicOrigin) {
-                let tag = basicOrigin != null && basicOrigin != "" ? "|" + basicOrigin : "";
-                let groups = ["basic" + tag];
+                const tag = basicOrigin != null && basicOrigin != "" ? "|" + basicOrigin : "";
+                const groups = ["basic" + tag];
                 if (this.prevScheduleBasicOrigin != "") this.structure.clearScheduled(["basic"], focusedYear);
                 // this.setScheduleRequestedYearly(focusedYear, groups);
                 // scheduleDataSet.requestPushDataYear(focusedYear, this, groups);
@@ -5940,7 +6205,7 @@ class EstreVariableCalendar extends EstreCalendar {
             } else if (dataOrigin != this.prevScheduleDataOrigin) {
                 if (this.prevScheduleDataOrigin != "") this.structure.clearScheduled(["data"], focusedYear);
                 if (dataOrigin != "") {
-                    let groups = ["data|" + dataOrigin];
+                    const groups = ["data|" + dataOrigin];
                     // this.setScheduleRequestedYearly(focusedYear, groups);
                     // scheduleDataSet.requestPushDataYear(focusedYear, this, groups);
                     scheduleDataSet.requestPushData(dateBeginEnd.beginDate, dateBeginEnd.endDate, groups, this);
@@ -6044,27 +6309,27 @@ class EstreUnifiedScheduler {
 
     initScopes() {
         for (var scope in this.content) {
-            let content = this.content[scope];
+            const content = this.content[scope];
 
             this.initPages(scope);
         }
     }
 
     initPages(scope, bounds = Escd.getBounds(scope, this.calendar.dateFocused)) {
-        let content = this.content[scope];
-        let selected = content.find(c.c + c.w + aiv(eds.pageSelected, t1));
+        const content = this.content[scope];
+        const selected = content.find(c.c + c.w + aiv(eds.pageSelected, t1));
         if (selected.find(c.c + c.w).length > 0 && bounds[0] == selected.attr(eds.bound)) return;
         if (content != null) {
-            let $content = $(content);
-            let preload = $content.attr(eds.preload) == t1;
-            let $pages = $content.find(c.c + c.w);
-            let length = $pages.length;
-            let offsetAdjust = parseInt(length / 2) + (1 - (length % 2));
+            const $content = $(content);
+            const preload = $content.attr(eds.preload) == t1;
+            const $pages = $content.find(c.c + c.w);
+            const length = $pages.length;
+            const offsetAdjust = parseInt(length / 2) + (1 - (length % 2));
             for (var i=0; i<length; i++) {
-                let offset = i - offsetAdjust;
-                let page = $pages[i];
-                let $page = $(page);
-                let bound = bounds[offset];
+                const offset = i - offsetAdjust;
+                const page = $pages[i];
+                const $page = $(page);
+                const bound = bounds[offset];
                 this.boundHasGone($page.attr(eds.bound));
                 $page.attr(eds.bound, bound);
                 this.constructBound($page, scope, bound);
@@ -6093,12 +6358,12 @@ class EstreUnifiedScheduler {
 
     constructBound($page, scope, bound) {
         $page.empty();
-        let division = doc.ce(li);
+        const division = doc.ce(li);
         division.setAttribute(eds.division, "schedule");
         division.setAttribute(eds.count, t0);
         division.append(this.buildPlaceholder());
 
-        let d = Escd.getDateBeginEndFrom(bound, scope);
+        const d = Escd.getDateBeginEndFrom(bound, scope);
         for (var dateId=d.beginDate; dateId<=d.endDate; dateId++) {
             var holder = doc.ce(ul, "schedule_holder");
             holder.setAttribute(eds.group, "basic");
@@ -6118,26 +6383,26 @@ class EstreUnifiedScheduler {
     }
 
     buildPlaceholder(content = "일정 없음") {
-        let block = doc.ce(div, "schedule_placeholder");
-        let span = doc.ce(sp, null, content);
+        const block = doc.ce(div, "schedule_placeholder");
+        const span = doc.ce(sp, null, content);
         block.append(span);
         return block;
     }
 
     buildScheduleItem(info, dateSet) {
-        let item = doc.ce(li, "division_block schedule_item");
+        const item = doc.ce(li, "division_block schedule_item");
         item.setAttribute(eds.scheduleId, info.id);
         if (info.category != null) item.setAttribute(eds.category, info.category);
-        let icon = doc.ce(div, "fit_width max_height event_type");
+        const icon = doc.ce(div, "fit_width max_height event_type");
         var span = doc.ce(sp);
         icon.append(span);
         item.append(icon);
-        let content = doc.ce(div, "block content");
-        let datetime = doc.ce(div, "line_block datetime");
-        let ruby = doc.ce(rb);
+        const content = doc.ce(div, "block content");
+        const datetime = doc.ce(div, "line_block datetime");
+        const ruby = doc.ce(rb);
         ruby.append(doc.ce(sp, "month", dateSet.month));
         ruby.append(doc.ce(sp, "date", dateSet.date));
-        let rubytext = doc.ce(rt, "week");
+        const rubytext = doc.ce(rt, "week");
         //rubytext.append(doc.ce(sp, "year", info.ymw.year));
         rubytext.append(doc.ce(sp, "month", dateSet.ymw.month));
         rubytext.append(doc.ce(sp, "week", dateSet.ymw.week));
@@ -6158,10 +6423,10 @@ class EstreUnifiedScheduler {
 
     // to scopedTab
     pushPageData(scope, bound, group, dateId, list) {
-        let $content = $(this.content[scope]);
-        let $page = $content.find(c.c + c.w + aiv(eds.bound, bound));
-        let $division = $page.find(c.c + li + aiv(eds.division, "schedule"));
-        let $holder = $division.find(c.c + uis.scheduleHolder + aiv(eds.group, group) + aiv(eds.dateId, dateId));
+        const $content = $(this.content[scope]);
+        const $page = $content.find(c.c + c.w + aiv(eds.bound, bound));
+        const $division = $page.find(c.c + li + aiv(eds.division, "schedule"));
+        const $holder = $division.find(c.c + uis.scheduleHolder + aiv(eds.group, group) + aiv(eds.dateId, dateId));
         $division.attr(eds.count, parseInt($division.attr(eds.count)) + list.length);
 
         // console.log("data to holder - scope: " + scope + ", bound: " + bound + ", group: " + group + ", dateID: " + dateId, list, $content, $page, $division, $holder);
@@ -6175,9 +6440,9 @@ class EstreUnifiedScheduler {
     }
 
     pushScopeTitle(bound, scope) {
-        let titleSpan = this.titleSpan[scope];
+        const titleSpan = this.titleSpan[scope];
         if (titleSpan != null) {
-            let d = Escd.parseBound(bound, scope);
+            const d = Escd.parseBound(bound, scope);
             var title;
             switch (scope) {
                 case "yearly":
@@ -6218,13 +6483,13 @@ class EstreUnifiedScheduler {
     requestPushDataForScheduler(scope, bound) {
         this.registerBound(bound);
 
-        let basicOrigin = this.calendar.basicOrigin;
-        // let dataOrigin = this.calendar.dataOrigin;
-        let tag = basicOrigin != null && basicOrigin != "" ? "|" + basicOrigin : "";
-        let groups = ["basic" + tag, "whole", "timely"];
+        const basicOrigin = this.calendar.basicOrigin;
+        // const dataOrigin = this.calendar.dataOrigin;
+        const tag = basicOrigin != null && basicOrigin != "" ? "|" + basicOrigin : "";
+        const groups = ["basic" + tag, "whole", "timely"];
         // if (dataOrigin != "") groups.push("data|" + dataOrigin);
 
-        let dateBeginEnd = Escd.getDateBeginEndFrom(bound, scope);
+        const dateBeginEnd = Escd.getDateBeginEndFrom(bound, scope);
         //console.log("requestPushData(" + dateBeginEnd.beginDate + ", " + dateBeginEnd.endDate + ", " + groups + ", this);");
         scheduleDataSet.requestPushData(dateBeginEnd.beginDate, dateBeginEnd.endDate, groups, this);
         
@@ -6250,7 +6515,7 @@ class EstreUnifiedScheduler {
 /*
     pushYearlySchedule(datas, year, groups) {
         for (var dateId in datas) {
-            let data = datas[dateId];
+            const data = datas[dateId];
             this.pushDailySchedule(data, dateId);
         }
     }
@@ -6258,13 +6523,13 @@ class EstreUnifiedScheduler {
 
     pushDailySchedule(listGrouped, dateId) {
         for (var bound of this.registeredBound) {
-            let d = Escd.getDateBeginEndFrom(bound);
+            const d = Escd.getDateBeginEndFrom(bound);
             if (dateId >= d.beginDate && dateId <= d.endDate) {
-                let scope = Escd.getScopeBy(bound);
+                const scope = Escd.getScopeBy(bound);
                 for (var groupId in listGrouped) {
-                    let divided = groupId.split("|");
-                    let group = divided[0];
-                    let originId = divided[1];
+                    const divided = groupId.split("|");
+                    const group = divided[0];
+                    const originId = divided[1];
                     // console.log("pushPageData(" + scope + ", " + bound + ", " + group + ", " + dateId + ", " + listGrouped[groupId] + ");", listGrouped[groupId]);
                     this.pushPageData(scope, bound, group, dateId, listGrouped[groupId]);
                 }
@@ -6274,7 +6539,7 @@ class EstreUnifiedScheduler {
 }
 
 
-let scheduleDataSet = {
+const scheduleDataSet = {
 
     dataHandler: null,
 
@@ -6292,7 +6557,7 @@ let scheduleDataSet = {
 
     issueRequest(delayed = false) {
         if (this.requestIssuer == null) {
-            let inst = this;
+            const inst = this;
             this.requestIssuer = setTimeout(function () { inst.requestProcessor(); }, delayed ? 100 : 0);
         }
     },
@@ -6300,8 +6565,8 @@ let scheduleDataSet = {
     requestProcessor() {
         this.requestIssuer = null;
 
-        for (let [origin, requests] of this.dataRequests) {
-            let pendings = this.dataPendings.get(origin);
+        for (const [origin, requests] of this.dataRequests) {
+            const pendings = this.dataPendings.get(origin);
             
             if (pendings != null && pendings.length > 0) {
                 this.issueRequest(true);
@@ -6311,7 +6576,7 @@ let scheduleDataSet = {
             this.dataPendings.set(origin, requests);
             this.dataRequests.delete(origin);
 
-            let ranges = [];
+            const ranges = [];
             var current = null;
             for (var dateId in requests) {
                 if (current == null) {
@@ -6336,7 +6601,7 @@ let scheduleDataSet = {
     },
 
     getData(origin, dateId) {
-        let datas = this.getDataBy(origin);
+        const datas = this.getDataBy(origin);
 
         if (datas != null) return datas[dateId];
 
@@ -6355,17 +6620,17 @@ let scheduleDataSet = {
     },
 
     getDataPending(origin) {
-        let pending = this.dataPendings.get(origin);
+        const pending = this.dataPendings.get(origin);
         if (pending != null) return pending;
         else {
-            let newer = [];
+            const newer = [];
             this.dataPendings.set(origin, newer);
             return newer;
         }
     },
 
     getExistsPending(origin) {
-        let pending = this.dataPendings.get(origin);
+        const pending = this.dataPendings.get(origin);
         if (pending != null) {
             var count = 0;
             if (pending.length == 0) count--;
@@ -6381,7 +6646,7 @@ let scheduleDataSet = {
     },
 
     clearDataPending(origin, dateId) {
-        let pendings = this.getDataPending(origin);
+        const pendings = this.getDataPending(origin);
         pendings[dateId] = null;
         this.checkClearPending(origin);
     },
@@ -6398,7 +6663,7 @@ let scheduleDataSet = {
             this.dataRequests.set(origin, requestOrigin);
         }
 
-        let requests = requestOrigin[dateId];
+        const requests = requestOrigin[dateId];
 
         if (requests == null) {
             requests = new Set([caller]);
@@ -6409,7 +6674,7 @@ let scheduleDataSet = {
     },
 
     requestData(origin, dateId, caller) {
-        let pending = this.getDataPending(origin)[dateId];
+        const pending = this.getDataPending(origin)[dateId];
 
         if (pending != null && pending.length > 0) {
             pending.add(caller);
@@ -6423,10 +6688,10 @@ let scheduleDataSet = {
         for (var group of groups) {
             for (var i=beginDateId; i<=endDateId; i++) {
 
-                let data = forced ? null : this.getData(group, i);
+                const data = forced ? null : this.getData(group, i);
 
                 if (data != null) {
-                    let listGrouped = {};
+                    const listGrouped = {};
                     listGrouped[group] = data;
                     // console.log("pushData(" + caller + ", " + listGrouped + ", " + i + ");", caller, data);
                     this.pushData(caller, listGrouped, i);
@@ -6440,8 +6705,8 @@ let scheduleDataSet = {
     
     // to caller
     pushDataBy: function(caller, dataSet, dateId, groups) {
-        let groupSet = new Set(groups);
-        let set = {};
+        const groupSet = new Set(groups);
+        const set = {};
         for (var group in dataSet) if (groupSet.has(group)) set[group] = dataSet[group];
         this.pushData(caller, set, dateId);
     },
@@ -6456,18 +6721,18 @@ let scheduleDataSet = {
 
     // from data handler
     incomeData(group, datas) {
-        let pendings = this.getDataPending(group);
+        const pendings = this.getDataPending(group);
 
         for (var dateId in datas) {
-            let data = datas[dateId];
+            const data = datas[dateId];
 
-            let callerSet = pendings[dateId];
+            const callerSet = pendings[dateId];
 
             if (callerSet != null) {
-                let callers = Array.from(callerSet);
+                const callers = Array.from(callerSet);
 
                 this.setData(group, dateId, data);
-                let listGrouped = {};
+                const listGrouped = {};
                 listGrouped[group] = data;
                 for (var caller of callers) this.pushData(caller, listGrouped, dateId);
                 this.clearDataPending(group, dateId);
@@ -6498,10 +6763,10 @@ let scheduleDataSet = {
     requestPushDataYear: function(year, caller, groups = ["basic", "whole", "timely"]) {
         if (caller != null) this.callers.add(caller);
         
-        let dataReady = this.dataReadyYear[year];
+        const dataReady = this.dataReadyYear[year];
         
-        let forPush = [];
-        let forRequest = [];
+        const forPush = [];
+        const forRequest = [];
         for (var group of groups) {
             if (dataReady == null || !dataReady.has(group)) forRequest.push(group);
             else forPush.push(group);
@@ -6509,7 +6774,7 @@ let scheduleDataSet = {
 
         // var dataRequests = this.dataRequestsYear[year];
         // if (dataRequests == null) {
-        //     let set = new Set();
+        //     const set = new Set();
         //     this.dataRequestsYear[year] = set;
         //     dataRequests = set;
         // }
@@ -6524,7 +6789,7 @@ let scheduleDataSet = {
 
         var dataRequests = this.dataRequestsYear[year];
         if (dataRequests == null) {
-            let set = new Set();
+            const set = new Set();
             dataRequests = set;
             this.dataRequestsYear[year] = set;
         }
@@ -6536,25 +6801,25 @@ let scheduleDataSet = {
 
     pushDataAlreadyHas: function(caller, groups, year, month, date) {
         if (date != null) {
-            let dateId = Ecal.getDateOffset(year, month, date);
+            const dateId = Ecal.getDateOffset(year, month, date);
             this.pushDataBy(caller, dataSet, dateId, groups);
         } else if (month != null) {
-            let monthBegin = Ecal.getDateOffset(year, month, 1);
-            let monthEnd = Ecal.getDateOffset(year, month, Ecal.getLastDate(year, month));
+            const monthBegin = Ecal.getDateOffset(year, month, 1);
+            const monthEnd = Ecal.getDateOffset(year, month, Ecal.getLastDate(year, month));
             for (dateId=monthBegin; dateId<=monthEnd; dateId++) {
-                let dataSet = this.dataArray[dateId];
+                const dataSet = this.dataArray[dateId];
                 this.pushDataBy(caller, dataSet, dateId, groups);
             }
         } else if (year != null) {
-            let yearBegin = Ecal.getDateOffset(year, 0, 1);
-            let yearEnd = Ecal.getDateOffset(year, 11, 31);
-            let yearly = [];
-            let groupSet = new Set();
+            const yearBegin = Ecal.getDateOffset(year, 0, 1);
+            const yearEnd = Ecal.getDateOffset(year, 11, 31);
+            const yearly = [];
+            const groupSet = new Set();
             for (dateId=yearBegin; dateId<=yearEnd; dateId++) {
-                // let dataSet = this.dataArray[dateId];
+                // const dataSet = this.dataArray[dateId];
                 // this.pushDataBy(caller, dataSet, dateId, groups);
-                let data = this.dataArray[dateId];
-                let set = {}
+                const data = this.dataArray[dateId];
+                const set = {}
                 for (var group in data) if (groups.indexOf(group) > -1) {
                     set[group] = data[group];
                     groupSet.add(group);
@@ -6564,7 +6829,7 @@ let scheduleDataSet = {
             this.pushDataYearly(caller, yearly, year, Array.from(groupSet.values()));
         } else {
             for (var dateId in dataMatrix) {
-                let dataSet = this.dataArray[dateId];
+                const dataSet = this.dataArray[dateId];
                 this.pushDataBy(caller, dataSet, dateId, groups);
             }
         }
@@ -6579,11 +6844,11 @@ let scheduleDataSet = {
     },
 
     incomeDataYear: function(year, group, datas) {
-        let callers = Array.from(this.callers.values());
-        let dataSet = [];
+        const callers = Array.from(this.callers.values());
+        const dataSet = [];
         for (var dateId in datas) {
-            let data = datas[dateId];
-            let dataGrouped = {};
+            const data = datas[dateId];
+            const dataGrouped = {};
             dataGrouped[group] = data;
 
             //for (var caller of callers) this.pushData(caller, dataGrouped, dateId);
@@ -6592,9 +6857,9 @@ let scheduleDataSet = {
         }
         for (var caller of callers) this.pushDataYearly(caller, dataSet, year, [group]);
 
-        let requests = this.dataRequestsYear[year];
+        const requests = this.dataRequestsYear[year];
         if (requests != null) requests.delete(group);
-        let dataReady = this.dataReadyYear[year];
+        const dataReady = this.dataReadyYear[year];
         if (dataReady != null) dataReady.add(group);
         else this.dataReadyYear[year] = new Set([group]);
     },
@@ -6640,7 +6905,7 @@ class EstreScalable extends EstreHandle {
         super(scalable, host);
         this.$toggle = this.$bound.find(this.getToggleSpecifier());
         this.$toggleIndic = this.$bound.find(this.getToggleIndicatorSpecifier());
-        let maxScale = this.data.maxScale;
+        const maxScale = this.data.maxScale;
         this.maxScale = maxScale == "" ? 0 : parseInt(maxScale);
     }
 
@@ -6667,7 +6932,7 @@ class EstreScalable extends EstreHandle {
 
     //event handler
     setEventToggleBtn() {
-        let inst = this;
+        const inst = this;
 
         this.$toggle.off("click");
 
@@ -6684,8 +6949,8 @@ class EstreScalable extends EstreHandle {
     
     //handles
     toggleScaler() {
-        let lookScale = this.data.lookScale;
-        let current = lookScale == "" ? 0 : parseInt(lookScale);
+        const lookScale = this.data.lookScale;
+        const current = lookScale == "" ? 0 : parseInt(lookScale);
 
         this.setScale(current + 1);
     }
@@ -6729,7 +6994,7 @@ class EstreCollapsible extends EstreHandle {
     constructor(collapsible, host) {
         super(collapsible, host);
         this.$toggle = this.$bound.find(this.getToggleSpecifier());
-        let parent = collapsible.parentElement;
+        const parent = collapsible.parentElement;
         if (parent != null && parent.dataset.contentCollapsed != null) {
             this.parent = parent;
             this.$parent = $(parent);
@@ -6756,7 +7021,7 @@ class EstreCollapsible extends EstreHandle {
 
     //event handler
     setEventToggleBtn($btn) {
-        let inst = this;
+        const inst = this;
 
         this.$toggle.off("click");
 
@@ -6789,11 +7054,11 @@ class EstreCollapsible extends EstreHandle {
     
     //handles
     toggleCollapser() {
-        let collapsed = this.data.collapsed;
-        let nonBasics = this.$bound.find(c.c + uis.notBasicAndToggle);
+        const collapsed = this.data.collapsed;
+        const nonBasics = this.$bound.find(c.c + uis.notBasicAndToggle);
         var isShowing = false;
         for (var i=0; i<nonBasics.length; i++) {
-            let display = $(nonBasics[i]).css("opacity");//$(nonBasics[i]).css("display");
+            const display = $(nonBasics[i]).css("opacity");//$(nonBasics[i]).css("display");
             if (display !== t0) {//"none"
                 isShowing = true;
                 break;
@@ -6833,7 +7098,7 @@ class EstreToggleBlock extends EstreHandle {
     constructor(toggleBlock, host) {
         super(toggleBlock, host);
         this.$toggle = this.$bound.find(this.getToggleSpecifier());
-        let parent = toggleBlock.parentElement;
+        const parent = toggleBlock.parentElement;
         if (parent != null && parent.dataset.contentCollapsed != null) {
             this.parent = parent;
             this.$parent = $(parent);
@@ -6870,7 +7135,7 @@ class EstreToggleBlock extends EstreHandle {
 
     //event handler
     setEventToggleBtn($btn) {
-        let inst = this;
+        const inst = this;
 
         this.$toggle.off("click");
 
@@ -6903,7 +7168,7 @@ class EstreToggleBlock extends EstreHandle {
     
     //handles
     toggleCollapser() {
-        let collapsed = this.data.collapsed;
+        const collapsed = this.data.collapsed;
         this.setCollapsed(collapsed == t1 ? t0 : t1);
     }
 
@@ -6995,7 +7260,7 @@ class EstreToggleTabBlock extends EstreToggleBlock {
         var selected = this.$bound.attr(eds.beginTab);
 
         if (selected == null || selected == "") {
-            let list = this.$tabs.toArray();
+            const list = this.$tabs.toArray();
             var s = 0;
             while (list.length > 1) {
                 if (s % 2 == 0) list.splice(-1);
@@ -7015,7 +7280,7 @@ class EstreToggleTabBlock extends EstreToggleBlock {
 
     //event handler
     setEventTabItems() {
-        let inst = this;
+        const inst = this;
 
         this.$tabs.off("click");
 
@@ -7034,13 +7299,13 @@ class EstreToggleTabBlock extends EstreToggleBlock {
 
     setSwipeHandler() {
         this.releaseSwipeHandler();
-        let inst = this;
-        let applyToSSB = this.$ssb.length > 0;
-        let $feedbackTarget = applyToSSB ? this.$subjects : this.$contents;
+        const inst = this;
+        const applyToSSB = this.$ssb.length > 0;
+        const $feedbackTarget = applyToSSB ? this.$subjects : this.$contents;
         this.swipeHandler = new EstreSwipeHandler(this.$tcb).unuseY().setResponseBound(applyToSSB ? this.$ssb : this.$tcb).setOnUp(function(grabX, grabY, handled, canceled, directed) {
             // console.log("handled: " + handled + " / canceled: " + canceled + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
             if (handled) {
-                let isNext = grabX < 0;
+                const isNext = grabX < 0;
                 setTimeout(() => {
                     if (isNext) inst.selectNextTab();
                     else inst.selectPrevTab();
@@ -7049,9 +7314,9 @@ class EstreToggleTabBlock extends EstreToggleBlock {
             } else $feedbackTarget.filter(ax(eds.slide)).attr(eds.slide, null);
         }).setOnMove(function(grabX, grabY, handled, dropped, directed) {
             // console.log("handled: " + handled + " / dropped: " + dropped + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
-            let isNext = grabX < 0;
+            const isNext = grabX < 0;
             if (grabX !== 0) {
-                let targetId = isNext ? inst.getNextTabId() : inst.getPrevTabId();
+                const targetId = isNext ? inst.getNextTabId() : inst.getPrevTabId();
                 if (targetId != inst.selected) {
                     $feedbackTarget.filter(ax(eds.slide) + naiv(eds.tabId, targetId)).attr(eds.slide, null);
                     $feedbackTarget.filter(aiv(eds.tabId, targetId)).attr(eds.slide, t1);
@@ -7064,7 +7329,7 @@ class EstreToggleTabBlock extends EstreToggleBlock {
 
     //commons
     getTabs($tabs = this.$tabs) {
-        let tabs = [];
+        const tabs = [];
         for (var tab of $tabs) tabs[parseInt($(tab).attr(eds.tabId))] = tab;
         return tabs;
     }
@@ -7072,7 +7337,7 @@ class EstreToggleTabBlock extends EstreToggleBlock {
 
     //handles
     selectTab(id, isInit) {
-        let intId = parseInt(id);
+        const intId = parseInt(id);
         if (id != null && id != "" && !isNaN(id) && intId > 0 && intId <= this.$tabs.length) {
             this.applyTabSelected(id);
             this.applySubjectSelected(id);
@@ -7083,30 +7348,30 @@ class EstreToggleTabBlock extends EstreToggleBlock {
     }
 
     getPrevTabId() {
-        let tabs = this.getTabs();
-        let selected = this.selected;
+        const tabs = this.getTabs();
+        const selected = this.selected;
         
-        let target = selected - 1;
+        const target = selected - 1;
         //console.log("selectPrevTab - current: " + selected + ", target: " + target);
         return target > -1 ? target : 0;
     }
 
     selectPrevTab() {
-        let target = this.getPrevTabId();
+        const target = this.getPrevTabId();
         if (target != this.selected) this.selectTab(target);
     }
 
     getNextTabId() {
-        let tabs = this.getTabs();
-        let selected = this.selected;
+        const tabs = this.getTabs();
+        const selected = this.selected;
         
-        let target = selected + 1;
+        const target = selected + 1;
         //console.log("selectNextTab - current: " + selected + ", target: " + target);
         return target < tabs.length ? target : tabs.length - 1;
     }
 
     selectNextTab() {
-        let target = this.getNextTabId();
+        const target = this.getNextTabId();
         if (target != this.selected) this.selectTab(target);
     }
 
@@ -7207,7 +7472,7 @@ class EstreTabBlock extends EstreHandle {
         var selected = this.$bound.attr(eds.beginTab);
 
         if (selected == null || selected == "") {
-            let list = this.$tabs.toArray();
+            const list = this.$tabs.toArray();
             var s = 0;
             while (list.length > 1) {
                 if (s % 2 == 0) list.splice(-1);
@@ -7222,7 +7487,7 @@ class EstreTabBlock extends EstreHandle {
 
     //event handler
     setEventTabItems() {
-        let inst = this;
+        const inst = this;
 
         this.$tabs.off("click");
 
@@ -7241,13 +7506,13 @@ class EstreTabBlock extends EstreHandle {
 
     setSwipeHandler() {
         this.releaseSwipeHandler();
-        let inst = this;
-        let applyToSSB = this.$ssb.length > 0;
-        let $feedbackTarget = applyToSSB ? this.$subjects : this.$contents;
+        const inst = this;
+        const applyToSSB = this.$ssb.length > 0;
+        const $feedbackTarget = applyToSSB ? this.$subjects : this.$contents;
         this.swipeHandler = new EstreSwipeHandler(this.$tcb).unuseY().setResponseBound(applyToSSB ? this.$ssb : this.$tcb).setOnUp(function(grabX, grabY, handled, canceled, directed) {
             // console.log("handled: " + handled + " / canceled: " + canceled + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
             if (handled) {
-                let isNext = grabX < 0;
+                const isNext = grabX < 0;
                 setTimeout(() => {
                     if (isNext) inst.selectNextTab();
                     else inst.selectPrevTab();
@@ -7256,9 +7521,9 @@ class EstreTabBlock extends EstreHandle {
             } else $feedbackTarget.filter(ax(eds.slide)).attr(eds.slide, null);
         }).setOnMove(function(grabX, grabY, handled, dropped, directed) {
             // console.log("handled: " + handled + " / dropped: " + dropped + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
-            let isNext = grabX < 0;
+            const isNext = grabX < 0;
             if (grabX !== 0) {
-                let targetId = isNext ? inst.getNextTabId() : inst.getPrevTabId();
+                const targetId = isNext ? inst.getNextTabId() : inst.getPrevTabId();
                 if (targetId != inst.selected) {
                     $feedbackTarget.filter(ax(eds.slide) + naiv(eds.tabId, targetId)).attr(eds.slide, null);
                     $feedbackTarget.filter(aiv(eds.tabId, targetId)).attr(eds.slide, t1);
@@ -7271,7 +7536,7 @@ class EstreTabBlock extends EstreHandle {
 
     //commons
     getTabs($tabs = this.$tabs) {
-        let tabs = [];
+        const tabs = [];
         for (var tab of $tabs) tabs[parseInt($(tab).attr(eds.tabId))] = tab;
         return tabs;
     }
@@ -7279,7 +7544,7 @@ class EstreTabBlock extends EstreHandle {
 
     //handles
     selectTab(id, isInit = false) {
-        let intId = parseInt(id);
+        const intId = parseInt(id);
         if (id != null && id != "" && !isNaN(id) && intId > 0 && intId <= this.$tabs.length) {
             this.applyTabSelected(id);
             this.applySubjectSelected(id);
@@ -7289,30 +7554,30 @@ class EstreTabBlock extends EstreHandle {
     }
 
     getPrevTabId() {
-        let tabs = this.getTabs();
-        let selected = this.selected;
+        const tabs = this.getTabs();
+        const selected = this.selected;
         
-        let target = selected - 1;
+        const target = selected - 1;
         //console.log("selectPrevTab - current: " + selected + ", target: " + target);
         return target > -1 ? target : 0;
     }
 
     selectPrevTab() {
-        let target = this.getPrevTabId();
+        const target = this.getPrevTabId();
         if (target != this.selected) this.selectTab(target);
     }
 
     getNextTabId() {
-        let tabs = this.getTabs();
-        let selected = this.selected;
+        const tabs = this.getTabs();
+        const selected = this.selected;
         
-        let target = selected + 1;
+        const target = selected + 1;
         //console.log("selectNextTab - current: " + selected + ", target: " + target);
         return target < tabs.length ? target : tabs.length - 1;
     }
 
     selectNextTab() {
-        let target = this.getNextTabId();
+        const target = this.getNextTabId();
         if (target != this.selected) this.selectTab(target);
     }
 
@@ -7389,7 +7654,7 @@ class EstreScopedTabBlock extends EstreTabBlock {
 
     initScope() {
         for (var scope of this.$contents) {
-            let $scope = $(scope);
+            const $scope = $(scope);
             this.$contentScope[$scope.attr(eds.scope)] = $scope;
         }
 
@@ -7398,9 +7663,9 @@ class EstreScopedTabBlock extends EstreTabBlock {
 
     initScopes() {
         for (var scope in this.$contentScope) {
-            let $content = this.$contentScope[scope];
-            let $title = this.$subjects.filter(aiv(eds.scope, scope));
-            let titleSpan = $title.find(sp);
+            const $content = this.$contentScope[scope];
+            const $title = this.$subjects.filter(aiv(eds.scope, scope));
+            const titleSpan = $title.find(sp);
             $content.find(c.c + uis.boundHost).attr(eds.bound, "");
             this.handler.registerScope($content, scope, titleSpan[0]);
         }
@@ -7418,7 +7683,7 @@ class EstreScopedTabBlock extends EstreTabBlock {
     }    
 
     setPagerEvent() {
-        let inst = this;
+        const inst = this;
 
         this.$toPrevPage.click(function (e) {
             e.preventDefault();
@@ -7443,12 +7708,12 @@ class EstreScopedTabBlock extends EstreTabBlock {
 
     setSwipeHandler() {
         this.releaseSwipeHandler();
-        let inst = this;
-        let $feedbackTarget = this.$subjects;
+        const inst = this;
+        const $feedbackTarget = this.$subjects;
         this.swipeHandler = new EstreSwipeHandler(this.$ssb).unuseY().setResponseBound(this.$ssb).setOnUp(function(grabX, grabY, handled, canceled, directed) {
             // console.log("handled: " + handled + " / canceled: " + canceled + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
             if (handled) {
-                let isNext = grabX < 0;
+                const isNext = grabX < 0;
                 setTimeout(() => {
                     if (isNext) inst.selectNextTab();
                     else inst.selectPrevTab();
@@ -7457,9 +7722,9 @@ class EstreScopedTabBlock extends EstreTabBlock {
             } else $feedbackTarget.filter(ax(eds.slide)).attr(eds.slide, null);
         }).setOnMove(function(grabX, grabY, handled, dropped, directed) {
             // console.log("handled: " + handled + " / dropped: " + dropped + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
-            let isNext = grabX < 0;
+            const isNext = grabX < 0;
             if (grabX !== 0) {
-                let targetId = isNext ? inst.getNextTabId() : inst.getPrevTabId();
+                const targetId = isNext ? inst.getNextTabId() : inst.getPrevTabId();
                 if (targetId != inst.selected) {
                     $feedbackTarget.filter(ax(eds.slide) + naiv(eds.tabId, targetId)).attr(eds.slide, null);
                     $feedbackTarget.filter(aiv(eds.tabId, targetId)).attr(eds.slide, t1);
@@ -7469,9 +7734,9 @@ class EstreScopedTabBlock extends EstreTabBlock {
 
         this.boundSwipeHandler = new EstreSwipeHandler(this.$tcb).unuseY().setResponseBound(this.$tcb).setOnUp(function(grabX, grabY, handled, canceled, directed) {
             // console.log("handled: " + handled + " / canceled: " + canceled + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
-            let $boundHosts = inst.getCurrentContentScope().find(c.c + uis.boundHost);
+            const $boundHosts = inst.getCurrentContentScope().find(c.c + uis.boundHost);
             if (handled) {
-                let isNext = grabX < 0;
+                const isNext = grabX < 0;
                 setTimeout(() => {
                     if (isNext) inst.showPageNext();
                     else inst.showPagePrev();
@@ -7480,12 +7745,12 @@ class EstreScopedTabBlock extends EstreTabBlock {
             } else $boundHosts.filter(ax(eds.slide)).attr(eds.slide, null);
         }).setOnMove(function(grabX, grabY, handled, dropped, directed) {
             // console.log("handled: " + handled + " / dropped: " + dropped + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
-            let $boundHosts = inst.getCurrentContentScope().find(c.c + uis.boundHost);
-            let isNext = grabX < 0;
+            const $boundHosts = inst.getCurrentContentScope().find(c.c + uis.boundHost);
+            const isNext = grabX < 0;
             if (grabX !== 0) {
-                let targetIndex = isNext ? $boundHosts.length - 1 : 0;
+                const targetIndex = isNext ? $boundHosts.length - 1 : 0;
                 for (var i=0; i<$boundHosts.length; i++) {
-                    let $boundHost = $($boundHosts[i]);
+                    const $boundHost = $($boundHosts[i]);
                     if ($boundHost.is(ax(eds.slide)) && i != targetIndex) $boundHost.attr(eds.slide, null);
                 }
                 $($boundHosts[targetIndex]).attr(eds.slide, t1);
@@ -7504,9 +7769,9 @@ class EstreScopedTabBlock extends EstreTabBlock {
     }
 
     selectScope(scope) {
-        let $content = this.$contentScope[scope];
+        const $content = this.$contentScope[scope];
         if ($content != null) {
-            let tabId = $content.attr(eds.tabId);
+            const tabId = $content.attr(eds.tabId);
             this.selectTab(tabId, null);
         }
     }
@@ -7521,19 +7786,19 @@ class EstreScopedTabBlock extends EstreTabBlock {
     }
 
     shiftPage(scope, offset, byHandler = false) {
-        let isBackward = offset < 0;
-        let $content = this.$contentScope[scope];
-        let preload = $content.attr(eds.preload) == t1;
-        let pages = $content.find(c.c + c.w);
+        const isBackward = offset < 0;
+        const $content = this.$contentScope[scope];
+        const preload = $content.attr(eds.preload) == t1;
+        const pages = $content.find(c.c + c.w);
 
         pages.filter(aiv(eds.pageSelected, t1)).attr(eds.pageSelected, "");
 
-        let $selected = $(pages[isBackward ? 0 : pages.length - 1]);
-        let selectedBound = $selected.attr(eds.bound);
+        const $selected = $(pages[isBackward ? 0 : pages.length - 1]);
+        const selectedBound = $selected.attr(eds.bound);
         $selected.attr(eds.pageSelected, t1);
         if (!preload) this.handler.requestPushDataForPage($selected, scope, selectedBound, 0);
 
-        let $forRecycle = $(pages[isBackward ? pages.length - 1 : 0]);
+        const $forRecycle = $(pages[isBackward ? pages.length - 1 : 0]);
         this.handler.boundHasGone($forRecycle.attr(eds.bound), scope);
         $forRecycle.remove();
         $forRecycle.attr(eds.bound, "");
@@ -7547,8 +7812,8 @@ class EstreScopedTabBlock extends EstreTabBlock {
     notifyTabSelected(id, isInit = false) {
         super.notifyTabSelected(id, isInit);
 
-        let $content = this.$contents.filter(opa + eds.tabId + equ + v4(id) + cla);
-        let scope = $content.attr(eds.scope);
+        const $content = this.$contents.filter(opa + eds.tabId + equ + v4(id) + cla);
+        const scope = $content.attr(eds.scope);
         this.handler.notifyScopeChanged(scope);
     }
 }
@@ -7596,25 +7861,25 @@ class EstreNumKeypad extends EstreHandle {
     init() {
         super.init();
 
-        let inputId = this.$bound.attr(eds.for);
+        const inputId = this.$bound.attr(eds.for);
         if (inputId == null || inputId == "") return null;
 
         this.#input = doc.ebi(inputId);
         this.#$input = $(this.#input);
 
-        let lengthLimit = this.$bound.attr("data-limit-length");
+        const lengthLimit = this.$bound.attr("data-limit-length");
         if (lengthLimit != null && lengthLimit != "" && !isNaN(lengthLimit)) {
             this.lengthLimit = parseInt(lengthLimit);
         }
 
-        let autoDivider = this.$bound.attr("data-auto-divider");
+        const autoDivider = this.$bound.attr("data-auto-divider");
         if (autoDivider != null && autoDivider != "") {
             this.autoDivider = autoDivider;
         }
-        let autoDividerPos = this.$bound.attr("data-auto-divider-pos");
+        const autoDividerPos = this.$bound.attr("data-auto-divider-pos");
         if (autoDividerPos != null && autoDividerPos != "") {
-            let poses = autoDividerPos.split(",");
-            let posesInt = [];
+            const poses = autoDividerPos.split(",");
+            const posesInt = [];
             for (var pos of poses) if (!isNaN(pos)) posesInt.push(parseInt(pos));
             this.autoDividerPos = posesInt;
         }
@@ -7623,7 +7888,7 @@ class EstreNumKeypad extends EstreHandle {
         this.#$keys = this.$bound.find("button");
         for (var key of this.#$keys) {
             this.#keys.push(key);
-            let type = key.dataset.type;
+            const type = key.dataset.type;
             switch (type) {
                 case "number":
                     this.#key[key.dataset.number] = key;
@@ -7642,7 +7907,7 @@ class EstreNumKeypad extends EstreHandle {
     }
 
     setEvent() {
-        let inst = this;
+        const inst = this;
 
         if (this.$bound.attr("data-prevent-direct") == t1) this.#$input.focus(function(e) {
             e.preventDefault();
@@ -7650,8 +7915,8 @@ class EstreNumKeypad extends EstreHandle {
             return false; 
         });
         this.#$input.on("input paste cut propertychange change", function(e) {
-            let value = this.value;
-            let length = value.length;
+            const value = this.value;
+            const length = value.length;
 
             if (inst.lengthLimit != null) {
                 if (length > inst.lengthLimit) {
@@ -7673,7 +7938,7 @@ class EstreNumKeypad extends EstreHandle {
         });
         
         this.#$keys.click(function(e) {
-            let input = inst.#input;
+            const input = inst.#input;
             var changed = false;
             switch (this.dataset.type) {
                 case "number":
@@ -7689,10 +7954,10 @@ class EstreNumKeypad extends EstreHandle {
                             break;
 
                         case "BS":
-                            let val = input.value;
+                            const val = input.value;
                             let back = 1;
                             if (inst.autoDivider != null) {
-                                let dividerLength = inst.autoDivider.length;
+                                const dividerLength = inst.autoDivider.length;
                                 if (val.substr(dividerLength * -1) == inst.autoDivider) back += dividerLength;
                             }
                             input.value = val.substring(0, val.length - back);
@@ -7743,7 +8008,7 @@ class EstreDateShower extends EstreHandle {
     init() {
         super.init();
 
-        let from = this.$bound.attr(eds.dateFrom);
+        const from = this.$bound.attr(eds.dateFrom);
 
         switch (from) {
             case "today":
@@ -7759,7 +8024,7 @@ class EstreDateShower extends EstreHandle {
     }
 
     setEvent() {
-        let inst = this;
+        const inst = this;
 
         this.$bound.find(uis.dateReplacer).click(function(e) {
             inst.releaseDate();
@@ -7768,11 +8033,11 @@ class EstreDateShower extends EstreHandle {
 
     releaseDate() {
         if (this.#date != null) {
-            let ds = Ecal.getDateSet(this.#date);
-            let $bound = this.$bound;
+            const ds = Ecal.getDateSet(this.#date);
+            const $bound = this.$bound;
 
-            let m2d = v2d(ds.month);
-            let d2d = v2d(ds.date);
+            const m2d = v2d(ds.month);
+            const d2d = v2d(ds.date);
             
             $bound.attr(eds.dateY, ds.year);
             $bound.attr(eds.dateM, m2d);
@@ -7920,8 +8185,8 @@ class EstreSwipeHandler {
         if (this.isMoving) switch (this.directionFix) {
             case "both":
                 if (this.directed != null) {
-                    let moveX = this.moveX;
-                    let moveY = this.moveY;
+                    const moveX = this.moveX;
+                    const moveY = this.moveY;
                     if (moveX > moveY) {
                         if (this.exceedX && moveX - moveY > this.thresholdX) return this.directionX;
                     } else if (moveX < moveY) {
@@ -8054,7 +8319,7 @@ class EstreSwipeHandler {
         this.#$responseBound = null;
         //this.#$outerBound.off(this.#triggers, null, this.#onClick);
         this.#$outerBound = null;
-        let $blockTarget = this.#$bound.find(uis.blockSwipe);
+        const $blockTarget = this.#$bound.find(uis.blockSwipe);
         $blockTarget.off(this.#events, this.#onClick);
         this.#$bound.css("user-select", "");
         this.#$bound.off("click", null, this.#onClick);
@@ -8253,12 +8518,12 @@ class EstreSwipeHandler {
 
 
     #onEvent = (e) => {
-        let isTouch = e.type.indexOf("touch") > -1;
-        let isMouse = e.type.indexOf("mouse") > -1;
-        let isPointer = e.type.indexOf("pointer") > -1;
-        let screenX = isTouch ? (e.touches.length > 0 ? e.touches[0].screenX : null) : e.screenX;
-        let screenY = isTouch ? (e.touches.length > 0 ? e.touches[0].screenY : null) : e.screenY;
-        let pointerType = isTouch ? "touch" : (isMouse ? "mouse" : (isPointer ? "pointer" : "extra"));
+        const isTouch = e.type.indexOf("touch") > -1;
+        const isMouse = e.type.indexOf("mouse") > -1;
+        const isPointer = e.type.indexOf("pointer") > -1;
+        const screenX = isTouch ? (e.touches.length > 0 ? e.touches[0].screenX : null) : e.screenX;
+        const screenY = isTouch ? (e.touches.length > 0 ? e.touches[0].screenY : null) : e.screenY;
+        const pointerType = isTouch ? "touch" : (isMouse ? "mouse" : (isPointer ? "pointer" : "extra"));
 
         var canceled = false;
         switch(e.type) {
@@ -8361,15 +8626,15 @@ class EstreSwipeHandler {
                     console.log(e.type + " - " + log);
                     if (this.debugDisplay != null) this.debugDisplay.prepend(e.type + " - " + log + "<br />");
                 }
-                let clear = () => {
-                    let grabX = this.#lastX - this.startX + this.#shiftX;
-                    let grabY = this.#lastY - this.startY + this.#shiftY;
+                const clear = () => {
+                    const grabX = this.#lastX - this.startX + this.#shiftX;
+                    const grabY = this.#lastY - this.startY + this.#shiftY;
                     if (this.isDebug) {
                         var log = "directed: " + this.directed + ", start: " + f4f(this.startX) + ", " + f4f(this.startY) + " / shift: " + f4f(this.shiftX) + ", " + f4f(this.shiftY) + " / last: " + f4f(this.lastX) + ", " + f4f(this.lastY) + " / grab: " + f4f(grabX) + ", " + f4f(grabY);
                         console.log(e.type + " delayed - " + log);
                         if (this.debugDisplay != null) this.debugDisplay.prepend(e.type + " delayed - " + log + "<br />");
                     }
-                    let handled = this.handled;
+                    const handled = this.handled;
                     var onClearBound = null;
                     if (this.onUp != null) onClearBound = this.onUp(grabX, grabY, handled, canceled, this.directed);
                     this.#dropHandle();
@@ -8418,18 +8683,18 @@ class EstreSwipeHandler {
                     this.#eventType = "move";
                     this.#lastX = screenX;
                     this.#lastY = screenY;
-                    let allowedX = this.allowedDirectionX;
-                    let allowedY = this.allowedDirectionY;
+                    const allowedX = this.allowedDirectionX;
+                    const allowedY = this.allowedDirectionY;
                     var grabX = 0;
                     var grabY = 0;
                     if (allowedX) grabX = screenX - this.startX + this.shiftX;
                     if (allowedY) grabY = screenY - this.startY + this.shiftY;
-                    let moveX = this.moveX;
-                    let moveY = this.moveY;
-                    let exceedX = moveX > this.thresholdX;
-                    let exceedY = moveY > this.thresholdY;
-                    let strayedX = moveY > this.thresholdX * 2;
-                    let strayedY = moveX > this.thresholdY * 2;
+                    const moveX = this.moveX;
+                    const moveY = this.moveY;
+                    const exceedX = moveX > this.thresholdX;
+                    const exceedY = moveY > this.thresholdY;
+                    const strayedX = moveY > this.thresholdX * 2;
+                    const strayedY = moveX > this.thresholdY * 2;
                     var handled = false;
                     var applyX = false;
                     var applyY = false;
@@ -8498,7 +8763,7 @@ class EstreSwipeHandler {
                             break;
                     }
 
-                    let onSwipe = handled ? t1 : "";
+                    const onSwipe = handled ? t1 : "";
                     if (this.$wind.attr(eds.onSwipe) != onSwipe) this.$wind.attr(eds.onSwipe, onSwipe);
                     if (handled) {
                         if (applyX) {
@@ -8563,8 +8828,8 @@ class EstreSwipeHandler {
     }
 
     setElement(element = this.element) {
-        let $responseBound = this.#$responseBound;
-        let $outerBound = this.#$outerBound;
+        const $responseBound = this.#$responseBound;
+        const $outerBound = this.#$outerBound;
         if (this.#bound != null) this.release();
         if (element instanceof jQuery) {
             this.#$bound = element;
@@ -8584,7 +8849,7 @@ class EstreSwipeHandler {
         this.#$responseBound = $responseBound != null ? $responseBound : this.#$bound;
         if ($outerBound != null) this.setOuterBound($outerBound);
 
-        let $blockTarget = this.#$bound.find(uis.blockSwipe);
+        const $blockTarget = this.#$bound.find(uis.blockSwipe);
         $blockTarget.on(this.#events, this.#onClick);
 
         return this;
@@ -8595,12 +8860,15 @@ class EstreSwipeHandler {
 
 
 const estreStruct = {
-    structureSuffix: ".json.asp",
+    structureSuffix: ".json",
 }
 
 const estreUi = {
 
     //constant
+    overlaySections: {},
+    overlaySectionList: [],
+
     blindSections: {},
     blindSectionList: [],
 
@@ -8610,6 +8878,7 @@ const estreUi = {
     menuSections: {},
     menuSectionList: [],
 
+    overlayCurrentOnTop: null,
     menuCurrentOnTop: null,
     blindedCurrentOnTop: null,
     mainCurrentOnTop: null,
@@ -8629,6 +8898,9 @@ const estreUi = {
     $fixedBottom: null,
     $rootbar: null,
     $rootTabs: null,
+
+    $overlayArea: null,
+    get $overlaySections() { return this.$overlayArea.find(c.c + se); },
 
     $blindArea: null,
     get $blindSections() { return this.$blindArea.find(c.c + se); },
@@ -8681,8 +8953,10 @@ const estreUi = {
         this.$rootbar = this.$fixedBottom.find("nav#rootbar");
 
         this.$blindArea = $("main#instantDoc");
-
+        
         this.$mainArea = $("main#staticDoc");
+        
+        this.$overlayArea = $("nav#managedOverlay");
 
         
         // events
@@ -8697,6 +8971,7 @@ const estreUi = {
         //common element initializing
         pageManager.init();
         this.initRootbar();
+        this.initOverlayContents();
         this.initInstantContents();
         this.initStaticContents();
         this.initStaticMenus();
@@ -8707,7 +8982,7 @@ const estreUi = {
     },
 
     setReload: function () {
-        let inst = this;
+        const inst = this;
         $(window).on("keydown", function (e) {
             if ((e.which || e.keyCode) == 116) {
                 if (!e.ctrlKey) {
@@ -8720,7 +8995,7 @@ const estreUi = {
     },
 
     setBackNavigation: function () {
-        let inst = this;
+        const inst = this;
         $(window).on("popstate", function(e) {
             if (inst.onBack()) {
                 e.preventDefault();
@@ -8734,11 +9009,11 @@ const estreUi = {
     setMenuSwipeHandler: function () {
         if (this.$mainMenu.length > 0) {
             this.releaseMenuSwipeHandler();
-            let ui = this;
+            const ui = this;
             this.menuSwipeHandler = new EstreSwipeHandler(this.$mainMenu).unuseY().setOnUp(function(grabX, grabY, handled, canceled, directed) {
                 //console.log("grabX: " + grabX + ", grabY: " + grabY + ", lastX: " + this.lastX + ", startX: " + this.startX);
                 if (handled) {
-                    let isOpen = ui.$mainMenu.hasClass("right") ? grabX < 0 : grabX > 0;
+                    const isOpen = ui.$mainMenu.hasClass("right") ? grabX < 0 : grabX > 0;
                     setTimeout(() => {
                         if (isOpen) ui.openMainMenu();
                         else ui.closeMainMenu();
@@ -8768,10 +9043,10 @@ const estreUi = {
     openMainMenu: function() {
         if (!this.isOpenMainMenu) {
             this.$mainMenu.attr(eds.opened, t1);
-            let $top = this.$menuSections.filter(asv(eds.onTop, t1));
+            const $top = this.$menuSections.filter(asv(eds.onTop, t1));
             $top[$top.length - 1]?.pageHandle?.focus();
 
-            let lottie = this.getMainMenuLottie();
+            const lottie = this.getMainMenuLottie();
             lottie.pause();
             lottie.setDirection(1);
             lottie.setSegment(0, 30);
@@ -8783,10 +9058,10 @@ const estreUi = {
     closeMainMenu: function() {
         if (this.isOpenMainMenu) {
             this.$mainMenu.attr(eds.opened, "");
-            let $top = this.$menuSections.filter(asv(eds.onTop, t1));
+            const $top = this.$menuSections.filter(asv(eds.onTop, t1));
             $top[$top.length - 1]?.pageHandle?.blur();
 
-            let lottie = this.getMainMenuLottie();
+            const lottie = this.getMainMenuLottie();
             lottie.pause();
             lottie.setDirection(-1);
             lottie.goToAndPlay(30, true);
@@ -8805,7 +9080,7 @@ const estreUi = {
         this.$rootTabs.attr(eds.active, "");
 
         var topId = null;
-        let topSection = this.$mainSections.filter(asv(eds.onTop, t1));
+        const topSection = this.$mainSections.filter(asv(eds.onTop, t1));
         if (topSection.length > 0) topId = topSection.attr("id");
 
         if (topId != null) {
@@ -8845,7 +9120,7 @@ const estreUi = {
     },
 
     buildRootTabItem: function(esm) {
-        let element = doc.ce(btn);
+        const element = doc.ce(btn);
         element.setAttribute(m.cls, "tp_tiled_btn");
         element.setAttribute("title", esm.desc);
         element.setAttribute(eds.tabId, esm.id);
@@ -8854,7 +9129,7 @@ const estreUi = {
     },
 
     buildMainSection: function(esm) {
-        let element = doc.ce(se);
+        const element = doc.ce(se);
         element.setAttribute(m.cls, "vfv_scroll");
         element.setAttribute("id", esm.id);
         this.fetchContent(esm, element);
@@ -8868,7 +9143,7 @@ const estreUi = {
                 throw Error("[" + response.status + "]" + response.url);
             })
             .then((data) => {
-                let parts = this.renderContentArea(data);
+                const parts = this.renderContentArea(data);
                 for (var part of parts) target.append(part);
             })
             .catch((error) => console.log("fetch error: " + error));
@@ -8876,12 +9151,12 @@ const estreUi = {
     },
 
     renderContentArea: function(ecm) {
-        let set = [];
-        let article = doc.ce(ar);
+        const set = [];
+        const article = doc.ce(ar);
         if (ecm.content.display == "constraint") article.setAttribute(m.cls, "constraint");
         set.push(article);
         for (var handle of handles) {
-            let handler = doc.ce(div);
+            const handler = doc.ce(div);
             handler.setAttribute(m.cls, "handle_set " + handle.attach);
             set.push(handler);
         }
@@ -8890,7 +9165,7 @@ const estreUi = {
 // ===========================
 
     rootTabOnClick: function(e) {
-        let target = this.tagName == BTN ? this : (e.target.tagName == BTN ? e.target : e.target.parentElement);
+        const target = this.tagName == BTN ? this : (e.target.tagName == BTN ? e.target : e.target.parentElement);
         estreUi.switchRootTab(target);
     },
 
@@ -8901,7 +9176,7 @@ const estreUi = {
                 break;
 
             case "string":
-                let targets = this.$rootTabs.filter(aiv(eds.tabId, $target));
+                const targets = this.$rootTabs.filter(aiv(eds.tabId, $target));
                 if ($target.length < 1) $target = this.$fixedPageList.find(btn + aiv(eds.contained, "root") + aiv(eds.containerId, id));
                 if (targets.length > 0) return this.switchRootTab(targets[0], intent);
                 break;
@@ -8910,9 +9185,9 @@ const estreUi = {
                 if ($target instanceof jQuery) ;//do nothing
                 else $target = $($target);
 
-                let id = $target.attr(eds.tabId);
-                let $targetSection = this.$mainSections.filter(eid + id);
-                let isModal = $targetSection.hasClass("modal");
+                const id = $target.attr(eds.tabId);
+                const $targetSection = this.$mainSections.filter(eid + id);
+                const isModal = $targetSection.hasClass("modal");
 
                 var unhandled = false;
                 if (isModal) {
@@ -8922,13 +9197,13 @@ const estreUi = {
                 }
 
                 //단일 탭 사용 기준 구현
-                let $elseSections = this.$mainSections.filter(asv(eds.onTop, t1) + nti(id));
+                const $elseSections = this.$mainSections.filter(asv(eds.onTop, t1) + nti(id));
                 if ($elseSections.length > 0) {
                     for (var section of $elseSections) section.pageHandle?.hide();
                 }
                 this.$rootTabs.filter(aiv(eds.active, t1) + naiv(eds.tabId, id)).attr(eds.active, "");
 
-                let targetComponent = this.mainSections[id];
+                const targetComponent = this.mainSections[id];
                 if (targetComponent.isOnTop) {
                     unhandled = true;
                     //do nothing //추후 방향에 따라 섹션 새로고침 등 구현
@@ -8952,60 +9227,120 @@ const estreUi = {
     },
 
     openInstantBlinded: function(id, intent) {
-        let page = pageManager.getComponent(id);
+        const page = pageManager.getComponent(id);
         if (page == null) return null;
         if (page.statement == "static") return null;
         this.$blindArea.append(page.raw);
-        let $section = this.$blindSections.filter(eid + id);
+        const $section = this.$blindSections.filter(eid + id);
         if ($section == null || $section.length < 1) return null;
-        let component = this.initInstantContent($section[0], intent);
+        const component = this.initInstantContent($section[0], intent);
         if (component.isOnTop) component.show(false);
         return component;
     },
 
     showInstantBlinded: function(id, intent) {
-        let $targetSection = this.$blindSections.filter(eid + id);
-        let isModal = $targetSection.hasClass("modal");
+        const $targetSection = this.$blindSections.filter(eid + id);
+        const isModal = $targetSection.hasClass("modal");
 
         var unhandled = false;
         if (isModal) {
-            let onTop = $targetSection.attr(eds.onTop);
+            const onTop = $targetSection.attr(eds.onTop);
             if (onTop == t1 || onTop == "1*") {
                 //do nothing
             } else return this.openModalSection(id, this.$blindSections, $targetSection, intent);
         }
 
-        let $elseSections = this.$blindSections.filter(asv(eds.onTop, t1) + nti(id));
+        const $elseSections = this.$blindSections.filter(asv(eds.onTop, t1) + nti(id));
         if ($elseSections.length > 0) {
             for (var section of $elseSections) section.pageHandle?.hide(false);
         }
 
-        let targetComponent = this.blindSections[id];
+        const targetComponent = this.blindSections[id];
+        targetComponent.pushIntent(intent);
         if (targetComponent.isOnTop) {
             unhandled = true;
         } else {
-            targetComponent.pushIntent(intent);
             targetComponent.show(false);
             this.blindedCurrentOnTop = targetComponent;
         }
 
-        return unhandled;
+        return !unhandled;
     },
 
     closeInstantBlinded: function(id) {
-        let component = this.blindSections[id];
+        const component = this.blindSections[id];
         if (component == null) return null;
-        let $targetSection = component.$host;
-        let isModal = $targetSection.hasClass("modal");
+        const $targetSection = component.$host;
+        const isModal = $targetSection.hasClass("modal");
 
         if (isModal) {
             if (component.isOnTop) {
-                let closed = this.closeModalSection(id, this.$blindSections, $targetSection);
+                const closed = this.closeModalSection(id, this.$blindSections, $targetSection);
                 if (!component.isStatic) this.releaseInstantContent(component);
                 return closed;
             } else return null;
         } else {
-            let closed = component.close(false);
+            const closed = component.close(false);
+            if (!component.isStatic) this.releaseInstantContent(component);
+            return closed;
+        }
+    },
+
+    openManagedOverlay: function(id, intent) {
+        const page = pageManager.getComponent(id);
+        if (page == null) return null;
+        if (page.statement == "static") return null;
+        this.$overlayArea.append(page.raw);
+        const $section = this.$overlaySections.filter(eid + id);
+        if ($section == null || $section.length < 1) return null;
+        const component = this.initOverlayContent($section[0], intent);
+        if (component.isOnTop) component.show(false);
+        return component;
+    },
+
+    showManagedOverlay: function(id, intent) {
+        const $targetSection = this.$overlaySections.filter(eid + id);
+        const isModal = $targetSection.hasClass("modal");
+
+        var unhandled = false;
+        if (isModal) {
+            const onTop = $targetSection.attr(eds.onTop);
+            if (onTop == t1 || onTop == "1*") {
+                //do nothing
+            } else return this.openModalSection(id, this.$overlaySections, $targetSection, intent);
+        }
+
+        const $elseSections = this.$overlaySections.filter(asv(eds.onTop, t1) + nti(id));
+        if ($elseSections.length > 0) {
+            for (var section of $elseSections) section.pageHandle?.hide(false);
+        }
+
+        const targetComponent = this.overlaySections[id];
+        targetComponent.pushIntent(intent);
+        if (targetComponent.isOnTop) {
+            unhandled = true;
+        } else {
+            targetComponent.show(false);
+            this.overlayCurrentOnTop = targetComponent;
+        }
+
+        return !unhandled;
+    },
+
+    closeManagedOverlay: function(id) {
+        const component = this.overlaySections[id];
+        if (component == null) return null;
+        const $targetSection = component.$host;
+        const isModal = $targetSection.hasClass("modal");
+
+        if (isModal) {
+            if (component.isOnTop) {
+                const closed = this.closeModalSection(id, this.$overlaySections, $targetSection);
+                if (!component.isStatic) this.releaseInstantContent(component);
+                return closed;
+            } else return null;
+        } else {
+            const closed = component.close(false);
             if (!component.isStatic) this.releaseInstantContent(component);
             return closed;
         }
@@ -9026,10 +9361,8 @@ const estreUi = {
 
         if ($targetSection == null) $targetSection = $sectionSet.filter(eid + id);
 
-        let component = $sectionSet == this.$mainSections ? this.mainSections[id] : ($sectionSet == this.$blindSections ? this.blindSections[id] : ($sectionSet == this.$menuSections ? this.menuSections[id] : null));
-        if (component != null) {
-            component.pushIntent(intent);
-        }
+        const component = $sectionSet == this.$mainSections ? this.mainSections[id] : ($sectionSet == this.$blindSections ? this.blindSections[id] : ($sectionSet == this.$menuSections ? this.menuSections[id] : null));
+        component?.pushIntent(intent);
         
         $targetSection.off("click");
         $targetSection.click(function(e) {
@@ -9039,7 +9372,7 @@ const estreUi = {
 
             return false;
         });
-        let $container = $targetSection.find(c.c + div + uis.container);
+        const $container = $targetSection.find(c.c + div + uis.container);
         $container.off("click");
         $container.click(function(e) {
             e.preventDefault();
@@ -9068,12 +9401,42 @@ const estreUi = {
         return $targetSection[0]?.pageHandle?.close(false);
     },
 
+    initOverlayContents: function() {
+        const $oss = this.$overlaySections;
+
+        for (var i=0; i<$oss.length; i++) this.initOverlayContent($oss[i], null, true);
+
+        // const $top = this.$overlaySections.filter(asv(eds.onTop, t1));
+        // if ($top.length < 1) $top = this.$overlaySections;
+        // $top[$top.length - 1]?.pageHandle?.show();
+    },
+
+    releaseOverlayContent(component) {
+        if (component == null) return;
+        component.release(component.isStatic ? null : true);
+        if (this.blindSections[component.id] != null) delete this.overlaySections[component.id];
+        const index = this.overlaySectionList.indexOf(component);
+        if (index > -1) this.overlaySectionList.splice(index, 1);
+    },
+
+    initOverlayContent(bound, intent = null, init = false) {
+        this.releaseOverlayContent(bound.pageHandle);
+        const component = new EstreOverlayComponent(bound);
+        if (!init || component.isStatic) {
+            this.overlaySections[component.id] = component;
+            this.overlaySectionList.push(component);
+        }
+        component.init(intent);
+        // if (component.isOnTop && component.isStatic) component.show(false);
+        return component;
+    },
+
     initInstantContents: function() {
-        let $bss = this.$blindSections;
+        const $bss = this.$blindSections;
 
         for (var i=0; i<$bss.length; i++) this.initInstantContent($bss[i], null, true);
 
-        // let $top = this.$blindSections.filter(asv(eds.onTop, t1));
+        // const $top = this.$blindSections.filter(asv(eds.onTop, t1));
         // if ($top.length < 1) $top = this.$blindSections;
         // $top[$top.length - 1]?.pageHandle?.show();
     },
@@ -9082,13 +9445,13 @@ const estreUi = {
         if (component == null) return;
         component.release(component.isStatic ? null : true);
         if (this.blindSections[component.id] != null) delete this.blindSections[component.id];
-        let index = this.blindSectionList.indexOf(component);
+        const index = this.blindSectionList.indexOf(component);
         if (index > -1) this.blindSectionList.splice(index, 1);
     },
 
     initInstantContent(bound, intent = null, init = false) {
         this.releaseInstantContent(bound.pageHandle);
-        let component = new EstreInstantComponent(bound);
+        const component = new EstreInstantComponent(bound);
         if (!init || component.isStatic) {
             this.blindSections[component.id] = component;
             this.blindSectionList.push(component);
@@ -9099,11 +9462,11 @@ const estreUi = {
     },
 
     initStaticContents: function() {
-        let $mss = this.$mainSections;
+        const $mss = this.$mainSections;
 
         for (var i=0; i<$mss.length; i++) this.initStaticContent($mss[i], null, true);
 
-        let $top = this.$mainSections.filter(asv(eds.onTop, t1));
+        const $top = this.$mainSections.filter(asv(eds.onTop, t1));
         if ($top.length < 1) $top = this.$mainSections;
         $top[$top.length - 1]?.pageHandle?.show();
     },
@@ -9112,13 +9475,13 @@ const estreUi = {
         if (component == null) return;
         component.release(component.isStatic ? null : true);
         if (this.mainSections[component.id] != null) delete this.mainSections[component.id];
-        let index = this.mainSectionList.indexOf(component);
+        const index = this.mainSectionList.indexOf(component);
         if (index > -1) this.mainSectionList.splice(index, 1);
     },
 
     initStaticContent(bound, intent = null, init = false) {
         this.releaseStaticContent(bound.pageHandle);
-        let component = new EstreComponent(bound);
+        const component = new EstreComponent(bound);
         if (!init || component.isStatic) {
             this.mainSections[component.id] = component;
             this.mainSectionList.push(component);
@@ -9131,7 +9494,7 @@ const estreUi = {
     },
 
     initStaticMenus: function() {
-        let $mss = this.$menuSections;
+        const $mss = this.$menuSections;
 
         for (var i=0; i<$mss.length; i++) this.initStaticMenu($mss[i], null, true);
 
@@ -9144,13 +9507,13 @@ const estreUi = {
         if (component == null) return;
         component.release(component.isStatic ? null : true);
         if (this.menuSections[component.id] != null) delete this.menuSections[component.id];
-        let index = this.menuSectionList.indexOf(component);
+        const index = this.menuSectionList.indexOf(component);
         if (index > -1) this.menuSectionList.splice(index, 1);
     },
 
     initStaticMenu(bound, intent = null, init = false) {
         this.releaseStaticMenu(bound.pageHandle);
-        let component = new EstreComponent(bound);
+        const component = new EstreComponent(bound);
         if (!init || component.isStatic) {
             this.menuSections[component.id] = component;
             this.menuSectionList.push(component);
@@ -9174,7 +9537,7 @@ const estreUi = {
     },
 
     initSessionList: function($listHolder) {
-        let $list = $listHolder.find(uis.pageShortCut);
+        const $list = $listHolder.find(uis.pageShortCut);
         for (var item of $list) {
             this.setEventSessionItem($(item));
         }
@@ -9186,13 +9549,13 @@ const estreUi = {
             return;
         }
 
-        let inst = this;
+        const inst = this;
         $item.find(btn).click(function(e) {
-            let $this = $(this);
-            let $item = $this.closest(".page_short_cut");
-            let contained = $item.attr(eds.contained);
-            let containerType = $item.attr(eds.containerType);
-            let containerId = $item.attr(eds.containerId);
+            const $this = $(this);
+            const $item = $this.closest(".page_short_cut");
+            const contained = $item.attr(eds.contained);
+            const containerType = $item.attr(eds.containerType);
+            const containerId = $item.attr(eds.containerId);
 
             switch(contained) {
                 case "root":
@@ -9201,7 +9564,7 @@ const estreUi = {
 
                 default:
                     if (containerType == "sub_page") {
-                        let section = inst.mainSections[contained];
+                        const section = inst.mainSections[contained];
                         if (section.showContainer(containerId)) inst.switchRootTab(contained);
                     }
                     break;
@@ -9225,13 +9588,14 @@ const estreUi = {
     },
 
     onBack() {
-        return this.isOpenMainMenu ? this.closeMainMenu() : false ||
+        return this.onBackOverlay() ||
+            this.isOpenMainMenu ? this.closeMainMenu() : false ||
             this.onBackBlinded() || this.onBackMain();
     },
 
 
     onReloadMenu() {
-        let currentOnTop = this.menuCurrentOnTop;
+        const currentOnTop = this.menuCurrentOnTop;
         return currentOnTop?.onReload() ?? false;
     },
 
@@ -9242,10 +9606,16 @@ const estreUi = {
     },
 
     onReloadMain() {
-        let currentOnTop = this.mainCurrentOnTop;
+        const currentOnTop = this.mainCurrentOnTop;
         return currentOnTop?.onReload() ?? false;
     },
 
+
+    onBackOverlay() {
+        if (this.$overlaySections.filter(asv(eds.onTop, t1)).length > 0) {
+            return this.overlayCurrentOnTop?.onBack() ?? false;
+        } else return false;
+    },
 
     onBackBlinded() {
         if (this.$blindSections.filter(asv(eds.onTop, t1)).length > 0) {
@@ -9254,7 +9624,7 @@ const estreUi = {
     },
 
     onBackMain() {
-        let currentOnTop = this.mainCurrentOnTop;
+        const currentOnTop = this.mainCurrentOnTop;
         if (currentOnTop?.id == "home") return false;
         else return currentOnTop?.onBack() ?? false;
     },
