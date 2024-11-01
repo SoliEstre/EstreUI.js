@@ -354,6 +354,7 @@ const eds = {
     active: "data-active",
     onTop: "data-on-top",
     static: "data-static",
+    multiInstance: "data-multi-instance",
 
     // for bind data
     index: "data-index",
@@ -778,7 +779,7 @@ class ES {
 
     #set(key, type = "string", value) {
         if (key == null | key == "") return undefined;
-        const valueString = null;
+        let valueString = null;
         switch (type) {
 
             case "object":
@@ -956,6 +957,21 @@ class EstreUiPage {
         }
     }
 
+    #componentIsMultiInstance = null;
+    #containerIsMultiInstance = null;
+    #articleIsMultiInstance = null;
+
+    get componentIsMultiInstance() { return this.#componentIsMultiInstance; }
+    get containerIsMultiInstance() { return this.#containerIsMultiInstance; }
+    get articleIsMultiInstance() { return this.#articleIsMultiInstance; }
+
+    get isMultiInstance() {
+        if (this.#articleIsMultiInstance != null) return this.#articleIsMultiInstance;
+        else if (this.#containerIsMultiInstance != null) return this.#containerIsMultiInstance;
+        else if (this.#componentIsMultiInstance != null) return this.#componentIsMultiInstance;
+        else return null;
+    }
+
     #sectionBound = null;//main/blind/menu/overlay
     get sectionBound() { return this.#sectionBound; }
     get isOverlay() { return this.sectionBound == "overlay"; }
@@ -965,6 +981,9 @@ class EstreUiPage {
 
     get sections() {
         switch (this.sectionBound) {
+            case "overlay":
+                return estreUi.overlaySections;
+
             case "blind":
                 return estreUi.blindSections;
 
@@ -1012,6 +1031,9 @@ class EstreUiPage {
             case "blind":
                 return estreUi.blindSectionList[this.id];
 
+            case "overlay":
+                return estreUi.overlaySectionList[this.id];
+
             default:
                 return null;
         }
@@ -1044,6 +1066,7 @@ class EstreUiPage {
         pid += this.#component;
         if (this.#container != null) pid += "#" + this.#container;
         if (this.#article != null) pid += "@" + this.#article;
+        if (this.isMultiInstance) pid += "^";
         return pid;
     }
 
@@ -1144,12 +1167,13 @@ class EstreUiPage {
         this.setComponent($component[0].id);
 
         this.#componentStatement = $component.attr(eds.static) == t1 ? "static" : "instant";
+        this.#componentIsMultiInstance = $component.attr(eds.multiInstance) == t1;
 
         if (this.#sectionBound == null) {
             const $main = $component.closest("main");
             const $nav = $component.closest("nav");
             const mainId = $main.length > 0 ? $main.attr("id") : $nav.attr("id");
-            const sectionBound = mainId == "staticDoc" ? "main" : (mainId == "instantDoc" ? "blind" : (mainId == "mainMenu" ? "menu" : null));
+            const sectionBound = mainId == "staticDoc" ? "main" : (mainId == "instantDoc" ? "blind" : (mainId == "mainMenu" ? "menu" : (mainId == "managedOverlay" ? "overlay" : null)));
             this.setSectionBound(sectionBound);
         }
 
@@ -1164,6 +1188,7 @@ class EstreUiPage {
         this.setContainer($container.attr(eds.containerId));
 
         this.#containerStatement = $container.attr(eds.static) == t1 ? "static" : "instant";
+        this.#containerIsMultiInstance = $container.attr(eds.multiInstance) == t1;
 
         if ($component == null) $component = $container.closest("section");
 
@@ -1180,6 +1205,7 @@ class EstreUiPage {
         this.setArticle($article.attr(eds.articleId));
 
         this.#articleStatement = $article.attr(eds.static) == t1 ? "static" : "instant";
+        this.#articleIsMultiInstance = $article.attr(eds.multiInstance) == t1;
 
         if ($container == null) $container = $article.closest("div.container");
 
@@ -1274,6 +1300,21 @@ class EstreUiPageManager {
 
     get pages() { return this.#pages; }
 
+    #managedPidMap = {
+        get onRunning() { return "$i&o=interaction#onRunning" },
+        get onProgress() { return "$i&o=interaction#onProgress" },
+
+        get alert() { return "$i&o=interaction#alert^" },
+        get confirm() { return "$i&o=interaction#confirm^" },
+        get prompt() { return "$i&o=interaction#prompt^" },
+
+        get popNote() { return "$i&o=notification#note@note^" },
+        get popNoti() { return "$i&o=notification#noti@noti^" },
+        
+        get timeline() { return "$s&o=operation#root@timeline" },
+        get quickPanel() { return "$s&o=operation#root@quickPanel" },
+    }
+
     #extPidMap = null;
     get extPidMap() { return this.#extPidMap; }
     set extPidMap(value) {
@@ -1335,7 +1376,9 @@ class EstreUiPageManager {
     }
 
     bringPage(pid, intent, instanceOrigin) {
-        if (pid.indexOf("*") > -1) pid = this.extPidMap[pid.replace("\*", "")];
+        if (pid.indexOf("!") > -1) pid = this.#managedPidMap[pid.replace(/^\!/, "")];
+        if (pid == null) return null;
+        if (pid.indexOf("*") > -1) pid = this.extPidMap[pid.replace(/^\*/, "")];
         if (pid == null) return null;
         if (pid.indexOf("$") < 0) pid = this.foundPid(pid);
         const page = this.get(pid);
@@ -1427,7 +1470,9 @@ class EstreUiPageManager {
     }
 
     showPage(pid, intent, instanceOrigin) {
-        if (pid.indexOf("*") > -1) pid = this.extPidMap[pid.replace("\*", "")];
+        if (pid.indexOf("!") > -1) pid = this.#managedPidMap[pid.replace(/^\!/, "")];
+        if (pid == null) return null;
+        if (pid.indexOf("*") > -1) pid = this.extPidMap[pid.replace(/^\*/, "")];
         if (pid == null) return null;
         if (pid.indexOf("$") < 0) pid = this.foundPid(pid);
         const page = this.get(pid);
@@ -1486,7 +1531,9 @@ class EstreUiPageManager {
     }
 
     hidePage(pid, hideHost = false, instanceOrigin = null) {
-        if (pid.indexOf("*") > -1) pid = this.extPidMap[pid.replace("\*", "")];
+        if (pid.indexOf("!") > -1) pid = this.#managedPidMap[pid.replace(/^\!/, "")];
+        if (pid == null) return null;
+        if (pid.indexOf("*") > -1) pid = this.extPidMap[pid.replace(/^\*/, "")];
         if (pid == null) return null;
         if (pid.indexOf("$") < 0) pid = this.foundPid(pid);
         const page = this.get(pid);
@@ -1527,7 +1574,9 @@ class EstreUiPageManager {
     }
 
     closePage(pid, closeHost = false, instanceOrigin = null) {
-        if (pid.indexOf("*") > -1) pid = this.extPidMap[pid.replace("\*", "")];
+        if (pid.indexOf("!") > -1) pid = this.#managedPidMap[pid.replace(/^\!/, "")];
+        if (pid == null) return null;
+        if (pid.indexOf("*") > -1) pid = this.extPidMap[pid.replace(/^\*/, "")];
         if (pid == null) return null;
         if (pid.indexOf("$") < 0) pid = this.foundPid(pid);
         const page = this.get(pid);
@@ -1885,7 +1934,7 @@ class EstrePageHandle {
                 case "autoClose":
                     if (data.host != null) {
                         const handle = this.getHost(data.host);
-                        if (data.time != null && !isNaN(time)) {
+                        if (data.time != null && !isNaN(data.time)) {
                             setTimeout(() => handle?.close(), parseInt(data.time));
                         }
                     }

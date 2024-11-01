@@ -218,5 +218,55 @@ if ("serviceWorker" in navigator) {
         </section>
     </main>
 </body>
+
+<nav id="managedOverlay">
+    <section id="interaction" class="tpbg" data-static="1" data-on-top="">
+        <div class="container blind" data-container-id="onRunning" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(0 0 0 / 50%);">
+            <article class="constraint" data-article-id="main" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
+                <div class="float_center">
+                    <dotlottie-player src="./lotties/loading_circle.json" background="transparent" speed="1.5" style="width: 150px; height: 150px; " loop autoplay></dotlottie-player>
+                </div>
+            </article>
+        </div>
+        <div class="container blind" data-container-id="onProgress" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(0 0 0 / 50%);">
+            <article class="constraint" data-article-id="main" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
+                <div class="float_center">
+                    <dotlottie-player src="./lotties/loading_circle.json" background="transparent" speed="1.5" style="width: 150px; height: 150px; " loop autoplay></dotlottie-player>
+                </div>
+            </article>
+        </div>
+        <div class="container blind" data-container-id="alert" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(0 0 0 / 50%);">
+            <article class="constraint" data-article-id="main" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
+                <div class="float_center" style="min-width: 240px; max-width: calc(100vw - var(--left-pad) - var(--right-pad)); ">
+                    <div class="title"><span data-bind="title"></span></div>
+                    <div class="message"><span data-bind="message"></span></div>
+                    <div class="line_block"><button><span data-bind="ok">확인</span></button></div>
+                </div>
+            </article>
+        </div>
+    </section>
+    <section id="operation" class="tpbg" data-static="1" data-on-top="">
+        <div class="container top slider blind" data-container-id="root" data-static="1" data-on-top="" style="background-color: rgb(0 0 0 / 50%);">
+            <article class="constraint" data-article-id="timeline" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
+
+            </article>
+            <article class="constraint" data-article-id="quickPanel" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
+
+            </article>
+        </div>
+    </section>
+    <section id="notification" class="tpbg" data-static="1" data-on-top="">
+        <div class="container top" data-container-id="noti" data-static="1" data-on-top="1" style="background-color: rgb(0 0 0 / 50%);">
+            <article class="" data-article-id="noti" data-static="" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(255 255 255 / 25%);">
+                
+            </article>
+        </div>
+        <div class="container bottom" data-container-id="note" data-static="1" data-on-top="1" style="background-color: rgb(0 0 0 / 50%);">
+            <article class="" data-article-id="note" data-static="" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(255 255 255 / 25%);">
+
+            </article>
+        </div>
+    </section>
+</nav>
 <script>doc.ebi("splash").dataset.onTop = t1; //trigger for fade in splash</script>
 </html>
