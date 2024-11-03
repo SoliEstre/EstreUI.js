@@ -25,7 +25,7 @@ Application preview page on this repo.
 
 
 Applications for Estre UI demonstration   
-[APT.](https://estreui.mpsolutions.kr/myOwnApplication1.html)
+[APT.](https://estreui.mpsolutions.kr/APT)
 
 
 Document index
