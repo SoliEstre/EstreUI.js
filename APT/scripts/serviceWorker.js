@@ -1,8 +1,8 @@
-const CACHE_VERSION_NAME = "cache-v1.0";
+const CACHE_VERSION_NAME = "cache-v1.1";
  
 const CACHE_LIST = [
-    "/favicon.ico",
-    "/webmanifest.json",
+    "favicon.ico",
+    "webmanifest.json",
 
     "/images/APT_16.png",
     "/images/APT_32.png",
@@ -19,14 +19,14 @@ const CACHE_LIST = [
     "/lotties/ptr_indic.json",
 
     "/styles/estreUi.css",
-    "/styles/apt.css",
+    "styles/apt.css",
 
-    "/scripts/serviceWorker.js",
+    "scripts/serviceWorker.js",
     "https://code.jquery.com/jquery-3.7.1.js",
     "https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs",
     "/scripts/jcodd.js",
     "/scripts/estreUi.js",
-    "/scripts/apt.js",
+    "scripts/apt.js",
 
 ];
 
