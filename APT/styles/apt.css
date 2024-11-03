@@ -10,6 +10,7 @@
 
 /* Current application customs */
 html {
+    touch-action: pan-y;
 
     --color-apt-dark: #EF6688;   --cad: 239 102 136;
     --color-apt: #F77596;        --ca: 247 117 150;
