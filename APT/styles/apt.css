@@ -72,6 +72,7 @@ article .bg_pointed { --bg-basic: rgb(var(--cpl) / 15%); --bg-hover: rgb(var(--c
 
 
 /* Data related styles */
+main#staticDoc > section#apart > div.container > article { margin: 16px; }
 @media all and (min-height: 700px) and (min-width: 740px) {
 main#staticDoc > section#apart > div.container > article { height: fit-content; }
 main#staticDoc > section#apart > div.container > article[data-article-id="main"] { position: relative; min-width: 100%; min-height: 140px; }
