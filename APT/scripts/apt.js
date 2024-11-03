@@ -10,9 +10,9 @@ const apartPages = {
 
     "home": "$s&m=home",
 
-    "apart": "$s&m=tab1",
+    "apart": "$s&m=apart",
 
-    "lyrics": "$s&m=tab2",
+    "lyrics": "$s&m=lyrics",
 
     "": "",
 }
@@ -34,7 +34,7 @@ const apartPageHandlers = {
 
 
 // Implement example of my own custom page handler
-class EstreUiExapmlePageManager extends EstreUiCustomPageManager {
+class ApartPageManager extends EstreUiCustomPageManager {
 
     // class property
 
@@ -63,12 +63,12 @@ class EstreUiExapmlePageManager extends EstreUiCustomPageManager {
 
 }
 
-const apartPageManager = new EstreUiExapmlePageManager().init(apartPages, apartPageHandlers);
+const apartPageManager = new ApartPageManager().init(apartPages, apartPageHandlers);
 
 
 
 // Implement example of my own action handler
-class MyOwnActionHandler {
+class ApartActionHandler {
 
     hostId = "apartActionManager";
 
@@ -93,7 +93,7 @@ class MyOwnActionHandler {
     }
 }
 
-const apartActionHandler = new MyOwnActionHandler();
+const apartActionHandler = new ApartActionHandler();
 
 
 
