@@ -1,0 +1,567 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>APT. application for Estre UI demonstration</title>
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, viewport-fit=cover">
+	<meta name="mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="APT. EstreUI Demo" />
+    <meta name="description" content="APT. application for Estre UI demonstration" />
+	<meta name="theme-color" content="F77596">
+    <script>
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./scripts/serviceWorker.js").catch (ex => {
+            console.log(ex);
+        });
+    });
+}
+    </script>
+
+	<link rel="apple-touch-startup-image" href="./images/APT_512.png">
+	<link rel="apple-touch-icon" href="./images/APT_144.png">
+	<link rel="apple-touch-icon" sizes="152x152" href="./images/APT_152.png">
+	<link rel="apple-touch-icon" sizes="180x180" href="./images/APT_180.png">
+	<link rel="apple-touch-icon" sizes="167x167" href="./images/APT_167.png">
+	<link rel="shortcut icon" sizes="144x144" href="./images/APT_144.png" />
+    <link rel="shortcut icon" href="./favicon-flatter.ico">
+    <link rel="icon" type="image/png" sizes="48x48" href="./images/APT_48.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="./images/APT_32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./images/APT_16.png">
+    <link rel="manifest" href="./webmanifest.json">
+
+    <link rel="stylesheet" type="text/css" href="../styles/estreUi.css">
+    <link rel="stylesheet" type="text/css" href="./styles/apt.css">
+
+    <style>
+/* in html styles */
+    </style>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
+    <script type="text/javascript" src="../scripts/jcodd.js"></script>
+    <script type="text/javascript" src="../scripts/estreUi.js"></script>
+    <script type="text/javascript" src="./scripts/apt.js"></script>
+    <script>
+// in html scripts
+    </script>
+</head>
+<body class="vfv_scroll">
+    <main id="splashRoot">
+        <section id="splash" data-on-top="0">
+            <div class="container" data-container-id="root" style="background-color: #222; ">
+                <article class="constraint" data-article-id="main" style="background-color: transparent; ">
+                    <div class="float_center" style="--width: min(50vw, 240px);">
+                        <img src="./images/APT_512.png" style="width: var(--width); " />
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <nav id="mainMenu" data-opened="">
+        <section id="menuArea" class="vfv_scroll" data-static="1">
+            <div class="container" data-container-id="root" data-static="1" style="display: flex; flex-flow: column nowrap; height: 100%; justify-content: space-between; ">
+                <article class="rootMenu" data-article-id="main" data-static="1" style="flex-grow: 1; ">
+                    <ul class="maxWidth">
+                        <li><button class="tp_tiled_btn" onclick="myOwnPageManager.bringPage('*apart'); estreUi.closeMainMenu(); ">What is Apateu</button></li>
+                        <li><button class="tp_tiled_btn" onclick="myOwnPageManager.bringPage('*home'); estreUi.closeMainMenu(); ">APT. is home</button></li>
+                        <li><button class="tp_tiled_btn" onClick="myOwnPageManager.bringPage('*lyrics'); estreUi.closeMainMenu(); ">Show lyrics</button></li>
+                    </ul>
+                </article>
+                <article data-article-id="credits" data-static="1" style="flex-grow: 0; margin: 16px; font-size: 18px; font-weight: 600; ">
+                    <div><span>Song by ROSÉ & Bruno Mars</span></div>
+                </article>
+            </div>
+        </section>
+        <section id="grabArea" data-static="1"><div class="pad"></div></section>
+    </nav>
+    <header id="fixedTop">
+        <nav id="appbar">
+            <button id="home" class="tp_tiled_btn" title="go to main">
+                <span style="font-size: 40px; font-weight: 600; ">APT.</span>
+            </button>
+            <nav id="appbarLeft" class="float_area">
+                <button id="mainMenuBtn" class="tp_tiled_btn closer" title="toggle menu">
+                    <dotlottie-player src="../lotties/menu_and_back_btn.json" background="transparent" speed="1" direction="1" mode="normal"></dotlottie-player>
+                </button>
+            </nav>
+            <nav id="appbarRight" class="float_area">
+            </nav>
+        </nav>
+    </header>
+    <div id="ptr"><div><dotlottie-player src="../lotties/ptr_indic.json" background="transparent" speed="1" direction="1" mode="normal"></dotlottie-player></div></div>
+    <main id="staticDoc">
+        <!-- Main tabs content - must be match id of button on fixedBottom navs -->
+        <section id="apart" class="root_tab_content" data-static="1">
+            <div class="container vfv_scroll" data-container-id="root" data-static="1" style="flex-flow: row wrap; justify-content: space-evenly; align-items: flex-start; /*background-color: #DEF; */">
+                <article class="" data-article-id="main" data-static="1">
+                    <div class="float_center" style="max-width: 1200px; margin: auto; ">
+                        <h2 style="display: inline; ">아파트? <h3 style="display: inline; ">Apateu <h4 style="display: inline; ">Apart<span style="color: #444; ">ment</span></h4></h3></h2>
+                        <p style="font-size: 18px; ">The term ‘아파트’ originates from the English word ‘apartment,’ and in Korea, it generally refers to multi-story residential buildings that are sold to individual owners and are commonly used for multiple households living together.</p>
+                    </div>
+                </article>
+                <article class="" data-article-id="means1" data-static="1">
+                    <h4>‘Apart’ meaning as a type of buildings and living environment</h4>
+                    <p style="font-size: 18px; ">An 아파트(Apateu, apart.) is a type of multi-family housing where a building with two or more floors is divided into multiple units, allowing each household to live independently.</p>
+                    <p style="font-size: 18px; ">In Korea, an apartment refers to a multi-family housing complex with buildings of five or more floors, typically including multiple buildings of ten or more floors, parking lots, landscaping, playgrounds, and commercial areas. It is considered a stable living environment that most people ultimately aim for. Therefore, an apartment is the most common type of ‘home’ in Korea.</p>
+                </article>
+                <article class="" data-article-id="means2" data-static="1">
+                    <h4>‘Apart’ meaning as a drinking game</h4>
+                    <p style="font-size: 18px; ">Apartment is a popular drinking game in Korea. The game starts with participants sitting in a circle. When the host shouts ‘Apartment, Apartment, Apartment!’, the participants stack their hands on top of each other like building an apartment.</p>
+                    <p style="font-size: 18px; ">Then, the host calls out a specific floor number, and participants start removing their hands from the bottom one by one. The person who removes their hand corresponding to the called floor number has to drink. This game is simple yet fun and perfect for livening up a drinking party.</p>
+                </article>
+                <article class="" data-article-id="means3" data-static="1">
+                    <h4>‘Apart’ meaning as the old 1980s Korean pop song</h4>
+                    <p style="font-size: 18px; ">Yoon Soo-il’s song ‘아파트’ is a Korean rock song released in 1982. The lyrics reflect the apartment boom in the Gangnam area of Seoul during the 1980s, capturing the social atmosphere of the time.</p>
+                    <p style="font-size: 18px; ">Written and composed by Yoon Soo-il himself, the song features a fast beat that contrasts with its melancholic lyrics. It gained immense popularity, topping KBS’s ‘Gayo Top 10’ for five consecutive weeks. The song is also frequently used as a cheer song at sports events and has been remade by various artists.</p>
+                    <p style="font-size: 18px; ">Most middle-aged and older people used to think of this song when they heard ‘Apartment.’ Recently, with the hit song by Rosé & Bruno Mars, people have started referring to this ‘Apartment’ as a newly built apartment and Yoon Soo-il’s ‘아파트’ as an old built apartment, spreading the meme that it has successfully undergone reconstruction.</p>
+                </article>
+            </div>
+        </section>
+        <section id="home" class="root_tab_content" data-static="1" data-on-top="1">
+            <div class="container vfv_scroll" data-container-id="root" data-static="1">
+                <article class="constraint" data-article-id="main" data-static="1">
+                    <iframe src="https://www.youtube.com/embed/ekr2nIex040?si=Sg2w9g1jdzVh3TB9" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                </article>
+            </div>
+        </section>
+        <section id="lyrics" class="root_tab_content" data-static="1">
+            <div class="container vfv_scroll" data-container-id="root" data-static="1">
+                <article class="constraint fwvs" data-article-id="main" data-static="1" style="display: flex; flex-direction: row nowrap; justify-content: center; background-color: #242424; color: var(--color-apt); font-size: 28px; font-weight: 600; overflow-y: overlay; scrollbar-width: thin; ">
+                    <div style="width: max-content">
+                        <p id="">
+                            <span><ruby>채영이가<rt>Chaeyeong-iga</rt></ruby></span>
+                            <span><ruby>좋아하는<rt>johah-haneun</rt></ruby></span>
+                            <span><ruby>랜덤 게임<rt>random game</rt></ruby></span>
+                            <span><ruby>랜덤 게임<rt>random game</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span>Game start</span>
+                        </p>
+                        <p id="">
+                            <br />
+                        </p>
+
+                        <p id="">
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span>uh</span>
+                            <span>uh-huh</span>
+                            <span>uh-huh</span>
+                        </p>
+                        <p id="">
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span>uh</span>
+                            <span>uh-huh</span>
+                            <span>uh-huh</span>
+                        </p>
+                        <p id="">
+                            <br />
+                        </p>
+
+                        <p id="">
+                            <span>Kissy face😘</span>
+                            <span>kissy face😘</span>
+                        </p>
+                        <p id="">
+                            <span>sent to tour phone</span>
+                        </p>
+                        <p id="">
+                            <span>but I'm trying to</span>
+                            <span>kiss your lips for real</span>
+                        </p>
+                        <p id="">
+                            <span>uh-huh</span>
+                            <span>uh-huh</span>
+                        </p>
+                        <p id="">
+                            <span>Red hearts❤️</span>
+                            <span>red hearts❤️</span>
+                        </p>
+                        <p id="">
+                            <span>that's what I'm on</span>
+                        </p>
+                        <p id="">
+                            <span>yeah, Come give me</span>
+                            <span>somethin' I can feel</span>
+                        </p>
+                        <p id="">
+                            <span>oh-oh-oh</span>
+                        </p>
+                        <p id="">
+                            <br />
+                        </p>
+                        <p id="">
+                            <span>Don't you want me like</span>
+                            <span>I want you, baby</span>
+                        </p>
+                        <p id="">
+                            <span>Don't you need me like</span>
+                            <span>I need you, now</span>
+                        </p>
+                        <p id="">
+                            <span>Sleep tomorrow</span>
+                            <span>but tonight go crazy</span>
+                        </p>
+                        <p id="">
+                            <span>All you gotta do is</span>
+                            <span>just meet me at the</span>
+                        </p>
+                        <p id="">
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span>uh</span>
+                            <span>uh-huh</span>
+                            <span>uh-huh</span>
+                        </p>
+                        <p id="">
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span>uh</span>
+                            <span>uh-huh</span>
+                            <span>uh-huh</span>
+                        </p>
+                        <p id="">
+                            <br />
+                        </p>
+
+                        <p id="">
+                            <span>It's whatever</span>
+                            <span>it's whatever</span>
+                            <span>it's whatever</span>
+                        </p>
+                        <p id="">
+                            <span>you like</span>
+                            <span>(whoo)</span>
+                        </p>
+                        <p id="">
+                            <span>Turn this <ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span>into a club</span>
+                        </p>
+                        <p id="">
+                            <span>uh-huh</span>
+                            <span>uh-huh</span>
+                        </p>
+                        <p id="">
+                            <span>I'm talking</span>
+                            <span>drink</span>
+                            <span>dance</span>
+                            <span>smoke</span>
+                            <span>freak</span>
+                        </p>
+                        <p id="">
+                            <span>party all night</span>
+                            <span>(come on)</span>
+                        </p>
+                        <p id="">
+                            <span><ruby>건배<rt>geonbae</rt></ruby></span>
+                            <span><ruby>건배<rt>geonbae</rt></ruby></span>
+                            <span>girl, what's up</span>
+                        </p>
+                        <p id="">
+                            <span>Oh-oh-oh</span>
+                        </p>
+                        <p id=""></p>
+                        <p id="">
+                            <span>Don't you want me like</span>
+                            <span>I want you, baby</span>
+                        </p>
+                        <p id="">
+                            <span>Don't you need me like</span>
+                            <span>I need you, now</span>
+                        </p>
+                        <p id="">
+                            <span>Sleep tomorrow</span>
+                            <span>but tonight go crazy</span>
+                        </p>
+                        <p id="">
+                            <span>All you gotta do is</span>
+                            <span>just meet me at the</span>
+                        </p>
+                        <p id="">
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span>uh</span>
+                            <span>uh-huh</span>
+                            <span>uh-huh</span>
+                        </p>
+                        <p id="">
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span>uh</span>
+                            <span>uh-huh</span>
+                            <span>uh-huh</span>
+                        </p>
+                        <p id="">
+                            <br />
+                        </p>
+
+
+                        <p id="">
+                            <span>Hey</span>
+                            <span>so now you know the game</span>
+                        </p>
+                        <p id="">
+                            <span>Are you ready?</span>
+                            <span>Cause I'm commin</span>
+                        </p>
+                        <p id="">
+                            <span>to get you</span>
+                            <span>get you</span>
+                            <span>get you</span>
+                        </p>
+                        <p id="">
+                            <span>Hold on</span>
+                            <span>hold on</span>
+                            <span>I'm on my way</span>
+                        </p>
+                        <p id="">
+                            <span>Yeah, yeah</span>
+                            <span>yeah, yeah</span>
+                            <span>yeah</span>
+                            <span>I'm on my way</span>
+                        </p>
+                        <p id="">
+                            <span>Hold on</span>
+                            <span>hold on</span>
+                            <span>I'm on my way</span>
+                        </p>
+                        <p id="">
+                            <span>Yeah, yeah</span>
+                            <span>yeah, yeah</span>
+                            <span>yeah</span>
+                            <span>I'm on my way</span>
+                        </p>
+                        <p id="">
+                            <br />
+                        </p>
+
+                        <p id="">
+                            <span>Don't you want me like</span>
+                            <span>I want you, baby</span>
+                        </p>
+                        <p id="">
+                            <span>Don't you need me like</span>
+                            <span>I need you, now</span>
+                        </p>
+                        <p id="">
+                            <span>Sleep tomorrow</span>
+                            <span>but tonight go crazy</span>
+                        </p>
+                        <p id="">
+                            <span>All you gotta do is</span>
+                            <span>just meet me at the</span>
+                        </p>
+                        <p id="">
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span>uh uh-huh uh-huh</span>
+                            <span>(just meet me at the)</span>
+                        </p>
+                        <p id="">
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span>uh uh-huh uh-huh</span>
+                            <span>(just meet me at the)</span>
+                        </p>
+                        <p id=""></p>
+                        <p id="">
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span>uh uh-huh uh-huh</span>
+                            <span>(just meet me at the)</span>
+                        </p>
+                        <p id="">
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                            <span><ruby>아파트<rt>apateu</rt></ruby></span>
+                        </p>
+                        <p id="">
+                            <span>uh</span>
+                            <span>uh-huh</span>
+                            <span>uh-huh</span>
+                        </p>
+                        <p id="">
+                            <br />
+                        </p>
+                        <div style="font-size: 12px; "><span>Lyrics refer from TIDAL music.</span><br /></div>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
+    <footer id="fixedBottom">
+        <nav id="customFixedSections">
+        </nav>
+        <nav id="rootbar">
+            <button class="tp_tiled_btn" data-tab-id="apart" title="Apateu?">아파트?</button>
+            <button class="tp_tiled_btn" data-tab-id="home" data-active="1" title="home">APT.</button>
+            <button class="tp_tiled_btn" data-tab-id="lyrics" title="가사">Lyrics</button>
+        </nav>
+        <nav id="instantSections" description="Don't insert anything. has to be managed automatically.">
+        </nav>
+    </footer>
+
+    <main id="instantDoc">
+        <section id="wait" class="tpbg" data-static="" data-on-top="">
+            <div class="container" data-container-id="root" data-static="1" data-on-top="1" style="background-color: rgb(0 0 0 / 50%);">
+                <article class="constraint" data-article-id="main" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
+                    <div class="float_center">
+                        <dotlottie-player src="./lotties/loading_circle_pink.json" background="transparent" speed="1" style="width: 100px; height: 100px; " loop autoplay></dotlottie-player>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
+</body>
+
+<nav id="managedOverlay">
+    <section id="interaction" class="tpbg" data-static="1" data-on-top="">
+        <div class="container blind" data-container-id="onRunning" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(0 0 0 / 50%);">
+            <article class="constraint" data-article-id="main" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
+                <div class="float_center">
+                    <dotlottie-player src="./lotties/loading_circle_pink.json" background="transparent" speed="1.5" style="width: 150px; height: 150px; " loop autoplay></dotlottie-player>
+                </div>
+            </article>
+        </div>
+        <div class="container blind" data-container-id="onProgress" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(0 0 0 / 50%);">
+            <article class="constraint" data-article-id="main" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
+                <div class="float_center">
+                    <dotlottie-player src="./lotties/loading_circle_pink.json" background="transparent" speed="1.5" style="width: 150px; height: 150px; " loop autoplay></dotlottie-player>
+                </div>
+            </article>
+        </div>
+        <div class="container blind" data-container-id="alert" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(0 0 0 / 50%);">
+            <article class="constraint" data-article-id="main" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
+                <div class="float_center" style="min-width: 240px; max-width: calc(100vw - var(--left-pad) - var(--right-pad)); ">
+                    <div class="title"><span data-bind="title"></span></div>
+                    <div class="message"><span data-bind="message"></span></div>
+                    <div class="line_block"><button><span data-bind="ok">확인</span></button></div>
+                </div>
+            </article>
+        </div>
+    </section>
+    <section id="operation" class="tpbg" data-static="1" data-on-top="">
+        <div class="container top slider blind" data-container-id="root" data-static="1" data-on-top="" style="background-color: rgb(0 0 0 / 50%);">
+            <article class="constraint" data-article-id="timeline" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
+
+            </article>
+            <article class="constraint" data-article-id="quickPanel" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
+
+            </article>
+        </div>
+    </section>
+    <section id="notification" class="tpbg" data-static="1" data-on-top="">
+        <div class="container top" data-container-id="noti" data-static="1" data-on-top="1" style="background-color: rgb(0 0 0 / 50%);">
+            <article class="" data-article-id="noti" data-static="" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(255 255 255 / 25%);">
+                
+            </article>
+        </div>
+        <div class="container bottom" data-container-id="note" data-static="1" data-on-top="1" style="background-color: rgb(0 0 0 / 50%);">
+            <article class="" data-article-id="note" data-static="" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(255 255 255 / 25%);">
+
+            </article>
+        </div>
+    </section>
+</nav>
+<script>doc.ebi("splash").dataset.onTop = t1; //trigger for fade in splash</script>
+</html>

@@ -1,0 +1,25 @@
+{
+    "name": "APT. application for Estre UI demonstration",
+    "short_name": "APT.",
+    "description": "Introduce the APT.(Apateu/Apartment) a word",
+    "icons": [
+        {
+            "src": "./images/APT_192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "./images/APT_512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ],
+    "start_url": ".",
+    "theme_color": "F77596",
+    "background_color": "F77596",
+    "display": "standalone",
+    "orientation": "any",
+    "scope": "."
+}
