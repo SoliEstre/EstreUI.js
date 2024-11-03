@@ -66,7 +66,7 @@ if ("serviceWorker" in navigator) {
                     <ul class="maxWidth">
                         <li><button class="tp_tiled_btn" onclick="apartPageManager.bringPage('apart'); estreUi.closeMainMenu(); ">What is Apateu</button></li>
                         <li><button class="tp_tiled_btn" onclick="apartPageManager.bringPage('home'); estreUi.closeMainMenu(); ">APT. is home</button></li>
-                        <li><button class="tp_tiled_btn" onClick="apartPageManager.bringPage('lyrics'); estreUi.closeMainMenu(); ">Show lyrics</button></li>
+                        <li style="display: none; "><button class="tp_tiled_btn" onClick="apartPageManager.bringPage('lyrics'); estreUi.closeMainMenu(); ">Show lyrics</button></li>
                     </ul>
                 </article>
                 <article data-article-id="credits" data-static="1" style="flex-grow: 0; margin: 16px; font-size: 18px; font-weight: 600; ">
@@ -129,7 +129,7 @@ if ("serviceWorker" in navigator) {
         <section id="lyrics" class="root_tab_content" data-static="1">
             <div class="container vfv_scroll" data-container-id="root" data-static="1">
                 <article class="constraint fwvs" data-article-id="main" data-static="1" style="display: flex; flex-direction: row nowrap; justify-content: center; background-color: #242424; color: var(--color-apt); font-size: 28px; font-weight: 600; overflow-y: overlay; scrollbar-width: thin; ">
-                    <div style="width: max-content">
+                    <div style="width: max-content" style="display: none; ">
                         <p id="">
                             <span><ruby>채영이가<rt>Chaeyeong-iga</rt></ruby></span>
                             <span><ruby>좋아하는<rt>johah-haneun</rt></ruby></span>
@@ -506,7 +506,7 @@ if ("serviceWorker" in navigator) {
         <nav id="rootbar">
             <button class="tp_tiled_btn" data-tab-id="apart" title="Apateu?">아파트?</button>
             <button class="tp_tiled_btn" data-tab-id="home" data-active="1" title="home">APT.</button>
-            <button class="tp_tiled_btn" data-tab-id="lyrics" title="가사">Lyrics</button>
+            <button class="tp_tiled_btn" data-tab-id="lyrics" data-is-hidden="1" title="가사">Lyrics</button>
         </nav>
         <nav id="instantSections" description="Don't insert anything. has to be managed automatically.">
         </nav>
