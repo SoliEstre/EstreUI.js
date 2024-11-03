@@ -1,8 +1,8 @@
-const CACHE_VERSION_NAME = "cache-v1.1";
+const CACHE_VERSION_NAME = "cache-v1.2";
  
 const CACHE_LIST = [
     "../favicon.ico",
-    "/webmanifest.json",
+    "../webmanifest.json",
 
     "../images/APT_16.png",
     "../images/APT_32.png",
