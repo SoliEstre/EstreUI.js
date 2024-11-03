@@ -96,6 +96,9 @@ class ApartActionHandler {
 const apartActionHandler = new ApartActionHandler();
 
 
+let floor = 1;
+let topFloor = 7 + parseInt(Math.random() * 10);
+
 
 // Own application and EstreUI initializing
 $(document).ready((e) => {

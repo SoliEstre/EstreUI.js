@@ -78,7 +78,7 @@ if ("serviceWorker" in navigator) {
     </nav>
     <header id="fixedTop">
         <nav id="appbar">
-            <button id="home" class="tp_tiled_btn" title="go to main">
+            <button id="home" class="tp_tiled_btn" title="go next floor" onclick="floor++; if (floor >= topFloor) $('#rootbar > button').last().attr('data-is-hidden', ''); ">
                 <span style="font-size: 40px; font-weight: 600; ">APT.</span>
             </button>
             <nav id="appbarLeft" class="float_area">
@@ -126,9 +126,9 @@ if ("serviceWorker" in navigator) {
                 </article>
             </div>
         </section>
-        <section id="lyrics" class="root_tab_content" data-static="1">
+        <section id="lyrics" class="root_tab_content modal" data-static="1">
             <div class="container vfv_scroll" data-container-id="root" data-static="1">
-                <article class="constraint fwvs" data-article-id="main" data-static="1" style="display: flex; flex-direction: row nowrap; justify-content: center; background-color: #242424; color: var(--color-apt); font-size: 28px; font-weight: 600; overflow-y: overlay; scrollbar-width: thin; ">
+                <article class="constraint fwvs" data-article-id="main" data-static="1" style="display: flex; flex-direction: row nowrap; justify-content: center; background-color: rgb(36 36 36 / 60%); color: var(--color-apt); font-size: 28px; font-weight: 600; overflow-y: overlay; scrollbar-width: thin; ">
                     <div style="width: max-content; " style="display: none; ">
                         <p id="">
                             <span><ruby>채영이가<rt>Chaeyeong-iga</rt></ruby></span>
