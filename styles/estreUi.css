@@ -579,13 +579,17 @@ nav#managedOverlay > section > div.container > article { }
 nav#managedOverlay > section > div.container > article[data-on-top="1"] { z-index: 211; }
 
 nav#managedOverlay > section#interaction > div.container > article.popup_interface { }
-nav#managedOverlay > section#interaction > div.container > article.popup_interface > .dialog { min-width: 240px; max-width: calc(100vw - var(--left-pad) - var(--right-pad)); padding: 20px; border-radius: 24px; background-color: rgb(255 255 255 / 66.6667%); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+nav#managedOverlay > section#interaction > div.container > article.popup_interface > .dialog { --radius: 24px; --bg-color: rgb(from var(--common-bg-color) r g b / 66.6667%); min-width: 240px; max-width: calc(100vw - var(--left-pad) - var(--right-pad)); padding: 20px; border-radius: var(--radius); background-color: transparent; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+nav#managedOverlay > section#interaction > div.container > article.popup_interface > .dialog:before { content: ''; z-index: -2; position: absolute; top: 0; bottom: 0; left: 0; right: 0; border-radius: var(--radius); background-color: var(--bg-color); translate: 1% 2.5%; transform: scale(1.05, 1.1); filter: brightness(0.15) blur(2px) opacity(0.25); }
+nav#managedOverlay > section#interaction > div.container > article.popup_interface > .dialog:after { content: ''; z-index: -1; position: absolute; top: 0; bottom: 0; left: 0; right: 0; border-radius: var(--radius); background-color: var(--bg-color); }
 nav#managedOverlay > section#interaction > div.container > article.popup_interface .title { font-size: 24px; font-weight: 600; text-align: center; }
 nav#managedOverlay > section#interaction > div.container > article.popup_interface .message { font-size: 18px; text-align: center; }
 nav#managedOverlay > section#interaction > div.container > article.popup_interface .message:has(> span:not(:empty)) { margin-top: 4px; }
 nav#managedOverlay > section#interaction > div.container > article.popup_interface .actions { display: flex; flex-flow: row nowrap; margin-top: 16px; justify-content: space-evenly; }
-nav#managedOverlay > section#interaction > div.container > article.popup_interface .actions input { margin-right: 8px; padding: 16px 12px; border-style: none; border-radius: 1.25em; background-color: rgb(255 255 255 / 70%); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
-nav#managedOverlay > section#interaction > div.container > article.popup_interface .actions button { width: 100%; border-radius: 1.25em; background-color: rgb(255 255 255 / 70%); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+nav#managedOverlay > section#interaction > div.container > article.popup_interface .actions :is(input, button) { border-radius: 1.25em; background-color: rgb(255 255 255 / 0%); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+nav#managedOverlay > section#interaction > div.container > article.popup_interface .actions :is(input, button):focus { outline-color: rgb(var(--cpl) / 50%); }
+nav#managedOverlay > section#interaction > div.container > article.popup_interface .actions input { margin-right: 8px; padding: 16px 12px; border-style: none; }
+nav#managedOverlay > section#interaction > div.container > article.popup_interface .actions button { width: 100%; }
 nav#managedOverlay > section#interaction > div.container > article.popup_interface .actions:has(> span) { flex-direction: row-reverse; justify-content: space-between; }
 nav#managedOverlay > section#interaction > div.container > article.popup_interface .actions > span { display: flex; flex-flow: row nowrap; justify-content: space-evenly; }
 nav#managedOverlay > section#interaction > div.container > article.popup_interface .actions > span.left { }

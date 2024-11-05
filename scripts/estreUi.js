@@ -1414,17 +1414,22 @@ class EstreComponent extends EstrePageHostHandle {
     }
 
     focus() {
-        super.focus();
+        if (this.isShowing) {
+            const $containers = this.$containers;
+            let $top = $containers.filter(asv(eds.onTop, t1));
+            var $targetContainer = null;
+            if ($top != null) $targetContainer = $top;
+            else if ($containers.length > 0) $targetContainer = $($containers[$containers.length-1]);
 
-        const $containers = this.$containers;
-        let $top = $containers.filter(asv(eds.onTop, t1));
-        var $targetContainer = null;
-        if ($top != null) $targetContainer = $top;
-        else if ($containers.length > 0) $targetContainer = $($containers[$containers.length-1]);
+            let processed = false;
+            if ($targetContainer != null) {
+                processed = $targetContainer[$targetContainer.length - 1]?.pageHandle?.focus();
+            }
+            
+            super.focus();
 
-        if ($targetContainer != null) {
-            return $targetContainer[$targetContainer.length - 1]?.pageHandle?.focus();
-        } else return false;
+            return processed;
+        } else false;
     }
 
     back(isRequest = true) {
@@ -1855,16 +1860,21 @@ class EstreContainer extends EstrePageHostHandle {
     }
 
     focus() {
-        super.focus();
+        if (this.isShowing) {
+            const $articles = this.$articles;
+            let $top = $articles.filter(asv(eds.onTop, t1));
+            var $targetArticle = null;
+            if ($top != null && $top.length > 0) $targetArticle = $top;
+            else if ($articles.length > 0) $targetArticle = $($articles[$articles.length-1]);
 
-        const $articles = this.$articles;
-        let $top = $articles.filter(asv(eds.onTop, t1));
-        var $targetArticle = null;
-        if ($top != null && $top.length > 0) $targetArticle = $top;
-        else if ($articles.length > 0) $targetArticle = $($articles[$articles.length-1]);
+            let processed = false;
+            if ($targetArticle != null) {
+                processed = $targetArticle[$targetArticle.length - 1]?.pageHandle?.focus();
+            }
 
-        if ($targetArticle != null) {
-            return $targetArticle[$targetArticle.length - 1]?.pageHandle?.focus();
+            super.focus();
+
+            return processed;
         } else return false;
     }
 
@@ -2344,8 +2354,7 @@ class EstreArticle extends EstrePageHandle {
 
 
     focus() {
-        if (super.focus()) {
-
+        if (this.isShowing) {
             const $target = this.$host.find(ax(eds.focusOnBring));
             var bigger = 0;
             for (var item of $target) {
@@ -2360,6 +2369,8 @@ class EstreArticle extends EstrePageHandle {
                     break;
                 }
             }
+
+            super.focus();
 
             return true;
         } else return false;
@@ -2450,7 +2461,9 @@ class EstreDialogPageHandler extends EstrePageHandler {
         this.$container.click(function (e) {
             e.preventDefault();
             e.stopPropagation();
+
             handle?.close();
+            
             return false;
         });
         this.$dialog.click(function (e) {
@@ -2458,6 +2471,15 @@ class EstreDialogPageHandler extends EstrePageHandler {
             e.stopPropagation();
             
             return false;
+        });
+        this.$actions.find("input, button").on("keydown", function (e) {
+            if (e.keyCode == 27) {
+                e.preventDefault();
+
+                handle?.close();
+
+                return false;
+            }
         });
     }
 
