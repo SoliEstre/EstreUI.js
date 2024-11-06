@@ -668,13 +668,14 @@ async function estrePrompt(options = {}) {
      }));
 }
 
-prompt = (title, message,
+prompt = (title,
+    value = "",
+    message,
     callbackConfirm = (text) => {},
     callbackDissmiss = () => {},
     confirm = isKorean() ? "확인" : "Confirm",
     placeholder = "",
     type = "text",//number, password
-    value = "",
 ) => {
     if (typeof message == U) return classicPrompt(title);
     else return estrePrompt({ title, message, callbackConfirm, callbackDissmiss, confirm, placeholder, type, value });
