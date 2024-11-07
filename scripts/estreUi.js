@@ -597,7 +597,7 @@ classicConfirm = confirm;
 classicPrompt = prompt;
 
 
-async function estreAlert(options = {}) {
+function estreAlert(options = {}) {
     return new Promise((resolve) => pageManager.bringPage("!alert", {
         data: options,
         onOk() {
@@ -618,7 +618,7 @@ alert = (title, message,
 ) => estreAlert({ title, message, callbackOk, callbackDissmiss, ok });
 
 
-async function estreConfirm(options = {}) {
+function estreConfirm(options = {}) {
     return new Promise((resolve) => pageManager.bringPage("!confirm", {
         data: options,
         onPositive() {
@@ -654,7 +654,7 @@ confirm = (title, message,
 }
 
 
-async function estrePrompt(options = {}) {
+function estrePrompt(options = {}) {
     return new Promise((resolve) => pageManager.bringPage("!prompt", {
         data: options,
         onConfirm(text) {
@@ -977,7 +977,7 @@ class EstrePageHandle {
     }
 
     init(intent) {
-        if (this.handler == null) this.setHandler(new EstrePageHandler());
+        if (this.handler == null) this.setHandler(new EstrePageHandler(this));
 
         this.pushIntent(intent);
 
@@ -1673,6 +1673,7 @@ class EstreContainer extends EstrePageHostHandle {
     }
 
     init(intent) {
+        EstreUiPage.from(this).fetchHandler(this);
         super.init(intent);
 
         this.setEventHandle();
@@ -2090,6 +2091,7 @@ class EstreArticle extends EstrePageHandle {
     }
 
     init(intent) {
+        EstreUiPage.from(this).fetchHandler(this);
         super.init(intent);
 
         this.initHandles();
@@ -2970,10 +2972,14 @@ class EstreUiPage {
 
         this.#instances.push(host);
 
-        const handle = host.pageHandle;
+        this.fetchHandler(host.pageHandle);
+    }
+
+    fetchHandler(pageHandle) {
         const handler = EstreUiPage.getHandler(this.pid);
-        if (handle != null && handler != null && typeof handler == "function") {
-            handle.setHandler(new handler(handle));
+        //console.log("pushInstance - " + this.pid + "[" + handle?.handler + "]", handle, handler);
+        if (pageHandle != null && handler != null && typeof handler == "function") {
+            return pageHandle.setHandler(new handler(pageHandle));
         }
     }
 
