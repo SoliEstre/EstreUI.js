@@ -15,6 +15,7 @@ const CACHE_LIST = [
     "https://code.jquery.com/jquery-3.7.1.js",
     "https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs",
     "/scripts/jcodd.js",
+    "/scripts/estreU0EEOZ.js",
     "/scripts/estreUi.js",
     "/scripts/app1.js",
 
