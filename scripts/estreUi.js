@@ -537,6 +537,46 @@ const f4f = function (value, length = 2) {
     return parseFloat(value).toFixed(length);
 }
 
+const koInitMatchTable = {
+    "ㄱ": "[가-깋]",
+    "ㄲ": "[까-낗]",
+    "ㄴ": "[나-닣]",
+    "ㄷ": "[다-딯]",
+    "ㄸ": "[따-띻]",
+    "ㄹ": "[라-맇]",
+    "ㅁ": "[마-밓]",
+    "ㅂ": "[바-빟]",
+    "ㅃ": "[빠-삫]",
+    "ㅅ": "[사-싷]",
+    "ㅆ": "[싸-앃]",
+    "ㅇ": "[아-잏]",
+    "ㅈ": "[자-짛]",
+    "ㅉ": "[짜-찧]",
+    "ㅊ": "[차-칳]",
+    "ㅋ": "[카-킿]",
+    "ㅌ": "[타-팋]",
+    "ㅍ": "[파-핗]",
+    "ㅎ": "[하-힣]",
+}
+
+const t2r = function (text, options = "gi") {
+    let trd;
+    if (text.match(/[ㄱ-ㅎ]/) == null) trd = text;
+    else {
+        const tcs = [];
+        for (var i in text) {
+            const char = text[i];
+            const found = char.match(/[ㄱ-ㅎ]/);
+            let tc;
+            if (found == null) tc = char;
+            else tc = koInitMatchTable[char];
+            tcs[i] = tc;
+        }
+        trd = tcs.join("");
+    }
+    return new RegExp(trd, options);
+}
+
 
 const parseBoolean = function (value) {
     switch (value) {
@@ -1330,6 +1370,10 @@ class EstreComponent extends EstrePageHostHandle {
             this.$container[$container.attr(eds.containerId)] = $container;
             this.registerContainer(container, intent);
         }
+
+        let $top = this.$containers.filter(asv(eds.onTop, t1));
+        if ($top.length < 1) $top = this.$containers;
+        $top[$top.length - 1]?.pageHandle?.show();
     }
 
     registerContainer(element, intent) {
@@ -1410,7 +1454,7 @@ class EstreComponent extends EstrePageHostHandle {
 
     show(isRequest = true, setFocus = true) {
         if (isRequest) {
-            return estreUi.switchRootTab(estreUi.$rootTabs.is(eid + this.id));
+            return estreUi.switchRootTab(estreUi.$rootTabs.filter(aiv(eds.tabId, this.id)));
         } else return super.show(false, setFocus);
     }
 
@@ -1481,6 +1525,70 @@ class EstreComponent extends EstrePageHostHandle {
         for (var container of this.containerList.reverse()) container.close();
 
         return super.onClose();
+    }
+}
+
+
+
+/**
+ * Component page handle for menu sections
+ */
+class EstreMenuComponent extends EstreComponent {
+    // constants
+    get sectionBound() { return "menu"; };
+
+    // class property
+    static components = {};
+    static componentList = [];
+
+
+    // static methods
+    
+
+
+    // instance property
+
+
+
+
+    constructor(component) {
+        super(component);
+    }
+
+    release(remove) {
+
+
+        super.release(remove);
+    }
+
+    init(intent) {
+
+
+        super.init(intent);
+
+        
+
+        return this;
+    }
+
+    register() {
+        return EstreMenuComponent.register(this);
+    }
+
+    unregister() {
+        EstreMenuComponent.unregister(this);
+    }
+
+    show(isRequest = true, setFocus = true) {
+        if (isRequest) {
+            return estreUi.showMenuArea(this.id);
+        } else super.show(false, setFocus);
+    }
+
+    close(isRequest = true) {
+        if (isRequest) {
+            return estreUi.closeMenuArea(this.id);
+        } else return super.close(false);
     }
 }
 
@@ -1779,6 +1887,10 @@ class EstreContainer extends EstrePageHostHandle {
         }
 
         $scalables.filter(opa + eds.registered + equ + v0 + cla).attr(eds.lookScale, t0);
+
+        let $top = this.$articles.filter(asv(eds.onTop, t1));
+        if ($top.length < 1) $top = this.$articles;
+        $top[$top.length - 1]?.pageHandle?.show();
     }
 
     registerArticle(element, intent) {
@@ -3138,12 +3250,22 @@ class EstreUiPageManager {
         var component = sections[page.component];
         var existComponent = false;
         if (component == null) {
-            if (page.isBlinded && page.componentIsInatant) {
+            if (page.isOverlay && page.componentIsInatant) {
+                if (page.isComponent) {
+                    component = estreUi.openManagedOverlay(page.component, intent);
+                    componentIntentPushed = true;
+                } else component = estreUi.openManagedOverlay(page.component);
+            } else if (page.isMenu && page.componentIsInatant) {
+                if (page.isComponent) {
+                    component = estreUi.openMenuArea(page.component, intent);
+                    componentIntentPushed = true;
+                } else component = estreUi.openMenuArea(page.component);
+            } else if (page.isBlinded && page.componentIsInatant) {
                 if (page.isComponent) {
                     component = estreUi.openInstantBlinded(page.component, intent);
                     componentIntentPushed = true;
                 } else component = estreUi.openInstantBlinded(page.component);
-            } else return false;//main section is not allowed instant component
+            } else return false;
         } else existComponent = true;
         if (component == null) return null;
         var containerIntentPushed = false;
@@ -3198,7 +3320,13 @@ class EstreUiPageManager {
                 }
             case "component":
                 if (success) {
-                    if (page.isBlinded) {
+                    if (page.isOverlay) {
+                        if (!isIntentNone && existComponent && (page.isComponent || isRootMain)) targetProcessed.component = estreUi.showManagedOverlay(page.component, intent);
+                        else targetProcessed.component = estreUi.showManagedOverlay(page.component);
+                    } else if (page.isMenu) {
+                        if (!isIntentNone && existComponent && (page.isComponent || isRootMain)) targetProcessed.component = estreUi.showMenuArea(page.component, intent);
+                        else targetProcessed.component = estreUi.showMenuArea(page.component);
+                    } else if (page.isBlinded) {
                         if (!isIntentNone && existComponent && (page.isComponent || isRootMain)) targetProcessed.component = estreUi.showInstantBlinded(page.component, intent);
                         else targetProcessed.component = estreUi.showInstantBlinded(page.component);
                     } else if (component.isModal) {
@@ -3255,7 +3383,13 @@ class EstreUiPageManager {
             case "component":
                 if (success) {
                     const isRootMain = page.container == "root" && page.article == "main";
-                    if (page.isBlinded) {
+                    if (page.isOverlay) {
+                        if (!isIntentNone && (page.isComponent || isRootMain)) targetProcessed.component = estreUi.showManagedOverlay(page.component, intent);
+                        else targetProcessed.component = estreUi.showManagedOverlay(page.component);
+                    } else if (page.isMenu) {
+                        if (!isIntentNone && (page.isComponent || isRootMain)) targetProcessed.component = estreUi.showMenuArea(page.component, intent);
+                        else targetProcessed.component = estreUi.showMenuArea(page.component);
+                    } else if (page.isBlinded) {
                         if (!isIntentNone && (page.isComponent || isRootMain)) targetProcessed.component = estreUi.showInstantBlinded(page.component, intent);
                         else targetProcessed.component = estreUi.showInstantBlinded(page.component);
                     } else if (component.isModal) {
@@ -3307,7 +3441,7 @@ class EstreUiPageManager {
             }
         }
         if (page.isComponent || hideHost || (!page.isComponent && page.containerIsStatic && component.isContainersAllyStatic)) {
-            if (page.isBlinded) {
+            if (page.isOverlay || page.isMenu || page.isBlinded) {
                 targetProcessed.component = component.hide();
             } else if (component.isModal) {
                 targetProcessed.component = estreUi.closeModalTab(page.component, component);
@@ -3350,7 +3484,11 @@ class EstreUiPageManager {
             }
         }
         if (page.isComponent || closeHost || (!page.isComponent && page.containerIsStatic && component.isContainersAllyStatic)) {
-            if (page.isBlinded) {
+            if (page.isOverlay) {
+                targetProcessed.component = estreUi.closeManagedOverlay(page.component);
+            } else if (page.isMenu) {
+                targetProcessed.component = estreUi.closeMenuArea(page.component);
+            } else if (page.isBlinded) {
                 targetProcessed.component = estreUi.closeInstantBlinded(page.component);
             } else if (component.isModal) {
                 targetProcessed.component = estreUi.closeModalTab(page.component, component);
@@ -9568,6 +9706,66 @@ const estreUi = {
         }
     },
 
+    openMenuArea: function(id, intent) {
+        const page = pageManager.getComponent(id);
+        if (page == null) return null;
+        if (page.statement == "static") return null;
+        this.$menuArea.append(page.raw);
+        const $section = this.$menuSections.filter(eid + id);
+        if ($section == null || $section.length < 1) return null;
+        const component = this.initStaticMenu($section[0], intent);
+        if (component.isOnTop) component.show(false);
+        return component;
+    },
+
+    showMenuArea: function(id, intent) {
+        const $targetSection = this.$menuSections.filter(eid + id);
+        const isModal = $targetSection.hasClass("modal");
+
+        var unhandled = false;
+        if (isModal) {
+            const onTop = $targetSection.attr(eds.onTop);
+            if (onTop == t1 || onTop == "1*") {
+                //do nothing
+            } else return this.openModalSection(id, this.$menuSections, $targetSection, intent);
+        }
+
+        const $elseSections = this.$menuSections.filter(asv(eds.onTop, t1) + nti(id));
+        if ($elseSections.length > 0) {
+            for (var section of $elseSections) section.pageHandle?.hide(false);
+        }
+
+        const targetComponent = this.menuSections[id];
+        targetComponent.pushIntent(intent);
+        if (targetComponent.isOnTop) {
+            unhandled = true;
+        } else {
+            targetComponent.show(false);
+            this.blindedCurrentOnTop = targetComponent;
+        }
+
+        return !unhandled;
+    },
+
+    closeMenuArea: function(id) {
+        const component = this.menuSections[id];
+        if (component == null) return null;
+        const $targetSection = component.$host;
+        const isModal = $targetSection.hasClass("modal");
+
+        if (isModal) {
+            if (component.isOnTop) {
+                const closed = this.closeModalSection(id, this.$menuSections, $targetSection);
+                if (!component.isStatic) this.releaseInstantContent(component);
+                return closed;
+            } else return null;
+        } else {
+            const closed = component.close(false);
+            if (!component.isStatic) this.releaseInstantContent(component);
+            return closed;
+        }
+    },
+
     openManagedOverlay: function(id, intent) {
         const page = pageManager.getComponent(id, "overlay");
         if (page == null) return null;
@@ -9795,13 +9993,13 @@ const estreUi = {
 
     initStaticMenu(bound, intent = null, init = false) {
         this.releaseStaticMenu(bound.pageHandle);
-        const component = new EstreComponent(bound);
+        const component = new EstreMenuComponent(bound);
         if (!init || component.isStatic) {
             this.menuSections[component.id] = component;
             this.menuSectionList.push(component);
         }
         component.init(intent);
-        if (component.isOnTop) component.show(false);
+        // if (component.isOnTop) component.show(false);
         return component;
     },
 
