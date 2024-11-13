@@ -83,6 +83,7 @@ const inp = "input";
 const ta = "textarea";
 const sel = "select";
 const opt = "option";
+const dlp = "dotlottie-player";
 
 // Tag alias constants (Upper case) - for compare
 const DIV = "DIV";
@@ -100,6 +101,7 @@ const INP = "INPUT";
 const TA = "TEXTAREA";
 const SEL = "SELECT";
 const OPT = "OPTION";
+const DLP = "DOTLOTTIE-PLAYER";
 
 // Tag attribute constants
 const m = {

@@ -396,8 +396,52 @@ prompt = (title,
 }
 
 
+// Infinite loop and prograss meter
+/**
+ * Show infinite loop wait indicator
+ * 
+ * @param {instanceOrigin} / instance access origin code
+ */
+const wait = function (instanceOrigin) {
+    return pageManager.bringPage("!onRunning") ? instanceOrigin : u;
+}
+
+/**
+ * Hide infinite loop wait indicator
+ * 
+ * @param {instanceOrigin} / instance access origin code
+ */
+const go = function (instanceOrigin) {
+    return pageManager.closePage("!onRunning", false, instanceOrigin);
+}
 
 
+/**
+ * Show progress bar(or own custom shape)
+ * 
+ * @param {meter: object} { current: is 0 to 1000, null to finish } is binded to UI
+ * @param {instanceOrigin} / instance access origin code
+ * 
+ * @returns {bindedHandle: object} Adjust bindedHandle.current value to progress animation
+ */
+const going = function (meter = { current: 0 }, instanceOrigin) {
+    meter.instanceOrigin = instanceOrigin;
+    return pageManager.bringPage("!onProgress", { data: meter }, instanceOrigin) ? meter.binded : u;
+}
+
+/**
+ * Hide progress bar(or own custom shape)
+ * 
+ * @param {instanceOrigin} / instance access origin code
+ */
+const arrived = function (instanceOrigin) {
+    return pageManager.closePage("!onProgress", false, instanceOrigin);
+}
+
+
+
+
+// Storage handler
 const ES_PREFIX = "ESAF_";//Estre Syncretic Applicate Framework
 
 /**
@@ -484,6 +528,8 @@ class ES {
     getBinary(key, def) { return this.#get(key, "binary", def); }
     getBytes(key, def) { return this.#get(key, "bytes", def); }
     getObject(key, def) { return this.#get(key, "object", def); }
+
+    get(key, def) { return this.getString(key, def); }
         
 
     #set(key, type = "string", value) {
@@ -543,6 +589,8 @@ class ES {
     setBinary(key, value) { return this.#set(key, "binary", value); }
     setBytes(key, value) { return this.#set(key, "bytes", value); }
     setObject(key, value) { return this.#set(key, "object", value); }
+    
+    set(key, value) { return this.setString(key, value); }
     
 }
 
@@ -2208,6 +2256,28 @@ class EstrePageHandler {
     }
 }
 
+class EstreLottieAnimatedHandler extends EstrePageHandler {
+    $container;
+    $article;
+    $lottie;
+    get lottie() { return this.$lottie?.[0]; }
+    get player() { return this.lottie?.getLottie(); }
+
+    onBring(handle) {
+        this.$container = handle.$host;
+        this.$article = this.$container.find(ar + aiv(eds.articleId, "main"));
+        this.$lottie = this.$article.find(dlp);
+    }
+
+    onShow(handle) {
+        this.player?.play();
+    }
+
+    onHide(handle) {
+        this.player?.pause();
+    }
+}
+
 class EstreDialogPageHandler extends EstrePageHandler {
     $container;
     $article;
@@ -2216,7 +2286,7 @@ class EstreDialogPageHandler extends EstrePageHandler {
 
     onBring(handle) {
         this.$container = handle.$host;
-        this.$article = this.$container.find("article[data-article-id=\"main\"]");
+        this.$article = this.$container.find(ar + aiv(eds.articleId, "main"));
         this.$dialog = this.$article.find("div.dialog");
         this.$actions = this.$dialog.find("div.actions");
     }
@@ -2259,8 +2329,92 @@ class EstreDialogPageHandler extends EstrePageHandler {
 class EstreUiPage {
 
     static #pageHandlers = {
-        "$i&o=interaction#onRunning": class extends EstrePageHandler { },
-        "$i&o=interaction#onProgress": class extends EstrePageHandler { },
+        "$i&o=interaction#onRunning^": class extends EstreLottieAnimatedHandler {
+
+        },
+        "$i&o=interaction#onProgress^": class extends EstreLottieAnimatedHandler {
+            get perfectValue()      { return 1000; }    // 100% value
+            get zeroPosition()      { return 15; }      // 0% frame
+            get halfPosition()      { return 75; }      // 50% frame
+            get perfectPosition()   { return 105; }     // 100% frame
+            get finishPosition()    { return 251; }     // complete frame
+
+            get halfValue()         { return this.perfectValue / 2; }   // 50% value
+            get interFrames()       { return this.perfectPosition - this.zeroPosition; } // progress frames
+            get preFrames()         { return this.halfPosition - this.zeroPosition; }    // second half frames
+            get postFrames()        { return this.perfectPosition - this.halfPosition; } // second half frames
+
+            isRunning = false;
+
+            onBring(handle) {
+                super.onBring(handle);
+
+                const intentData = handle.intent.data;
+                intentData.binded = new class {
+                    instanceOrigin = intentData.instanceOrigin;
+                    #current = intentData.current ?? 0;
+
+                    get current() { return this.#current; }
+                    set current(value) {
+                        handle.handler.applyProgress(value, this.#current);
+                        this.#current = value;
+                    }
+                }
+            }
+
+            onOpen(handle) {
+                this.lottie?.addEventListener("ready", function (e) {
+                    const player = this.getLottie();
+                    if (player != null) {
+                        player.setSegment(0, handle.handler.zeroPosition);
+                        player.addEventListener("complete", function (e) {
+                            handle.handler.isRunning = false;
+                            // console.log("onComplete: ", player.firstFrame + player.currentFrame);
+                            if (handle.intent.data.binded?.current == null) {
+                                handle.close();
+                            }
+                        });
+                        player.goToAndPlay(0, true);
+                        handle.handler.isRunning = true;
+                    }
+                });
+            }
+
+            onShow(handle) {
+                if (this.isRunning) this.player?.play();
+            }
+
+            onHide(handle) {
+                if (this.isRunning) this.player?.pause();
+            }
+
+            applyProgress(value, current) {
+                const val = parseInt(value);
+                const player = this.player;
+
+                if (player != null) {
+                    player.pause();
+                    // console.log(value, current, player.firstFrame, player.currentFrame, player.firstFrame + player.currentFrame);
+
+                    const begin = player.firstFrame + player.currentFrame;//this.zeroPosition + parseInt(this.interFrames * (parseInt(current) / this.perfectValue));
+                    const end = value != null ?
+                        this.zeroPosition + (val < this.halfValue ?
+                            parseInt(this.preFrames * (val / this.halfValue)) :
+                            this.preFrames + parseInt(this.postFrames * ((val - this.halfValue) / this.halfValue))
+                        ) : this.finishPosition;
+
+                    const isForward = end >= begin;
+
+                    // console.log("begin: " + begin + ", end: " + end + ", isForward: " + isForward);
+
+                    if (isForward) player.setSegment(begin, end);
+                    else player.setSegment(end, begin);
+                    player.setDirection(isForward ? 1 : -1);
+                    player.goToAndPlay(isForward ? 0 : player.totalFrames, true);
+                    this.isRunning = true;
+                }
+            }
+        },
 
         "$i&o=interaction#alert^": class extends EstreDialogPageHandler {
             $confirm;
@@ -2806,8 +2960,8 @@ class EstreUiPageManager {
     get pages() { return this.#pages; }
 
     #managedPidMap = {
-        get onRunning() { return "$i&o=interaction#onRunning" },
-        get onProgress() { return "$i&o=interaction#onProgress" },
+        get onRunning() { return "$i&o=interaction#onRunning^" },
+        get onProgress() { return "$i&o=interaction#onProgress^" },
 
         get alert() { return "$i&o=interaction#alert^" },
         get confirm() { return "$i&o=interaction#confirm^" },

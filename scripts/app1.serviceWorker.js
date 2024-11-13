@@ -7,6 +7,7 @@ const CACHE_LIST = [
     "/lotties/menu_and_close_btn.json",
     "/lotties/loading_circle.json",
     "/lotties/ptr_indic.json",
+    "/lotties/progress_bar.json",
 
     "/styles/estreUi.css",
     "/styles/app1.css",

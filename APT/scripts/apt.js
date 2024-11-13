@@ -74,7 +74,7 @@ class ApartActionHandler {
 
     somethingDoWhileAnything() {
         //show blinded loading indicator
-        apartPageManager.bringPage("wait");
+        const waiter = wait();
         //register to async manager for monitor async work for prevent leak
         let currentWid = EstreAsyncManager.beginWork("[" + "work title" + "]" + "detail", this.hostId);
 
@@ -87,7 +87,7 @@ class ApartActionHandler {
             //unregister from async manager
             EstreAsyncManager.endOfWork(currentWid);
             //hide blinded loading indicator
-            apartPageManager.closePage("wait");
+            go(waiter);
         }, 3000);
         //<= You must catch error case for do unregister from async manager and close loading indicator
     }

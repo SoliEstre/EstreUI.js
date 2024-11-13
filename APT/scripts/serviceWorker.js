@@ -17,6 +17,7 @@ const CACHE_LIST = [
     "/lotties/menu_and_back_btn.json",
     "../lotties/loading_circle_pink.json",
     "/lotties/ptr_indic.json",
+    "/lotties/progress_bar.json",
 
     "/styles/estreUi.css",
     "../styles/apt.css",

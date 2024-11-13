@@ -172,7 +172,7 @@ class MyOwnActionHandler {
 
     somethingDoWhileAnything() {
         //show blinded loading indicator
-        myOwnPageManager.bringPage("wait");
+        const waiter = wait();
         //register to async manager for monitor async work for prevent leak
         let currentWid = EstreAsyncManager.beginWork("[" + "work title" + "]" + "detail", this.hostId);
 
@@ -185,7 +185,7 @@ class MyOwnActionHandler {
             //unregister from async manager
             EstreAsyncManager.endOfWork(currentWid);
             //hide blinded loading indicator
-            myOwnPageManager.closePage("wait");
+            go(waiter);
         }, 3000);
         //<= You must catch error case for do unregister from async manager and close loading indicator
     }
