@@ -398,7 +398,7 @@ nav#mainMenu[data-opened="1"].right > section#menuArea { padding-right: var(--ri
 nav#mainMenu[data-opened="1"]:not(.right) > section#menuArea { padding-left: var(--left-pad); }
 nav#mainMenu[data-opened="1"][data-on-grab="1"] > section#menuArea { width: calc(min(var(--opened-width), var(--max-width)) + var(--grab-x)); }
 nav#mainMenu[data-opened="1"][data-on-grab="1"].right > section#menuArea { width: calc(min(var(--opened-width), var(--max-width)) - var(--grab-x)); }
-nav#mainMenu > section#menuArea > div.container { background-color: transparent; }
+nav#mainMenu > section#menuArea > div.container { padding-top: var(--top-pad); background-color: transparent; }
 nav#mainMenu > section#menuArea > div.container:not([data-on-top^="1"]) { display: none; }
 nav#mainMenu > section#menuArea > div.container > article { background-color: transparent; }
 nav#mainMenu > section#menuArea .maxWidth { width: min(var(--max-width), var(--opened-width)); }

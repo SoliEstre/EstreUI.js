@@ -363,7 +363,7 @@ confirm = (title, message,
     negative = isKorean() ? "아니오" : "NO",
     neutral = isKorean() ? "나중에" : "Later",
 ) => {
-    if (typeof message == U) return classicConfirm(title);
+    if (typeof message == U) return classicConfirm(title + (message != null ? "\n" + message : ""));
     else return estreConfirm({ title, message, callbackPositive, callbackNegative, callbackDissmiss, callbackNeutral, positive, negative, neutral });
 }
 
@@ -391,7 +391,7 @@ prompt = (title,
     placeholder = "",
     type = "text",//number, password
 ) => {
-    if (typeof message == U) return classicPrompt(title);
+    if (typeof message == U) return classicPrompt(title + (message != null ? "\n" + message : ""));
     else return estrePrompt({ title, message, callbackConfirm, callbackDissmiss, confirm, placeholder, type, value });
 }
 
