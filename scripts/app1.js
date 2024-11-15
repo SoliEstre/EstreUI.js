@@ -7,6 +7,17 @@ class MyOwnUserHandle extends EstreHandle {
 
 
     // statics
+    static #onClickSignOutRef = () => {};
+    static #onClickSignOut = this.#onClickSignOutRef;
+    static #onReleaseInfoRef = (handle) => {};
+    static #onReleaseInfo = this.#onReleaseInfoRef;
+
+    static setOn(onClickSignOut = this.#onClickSignOutRef, onReleaseInfo = this.#onReleaseInfoRef) {
+        if (!this.handleCommitted) {
+            this.#onClickSignOut = onClickSignOut;
+            this.#onReleaseInfo = onReleaseInfo;
+        }
+    }
 
 
     // open property
@@ -41,14 +52,14 @@ class MyOwnUserHandle extends EstreHandle {
         this.$bound.find(cls + "sign_out").click(function(e) {
             e.preventDefault();
 
-            exampleSessionManager.signOut();
+            MyOwnUserHandle.#onClickSignOut();
 
             return false;
         });
     }
 
     releaseInfo() {
-        this.$bound.find(cls + "user_name").text(exampleSessionManager.userName);
+        MyOwnUserHandle.#onReleaseInfo(this);
     }
 }
 
@@ -57,54 +68,70 @@ EstreHandle.registerCustomHandle("myOwnUserHandle", ".my_own_user_handle", MyOwn
 
 
 
-// Register my own external PID (page alias)
-const myOwnPages = {
-    //if writed html in sections in mains(#staticDoc and #instantDoc), can you show PIDs by command "pageManager.pages" on JS console
-
-    //"own shorter id": "PID",
-
-    "wait": "$i&b=wait",
-
-    "home": "$s&m=home",
-
-    "tab1": "$s&m=tab1",
-    "tab1Next": "$i&m=tab1#root@tab1_next",
-
-    "tab2": "$s&m=tab2",
-    "tab2Next": "$i&m=paybill#root@tab2_next",
-    
-    "activity1": "$s&m=activity1",
-
-    "activity2": "$i&m=activity2",
-
-    "": "",
-}
-
 
 // Customize lifecycle actions for handles(component/container/article) on own pages
-const myOwnPageHandlers = {
-    //"same name in extPidMap": "function type object constructer",
+class MyOwnPagesProvider {
 
-    "wait": class extends EstrePageHandler {},
+    // Register my own external PID (page alias)
+    static get pages() { return {
+        //if writed html in sections in mains(#staticDoc and #instantDoc), can you show PIDs by command "pageManager.pages" on JS console
 
-    "home": class extends EstrePageHandler {},
+        //"own shorter id": "PID",
 
-    "tab1": class extends EstrePageHandler {},
-    "tab1Next": class extends EstrePageHandler {},
+        "wait": "$i&b=wait",
 
-    "attend_success": class extends EstrePageHandler {},
+        "home": "$s&m=home",
+
+        "tab1": "$s&m=tab1",
+        "tab1Next": "$i&m=tab1#root@tab1_next",
+
+        "tab2": "$s&m=tab2",
+        "tab2Next": "$i&m=paybill#root@tab2_next",
+        
+        "activity1": "$s&m=activity1",
+
+        "activity2": "$i&m=activity2",
+
+        "": "",
+    }; }
+
+
+    // properties
+    #pageManager = null;
+    get pageManager() { return this.#pageManager; }
+    #actionHandler = null;
+    get actionHandler() { return this.#actionHandler; }
+
+
+    constructor(pageManager, actionHandler) {
+        this.#pageManager = pageManager;
+        this.#actionHandler = actionHandler;
+    }
+
     
-    "tab2": class extends EstrePageHandler {},
-    "tab2Next": class extends EstrePageHandler {
+    //declare handler of pages
+
+    //"own shorter id" = page handler implementation class from extends EstrePageHandler or empty class(function type constructor)
+    "wait" = class extends EstrePageHandler {};
+
+    "home" = class extends EstrePageHandler {};
+
+    "tab1" = class extends EstrePageHandler {};
+    "tab1Next" = class extends EstrePageHandler {};
+
+    "attend_success" = class extends EstrePageHandler {};
+    
+    "tab2" = class extends EstrePageHandler {};
+    "tab2Next" = class extends EstrePageHandler {
         onOpen(handle) {
         };
         
         onBack(handle) {
             return handle.close();
         }
-    },
+    };
 
-    "activity1": class extends EstrePageHandler {
+    "activity1" = class extends EstrePageHandler {
         onOpen(handle) {
             myOwnActionHandler.somethingDoWhileAnything();
         }
@@ -112,9 +139,9 @@ const myOwnPageHandlers = {
         onBack(handle) {
             return handle.close();
         }
-    },
+    };
 
-    "activity2": class extends EstrePageHandler {
+    "activity2" = class extends EstrePageHandler {
         onOpen(handle) {
             this.myOwnFunction();
         }
@@ -126,7 +153,7 @@ const myOwnPageHandlers = {
         myOwnFunction() {
             //do anything
         }
-    },
+    };
 
 }
 
@@ -144,10 +171,12 @@ class EstreUiExapmlePageManager extends EstreUiCustomPageManager {
     
 
     // instnace property
+    #actionHandler = null;
+    get actionHandler() { return this.#actionHandler; }
 
-
-    constructor() {
+    constructor(actionHandler) {
         super();
+        this.#actionHandler = actionHandler;
     }
 
 
@@ -161,14 +190,20 @@ class EstreUiExapmlePageManager extends EstreUiCustomPageManager {
 
 }
 
-const myOwnPageManager = new EstreUiExapmlePageManager().init(myOwnPages, myOwnPageHandlers);
-
 
 
 // Implement example of my own action handler
 class MyOwnActionHandler {
 
-    hostId = "myOwnActionManager";
+    hostId = "MyOwnActionManager";
+
+    #sessionManager = null;
+    get sessionManager() { return this.#sessionManager; }
+
+    constructor (sessionManager) {
+        this.#sessionManager = sessionManager;
+    }
+
 
     somethingDoWhileAnything() {
         //show blinded loading indicator
@@ -191,13 +226,11 @@ class MyOwnActionHandler {
     }
 }
 
-const myOwnActionHandler = new MyOwnActionHandler();
 
 
 
-
-// Local Storage key constants
-const LS_ESTRE_UI_EXAMPLE_SESSION_BLOCK = "ESTRE_UI_EXAMPLE_SESSION_BLOCK";
+// Local/Session Storage key constants
+const ESTRE_UI_EXAMPLE_SESSION_BLOCK = "ESTRE_UI_EXAMPLE_SESSION_BLOCK";
 
 
 // Authed API communication manager example
@@ -234,6 +267,12 @@ class EstreUiExampleSessionManager {
     
 
     // instnace property
+    #storageHandler = null;
+    get storageHandler() { return this.#storageHandler; }
+
+    #apiUrlCollection = null;
+    get apiUrlCollection() { return this.#apiUrlCollection; }
+
     #onPrepare = null;
     #onCheckedAuth = null;
     #onReady = null;
@@ -241,6 +280,9 @@ class EstreUiExampleSessionManager {
     #user = this.#emptyUser;
 
     #session = this.#emptySession;
+
+
+    #callbackSetUser = null;
 
 
     // geter setter
@@ -252,15 +294,18 @@ class EstreUiExampleSessionManager {
     #setUser(infoSet) {
         this.#user = infoSet;
 
-        EstreHandle.activeHandle[uis.myOwnUserHandle]?.forEach(handle => {
-            handle.releaseInfo();
-        });
+        this.#callbackSetUser(this.userName);
     }
 
     get userName() { return this.#user.name; }
 
 
-    constructor() {}
+
+    constructor(apiUrlCollection, storageHandler, callbackSetUser = (userName) => {}) {
+        this.#apiUrlCollection = apiUrlCollection;
+        this.#storageHandler = storageHandler;
+        this.#callbackSetUser = callbackSetUser;
+    }
 
     
     init(onPrepare, onCheckedAuth, onReady) {
@@ -274,7 +319,7 @@ class EstreUiExampleSessionManager {
     }
 
     async #checkUpSession() {
-        let block = ELS.getString(LS_ESTRE_UI_EXAMPLE_SESSION_BLOCK);
+        let block = this.storageHandler.getString(ESTRE_UI_EXAMPLE_SESSION_BLOCK);
 
         if (block != null && block != "") {
             this.#extractBlock(block);
@@ -321,7 +366,7 @@ class EstreUiExampleSessionManager {
     #clearSession() {
         this.#user = this.#emptyUser;
         this.#session = this.#emptySession;
-        ELS.setString(LS_ESTRE_UI_EXAMPLE_SESSION_BLOCK);
+        this.storageHandler.setString(ESTRE_UI_EXAMPLE_SESSION_BLOCK);
     }
 
     #extractBlock(block) {
@@ -445,7 +490,7 @@ class EstreUiExampleSessionManager {
     signIn(id, pw, callbackSuccess = (data) => {}, callbackFailure = (data) => {}) {
         let data = { LoginID: id, LoginPW: pw };
 
-        this.#fetchApiPost(MyOwnApiUrl.login, data, (data) => {
+        this.#fetchApiPost(this.apiUrlCollection.login, data, (data) => {
             
             if (data.resultOk) {
                 this.#session.loginToken = data.loginToken;
@@ -455,7 +500,7 @@ class EstreUiExampleSessionManager {
                 let block = this.#solidBlock();
                 //console.log("session block: " + block);
 
-                ELS.setString(LS_ESTRE_UI_EXAMPLE_SESSION_BLOCK, block);
+                this.storageHandler.setString(ESTRE_UI_EXAMPLE_SESSION_BLOCK, block);
                 
                 callbackSuccess(data);
             } else {
@@ -468,19 +513,41 @@ class EstreUiExampleSessionManager {
         }, "Sign in");
     }
 
-    signOut() {
+    signOut(callbackSuccess = (data) => {}, callbackFailure = (data) => {}) {
         this.#clearSession();
+        callbackSuccess({});
         location.reload(); 
     }
 
     sendNothing(nothing, callbackSuccess = (data) => {}, callbackFailure = (data) => {}) {
-        this.#fetchApiAuthedPost(MyOwnApiUrl.sendNothing, { nothing }, callbackSuccess, callbackFailure);
+        this.#fetchApiAuthedPost(this.apiUrlCollection.sendNothing, { nothing }, callbackSuccess, callbackFailure);
     }
 }
 
-const exampleSessionManager = new EstreUiExampleSessionManager();
+
+// setup instances
+const exampleSessionManager = new EstreUiExampleSessionManager(MyOwnApiUrl, ELS, (userName) => {
+    EstreHandle.activeHandle[uis.myOwnUserHandle]?.forEach(handle => {
+        handle.releaseInfo();//<= Call release user info
+    });
+});
+
+const myOwnActionHandler = new MyOwnActionHandler(exampleSessionManager);
+
+const myOwnPageManager = new EstreUiExapmlePageManager(myOwnActionHandler);
 
 
+// custom handle callbacks
+MyOwnUserHandle.setOn(() => {
+    const waiter = wait();
+    exampleSessionManager.signOut((data) => {
+        go(waiter);
+    }, (data) => {
+        go(waiter);
+    });
+}, (handle) => {//<= Callback release user info
+    handle.$bound.find(cls + "user_name").text(exampleSessionManager.userName);
+});
 
 
 // Own application and EstreUI initializing
@@ -491,10 +558,12 @@ $(document).ready((e) => {
 
     //Initialize my own API session manager related initialize EstreUI
     exampleSessionManager.init((isTokenExist) => {
+        //something do while intializes on splash page
+        myOwnPageManager.init(MyOwnPagesProvider.pages, new MyOwnPagesProvider(myOwnPageManager, myOwnActionHandler));
+        //initialize scheduleDateSet with own data handler
+        // scheduleDataSet.init(myOwnDataHandler);
         //initialize Estre UI after checked user session
         estreUi.init(false);
-        //something do while intializes on splash page
-        myOwnPageManager.init();
     
         //ready to begin page if han not login token
         if (!isTokenExist) myOwnPageManager.bringPage("login");

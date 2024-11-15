@@ -2,33 +2,47 @@
 
 
 
-// Register my own external PID (page alias)
-const apartPages = {
-    //if writed html in sections in mains(#staticDoc and #instantDoc), can you show PIDs by command "pageManager.pages" on JS console
-
-    //"own shorter id": "PID",
-
-    "home": "$s&m=home",
-
-    "apart": "$s&m=apart",
-
-    "lyrics": "$s&m=lyrics",
-
-    "": "",
-}
-
-
 // Customize lifecycle actions for handles(component/container/article) on own pages
-const apartPageHandlers = {
-    //"same name in extPidMap": "function type object constructer",
+class ApartPagesProvider {
+    // Register my own external PID (page alias)
+    static get pages() { return {
+        //if writed html in sections in mains(#staticDoc and #instantDoc), can you show PIDs by command "pageManager.pages" on JS console
 
-    "wait": class extends EstrePageHandler {},
+        //"own shorter id": "PID",
 
-    "home": class extends EstrePageHandler {},
+        "home": "$s&m=home",
 
-    "tab1": class extends EstrePageHandler {},
+        "apart": "$s&m=apart",
 
-    "tab2": class extends EstrePageHandler {},
+        "lyrics": "$s&m=lyrics",
+
+        "": "",
+    }; }
+
+
+    // properties
+    #pageManager = null;
+    get pageManager() { return this.#pageManager; }
+    #actionHandler = null;
+    get actionHandler() { return this.#actionHandler; }
+
+
+    constructor(pageManager, actionHandler) {
+        this.#pageManager = pageManager;
+        this.#actionHandler = actionHandler;
+    }
+
+
+    //declare handler of pages
+
+    //"own shorter id" = page handler implementation class from extends EstrePageHandler or empty class(function type constructor)
+    "wait" = class extends EstrePageHandler {};
+
+    "home" = class extends EstrePageHandler {};
+
+    "tab1" = class extends EstrePageHandler {};
+
+    "tab2" = class extends EstrePageHandler {};
 
 }
 
@@ -63,14 +77,12 @@ class ApartPageManager extends EstreUiCustomPageManager {
 
 }
 
-const apartPageManager = new ApartPageManager().init(apartPages, apartPageHandlers);
-
 
 
 // Implement example of my own action handler
 class ApartActionHandler {
 
-    hostId = "apartActionManager";
+    hostId = "ApartActionManager";
 
     somethingDoWhileAnything() {
         //show blinded loading indicator
@@ -93,11 +105,16 @@ class ApartActionHandler {
     }
 }
 
-const apartActionHandler = new ApartActionHandler();
 
-
+// Global implementation
 let floor = 1;
 let topFloor = 7 + parseInt(Math.random() * 10);
+
+
+// Setup instances
+const apartActionHandler = new ApartActionHandler();
+
+const apartPageManager = new ApartPageManager();
 
 
 // Own application and EstreUI initializing
@@ -109,9 +126,11 @@ $(document).ready((e) => {
     //initialize Estre UI after checked user session
     estreUi.init(false);
     //something do while intializes on splash page
-    apartPageManager.init();
+    apartPageManager.init(ApartPagesProvider.pages, new ApartPagesProvider(apartPageManager, apartActionHandler));
+    //show home page
     apartPageManager.bringPage("home");
     
+    //notification finished loading my own app to Estre UI
     setTimeout(() => estreUi.checkOnReady(), 0);
 
 

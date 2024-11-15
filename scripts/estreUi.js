@@ -2532,6 +2532,7 @@ class EstreUiPage {
     static #registeredPageHandlers = {};
 
     static #handlerCommited = false;
+    static get handlerCommited() { return this.#handlerCommited; }
 
     static registerHandler(pid, handler) {
         if (!this.#handlerCommited && this.#registeredPageHandlers[pid] == null) {
@@ -3387,7 +3388,8 @@ class EstreHandle {
 
     static #registeredHandles = {};
 
-    static #committed = false;
+    static #handleCommitted = false;
+    static get handleCommited() { return this.#handleCommitted; }
 
 
     // class property
@@ -3396,7 +3398,7 @@ class EstreHandle {
 
     // class methods
     static registerCustomHandle(handleName, handleSpecfier, handleClass) {
-        if (!this.#committed) {
+        if (!this.#handleCommitted) {
             if (uis[handleName] == null) {
                 if (this.handles[handleSpecfier] == null) {
                     uis[handleName] = handleSpecfier;
@@ -3407,7 +3409,7 @@ class EstreHandle {
     }
 
     static commit() {
-        this.#committed = true;
+        this.#handleCommitted = true;
 
         for (var handleSpecfier in this.#registeredHandles) this.#handles[handleSpecfier] = this.#registeredHandles[handleSpecfier];
     }
@@ -5920,14 +5922,14 @@ class EstreVariableCalendar extends EstreCalendar {
     }
 
     beginTransition() {
-        const current = this.$structure.attr(eds.transition);
+        let current = this.$structure.attr(eds.transition);
         if (current == null || current == "") current = 0;
         else current = parseInt(current);
         this.$structure.attr(eds.transition, current + 1);
     }
 
     endTransition() {
-        const current = this.$structure.attr(eds.transition);
+        let current = this.$structure.attr(eds.transition);
         if (current == null || current == "") current = 0;
         else current = parseInt(current);
         this.$structure.attr(eds.transition, Math.max(current - 1, 0));
@@ -6300,20 +6302,35 @@ class EstreUnifiedScheduler {
 }
 
 
-const scheduleDataSet = {
+class ScheduleDataSet {
 
-    dataHandler: null,
+    #dataHandler = null;
+    get dataHandler() { return this.#dataHandler; }
 
-    dataMatrix: new Map(),//key = origin, value = [dateId] = data
+    #dataHandlerCommitted = false;
+
+
+    dataMatrix = new Map();//key = origin, value = [dateId] = data
  
     /** this value has when exist any request */
-    requestIssuer: null,
+    requestIssuer = null;
 
     /** append caller when null data in pendings */
-    dataRequests: new Map(),//key = origin, value = [dateId] = Set(caller)
+    dataRequests = new Map();//key = origin, value = [dateId] = Set(caller)
 
     /** append caller when null data in matrix */
-    dataPendings: new Map(),//key = origin, value = [dateId] = Set(caller)
+    dataPendings = new Map();//key = origin, value = [dateId] = Set(caller)
+
+
+    init(dataHandler) {
+        if (!this.#dataHandlerCommitted) this.#dataHandler = dataHandler;
+
+        return this;
+    }
+
+    commit() {
+        this.#dataHandlerCommitted = true;
+    }
 
 
     issueRequest(delayed = false) {
@@ -6321,7 +6338,7 @@ const scheduleDataSet = {
             const inst = this;
             this.requestIssuer = setTimeout(function () { inst.requestProcessor(); }, delayed ? 100 : 0);
         }
-    },
+    }
 
     requestProcessor() {
         this.requestIssuer = null;
@@ -6355,11 +6372,11 @@ const scheduleDataSet = {
             }
         }
 
-    },
+    }
 
     getDataBy(origin) {
         return this.dataMatrix.get(origin);
-    },
+    }
 
     getData(origin, dateId) {
         const datas = this.getDataBy(origin);
@@ -6367,7 +6384,7 @@ const scheduleDataSet = {
         if (datas != null) return datas[dateId];
 
         return null;//not exist in dataMatrix
-    },
+    }
 
     setData(origin, dateId, data) {
         var datas = this.getDataBy(origin);
@@ -6378,7 +6395,7 @@ const scheduleDataSet = {
         }
 
         datas[dateId] = data;
-    },
+    }
 
     getDataPending(origin) {
         const pending = this.dataPendings.get(origin);
@@ -6388,7 +6405,7 @@ const scheduleDataSet = {
             this.dataPendings.set(origin, newer);
             return newer;
         }
-    },
+    }
 
     getExistsPending(origin) {
         const pending = this.dataPendings.get(origin);
@@ -6398,23 +6415,23 @@ const scheduleDataSet = {
             else for (var v of pending) if (v != null) count++;
             return count;
         } else null;
-    },
+    }
 
     checkClearPending(origin) {
         if (this.getExistsPending(origin) === 0) {
             this.dataPendings.delete(origin);
         }
-    },
+    }
 
     clearDataPending(origin, dateId) {
         const pendings = this.getDataPending(origin);
         pendings[dateId] = null;
         this.checkClearPending(origin);
-    },
+    }
 
     removeDataPending(origin) {
         return this.dataPendings.delete(origin);
-    },
+    }
 
     setDataRequest(origin, dateId, caller) {
         var requestOrigin = this.dataRequests.get(origin);
@@ -6424,7 +6441,7 @@ const scheduleDataSet = {
             this.dataRequests.set(origin, requestOrigin);
         }
 
-        const requests = requestOrigin[dateId];
+        let requests = requestOrigin[dateId];
 
         if (requests == null) {
             requests = new Set([caller]);
@@ -6432,7 +6449,7 @@ const scheduleDataSet = {
         } else requests.add(caller);
 
         this.issueRequest();
-    },
+    }
 
     requestData(origin, dateId, caller) {
         const pending = this.getDataPending(origin)[dateId];
@@ -6442,7 +6459,7 @@ const scheduleDataSet = {
         } else {
             this.setDataRequest(origin, dateId, caller);
         }
-    },
+    }
 
     // from caller
     requestPushData(beginDateId, endDateId, groups, caller, forced = false) {
@@ -6462,23 +6479,23 @@ const scheduleDataSet = {
                 }
             }
         }
-    },
+    }
     
     // to caller
-    pushDataBy: function(caller, dataSet, dateId, groups) {
+    pushDataBy(caller, dataSet, dateId, groups) {
         const groupSet = new Set(groups);
         const set = {};
         for (var group in dataSet) if (groupSet.has(group)) set[group] = dataSet[group];
         this.pushData(caller, set, dateId);
-    },
+    }
 
-    pushData: function(caller, data, dateId) {
+    pushData(caller, data, dateId) {
         if (caller != null) try {
             caller.pushDailySchedule(data, dateId);
         } catch (ex) {
             console.log(ex.name + "\n" + ex.message);
         }
-    },
+    }
 
     // from data handler
     incomeData(group, datas) {
@@ -6501,27 +6518,27 @@ const scheduleDataSet = {
         }
 
         this.removeDataPending(group);
-    },
+    }
 
 
 
     //old methods
-    dataArray: [],
+    dataArray = [];
     
-    callers: new Set(),
+    callers = new Set();
 
-    dataRequestsYear: [],
-    dataReadyYear: [],
+    dataRequestsYear = [];
+    dataReadyYear = [];
 
-    getCalendar: function() {
+    getCalendar() {
         return estreUi.stockCalendar;
-    },
+    }
 
     releaseCaller(caller) {
         this.callers.delete(caller);
-    },
+    }
     
-    requestPushDataYear: function(year, caller, groups = ["basic", "whole", "timely"]) {
+    requestPushDataYear(year, caller, groups = ["basic", "whole", "timely"]) {
         if (caller != null) this.callers.add(caller);
         
         const dataReady = this.dataReadyYear[year];
@@ -6544,9 +6561,9 @@ const scheduleDataSet = {
 
         if (forPush.length > 0) this.pushDataAlreadyHas(caller, forPush, year);
         if (forRequest.length > 0) this.requestDataYear(year, forRequest);
-    },
+    }
 
-    requestDataYear: function(year, groups) {
+    requestDataYear(year, groups) {
 
         var dataRequests = this.dataRequestsYear[year];
         if (dataRequests == null) {
@@ -6558,9 +6575,9 @@ const scheduleDataSet = {
         for (var group of groups) dataRequests.add(group);
 
         if (this.dataHandler != null) this.dataHandler.notifyRequestYear(year);
-    },
+    }
 
-    pushDataAlreadyHas: function(caller, groups, year, month, date) {
+    pushDataAlreadyHas(caller, groups, year, month, date) {
         if (date != null) {
             const dateId = Ecal.getDateOffset(year, month, date);
             this.pushDataBy(caller, dataSet, dateId, groups);
@@ -6594,17 +6611,17 @@ const scheduleDataSet = {
                 this.pushDataBy(caller, dataSet, dateId, groups);
             }
         }
-    },
+    }
 
-    pushDataYearly: function(caller, datas, year, groups) {
+    pushDataYearly(caller, datas, year, groups) {
         try {
             caller.pushYearlySchedule(datas, year, groups);
         } catch (ex) {
             console.log(ex.name + "\n" + ex.message);
         }
-    },
+    }
 
-    incomeDataYear: function(year, group, datas) {
+    incomeDataYear(year, group, datas) {
         const callers = Array.from(this.callers.values());
         const dataSet = [];
         for (var dateId in datas) {
@@ -6623,20 +6640,19 @@ const scheduleDataSet = {
         const dataReady = this.dataReadyYear[year];
         if (dataReady != null) dataReady.add(group);
         else this.dataReadyYear[year] = new Set([group]);
-    },
+    }
 
-    insertData: function(dateId, group, data) {
+    insertData(dateId, group, data) {
         var dataSet = this.dataArray[dateId];
         if (dataSet == null) {
             dataSet = {};
             this.dataArray[dateId] = dataSet;
         }
         dataSet[group] = data;
-    },
-
-
-    eoo
+    }
 }
+
+const scheduleDataSet = new ScheduleDataSet();
 
 
 /**
@@ -8698,6 +8714,7 @@ const estreUi = {
 
         EstreHandle.commit();
         EstreUiPage.commit();
+        scheduleDataSet.commit();
 
         this.$mainMenu = $("nav#mainMenu");
         this.$menuArea = this.$mainMenu.find("section#menuArea");
