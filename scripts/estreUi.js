@@ -161,16 +161,19 @@ const eds = {
     bindAmount: "data-bind-amount",
     bindValue: "data-bind-value",
     bindAttr: "data-bind-attr",
+    bindStyle: "data-bind-style",
     bindArray: "data-bind-array",
     bindArrayIndex: "data-bind-array-index",
     bindArrayItem: "data-bind-array-item",
     bindArrayAmount: "data-bind-array-amount",
     bindArrayValue: "data-bind-array-value",
     bindArrayAttr: "data-bind-array-attr",
+    bindArrayStyle: "data-bind-array-style",
     bindObjectArrayItem: "data-bind-object-array-item",
     bindObjectArrayAmount: "data-bind-object-array-amount",
     bindObjectArrayValue: "data-bind-object-array-value",
     bindObjectArrayAttr: "data-bind-object-array-attr",
+    bindObjectArrayStyle: "data-bind-object-array-style",
     showOnExists: "data-show-on-exists",
     showOnEquals: "data-show-on-equals",
     showOnExistsObjectArrayItem: "data-show-on-exists-object-array-item",
@@ -438,6 +441,91 @@ const arrived = function (instanceOrigin) {
     return pageManager.closePage("!onProgress", false, instanceOrigin);
 }
 
+
+
+const noti = function (title, htmlContent, onTakeInteraction = (intent) => {}, mainIconSrc, subIconSrc) {
+    //<= To do implement
+}
+
+
+class EstreNotationManager {
+
+    // static
+    static #page = "popNote";
+
+    static #queue = [];
+    static current = null;
+
+    static postHandle = null;
+
+    static get noInteraction() { return (intent) => {}; }
+
+    static post(message, showTime = 3000, onTakeInteraction = this.noInteraction, options = {}) {
+        if (message != null && !isNaN(showTime) && showTime > 0) {
+            return new Promise((resolve) => {
+                const it = new EstreNotationManager(message, showTime, onTakeInteraction, options, resolve);
+                this.#queue.push(it);
+                // console.log(this.#page + " posted: ", it);
+                setTimeout(() => this.postHandler(), 0);
+            });
+        }
+    }
+
+    static postHandler() {
+        console.log("queue: ", this.#queue);
+        if (this.postHandle == null && this.current == null && this.#queue.length > 0) {
+            const handle = Date.now();
+            this.postHandle = handle;
+            const current = this.#queue.splice(0, 1)[0];
+            current.data.posted = handle;
+            // console.log(this.#page + " bring: ", current);
+            return pageManager.bringPage("!" + this.#page, current, handle);
+        }
+    }
+
+    static checkOut(intent) {
+        if (intent.data.posted != null && this.postHandle == intent.data.posted) {
+            if (this.current == intent) {
+                this.current = null;
+            }
+            this.postHandle = null;
+            // console.log(this.#page + " checked out: ", intent);
+            setTimeout(() => { this.postHandler(); }, 0);
+        }
+        intent.resolver?.(intent);
+    }
+
+    // instance property
+    data = {
+        posted: null,
+        content: null,
+        showTime: null,
+        interactive: null,
+        resolver: null,
+
+        //options
+        iconSrc: null,
+        textSize: null,
+        textWeight: null,
+        textColor: null,
+        bgColor: null,
+    };
+
+    onTakeInteraction = null;
+
+    constructor(message, showTime = 3000, onTakeInteraction = EstreNotationManager.noInteraction, options = {}, resolver) {
+        for (const item in options) this.data[item] = options[item];
+        this.data.content = message;
+        this.data.showTime = showTime;
+        this.onTakeInteraction = onTakeInteraction;
+        if (onTakeInteraction != EstreNotationManager.noInteraction) this.data.interactive = "";
+        this.resolver = resolver;
+    }
+}
+
+const note = function (message, showTime = 3000, onTakeInteraction = EstreNotationManager.noInteraction, options = {}) {
+    return EstreNotationManager.post(...arguments);
+}
 
 
 
@@ -788,24 +876,29 @@ class EstrePageHandle {
 
     hide(fullyHide = true) {
         if (this.isShowing || !this.isFullyHided) {
-            this.blur();
-            this.onHide(fullyHide);
-            if (fullyHide) {
-                this.$host.attr(eds.onTop, t0);
-                setTimeout(() => {
-                    const $host = this?.$host;
-                    if ($host != null && $host.attr(eds.onTop) == t0) {
-                        $host.attr(eds.onTop, "");
-                    }
-                }, cvt.t2ms(this.$host.css(a.trdr)));
-            } else this.$host.attr(eds.onTop, t0 + "*");
-            return true;
+            return new Promise((resolve) => {
+                this.blur();
+                this.onHide(fullyHide);
+                if (fullyHide) {
+                    this.$host.attr(eds.onTop, t0);
+                    setTimeout(() => {
+                        const $host = this?.$host;
+                        if ($host != null && $host.attr(eds.onTop) == t0) {
+                            $host.attr(eds.onTop, "");
+                            resolve(true);
+                        } else resolve(false);
+                    }, cvt.t2ms(this.$host.css(a.trdr)));
+                } else {
+                    this.$host.attr(eds.onTop, t0 + "*");
+                    resolve(true);
+                }
+            });
         } else return false;
     }
 
-    close(isRequest = false) {
+    async close(isRequest = false) {
         if (this.isOpened) {
-            this.hide();
+            await this.hide();
             this.onClose();
             return true;
         } else return false;
@@ -958,7 +1051,7 @@ class EstrePageHostHandle extends EstrePageHandle {
         
     }
 
-    closeSubPage(id) {
+    async closeSubPage(id) {
 
     }
 
@@ -1008,7 +1101,7 @@ class EstreComponent extends EstrePageHostHandle {
 
     containers = {};
     containerList = [];
-    get $containers() { return this.$host.find(c.c + uis.container); };
+    get $containers() { return this.$host?.find(c.c + uis.container); };
     $container = {};
 
     get isContainersAllyStatic() {
@@ -1105,8 +1198,8 @@ class EstreComponent extends EstrePageHostHandle {
         return this.openContainer(id, intent);
     }
 
-    closeSubPage(id) {
-        return this.closeContainer(id);
+    async closeSubPage(id) {
+        return await this.closeContainer(id);
     }
 
     showContainer(id, intent) {
@@ -1135,14 +1228,14 @@ class EstreComponent extends EstrePageHostHandle {
         return this.registerContainer($container[0], intent);
     }
 
-    closeContainer(id) {
+    async closeContainer(id) {
         if (id != null) {
             const container = this.containers[id];
             if (container != null) {
-                container.close(false);
+                await container.close(false);
                 if (!container.isStatic) this.unregisterConatiner(container);
                 const $containers = this.$containers;
-                $containers[$containers.length - 1]?.pageHandle?.show();
+                $containers?.[$containers.length - 1]?.pageHandle?.show();
                 return true;
             }
         }
@@ -1194,12 +1287,12 @@ class EstreComponent extends EstrePageHostHandle {
         } else return false;
     }
 
-    close(isRequest = true) {
+    async close(isRequest = true) {
         if (isRequest) {
             if (this.isModal) {
-                return estreUi.closeModalTab(this.id, this.host);
+                return await estreUi.closeModalTab(this.id, this.host);
             } else return false;
-        } else return super.close(false);
+        } else return await super.close(false);
     }
 
 
@@ -1282,10 +1375,10 @@ class EstreMenuComponent extends EstreComponent {
         } else super.show(false, setFocus);
     }
 
-    close(isRequest = true) {
+    async close(isRequest = true) {
         if (isRequest) {
-            return estreUi.closeMenuArea(this.id);
-        } else return super.close(false);
+            return await estreUi.closeMenuArea(this.id);
+        } else return await super.close(false);
     }
 }
 
@@ -1346,10 +1439,10 @@ class EstreInstantComponent extends EstreComponent {
         } else super.show(false, setFocus);
     }
 
-    close(isRequest = true) {
+    async close(isRequest = true) {
         if (isRequest) {
-            return estreUi.closeInstantBlinded(this.id);
-        } else return super.close(false);
+            return await estreUi.closeInstantBlinded(this.id);
+        } else return await super.close(false);
     }
 }
 
@@ -1410,10 +1503,10 @@ class EstreOverlayComponent extends EstreInstantComponent {
         } else super.show(false, setFocus);
     }
 
-    close(isRequest = true) {
+    async close(isRequest = true) {
         if (isRequest) {
-            return estreUi.closeManagedOverlay(this.id);
-        } else return super.close(false);
+            return await estreUi.closeManagedOverlay(this.id);
+        } else return await super.close(false);
     }
 }
 
@@ -1447,7 +1540,7 @@ class EstreContainer extends EstrePageHostHandle {
 
     articles = {};
     articleList = [];
-    get $articles() { return this.$host.find(c.c + ar); };
+    get $articles() { return this.$host?.find(c.c + ar); };
     $article = {};
 
     get isArticlesAllyStatic() {
@@ -1705,10 +1798,10 @@ class EstreContainer extends EstrePageHostHandle {
         } return false;
     }
 
-    close(isRequest = true) {
+    async close(isRequest = true) {
         if (isRequest) {
-            return this.component.closeContainer(this.id);
-        } else return super.close(false);
+            return await this.component.closeContainer(this.id);
+        } else return await super.close(false);
     }
 
     onShow() {
@@ -1751,8 +1844,8 @@ class EstreContainer extends EstrePageHostHandle {
         return this.openArticle(id, intent);
     }
 
-    closeSubPage(id) {
-        return this.closeArticle(id);
+    async closeSubPage(id) {
+        return await this.closeArticle(id);
     }
 
     showArticle(id, intent) {
@@ -1840,14 +1933,14 @@ class EstreContainer extends EstrePageHostHandle {
         return article;
     }
 
-    closeArticle(id) {
+    async closeArticle(id) {
         if (id != null) {
             const article = this.articles[id];
             if (article != null) {
-                article.close(false);
+                await article.close(false);
                 if (!article.isStatic) this.unregisterArticle(article);
                 const $articles = this.$articles;
-                $articles[$articles.length - 1]?.pageHandle?.show();
+                $articles?.[$articles.length - 1]?.pageHandle?.show();
                 return true;
             }
         }
@@ -1943,6 +2036,34 @@ class EstreArticle extends EstrePageHandle {
                     }
                 });
 
+                this.$host.find(acv(eds.bindStyle, item + "@")).each((i, elem) => {
+                    const $elem = $(elem);
+                    const style = $elem.attr(eds.bindStyle);
+                    if (style != null && style != "") {
+                        const targets = style.split(" ");
+                        for (var target of targets) {
+                            const targetInfos = target.split("@");
+                            const targetItem = targetInfos[0];
+                            const targetStyle = targetInfos[1];
+                            if (targetItem == item) $elem.css(targetStyle, value);
+                        }
+                    }
+                });
+
+                this.$host.find(acv(eds.bindAttr, item + "@")).each((i, elem) => {
+                    const $elem = $(elem);
+                    const attr = $elem.attr(eds.bindAttr);
+                    if (attr != null && attr != "") {
+                        const targets = attr.split(" ");
+                        for (var target of targets) {
+                            const targetInfos = target.split("@");
+                            const targetItem = targetInfos[0];
+                            const targetAttr = targetInfos[1];
+                            if (targetItem == item) $elem.attr(targetAttr, value);
+                        }
+                    }
+                });
+
                 if (value instanceof Array) this.$host.find(aiv(eds.bindArray, item)).each((i, elem) => {
                     const $elem = $(elem);
 
@@ -1987,6 +2108,20 @@ class EstreArticle extends EstrePageHandle {
                                         }
                                     }
                                 });
+
+                                $li.find(acv(eds.bindObjectArrayStyle, objItem + "@")).each((i, elem) => {
+                                    const $elem = $(elem);
+                                    const style = $elem.attr(eds.bindObjectArrayStyle);
+                                    if (style != null && style != "") {
+                                        const targets = style.split(" ");
+                                        for (var target of targets) {
+                                            const targetInfos = target.split("@");
+                                            const targetItem = targetInfos[0];
+                                            const targetStyle = targetInfos[1];
+                                            if (targetItem == objItem) $elem.css(targetStyle, value);
+                                        }
+                                    }
+                                });
                             }
                         }
 
@@ -1995,12 +2130,22 @@ class EstreArticle extends EstrePageHandle {
                         $li.find(ax(eds.bindArrayValue)).val(arrayItemValue);
 
                         if (valueIsObject) arrayItemValue = btoa(Jcodd.toCodd(arrayItemValue));
+
                         $li.find(ax(eds.bindArrayAttr)).each((i, elem) => {
                             const $elem = $(elem);
-                            const attr = $elem.attr(eds.bindArrayAttr);
-                            if (attr != null && attr != "") {
-                                const targets = attr.split(" ");
+                            const attrs = $elem.attr(eds.bindArrayAttr);
+                            if (attrs != null && attrs != "") {
+                                const targets = attrs.split(" ");
                                 for (var target of targets) $elem.attr(target, arrayItemValue);
+                            }
+                        });
+
+                        $li.find(ax(eds.bindArrayStyle)).each((i, elem) => {
+                            const $elem = $(elem);
+                            const styles = $elem.attr(eds.bindArrayStyle);
+                            if (styles != null && styles != "") {
+                                const targets = styles.split(" ");
+                                for (var target of targets) $elem.css(target, arrayItemValue);
                             }
                         });
 
@@ -2158,10 +2303,10 @@ class EstreArticle extends EstrePageHandle {
         } else return super.show(false, setFocus);
     }
 
-    close(isRequest = true) {
+    async close(isRequest = true) {
         if (isRequest) {
-            return this.container.closeArticle(this.id);
-        } else return super.close(false);
+            return await this.container.closeArticle(this.id);
+        } else return await super.close(false);
     }
 
 
@@ -2522,8 +2667,34 @@ class EstreUiPage {
             }
         },
 
-        "$i&o=notification#note@note^": class extends EstrePageHandler { },
         "$i&o=notification#noti@noti^": class extends EstrePageHandler { },
+        "$i&o=notification#note@note^": class extends EstrePageHandler {
+            $postBlock;
+
+            onBring(handle) {
+                this.$postBlock = handle.$host.find(".post_block");
+                EstreNotationManager.current = handle.intent;
+                // console.log("pushed", handle.intent);
+            }
+
+            onOpen(handle) {
+                this.$postBlock.click(function (e) {
+                    e.preventDefault();
+
+                    // console.log("clicked: ", handle.intent);
+                    handle.intent?.onTakeInteraction?.(handle.intent);
+
+                    return false;
+                });
+
+                // console.log("showing: ", handle.intent);
+                setTimeout(() => handle.close(), handle.intent?.data?.showTime ?? 3000);
+            }
+
+            onClose(handle) {
+                EstreNotationManager.checkOut(handle.intent);
+            }
+        },
         
         "$s&o=operation#root@timeline": class extends EstrePageHandler { },
         "$s&o=operation#root@quickPanel": class extends EstrePageHandler { },
@@ -2968,8 +3139,8 @@ class EstreUiPageManager {
         get confirm() { return "$i&o=interaction#confirm^" },
         get prompt() { return "$i&o=interaction#prompt^" },
 
-        get popNote() { return "$i&o=notification#note@note^" },
         get popNoti() { return "$i&o=notification#noti@noti^" },
+        get popNote() { return "$i&o=notification#note@note^" },
         
         get timeline() { return "$s&o=operation#root@timeline" },
         get quickPanel() { return "$s&o=operation#root@quickPanel" },
@@ -3257,7 +3428,7 @@ class EstreUiPageManager {
         return targetProcessed[page.hostType];
     }
 
-    closePage(pid, closeHost = false, instanceOrigin = null) {
+    async closePage(pid, closeHost = false, instanceOrigin = null) {
         if (pid.indexOf("!") > -1) pid = this.#managedPidMap[pid.replace(/^\!/, "")];
         if (pid == null) return null;
         if (pid.indexOf("*") > -1) pid = this.extPidMap[pid.replace(/^\*/, "")];
@@ -3279,23 +3450,23 @@ class EstreUiPageManager {
                 if (page.article != null) {
                     article = container.articles[page.article];
                     if (article != null) {
-                        targetProcessed.article = container.closeArticle(page.article);
+                        targetProcessed.article = await container.closeArticle(page.article);
                     }
                 }
                 if (page.isContainer || closeHost || (page.isArticle && page.articleIsStatic && container.isArticlesAllyStatic)) {
-                    targetProcessed.container = component.closeContainer(page.container);
+                    targetProcessed.container = await component.closeContainer(page.container);
                 }
             }
         }
         if (page.isComponent || closeHost || (!page.isComponent && page.containerIsStatic && component.isContainersAllyStatic)) {
             if (page.isOverlay) {
-                targetProcessed.component = estreUi.closeManagedOverlay(page.component);
+                targetProcessed.component = await estreUi.closeManagedOverlay(page.component);
             } else if (page.isMenu) {
-                targetProcessed.component = estreUi.closeMenuArea(page.component);
+                targetProcessed.component = await estreUi.closeMenuArea(page.component);
             } else if (page.isBlinded) {
-                targetProcessed.component = estreUi.closeInstantBlinded(page.component);
+                targetProcessed.component = await estreUi.closeInstantBlinded(page.component);
             } else if (component.isModal) {
-                targetProcessed.component = estreUi.closeModalTab(page.component, component);
+                targetProcessed.component = await estreUi.closeModalTab(page.component, component);
             } else {
                 targetProcessed.component = estreUi.switchRootTab("home");
             }
@@ -9045,7 +9216,7 @@ const estreUi = {
         return !unhandled;
     },
 
-    closeInstantBlinded: function(id) {
+    closeInstantBlinded: async function(id) {
         const component = this.blindSections[id];
         if (component == null) return null;
         const $targetSection = component.$host;
@@ -9053,12 +9224,12 @@ const estreUi = {
 
         if (isModal) {
             if (component.isOnTop) {
-                const closed = this.closeModalSection(id, this.$blindSections, $targetSection);
+                const closed = await this.closeModalSection(id, this.$blindSections, $targetSection);
                 if (!component.isStatic) this.releaseInstantContent(component);
                 return closed;
             } else return null;
         } else {
-            const closed = component.close(false);
+            const closed = await component.close(false);
             if (!component.isStatic) this.releaseInstantContent(component);
             return closed;
         }
@@ -9105,7 +9276,7 @@ const estreUi = {
         return !unhandled;
     },
 
-    closeMenuArea: function(id) {
+    closeMenuArea: async function(id) {
         const component = this.menuSections[id];
         if (component == null) return null;
         const $targetSection = component.$host;
@@ -9113,12 +9284,12 @@ const estreUi = {
 
         if (isModal) {
             if (component.isOnTop) {
-                const closed = this.closeModalSection(id, this.$menuSections, $targetSection);
+                const closed = await this.closeModalSection(id, this.$menuSections, $targetSection);
                 if (!component.isStatic) this.releaseInstantContent(component);
                 return closed;
             } else return null;
         } else {
-            const closed = component.close(false);
+            const closed = await component.close(false);
             if (!component.isStatic) this.releaseInstantContent(component);
             return closed;
         }
@@ -9165,7 +9336,7 @@ const estreUi = {
         return !unhandled;
     },
 
-    closeManagedOverlay: function(id) {
+    closeManagedOverlay: async function(id) {
         const component = this.overlaySections[id];
         if (component == null) return null;
         const $targetSection = component.$host;
@@ -9173,12 +9344,12 @@ const estreUi = {
 
         if (isModal) {
             if (component.isOnTop) {
-                const closed = this.closeModalSection(id, this.$overlaySections, $targetSection);
+                const closed = await this.closeModalSection(id, this.$overlaySections, $targetSection);
                 if (!component.isStatic) this.releaseInstantContent(component);
                 return closed;
             } else return null;
         } else {
-            const closed = component.close(false);
+            const closed = await component.close(false);
             if (!component.isStatic) this.releaseInstantContent(component);
             return closed;
         }
@@ -9221,22 +9392,22 @@ const estreUi = {
         return $targetSection[0]?.pageHandle?.show(false);
     },
 
-    closeModalTab: function(id, targetSection, $sectionSet = this.$mainSections) {
+    closeModalTab: async function(id, targetSection, $sectionSet = this.$mainSections) {
         var $target = this.$fixedBottom.find(btn + aiv(eds.tabId, id));
         if ($target.length < 1) $target = this.$sessionGroupHolder.find(btn + aiv(eds.contained, "root") + aiv(eds.containerId, id));
 
         $target.attr(eds.active, "");
 
-        return this.closeModalSection(id, $sectionSet, targetSection);
+        return await this.closeModalSection(id, $sectionSet, targetSection);
     },
 
-    closeModalSection: function(id, $sectionSet = this.$mainSections, $targetSection) {
+    closeModalSection: async function(id, $sectionSet = this.$mainSections, $targetSection) {
         if ($targetSection == null) $targetSection = $sectionSet.filter(eid + id);
 
         $targetSection.off("click");
         $targetSection.find(c.c + div + uis.container).off("click");
         
-        return $targetSection[0]?.pageHandle?.close(false);
+        return await $targetSection[0]?.pageHandle?.close(false);
     },
 
     initOverlayContents: function() {

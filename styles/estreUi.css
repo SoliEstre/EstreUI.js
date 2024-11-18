@@ -570,7 +570,7 @@ main#instantDoc > section > div.container > article[data-on-top="1"] { z-index: 
 /* managed overlay content page area */
 nav#managedOverlay { }
 nav#managedOverlay > section { }
-nav#managedOverlay > section > div.container { position: fixed; z-index: 200; left: 0; right: 0; height: 0; overflow: visible; box-sizing: border-box; }
+nav#managedOverlay > section > div.container { position: fixed; z-index: 200; top: initial; bottom: initial; left: 0; right: 0; height: 0; overflow: visible; box-sizing: border-box; }
 nav#managedOverlay > section > div.container.top { top: 0; width: fit-content; height: fit-content; margin: 0 auto; }
 nav#managedOverlay > section > div.container.bottom { bottom: 0; width: fit-content; height: fit-content; margin: 0 auto; }
 nav#managedOverlay > section > div.container.slider { transition-timing-function: ease; transition-duration: 0.5s; will-change: auto; }
@@ -592,7 +592,7 @@ nav#managedOverlay > section#interaction > div.container > article.popup_interfa
 nav#managedOverlay > section#interaction > div.container > article.popup_interface .actions :is(input, button) { border-radius: 1.25em; background-color: rgb(255 255 255 / 0%); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
 nav#managedOverlay > section#interaction > div.container > article.popup_interface .actions :is(input, button):focus { outline-color: rgb(var(--cpl) / 50%); }
 nav#managedOverlay > section#interaction > div.container > article.popup_interface .actions input { margin-right: 8px; padding: 16px 12px; border-style: none; }
-nav#managedOverlay > section#interaction > div.container > article.popup_interface .actions button { width: 100%; }
+nav#managedOverlay > section#interaction > div.container > article.popup_interface .actions button { width: 100%; padding: 8px; border: solid 1px var(--color-adaptive); border-radius: 0.75em; font-size: 1.25rem; cursor: pointer; }
 nav#managedOverlay > section#interaction > div.container > article.popup_interface .actions:has(> span) { flex-direction: row-reverse; justify-content: space-between; }
 nav#managedOverlay > section#interaction > div.container > article.popup_interface .actions > span { display: flex; flex-flow: row nowrap; justify-content: space-evenly; }
 nav#managedOverlay > section#interaction > div.container > article.popup_interface .actions > span.left { }
@@ -601,6 +601,25 @@ nav#managedOverlay > section#interaction > div.container > article.popup_interfa
 nav#managedOverlay > section#interaction > div.container > article.popup_interface .actions > span.right { flex-direction: row-reverse; }
 nav#managedOverlay > section#interaction > div.container > article.popup_interface .actions > span.right > button { }
 nav#managedOverlay > section#interaction > div.container > article.popup_interface .actions > span.right > button:not(:first-child) { margin-right: 8px; }
+
+nav#managedOverlay > section#notification { }
+nav#managedOverlay > section#notification > div.container { --bg-color: rgb(var(--cabr) / 50%); position: fixed; height: 0; background-color: transparent; overflow: visible; user-select: none; }
+nav#managedOverlay > section#notification > div.container > article { position: absolute; left: 0; right: 0; width: max-content; margin: 0 auto; background-color: transparent; transition-timing-function: ease; transition-duration: 0.5s; }
+nav#managedOverlay > section#notification > div.container > article:not(:is([data-on-top^="1"], [data-on-top^="0"])) { display: none; }
+nav#managedOverlay > section#notification > div.container > article:not([data-on-top="1"]) { opacity: 0; }
+nav#managedOverlay > section#notification > div.container[data-container-id="noti"] { top: var(--top-pad); }
+nav#managedOverlay > section#notification > div.container[data-container-id="noti"] > article { top: 32px; }
+nav#managedOverlay > section#notification > div.container[data-container-id="note"] { bottom: var(--bottom-pad); }
+nav#managedOverlay > section#notification > div.container[data-container-id="note"] > article { bottom: 0; }
+nav#managedOverlay > section#notification > div.container[data-container-id="note"] > article:is([data-on-top^="1"], [data-on-top="0"]) { }
+nav#managedOverlay > section#notification > div.container[data-container-id="note"] > article[data-on-top="1"] { bottom: 32px; }
+nav#managedOverlay > section#notification > div.container[data-container-id="note"] > article[data-on-top="0"] { bottom: 40px; }
+nav#managedOverlay > section#notification > div.container[data-container-id="note"] > article > .post_block { padding: 12px 16px; border-radius: 16px; background-color: var(--bg-color); box-shadow: 1px 4px 8px 2px rgb(var(--ca) / 25%); cursor: pointer; }
+nav#managedOverlay > section#notification > div.container[data-container-id="note"] > article > .post_block:not([data-interactive]) { cursor: default; }
+nav#managedOverlay > section#notification > div.container[data-container-id="note"] > article > .post_block > .icon_place { }
+nav#managedOverlay > section#notification > div.container[data-container-id="note"] > article > .post_block > .icon_place > img { }
+nav#managedOverlay > section#notification > div.container[data-container-id="note"] > article > .post_block > .content_place > { --color: var(--color-text); --size: 1.25rem; --weight: 500; }
+nav#managedOverlay > section#notification > div.container[data-container-id="note"] > article > .post_block > .content_place > span { color: var(--color); font-size: var(--size); font-weight: var(--weight); line-height: 1em; }
 
 
 /* splash page area */
@@ -811,6 +830,12 @@ article .num_keypad > button { }
 
 article .date_shower { }
 article .date_shower .date_replacer { cursor: pointer; }
+
+article .h_icon_set { display: flex; flex-flow: row nowrap; }
+article .h_icon_set > .icon_place { width: fit-content; height: 100%; flex-grow: 0; flex-shrink: 0; }
+article .h_icon_set > .icon_place > img { height: 100%; }
+article .h_icon_set > .icon_place > img[src=""] { width: 0; }
+article .h_icon_set > .content_place { width: 100%; flex-grow: 1; flex-shrink: 1; }
 
 article .icon_list { justify-content: center; }
 article .icon_list > .list_item { display: flex; flex-direction: column; flex-wrap: nowrap; padding: 16px 8px 8px; align-items: center; }
