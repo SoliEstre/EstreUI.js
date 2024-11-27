@@ -603,8 +603,8 @@ nav#managedOverlay > section#interaction > div.container > article.popup_interfa
 nav#managedOverlay > section#interaction > div.container > article.popup_interface .actions > span.right > button:not(:first-child) { margin-right: 8px; }
 
 nav#managedOverlay > section#notification { }
-nav#managedOverlay > section#notification > div.container { --bg-color: rgb(var(--cabr) / 50%); position: fixed; height: 0; background-color: transparent; overflow: visible; user-select: none; }
-nav#managedOverlay > section#notification > div.container > article { position: absolute; left: 0; right: 0; width: max-content; margin: 0 auto; background-color: transparent; transition-timing-function: ease; transition-duration: 0.5s; }
+nav#managedOverlay > section#notification > div.container { --bg-color: rgb(var(--cabr) / 50%); position: fixed; width: 100vw; height: 0; background-color: transparent; overflow: visible; user-select: none; }
+nav#managedOverlay > section#notification > div.container > article { position: absolute; left: 0; right: 0; width: max-content; height: fit-content; margin: 0 auto; background-color: transparent; transition-timing-function: ease; transition-duration: 0.5s; will-change: auto; }
 nav#managedOverlay > section#notification > div.container > article:not(:is([data-on-top^="1"], [data-on-top^="0"])) { display: none; }
 nav#managedOverlay > section#notification > div.container > article:not([data-on-top="1"]) { opacity: 0; }
 nav#managedOverlay > section#notification > div.container[data-container-id="noti"] { top: var(--top-pad); }
