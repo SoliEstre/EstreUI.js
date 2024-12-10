@@ -238,8 +238,12 @@ if ("serviceWorker" in navigator) {
         </div>
         <div class="container blind" data-container-id="alert" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(0 0 0 / 50%);">
             <article class="constraint popup_interface" data-article-id="main" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
-                <div class="float_center dialog">
-                    <div class="title"><span data-bind="title"></span></div>
+                <div class="fixed_center dialog">
+                    <div class="title">
+                        <button class="back"></button>
+                        <span data-bind="title"></span>
+                        <button class="close"></button>
+                    </div>
                     <div class="message"><span data-bind="message"></span></div>
                     <div class="actions"><button class="confirm"><span data-bind="ok">확인</span></button></div>
                 </div>
@@ -247,8 +251,12 @@ if ("serviceWorker" in navigator) {
         </div>
         <div class="container blind" data-container-id="confirm" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(0 0 0 / 50%);">
             <article class="constraint popup_interface" data-article-id="main" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
-                <div class="float_center dialog">
-                    <div class="title"><span data-bind="title"></span></div>
+                <div class="fixed_center dialog">
+                    <div class="title">
+                        <button class="back"></button>
+                        <span data-bind="title"></span>
+                        <button class="close"></button>
+                    </div>
                     <div class="message"><span data-bind="message"></span></div>
                     <div class="actions">
                         <span class="right">
@@ -264,8 +272,12 @@ if ("serviceWorker" in navigator) {
         </div>
         <div class="container blind" data-container-id="prompt" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(0 0 0 / 50%);">
             <article class="constraint popup_interface" data-article-id="main" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
-                <div class="float_center dialog">
-                    <div class="title"><span data-bind="title"></span></div>
+                <div class="fixed_center dialog">
+                    <div class="title">
+                        <button class="back"></button>
+                        <span data-bind="title"></span>
+                        <button class="close"></button>
+                    </div>
                     <div class="message"><span data-bind="message"></span></div>
                     <div class="actions">
                         <input data-bind-attr="type@type placeholder@placeholder value@value" />

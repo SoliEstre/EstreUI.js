@@ -78,6 +78,7 @@ const sp = "span";
 const rb = "ruby";
 const rp = "rp";
 const rt = "rt";
+const frm = "form";
 const btn = "button";
 const inp = "input";
 const ta = "textarea";
@@ -96,6 +97,7 @@ const SP = "SPAN";
 const RB = "RUBY";
 const RP = "RP";
 const RT = "RT";
+const FRM = "FORM";
 const BTN = "BUTTON";
 const INP = "INPUT";
 const TA = "TEXTAREA";
@@ -627,7 +629,7 @@ const Ecal = {
         else return this.getDateSet(this.getNearPosition(criteria, offset, unit));
     },
 
-    getDateOffset(year, month0, date) {
+    getDateOffset(year = new Date(), month0, date) {
         if (year instanceof Date) date = new Date(year.getFullYear(), year.getMonth(), year.getDate());
         else date = new Date(year, month0, date);
         

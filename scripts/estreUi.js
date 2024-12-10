@@ -118,6 +118,12 @@ const uis = {
     // num keypad
     numKeypad: ".num_keypad",
 
+    // checkbox set
+    checkboxSet: ".checkbox_set",
+
+    // checkbox ally
+    checkboxAlly: ".checkbox_ally",
+
 
     // swipe handler
     blockSwipe: ".block_swipe",
@@ -220,6 +226,8 @@ const eds = {
     length: "data-length",
     title: "data-title",
     for: "data-for",
+    name: "data-name",
+    ally: "data-ally",
 
     // body global switch
     onResizing: "data-on-resizing",
@@ -280,6 +288,10 @@ const eds = {
     direction: "data-direction",
     bound: "data-bound",
     pageSelected: "data-page-selected",
+
+
+    // for checkbox set
+    checkboxSelection: "data-checkbox-selection",
 
 
     // for date shower
@@ -906,14 +918,14 @@ class EstrePageHandle {
 
 
     onBring() {
-        console.log("[onBring] " + this.hostType + " " + EstreUiPage.from(this).pid.split("=")[1], this.host);
+        console.log("[onBring] " + this.hostType + " " + EstreUiPage.from(this)?.pid?.split("=")?.[1], this.host);
         if (this.handler?.onBring != null) this.handler.onBring(this);
         if (this.intent?.onBring != null) for (var item of this.intent.onBring) if (item.from == this.hostType && !item.disabled) this.processAction(item);
     }
 
     onOpen() {
         if (!this.isOpened) {
-            console.log("[onOpen] " + this.hostType + " " + EstreUiPage.from(this).pid.split("=")[1], this.host);
+            console.log("[onOpen] " + this.hostType + " " + EstreUiPage.from(this)?.pid?.split("=")?.[1], this.host);
             this.#isOpened = true;
             if (this.handler?.onOpen != null) this.handler.onOpen(this);
             if (this.intent?.onOpen != null) for (var item of this.intent.onOpen) if (item.from == this.hostType && !item.disabled) this.processAction(item);
@@ -923,7 +935,7 @@ class EstrePageHandle {
 
     onShow() {
         if (!this.isShowing) {
-            console.log("[onShow] " + this.hostType + " " + EstreUiPage.from(this).pid.split("=")[1], this.host);
+            console.log("[onShow] " + this.hostType + " " + EstreUiPage.from(this)?.pid?.split("=")?.[1], this.host);
             this.#isShowing = true;
             if (this.handler?.onShow != null) this.handler.onShow(this);
             if (this.intent?.onShow != null) for (var item of this.intent.onShow) if (item.from == this.hostType && !item.disabled) this.processAction(item);
@@ -933,7 +945,7 @@ class EstrePageHandle {
 
     onFocus() {
         if (!this.isFocused) {
-            console.log("[onFocus] " + this.hostType + " " + EstreUiPage.from(this).pid.split("=")[1], this.host);
+            console.log("[onFocus] " + this.hostType + " " + EstreUiPage.from(this)?.pid?.split("=")?.[1], this.host);
             this.#isFocused = true;
             if (this.handler?.onFocus != null) this.handler.onFocus(this);
             if (this.intent?.onFocus != null) for (var item of this.intent.onFocus) if (item.from == this.hostType && !item.disabled) this.processAction(item);
@@ -955,7 +967,7 @@ class EstrePageHandle {
 
     onBlur() {
         if (this.isShowing) {
-            console.log("[onBlur] " + this.hostType + " " + EstreUiPage.from(this).pid.split("=")[1], this.host);
+            console.log("[onBlur] " + this.hostType + " " + EstreUiPage.from(this)?.pid?.split("=")?.[1], this.host);
             if (this.intent?.onBlur != null) for (var item of this.intent.onBlur) if (item.from == this.hostType && !item.disabled) this.processAction(item);
             if (this.handler?.onBlur != null) this.handler.onBlur(this);
             this.#isFocused = false;
@@ -965,7 +977,7 @@ class EstrePageHandle {
 
     onHide(fullyHide) {
         if (this.isShowing) {
-            console.log("[onHide] " + this.hostType + " " + EstreUiPage.from(this).pid.split("=")[1], this.host);
+            console.log("[onHide] " + this.hostType + " " + EstreUiPage.from(this)?.pid?.split("=")?.[1], this.host);
             if (this.intent?.onHide != null) for (var item of this.intent.onHide) if (item.from == this.hostType && !item.disabled) this.processAction(item);
             if (this.handler?.onHide != null) this.handler.onHide(this, fullyHide);
             this.#isShowing = false;
@@ -975,7 +987,7 @@ class EstrePageHandle {
 
     onClose() {
         if (this.isOpened) {
-            console.log("[onClose] " + this.hostType + " " + EstreUiPage.from(this).pid.split("=")[1], this.host);
+            console.log("[onClose] " + this.hostType + " " + EstreUiPage.from(this)?.pid?.split("=")?.[1], this.host);
             if (this.intent?.onClose != null) for (var item of this.intent.onClose) if (item.from == this.hostType && !item.disabled) this.processAction(item);
             if (this.handler?.onClose != null) this.handler.onClose(this);
             this.#isOpened = false;
@@ -985,7 +997,7 @@ class EstrePageHandle {
 
     onRelease(remove) {
         const removal = remove == null ? "leave" : (remove ? "remove" : "empty")
-        console.log("[onRelease(" + removal + ")] " + this.hostType + " " + EstreUiPage.from(this).pid.split("=")[1], this.host);
+        console.log("[onRelease(" + removal + ")] " + this.hostType + " " + EstreUiPage.from(this)?.pid?.split("=")?.[1], this.host);
         if (this.handler?.onRelease != null) this.handler.onRelease(this, remove);
         if (this.intent?.onRelease != null) for (var item of this.intent.onRelease) if (item.from == this.hostType && !item.disabled) this.processAction(item);
     }
@@ -1533,6 +1545,8 @@ class EstreContainer extends EstrePageHostHandle {
     #$masterButton = null;
     #$masterButtonTitle = null;
 
+    #onMasterButtonClick = null;
+
     get subPages() { return this.articles; }
     get subPageList() { return this.articleList; }
     get $subPages() { return this.$articles; }
@@ -1552,7 +1566,8 @@ class EstreContainer extends EstrePageHostHandle {
         const $articles = this.$articles;
         const $onTop = $articles.filter(asv(eds.onTop, t1));
         if ($onTop.length < 1) return $($articles[$articles.length - 1]);
-        return $onTop;
+        else if ($onTop.length > 1) return $($onTop[$onTop.length - 1]);
+        else return $onTop;
     }
     get currentArticleStepIndex() {
         return this.getArticleStepIndex(this.$currentArticle);
@@ -1615,14 +1630,16 @@ class EstreContainer extends EstrePageHostHandle {
                 $masterButton.click(function (e) {
                     e.preventDefault();
 
-                    const articleStepsId = inst.#articleStepsId;
-                    if (articleStepsId != null) {
-                        const current = inst.currentArticleStepIndex;
-                        if (current != NaN) {
-                            const length = inst.stepPagesLength;
-                            const next = current + 1;
-                            const nextId = articleStepsId + "%" + next;
-                            if (next < length) pageManager.bringPage(EstreUiPage.getPidArticle(nextId, inst.id, inst.component.id, inst.component.sectionBound));
+                    if (inst.#onMasterButtonClick?.(e, this) !== true) {
+                        const articleStepsId = inst.#articleStepsId;
+                        if (articleStepsId != null) {
+                            const current = inst.currentArticleStepIndex;
+                            if (current != NaN) {
+                                const length = inst.stepPagesLength;
+                                const next = current + 1;
+                                const nextId = articleStepsId + "%" + next;
+                                if (next < length) pageManager.bringPage(EstreUiPage.getPidArticle(nextId, inst.id, inst.component.id, inst.component.sectionBound));
+                            }
                         }
                     }
 
@@ -1752,6 +1769,26 @@ class EstreContainer extends EstrePageHostHandle {
         }
     }
 
+    focusMasterButton() {
+        this.#$masterButton?.focus();
+    }
+
+    performClickMasterButton() {
+        this.#$masterButton?.click();
+    }
+
+    setOnClickMasterButton(onClick = null) {
+        this.#onMasterButtonClick = onClick;
+    }
+
+    setMasterButtonDisabled(disabled) {
+        this.#$masterButton?.prop("disabled", disabled);
+    }
+
+    setMasterButtonText(text) {
+        this.#$masterButtonTitle?.text(text);
+    }
+
     getHost(hostType) {
         if (this.hostType == hostType) return this;
         else return this.component.getHost(hostType);
@@ -1857,40 +1894,40 @@ class EstreContainer extends EstrePageHostHandle {
                 //console.log($currentTop);
                 if (this.$host.hasClass("v_stack") || this.$host.hasClass("h_stack")) {
                     $target[0]?.pageHandle?.pushIntent(intent);
-                    if (onlyOne || $currentTop.length > 0) {
-                        const current = this.currentArticleStepIndex;
-                        const target = this.getArticleStepIndex($target);
-                        if (onlyOne || target != current) {
-                            const isNext = onlyOne || target > current;
-                            const currentOnTop1 = isNext ? "-1" : "+1";
-                            const targetOnTop1 = isNext ? "+1" : "-1";
-                            const targetOnTop2 = isNext ? "+" : "-";
-                            $currentTop.attr(eds.onTop, currentOnTop1);
-                            setTimeout(() => {
-                                for (var currentTop of $currentTop) if (currentTop.dataset.onTop == currentOnTop1) {
-                                    currentTop.pageHandle?.blur();
-                                    currentTop.pageHandle?.onHide();
-                                    currentTop.dataset.onTop = null;
-                                }
-                            }, cvt.t2ms($currentTop.css(a.trdr)));
-                            $target.attr(eds.onTop, targetOnTop1);
-                            setTimeout(() => {
-                                if ($target.attr(eds.onTop) == targetOnTop1) {
-                                    $target.attr(eds.onTop, targetOnTop2);
-                                    setTimeout(() => {
-                                        if ($target.attr(eds.onTop) == targetOnTop2) {
-                                            $target.pageHandle?.onShow();
-                                            $target.attr(eds.onTop, t1);
-                                            $target.pageHandle?.fous();
-                                            this.#updateStepNavigation();
-                                        }
-                                    }, cvt.t2ms($target.css(a.trdr)) + cvt.t2ms($target.css(a.trdl)));
-                                }
-                            }, 0);
-                            this.currentOnTop = $target.pageHandle;
-                            return true;
-                        }
+                    const current = this.currentArticleStepIndex;
+                    const target = this.getArticleStepIndex($target);
+                    const isNext = onlyOne || target > current;
+                    const currentOnTop1 = isNext ? "-1" : "+1";
+                    const targetOnTop1 = isNext ? "+1" : "-1";
+                    const targetOnTop2 = isNext ? "+" : "-";
+                    if ($currentTop.length > 0) {
+                        $currentTop.attr(eds.onTop, currentOnTop1);
+                        setTimeout(() => {
+                            for (var currentTop of $currentTop) if (currentTop.dataset.onTop == currentOnTop1) {
+                                currentTop.pageHandle?.blur();
+                                currentTop.pageHandle?.onHide();
+                                //currentTop.dataset.onTop = "";
+                            }
+                            $currentTop.attr(eds.onTop, null);
+                        }, cvt.t2ms($currentTop.css(a.trdr)));
                     }
+                    $target.attr(eds.onTop, targetOnTop1);
+                    setTimeout(() => {
+                        if ($target?.attr(eds.onTop) == targetOnTop1) {
+                            $target?.[0].pageHandle?.onOpen();
+                            $target?.[0].pageHandle?.onShow();
+                            $target?.attr(eds.onTop, targetOnTop2);
+                            setTimeout(() => {
+                                if ($target?.attr(eds.onTop) == targetOnTop2) {
+                                    $target?.attr(eds.onTop, t1);
+                                    $target?.[0].pageHandle?.focus();
+                                    this.#updateStepNavigation();
+                                }
+                            }, cvt.t2ms($target?.css(a.trdr)) + cvt.t2ms($target?.css(a.trdl)));
+                        }
+                    }, 0);
+                    this.currentOnTop = $target.pageHandle;
+                    return true;
                 } else {
                     const targetArticle = $target[0]?.pageHandle;
                     for (var currentTop of $currentTop) {
@@ -2347,11 +2384,15 @@ class EstreArticle extends EstrePageHandle {
  */
 class EstrePageHandler {
 
+    #provider = null;
+    get provider() { return this.#provider; }
+
     handle = null;
     get intent() { this.handle.intent; }
 
-    constructor (handle) {
+    constructor (handle, provider) {
         this.handle = handle;
+        this.#provider = provider;
     }
     
 
@@ -2427,13 +2468,22 @@ class EstreDialogPageHandler extends EstrePageHandler {
     $container;
     $article;
     $dialog;
+    $title;
+    $backer;
+    $closer;
     $actions;
 
     onBring(handle) {
         this.$container = handle.$host;
         this.$article = this.$container.find(ar + aiv(eds.articleId, "main"));
-        this.$dialog = this.$article.find("div.dialog");
-        this.$actions = this.$dialog.find("div.actions");
+        this.$dialog = this.$article.find(div + cls + "dialog");
+        this.$title = this.$dialog.find(div + cls + "title")
+        this.$backer = this.$title.find(btn + cls + "back")
+        this.$closer = this.$title.find(btn + cls + "close")
+        this.$actions = this.$dialog.find(div + cls + "actions");
+
+        if (handle.intent?.data?.backButton === true) this.$dialog.attr("data-back", t1);
+        if (handle.intent?.data?.closeButton === true) this.$dialog.attr("data-close", t1);
     }
 
     onOpen(handle) {
@@ -2449,6 +2499,29 @@ class EstreDialogPageHandler extends EstrePageHandler {
             e.preventDefault();
             e.stopPropagation();
             
+            return false;
+        });
+        this.$dialog.keydown(function (e) {
+            if (e.keyCode == 27) {
+                e.preventDefault();
+                handle.close();
+                return false;
+            }
+        });
+        this.$backer.click(function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            handle.close();
+
+            return false;
+        });
+        this.$closer.click(function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            handle.close();
+
             return false;
         });
         this.$actions.find("input, button").on("keydown", function (e) {
@@ -2702,8 +2775,17 @@ class EstreUiPage {
     };
     static #registeredPageHandlers = {};
 
+    static #customPagesProvider = null;
+    static get provider() { return this.#customPagesProvider; }
+
     static #handlerCommited = false;
     static get handlerCommited() { return this.#handlerCommited; }
+
+    static registerProvider(provider) {
+        if (!this.#handlerCommited && this.#customPagesProvider == null) {
+            this.#customPagesProvider = provider;
+        }
+    }
 
     static registerHandler(pid, handler) {
         if (!this.#handlerCommited && this.#registeredPageHandlers[pid] == null) {
@@ -2925,23 +3007,25 @@ class EstreUiPage {
             $element = $($element);
         }
 
-        const page = new EstreUiPage();
-        switch (element.tagName) {
-            case AR:
-                page.setArticleRefer($element);
-                break;
+        if (element != null) {
+            const page = new EstreUiPage();
+            switch (element.tagName) {
+                case AR:
+                    page.setArticleRefer($element);
+                    break;
 
-            case DIV:
-                if (!$element.hasClass("container")) break;
-                page.setContainerRefer($element);
-                break;
+                case DIV:
+                    if (!$element.hasClass("container")) break;
+                    page.setContainerRefer($element);
+                    break;
 
-            case SE:
-                page.setComponentRefer($element);
-                break;
-        }
-
-        return page;
+                case SE:
+                    page.setComponentRefer($element);
+                    break;
+            }
+            
+            return page;
+        } else return null;
     }
 
     constructor() {}
@@ -3066,7 +3150,7 @@ class EstreUiPage {
         const handler = EstreUiPage.getHandler(this.pid);
         //console.log("pushInstance - " + this.pid + "[" + handle?.handler + "]", handle, handler);
         if (pageHandle != null && handler != null && typeof handler == "function") {
-            return pageHandle.setHandler(new handler(pageHandle));
+            return pageHandle.setHandler(new handler(pageHandle, EstreUiPage.provider));
         }
     }
 
@@ -3505,6 +3589,7 @@ class EstreUiCustomPageManager {
      */
     init(extPidMap, pageHandlers) {
         pageManager.extPidMap = extPidMap;
+        EstreUiPage.registerProvider(pageHandlers);
         for (var id in pageHandlers) EstreUiPage.registerHandler(extPidMap[id], pageHandlers[id]);
 
         return this;
@@ -3551,9 +3636,12 @@ class EstreHandle {
         get [uis.toggleTabBlock]() { return EstreToggleTabBlock },
         get [uis.tabBlock]() { return EstreTabBlock },
 
-        get [uis.dateShower]() { return EstreDateShower },
-
         get [uis.numKeypad]() { return EstreNumKeypad },
+
+        get [uis.checkboxSet]() { return EstreCheckboxSet },
+        get [uis.checkboxAlly]() { return EstreCheckboxAlly },
+
+        get [uis.dateShower]() { return EstreDateShower },
     }
     static get handles() { return this.#handles; }
 
@@ -7770,7 +7858,6 @@ class EstreScopedTabBlock extends EstreTabBlock {
 /**
  * Estre number keypad handler
  */
-
 class EstreNumKeypad extends EstreHandle {
 
     // constants
@@ -7923,6 +8010,123 @@ class EstreNumKeypad extends EstreHandle {
     }
 
 }
+
+
+
+/**
+ * Estre checkbox set handler
+ */
+class EstreCheckboxSet extends EstreHandle {
+
+    // constants
+
+
+    // statics
+
+
+    // open property
+    name = null;
+    selection = null;
+    
+    // enclosed property
+
+
+    // getter and setter
+    $checkboxes = null;
+
+
+    constructor(checkboxSet, host) {
+        super(checkboxSet, host);
+    }
+
+    release(remove) {
+        super.release(remove);
+    }
+
+    init() {
+        super.init();
+
+        this.name = this.$bound.attr(eds.name);
+        const selection = this.$bound.attr(eds.checkboxSelection);
+        if (selection == null || isNaN(selection)) this.selection = 0;
+        else this.selection = parseInt(selection);
+
+        this.$checkboxes = this.$bound.find(inp + aiv("type", "checkbox") + aiv("name", this.name));
+
+        this.setEvent();
+    }
+
+    setEvent() {
+        const inst = this;
+        
+        this.$checkboxes.change(function (e) {
+            if (inst.selection === 1) {
+                for (const checkbox of inst.$checkboxes) if (checkbox != this) checkbox.checked = false;
+            } else if (inst.selection > 1) {
+                if (inst.$checkboxes.filter(":checked").length >= inst.selection) inst.$checkboxes.filter(":not(:checked)").prop("disabled", true);
+                else inst.$checkboxes.filter(":disabled").prop("disabled", false);
+            }
+        });
+    }
+}
+
+/**
+ * Estre checkbox ally handler
+ */
+class EstreCheckboxAlly extends EstreHandle {
+
+    // constants
+
+
+    // statics
+
+
+    // open property
+    ally = null;
+    name = null;
+    
+    // enclosed property
+
+
+    // getter and setter
+    $checkboxAlly = null;
+    $checkboxes = null;
+
+
+    constructor(checkboxAlly, host) {
+        super(checkboxAlly, host);
+    }
+
+    release(remove) {
+        super.release(remove);
+    }
+
+    init() {
+        super.init();
+
+        this.ally = this.$bound.attr(eds.ally);
+        this.name = this.$bound.attr(eds.name);
+
+        this.$checkboxAlly = this.$bound.find(inp + aiv("type", "checkbox") + aiv("name", this.ally));
+        this.$checkboxes = this.$bound.find(inp + aiv("type", "checkbox") + aiv("name", this.name));
+
+        this.setEvent();
+    }
+
+    setEvent() {
+        const inst = this;
+
+        this.$checkboxAlly.change(function (e) {
+            inst.$checkboxes.prop("checked", this.checked).change();
+        });
+        
+        this.$checkboxes.change(function (e) {
+            const isAlly = inst.$checkboxes.filter(":checked").length == inst.$checkboxes.length;
+            inst.$checkboxAlly.prop("checked", isAlly);
+        });
+    }
+}
+
 
 // showers
 
@@ -9036,7 +9240,7 @@ const estreUi = {
             this.$rootTabs.filter(aiv(eds.tabId, topId)).attr(eds.active, t1);
         }
 
-        this.$rootTabs.click(this.rootTabOnClick);
+        this.$rootTabs.filter(ax(eds.tabId)).click(this.rootTabOnClick);
 
 
         // * Currently not using
@@ -9065,7 +9269,7 @@ const estreUi = {
             this.$rootTabs.filter(aiv(eds.tabId, topId)).attr(eds.active, t1);
         }
 
-        this.$rootTabs.click(this.rootTabOnClick);
+        this.$rootTabs.filter(ax(eds.tabId)).click(this.rootTabOnClick);
     },
 
     buildRootTabItem: function(esm) {
