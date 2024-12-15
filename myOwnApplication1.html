@@ -198,7 +198,7 @@ if ("serviceWorker" in navigator) {
                 </article>
             </div>
             <div class="container vfv_scroll" data-container-id="tab2_next" data-static="1" data-title="Tab2-2">
-                <article class="fwvs" data-article-id="main" data-static="">
+                <article class="fwvs" data-article-id="main" data-static="1">
                     <div class="line_block" style="text-align: right; "><span>tab 2<br />constaint (single fullscreen article) container 2</span></div>
                     <button class="flow_block tp_tiled_btn" data-open-target="root" data-open-container="component" data-open-id="activity2"><span>go to hidden tab (activity 2)</span></button>
                 </article>
@@ -209,6 +209,35 @@ if ("serviceWorker" in navigator) {
                 <article class="fwvs" data-article-id="item1" data-static="1" data-title="Activity1">
                     <div class="float_center">
                         <div class="line_block"><span>activity 1<br />(static)<br />article 1</span></div>
+                    </div>
+                </article>
+                <article class="fwvs" data-article-id="item2" data-static="1" data-title="Activity1-a2">
+                    <div class="float_center">
+                        <div class="line_block"><span>article 2</span></div>
+                    </div>
+                </article>
+                <article class="fwvs" data-article-id="item3" data-static="1" data-title="Activity1-a3">
+                    <div class="float_center">
+                        <div class="line_block"><span>article 3</span></div>
+                    </div>
+                </article>
+            </div>
+        </section>
+        <section id="activity2" class="" data-static="">
+            <div class="container vfv_scroll" data-container-id="root" data-static="1" data-title="Activity2">
+                <article class="constaint" data-article-id="main" data-static="1">
+                    <div class="float_center">
+                        <div class="line_block"><span>activity 2<br />(instant)</span></div>
+                        <div class="line_block">
+                            <button class="" data-open-target="container" data-open-container="article" data-open-id="item1"><span>article 1</span></button>
+                            <button class="" data-open-target="container" data-open-container="article" data-open-id="item2"><span>article 2</span></button>
+                            <button class="" data-open-target="container" data-open-container="article" data-open-id="item3"><span>article 3</span></button>
+                        </div>
+                    </div>
+                </article>
+                <article class="constaint" data-article-id="item1" data-static="1" data-title="Activity1">
+                    <div class="float_center">
+                        <div class="line_block"><span>activity 2<br />(static)<br />article 1</span></div>
                         <div class="line_block">
                             <button class="" data-open-target="container" data-open-container="article" data-open-id="item1" disabled><span>article 1</span></button>
                             <button class="" data-open-target="container" data-open-container="article" data-open-id="item2"><span>article 2</span></button>
@@ -216,9 +245,9 @@ if ("serviceWorker" in navigator) {
                         </div>
                     </div>
                 </article>
-                <article class="fwvs" data-article-id="item2" data-static="1" data-title="Activity1-a2">
+                <article class="constaint" data-article-id="item2" data-static="1" data-title="Activity1-a2">
                     <div class="float_center">
-                        <div class="line_block"><span>article 2</span></div>
+                        <div class="line_block"><span>article 2<br />(static)<br />article 2</span></div>
                         <div class="line_block">
                             <button class="" data-open-target="container" data-open-container="article" data-open-id="item1"><span>article 1</span></button>
                             <button class="" data-open-target="container" data-open-container="article" data-open-id="item2" disabled><span>article 2</span></button>
@@ -226,23 +255,14 @@ if ("serviceWorker" in navigator) {
                         </div>
                     </div>
                 </article>
-                <article class="fwvs" data-article-id="item3" data-static="1" data-title="Activity1-a3">
+                <article class="constaint" data-article-id="item3" data-static="1" data-title="Activity1-a3">
                     <div class="float_center">
-                        <div class="line_block"><span>article 3</span></div>
+                        <div class="line_block"><span>article 3<br />(static)<br />article 3</span></div>
                         <div class="line_block">
                             <button class="" data-open-target="container" data-open-container="article" data-open-id="item1"><span>article 1</span></button>
                             <button class="" data-open-target="container" data-open-container="article" data-open-id="item2"><span>article 2</span></button>
                             <button class="" data-open-target="container" data-open-container="article" data-open-id="item3" disabled><span>article 3</span></button>
                         </div>
-                    </div>
-                </article>
-            </div>
-        </section>
-        <section id="activity2" class="" data-static="">
-            <div class="container vfv_scroll" data-container-id="root" data-static="1" data-title="Activity2">
-                <article class="fwvs" data-article-id="main" data-static="1">
-                    <div class="float_center">
-                        <div class="line_block"><span>activity 2<br />(instant)</span></div>
                     </div>
                 </article>
             </div>
