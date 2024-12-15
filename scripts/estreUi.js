@@ -767,6 +767,10 @@ class EstrePageHandle {
         return onTop == t1 || onTop == "1*";
     }
 
+    get isCanBack() { return false; }
+
+    get title() { return this.$host?.attr(eds.title); }
+
     get isFullyHided() {
         const onTop = this.$host?.attr(eds.onTop);
         return onTop == "" || onTop == t0;
@@ -866,16 +870,22 @@ class EstrePageHandle {
         else if (this.#isOpened) {
             const onTop = this.currentOnTop;
             const onReload = this.handler?.onReload;
-            return (onTop != null && onTop.onReload()) || (onReload != null && onReload(this));
+            return (onTop != null && onTop.onReload()) || (onReload != null && (() => {
+                console.log("[performReload] " + this.sectionBound + " " + this.hostType + " " + EstreUiPage.from(this)?.pid?.split("=")?.[1], this.host);
+                return onReload(this);
+            })());
         } else return false;
     }
 
-    back(isRequest = true) {
-        if (isRequest) return this.onBack();
+    async back(isRequest = true) {
+        if (isRequest) return await this.onBack();
         else if (this.isShowing) {
             const onTop = this.currentOnTop;
             const onBack = this.handler?.onBack;
-            return (onTop != null && onTop.onBack()) || (onBack != null && onBack(this));
+            return (onTop != null && await onTop.onBack()) || (onBack != null && await (async () => {
+                console.log("[performBack] " + this.sectionBound + " " + this.hostType + " " + EstreUiPage.from(this)?.pid?.split("=")?.[1], this.host);
+                return await onBack(this);
+            })());
         } else return false;
     }
 
@@ -908,24 +918,23 @@ class EstrePageHandle {
         } else return false;
     }
 
-    async close(isRequest = false) {
+    async close(isRequest = false, isOnRelease = false) {
         if (this.isOpened) {
             await this.hide();
-            this.onClose();
-            return true;
+            return this.onClose(isOnRelease);
         } else return false;
     }
 
 
     onBring() {
-        console.log("[onBring] " + this.hostType + " " + EstreUiPage.from(this)?.pid?.split("=")?.[1], this.host);
+        console.log("[onBring] " + this.sectionBound + " " + this.hostType + " " + EstreUiPage.from(this)?.pid?.split("=")?.[1], this.host);
         if (this.handler?.onBring != null) this.handler.onBring(this);
         if (this.intent?.onBring != null) for (var item of this.intent.onBring) if (item.from == this.hostType && !item.disabled) this.processAction(item);
     }
 
     onOpen() {
         if (!this.isOpened) {
-            console.log("[onOpen] " + this.hostType + " " + EstreUiPage.from(this)?.pid?.split("=")?.[1], this.host);
+            console.log("[onOpen] " + this.sectionBound + " " + this.hostType + " " + EstreUiPage.from(this)?.pid?.split("=")?.[1], this.host);
             this.#isOpened = true;
             if (this.handler?.onOpen != null) this.handler.onOpen(this);
             if (this.intent?.onOpen != null) for (var item of this.intent.onOpen) if (item.from == this.hostType && !item.disabled) this.processAction(item);
@@ -935,7 +944,7 @@ class EstrePageHandle {
 
     onShow() {
         if (!this.isShowing) {
-            console.log("[onShow] " + this.hostType + " " + EstreUiPage.from(this)?.pid?.split("=")?.[1], this.host);
+            console.log("[onShow] " + this.sectionBound + " " + this.hostType + " " + EstreUiPage.from(this)?.pid?.split("=")?.[1], this.host);
             this.#isShowing = true;
             if (this.handler?.onShow != null) this.handler.onShow(this);
             if (this.intent?.onShow != null) for (var item of this.intent.onShow) if (item.from == this.hostType && !item.disabled) this.processAction(item);
@@ -945,7 +954,7 @@ class EstrePageHandle {
 
     onFocus() {
         if (!this.isFocused) {
-            console.log("[onFocus] " + this.hostType + " " + EstreUiPage.from(this)?.pid?.split("=")?.[1], this.host);
+            console.log("[onFocus] " + this.sectionBound + " " + this.hostType + " " + EstreUiPage.from(this)?.pid?.split("=")?.[1], this.host);
             this.#isFocused = true;
             if (this.handler?.onFocus != null) this.handler.onFocus(this);
             if (this.intent?.onFocus != null) for (var item of this.intent.onFocus) if (item.from == this.hostType && !item.disabled) this.processAction(item);
@@ -955,19 +964,21 @@ class EstrePageHandle {
 
     onReload() {
         if (this.isOpened) {
+            console.log("[onReload] " + this.sectionBound + " " + this.hostType + " " + EstreUiPage.from(this)?.pid?.split("=")?.[1], this.host);
             return this.reload(false);
         } else return false;
     }
 
-    onBack() {
+    async onBack() {
         if (this.isShowing) {
-            return this.back(false);
+            console.log("[onBack] " + this.sectionBound + " " + this.hostType + " " + EstreUiPage.from(this)?.pid?.split("=")?.[1], this.host);
+            return await this.back(false);
         } else return false;
     }
 
     onBlur() {
         if (this.isShowing) {
-            console.log("[onBlur] " + this.hostType + " " + EstreUiPage.from(this)?.pid?.split("=")?.[1], this.host);
+            console.log("[onBlur] " + this.sectionBound + " " + this.hostType + " " + EstreUiPage.from(this)?.pid?.split("=")?.[1], this.host);
             if (this.intent?.onBlur != null) for (var item of this.intent.onBlur) if (item.from == this.hostType && !item.disabled) this.processAction(item);
             if (this.handler?.onBlur != null) this.handler.onBlur(this);
             this.#isFocused = false;
@@ -977,7 +988,7 @@ class EstrePageHandle {
 
     onHide(fullyHide) {
         if (this.isShowing) {
-            console.log("[onHide] " + this.hostType + " " + EstreUiPage.from(this)?.pid?.split("=")?.[1], this.host);
+            console.log("[onHide] " + this.sectionBound + " " + this.hostType + " " + EstreUiPage.from(this)?.pid?.split("=")?.[1], this.host);
             if (this.intent?.onHide != null) for (var item of this.intent.onHide) if (item.from == this.hostType && !item.disabled) this.processAction(item);
             if (this.handler?.onHide != null) this.handler.onHide(this, fullyHide);
             this.#isShowing = false;
@@ -985,9 +996,9 @@ class EstrePageHandle {
         } else return false;
     }
 
-    onClose() {
-        if (this.isOpened) {
-            console.log("[onClose] " + this.hostType + " " + EstreUiPage.from(this)?.pid?.split("=")?.[1], this.host);
+    onClose(isOnRelease = false) {
+        if (this.isOpened && (isOnRelease || !this.isStatic)) {
+            console.log("[onClose] " + this.sectionBound + " " + this.hostType + " " + EstreUiPage.from(this)?.pid?.split("=")?.[1], this.host);
             if (this.intent?.onClose != null) for (var item of this.intent.onClose) if (item.from == this.hostType && !item.disabled) this.processAction(item);
             if (this.handler?.onClose != null) this.handler.onClose(this);
             this.#isOpened = false;
@@ -996,8 +1007,9 @@ class EstrePageHandle {
     }
 
     onRelease(remove) {
+        if (this.isStatic) this.close(false, true);
         const removal = remove == null ? "leave" : (remove ? "remove" : "empty")
-        console.log("[onRelease(" + removal + ")] " + this.hostType + " " + EstreUiPage.from(this)?.pid?.split("=")?.[1], this.host);
+        console.log("[onRelease(" + removal + ")] " + this.sectionBound + " " + this.hostType + " " + EstreUiPage.from(this)?.pid?.split("=")?.[1], this.host);
         if (this.handler?.onRelease != null) this.handler.onRelease(this, remove);
         if (this.intent?.onRelease != null) for (var item of this.intent.onRelease) if (item.from == this.hostType && !item.disabled) this.processAction(item);
     }
@@ -1036,10 +1048,21 @@ class EstrePageHandle {
  */
 class EstrePageHostHandle extends EstrePageHandle {
 
+    get title() { return this.currentOnTop?.title ?? this.$host?.attr(eds.title); }
+
     get subPages() { return {}; }
     get subPageList() { return []; }
     get $subPages() { return $(); }
     get $subPage() { return {}; }
+
+    get isSingleSubPage() { return this.$subPages.length === 1; }
+    get isMultiSubPages() { return this.$subPages.length > 1; }
+
+    get currentTop() { return this.currentOnTop ?? this.subPageList.at(-1); }
+
+    prevSubPageId = null;
+
+    get isAvailablePrevSubPage() { return this.prevSubPageId != null && this.subPages[this.prevSubPageId] != null; }
 
 
     initSubPages(intent) {
@@ -1106,6 +1129,18 @@ class EstreComponent extends EstrePageHostHandle {
 
 
     // instance property
+    get isCanBack() { switch (this.sectionBound) {
+            case "main":
+                return !this.isHome && ((estreUi.prevRootTabId != null && estreUi.mainSections[estreUi.prevRootTabId] != null) || estreUi.mainSections["home"] != null);
+
+            case "blind":
+            case "menu":
+            case "overlay":
+            case "header":
+                return false;
+        }
+    }
+
     get subPages() { return this.containers; }
     get subPageList() { return this.containerList; }
     get $subPages() { return this.$containers; }
@@ -1116,12 +1151,20 @@ class EstreComponent extends EstrePageHostHandle {
     get $containers() { return this.$host?.find(c.c + uis.container); };
     $container = {};
 
+    get isSingleContainer() { return this.isSingleSubPage; }
+    get isMultiContainer() { return this.isMultiSubPages; }
+
+    get isAvailableRootContainer() { return this.containers["root"] != null; }
+    get isExistBackContainer() { return this.isMultiSubPages && (this.isAvailablePrevSubPage || ((this.currentTop?.isSub ?? false) && this.isAvailableRootContainer)); }
+
     get isContainersAllyStatic() {
         for (var container of this.containerList) if (!container.isStatic) return false;
         return true;
     }
 
     get $articles() { return this.$host.find(c.c + uis.container + c.c + uis.article); };
+
+    get isHome() { return this.id == "home" || this.$host.hasClass("home"); }
 
     constructor(component) {
         super(component);
@@ -1174,8 +1217,9 @@ class EstreComponent extends EstrePageHostHandle {
         }
 
         let $top = this.$containers.filter(asv(eds.onTop, t1));
+        if ($top.length < 1) $top = this.$containers.filter(aiv(eds.containerId, "root"));
         if ($top.length < 1) $top = this.$containers;
-        $top[$top.length - 1]?.pageHandle?.show();
+        $top[$top.length - 1]?.pageHandle?.show(false);
     }
 
     registerContainer(element, intent) {
@@ -1193,7 +1237,7 @@ class EstreComponent extends EstrePageHostHandle {
     unregisterConatiner(container) {
         if (container == null) return;
         EstreUiPage.unregisterFrom(container);
-        container.release(container.$host.attr(eds.static) != t1 ? true : null);
+        container.release(!container.isStatic ? true : null);
         if (this.$container[container.id] != null) delete this.$container[container.id];
         if (this.containers[container.id] != null) delete this.containers[container.id];
         const index = this.containerList.indexOf(container);
@@ -1218,12 +1262,20 @@ class EstreComponent extends EstrePageHostHandle {
         if (id != null) {
             const container = this.containers[id];
             if (container != null) {
+                if (id != this.currentTop.id && this.currentTop.id != this.prevSubPageId) this.prevSubPageId = this.currentTop.id;
                 for (var current of this.containerList) if (current.isOnTop && current != container) {
                     current.hide();
                 }
                 container.pushIntent(intent);
                 container.show(false);
                 this.currentOnTop = container;
+
+                switch (this.sectionBound) {
+                    case "menu":
+                    case "main":
+                        estreUi.showExactAppbar(this, container);
+                        break;
+                }
                 return true;
             }
         }
@@ -1244,14 +1296,29 @@ class EstreComponent extends EstrePageHostHandle {
         if (id != null) {
             const container = this.containers[id];
             if (container != null) {
-                await container.close(false);
+                const task = container.close(false);
+                setTimeout(() => {
+                    const $containers = this.$containers?.filter(naiv(eds.containerId, id));
+                    if ($containers != null) {
+                        if ($containers.length > 0) {
+                            if (this.prevSubPageId != null) {
+                                if (this.showContainer(this.prevSubPageId)) this.prevSubPageId = null;
+                            } else $containers?.[$containers.length - 1]?.pageHandle?.show();
+                        } else setTimeout(() => {
+                            if (this.$containers.filter(naiv(eds.containerId, id)).length < 1) this?.close();
+                        }, 0);
+                    }
+                }, 0);
+                const result = await task;
                 if (!container.isStatic) this.unregisterConatiner(container);
-                const $containers = this.$containers;
-                $containers?.[$containers.length - 1]?.pageHandle?.show();
-                return true;
+                return result;
             }
         }
-        return false;
+        return null;
+    }
+
+    async onCloseContainer() {
+        return await this.currentOnTop?.close();
     }
 
     show(isRequest = true, setFocus = true) {
@@ -1279,8 +1346,8 @@ class EstreComponent extends EstrePageHostHandle {
         } else false;
     }
 
-    back(isRequest = true) {
-        return super.back(isRequest) || (this.sectionBound == "main" && this.isShowing && this.id != "home" && estreUi.switchRootTab("home"));
+    async back(isRequest = true) {
+        return await super.back(isRequest);// || (this.sectionBound == "main" && this.isShowing && this.id != "home" && estreUi.switchRootTab("home"));
     }
 
     blur() {
@@ -1302,7 +1369,7 @@ class EstreComponent extends EstrePageHostHandle {
     async close(isRequest = true) {
         if (isRequest) {
             if (this.isModal) {
-                return await estreUi.closeModalTab(this.id, this.host);
+                return await estreUi.closeModalTab(this.id, this.$host);
             } else return false;
         } else return await super.close(false);
     }
@@ -1310,16 +1377,25 @@ class EstreComponent extends EstrePageHostHandle {
 
     onShow() {
         const processed = super.onShow();
-        var $top = this.$containers.filter(asv(eds.onTop), t1);
+        let $top = this.$containers.filter(asv(eds.onTop, t1));
         if ($top.length < 1) $top = this.$containers;
-        $top[$top.length - 1]?.pageHandle?.show();
+        const container = $top[$top.length - 1]?.pageHandle;
+        if (container != null) {
+            container.onShow();
+            this.currentOnTop = container;
+            // container.onFocus();
+        }
         return processed;
     }
 
     onHide() {
-        var $top = this.$containers.filter(asv(eds.onTop), t1);
+        let $top = this.$containers.filter(asv(eds.onTop, t1));
         if ($top.length < 1) $top = this.$containers;
-        $top[0]?.pageHandle?.onHide();
+        const container = $top[$top.length - 1]?.pageHandle;
+        if (container != null) {
+            container.onBlur();
+            container.onHide();
+        }
         return super.onHide();
     }
 
@@ -1390,6 +1466,70 @@ class EstreMenuComponent extends EstreComponent {
     async close(isRequest = true) {
         if (isRequest) {
             return await estreUi.closeMenuArea(this.id);
+        } else return await super.close(false);
+    }
+}
+
+
+
+/**
+ * Component page handle for header sections
+ */
+class EstreHeaderComponent extends EstreComponent {
+    // constants
+    get sectionBound() { return "header"; };
+
+    // class property
+    static components = {};
+    static componentList = [];
+
+
+    // static methods
+    
+
+
+    // instance property
+
+
+
+
+    constructor(component) {
+        super(component);
+    }
+
+    release(remove) {
+
+
+        super.release(remove);
+    }
+
+    init(intent) {
+
+
+        super.init(intent);
+
+        
+
+        return this;
+    }
+
+    register() {
+        return EstreHeaderComponent.register(this);
+    }
+
+    unregister() {
+        EstreHeaderComponent.unregister(this);
+    }
+
+    show(isRequest = true, setFocus = true) {
+        if (isRequest) {
+            return estreUi.showHeaderBar(this.id);
+        } else super.show(false, setFocus);
+    }
+
+    async close(isRequest = true) {
+        if (isRequest) {
+            return await estreUi.closeHeaderBar(this.id);
         } else return await super.close(false);
     }
 }
@@ -1530,6 +1670,8 @@ class EstreContainer extends EstrePageHostHandle {
     
     hostType = "container";
 
+    get sectionBound() { return this.component.sectionBound; }
+
     component = null;
 
     #articleStepsId = null;
@@ -1547,6 +1689,11 @@ class EstreContainer extends EstrePageHostHandle {
 
     #onMasterButtonClick = null;
 
+    get isCanBack() { return this.component.isExistBackContainer; }
+
+    get isRoot() { return this.id == "root"; }
+    get isSub() { return this.id != "root"; }
+
     get subPages() { return this.articles; }
     get subPageList() { return this.articleList; }
     get $subPages() { return this.$articles; }
@@ -1556,6 +1703,12 @@ class EstreContainer extends EstrePageHostHandle {
     articleList = [];
     get $articles() { return this.$host?.find(c.c + ar); };
     $article = {};
+
+    get isSingleArticle() { return this.isSingleSubPage; }
+    get isMultiArticle() { return this.isMultiSubPages; }
+
+    get isAvailableMainArticle() { return this.articles["main"] != null; }
+    get isExistBackArticle() { return this.isMultiSubPages && (this.isAvailablePrevSubPage || ((this.currentTop?.isSub ?? false) && this.isAvailableMainArticle)); }
 
     get isArticlesAllyStatic() {
         for (var article of this.articleList) if (!article.isStatic) return false;
@@ -1696,8 +1849,9 @@ class EstreContainer extends EstrePageHostHandle {
         $scalables.filter(opa + eds.registered + equ + v0 + cla).attr(eds.lookScale, t0);
 
         let $top = this.$articles.filter(asv(eds.onTop, t1));
+        if ($top.length < 1) $top = this.$articles.filter(aiv(eds.articleId, "main"));
         if ($top.length < 1) $top = this.$articles;
-        $top[$top.length - 1]?.pageHandle?.show();
+        $top[$top.length - 1]?.pageHandle?.show(false);
     }
 
     registerArticle(element, intent) {
@@ -1715,7 +1869,7 @@ class EstreContainer extends EstrePageHostHandle {
     unregisterArticle(article) {
         if (article == null) return;
         EstreUiPage.unregisterFrom(article);
-        article.release(article.$host.attr(eds.static) != t1 ? true : null);
+        article.release(!article.isStatic ? true : null);
         if (this.$article[article.id] != null) delete this.$article[article.id];
         if (this.articles[article.id] != null) delete this.articles[article.id];
         const index = this.articleList.indexOf(article);
@@ -1843,16 +1997,25 @@ class EstreContainer extends EstrePageHostHandle {
 
     onShow() {
         const processed = super.onShow();
-        var $top = this.$articles.filter(asv(eds.onTop), t1);
+        let $top = this.$articles.filter(asv(eds.onTop, t1));
         if ($top.length < 1) $top = this.$articles;
-        $top[$top.length - 1]?.pageHandle?.show();
+        const article = $top[$top.length - 1]?.pageHandle;
+        if (article != null) {
+            article.onShow();
+            this.currentOnTop = article;
+            // article.onFocus();
+        }
         return processed;
     }
 
     onHide() {
-        var $top = this.$articles.filter(asv(eds.onTop), t1);
+        let $top = this.$articles.filter(asv(eds.onTop, t1));
         if ($top.length < 1) $top = this.$articles;
-        $top[0]?.pageHandle?.onHide();
+        const article = $top[$top.length - 1]?.pageHandle;
+        if (article != null) {
+            article.onBlur();
+            article.onHide();
+        }
         return super.onHide();
     }
 
@@ -1892,6 +2055,7 @@ class EstreContainer extends EstrePageHostHandle {
                 const onlyOne = this.$articles.filter(ntc("dummy")).length === 1;
                 const $currentTop = this.$articles.filter(asv(eds.onTop, t1));
                 //console.log($currentTop);
+                if (id != this.currentTop.id && this.currentTop.id != this.prevSubPageId) this.prevSubPageId = this.currentTop.id;
                 if (this.$host.hasClass("v_stack") || this.$host.hasClass("h_stack")) {
                     $target[0]?.pageHandle?.pushIntent(intent);
                     const current = this.currentArticleStepIndex;
@@ -1926,7 +2090,15 @@ class EstreContainer extends EstrePageHostHandle {
                             }, cvt.t2ms($target?.css(a.trdr)) + cvt.t2ms($target?.css(a.trdl)));
                         }
                     }, 0);
-                    this.currentOnTop = $target.pageHandle;
+                    const targetArticle = $target.pageHandle;
+                    this.currentOnTop = targetArticle;
+
+                    switch (this.sectionBound) {
+                        case "menu":
+                        case "main":
+                            estreUi.showExactAppbar(this, this.container, targetArticle);
+                            break;
+                    }
                     return true;
                 } else {
                     const targetArticle = $target[0]?.pageHandle;
@@ -1939,6 +2111,13 @@ class EstreContainer extends EstrePageHostHandle {
                     targetArticle?.pushIntent(intent);
                     targetArticle?.show(false);
                     this.currentOnTop = targetArticle;
+
+                    switch (this.sectionBound) {
+                        case "menu":
+                        case "main":
+                            estreUi.showExactAppbar(this.component, this, targetArticle);
+                            break;
+                    }
                     return true;
                 }
             }
@@ -1974,14 +2153,25 @@ class EstreContainer extends EstrePageHostHandle {
         if (id != null) {
             const article = this.articles[id];
             if (article != null) {
-                await article.close(false);
+                const task = article.close(false);
+                setTimeout(() => {
+                    const $articles = this.$articles?.filter(naiv(eds.articleId, id));
+                    if ($articles != null) {
+                        if ($articles.length > 0) {
+                            if (this.prevSubPageId != null) {
+                                if (this.showArticle(this.prevSubPageId)) this.prevSubPageId = null;
+                            } else $articles?.[$articles.length - 1]?.pageHandle?.show();
+                        } else setTimeout(() => {
+                            if (this.$articles.filter(naiv(eds.articleId, id)).length < 1) this?.close();
+                        }, 0);
+                    }
+                }, 0);
+                const result = await task;
                 if (!article.isStatic) this.unregisterArticle(article);
-                const $articles = this.$articles;
-                $articles?.[$articles.length - 1]?.pageHandle?.show();
-                return true;
+                return result;
             }
         }
-        return false;
+        return null;
     }
     
     getArticleStepIndex($article) {
@@ -1999,9 +2189,17 @@ class EstreArticle extends EstrePageHandle {
 
     hostType = "article";
 
+    get sectionBound() { return this.container.component.sectionBound; }
+
     container = null;
 
     get isStatic() { return this.$host?.attr(eds.static) == t1; }
+
+    get isMain() { return this.id == "main"; }
+    get isSub() { return this.id != "main"; }
+
+    get isCanBack() { return this.container.isExistBackArticle; }
+
 
     handles = [];
     
@@ -2250,6 +2448,8 @@ class EstreArticle extends EstrePageHandle {
 
     // event handlers
     setEventInternalLink(item) {
+        const inst = this;
+
         $(item).click(function(e) {
             e.preventDefault();
 
@@ -2264,26 +2464,130 @@ class EstreArticle extends EstrePageHandle {
             switch (targetBound) {
                 case "root":
                     switch (container) {
-                        case "root_tab_content":
-                            estreUi.switchRootTab(id);
+                        case "component":
+                            let component;
+                            switch (inst.sectionBound) {
+                                case "main":
+                                    estreUi.switchRootTab(id);
+                                    break;
+                    
+                                case "blind":
+                                    component = estreUi.blindSections[id];
+                                    if (component == null) {
+                                        estreUi.openInstantBlinded(id);
+                                        component = estreUi.blindSections[id];
+                                    }
+                                    if (component != null) estreUi.showInstantBlinded(id);
+                                    break;
+                    
+                                case "overlay":
+                                    component = estreUi.overlaySections[id];
+                                    if (component == null) {
+                                        estreUi.openManagedOverlay(id);
+                                        component = estreUi.overlaySections[id];
+                                    }
+                                    if (component != null) estreUi.showManagedOverlay(id);
+                                    break;
+                    
+                                case "menu":
+                                    component = estreUi.menuSections[id];
+                                    if (component == null) {
+                                        estreUi.openMenuArea(id);
+                                        component = estreUi.menuSections[id];
+                                    }
+                                    if (component != null) estreUi.showMenuArea(id);
+                                    break;
+                    
+                                case "header":
+                                    component = estreUi.headerSections[id];
+                                    if (component == null) {
+                                        estreUi.openHeaderBar(id);
+                                        component = estreUi.headerSections[id];
+                                    }
+                                    if (component != null) estreUi.showHeaderBar(id);
+                                    break;
+                            }
                             break;
                     }
                     break;
 
-                case "root_tab_content":
+                case "component":
                     switch (container) {
                         case "container":
-                            if (target == "self") {
-                                inst.showContainer(id);
-                            } else {
-                                const targetSection = estreUi.mainSections[target];
-                                if (targetSection != null) {
-                                    var success = targetSection.showContainer(id);
-                                    if (!success) {
-                                        success = targetSection.openContainer(id);
+                            const isSelf = target == "self";
+                            const thisComponent = inst.container.component;
+                            let component;
+                            if (isSelf) component = thisComponent;
+                            else switch (thisComponent.sectionBound) {
+                                case "main":
+                                    component = estreUi.mainSections[target];
+                                    if (component == null) {
+                                        estreUi.switchRootTab(target);
+                                        component = estreUi.mainSections[target];
                                     }
+                                    break;
+                    
+                                case "blind":
+                                    component = estreUi.blindSections[target];
+                                    if (component == null) {
+                                        estreUi.openInstantBlinded(target);
+                                        component = estreUi.blindSections[target];
+                                    }
+                                    break;
+                    
+                                case "overlay":
+                                    component = estreUi.overlaySections[target];
+                                    if (component == null) {
+                                        estreUi.openManagedOverlay(target);
+                                        component = estreUi.overlaySections[target];
+                                    }
+                                    break;
+                    
+                                case "menu":
+                                    component = estreUi.menuSections[target];
+                                    if (component == null) {
+                                        estreUi.openMenuArea(target);
+                                        component = estreUi.menuSections[target];
+                                    }
+                                    break;
+                    
+                                case "header":
+                                    component = estreUi.headerSections[target];
+                                    if (component == null) {
+                                        estreUi.openHeaderBar(target);
+                                        component = estreUi.headerSections[target];
+                                    }
+                                    break;
+                            }
+                            if (component != null) {
+                                let targetContainer = component.containers[id];
+                                if (targetContainer == null) {
+                                    component.openContainer(id);
+                                    targetContainer = component.containers[id];
+                                }
+                                if (targetContainer != null) {
+                                    let success = targetContainer.show();
+                                    if (success && !isSelf) switch (component.sectionBound) {
+                                        case "main":
+                                            estreUi.switchRootTab(target);
+                                            break;
+                                            
+                                        case "blind":
+                                            estreUi.showInstantBlinded(target);
+                                            break;
 
-                                    if (success) estreUi.switchRootTab(target);
+                                        case "overlay":
+                                            estreUi.showManagedOverlay(target);
+                                            break;
+
+                                        case "menu":
+                                            estreUi.showMenuArea(target);
+                                            break;
+
+                                        case "header":
+                                            estreUi.showHeaderBar(target);
+                                            break;
+                                    }
                                 }
                             }
                             break;
@@ -2293,12 +2597,24 @@ class EstreArticle extends EstrePageHandle {
                 case "container":
                     switch (container) {
                         case "article":
-                            // find container
-                            //  find exist article
-                            //  else bring article
-                            // else bring container and bring article
-
-                            // switch tab if success
+                            const isSelf = target == "self";
+                            const component = inst.container.component;
+                            let targetContainer = isSelf ? inst.container : component.containers[target];
+                            if (targetContainer == null) {
+                                component.openContainer(target);
+                                targetContainer = component.containers[target];
+                            }
+                            if (targetContainer != null) {
+                                let article = targetContainer.articles[id];
+                                if (article == null) {
+                                    targetContainer.openArticle(id);
+                                    article = targetContainer.articles[id];
+                                }
+                                if (article != null) {
+                                    let success = article.show();
+                                    if (success) targetContainer.show();
+                                }
+                            }
                             break;
                     }
                     break;
@@ -2425,8 +2741,9 @@ class EstrePageHandler {
         } else return false;
     }
 
-    onBack(handle) {
-        return handle.close();
+    async onBack(handle) {
+        return handle.hostType != "component" ? (handle.isCanBack ? (handle.isStatic ? await handle.close() != null : await handle.close()) : false) : (
+        handle.sectionBound == "blind" || !handle.isStatic ? await handle.close() : false);
     }
 
     onHide(handle, fullyHide) {
@@ -2547,6 +2864,48 @@ class EstreDialogPageHandler extends EstrePageHandler {
 class EstreUiPage {
 
     static #pageHandlers = {
+        "$s&h=appbar": class extends EstrePageHandler {
+            $appTitleBtn;
+            $mainMenuBtn;
+            $backNavigation;
+            $containerCloser;
+
+            $pageTitleHolder;
+            $pageTitle;
+
+            onBring(handle) {
+                this.$appTitleBtn = handle.$host.find("#appTitleBtn");
+                this.$mainMenuBtn = handle.$host.find("#mainMenuBtn");
+                this.$backNavigation = handle.$host.find(".back_navigation");
+                this.$containerCloser = handle.$host.find(".container_closer");
+
+                this.$pageTitleHolder = handle.$host.find(".page_title_holder");
+                this.$pageTitle = this.$pageTitleHolder.find("#pageTitle");
+            }
+
+            onOpen(handle) {
+                this.$backNavigation.click(function (e) {
+                    e.preventDefault();
+
+                    estreUi.back();
+
+                    return false;
+                });
+                this.$containerCloser.click(function (e) {
+                    e.preventDefault();
+
+                    estreUi.closeContainer();
+
+                    return false;
+                });
+            }
+
+            setPageTitle(title) {
+                this.$pageTitle.html(title);
+            }
+        },
+
+
         "$i&o=interaction#onRunning^": class extends EstreLottieAnimatedHandler {
 
         },
@@ -2869,6 +3228,7 @@ class EstreUiPage {
     get isBlinded() { return this.sectionBound == "blind"; }
     get isMain() { return this.sectionBound == "main"; }
     get isMenu() { return this.sectionBound == "menu"; }
+    get isHeader() { return this.sectionBound == "header"; }
 
     get sections() {
         switch (this.sectionBound) {
@@ -2883,6 +3243,9 @@ class EstreUiPage {
 
             case "menu":
                 return estreUi.menuSections;
+
+            case "header":
+                return estreUi.headerSections;
         }
     }
 
@@ -2913,6 +3276,9 @@ class EstreUiPage {
 
     get componentRefer() {
         switch (this.#sectionBound) {
+            case "header":
+                return estreUi.headerSections[this.id];
+
             case "menu":
                 return estreUi.menuSections[this.id];
 
@@ -2920,10 +3286,10 @@ class EstreUiPage {
                 return estreUi.mainSections[this.id];
 
             case "blind":
-                return estreUi.blindSectionList[this.id];
+                return estreUi.blindSections[this.id];
 
             case "overlay":
-                return estreUi.overlaySectionList[this.id];
+                return estreUi.overlaySections[this.id];
 
             default:
                 return null;
@@ -2952,7 +3318,7 @@ class EstreUiPage {
     get pid() {
         var pid = "";
         pid += "$" + (this.statement == "static" ? "s" : (this.statement == "instant" ? "i" : ""));
-        pid += "&" + (this.sectionBound == "menu" ? "u" : (this.sectionBound == "main" ? "m" : (this.sectionBound == "blind" ? "b" : (this.sectionBound == "overlay" ? "o" : ""))));
+        pid += "&" + (this.sectionBound == "main" ? "m" : (this.sectionBound == "blind" ? "b" : (this.sectionBound == "overlay" ? "o" : (this.sectionBound == "header" ? "h" : (this.sectionBound == "menu" ? "u" : "")))));
         pid += "=";
         pid += this.#component;
         if (this.#container != null) pid += "#" + this.#container;
@@ -2963,7 +3329,7 @@ class EstreUiPage {
 
     static getPidComponent(id, sectionBound, statement) {
         const stc = statement == "instant" ? "$i" : (statement == "static" ? "$s" : "");
-        const sbc = sectionBound == "overlay" ? "&o" : (sectionBound == "blind" ? "&b" : (sectionBound == "main" ? "&m" : (sectionBound == "menu" ? "&u" : null)));
+        const sbc = sectionBound == "main" ? "&m" : (sectionBound == "blind" ? "&b" : (sectionBound == "overlay" ? "&o" : (sectionBound == "header" ? "&h" : (sectionBound == "menu" ? "&u" : null))));
         if (id != null && id != "" && sbc != null) return stc + sbc + "=" + id;
         else return null;
     }
@@ -2992,6 +3358,7 @@ class EstreUiPage {
 
     static unregisterFrom($element) {
         const euiPage = this.from($element);
+        if (euiPage == null) return false;
         const exist = pageManager.get(euiPage.pid);
         return exist?.unregister(euiPage.$element);
     }
@@ -3068,10 +3435,9 @@ class EstreUiPage {
         this.#componentIsMultiInstance = $component.attr(eds.multiInstance) == t1;
 
         if (this.#sectionBound == null) {
-            const $main = $component.closest("main");
-            const $nav = $component.closest("nav");
-            const mainId = $main.length > 0 ? $main.attr("id") : $nav.attr("id");
-            const sectionBound = mainId == "staticDoc" ? "main" : (mainId == "instantDoc" ? "blind" : (mainId == "mainMenu" ? "menu" : (mainId == "managedOverlay" ? "overlay" : null)));
+            const $componentHost = $component.closest("main, nav, header, footer");
+            const hostId = $componentHost.attr("id");
+            const sectionBound = hostId == "staticDoc" ? "main" : (hostId == "instantDoc" ? "blind" : (hostId == "managedOverlay" ? "overlay" : (hostId == "mainMenu" ? "menu" : (hostId == "fixedTop" ? "header" : null))));
             this.setSectionBound(sectionBound);
         }
 
@@ -3216,18 +3582,21 @@ class EstreUiPageManager {
     get pages() { return this.#pages; }
 
     #managedPidMap = {
-        get onRunning() { return "$i&o=interaction#onRunning^" },
-        get onProgress() { return "$i&o=interaction#onProgress^" },
+        get appbar() { return "$s&h=appbar"; },
 
-        get alert() { return "$i&o=interaction#alert^" },
-        get confirm() { return "$i&o=interaction#confirm^" },
-        get prompt() { return "$i&o=interaction#prompt^" },
 
-        get popNoti() { return "$i&o=notification#noti@noti^" },
-        get popNote() { return "$i&o=notification#note@note^" },
+        get onRunning() { return "$i&o=interaction#onRunning^"; },
+        get onProgress() { return "$i&o=interaction#onProgress^"; },
+
+        get alert() { return "$i&o=interaction#alert^"; },
+        get confirm() { return "$i&o=interaction#confirm^"; },
+        get prompt() { return "$i&o=interaction#prompt^"; },
+
+        get popNoti() { return "$i&o=notification#noti@noti^"; },
+        get popNote() { return "$i&o=notification#note@note^"; },
         
-        get timeline() { return "$s&o=operation#root@timeline" },
-        get quickPanel() { return "$s&o=operation#root@quickPanel" },
+        get timeline() { return "$s&o=operation#root@timeline"; },
+        get quickPanel() { return "$s&o=operation#root@quickPanel"; },
     }
 
     #extPidMap = null;
@@ -3309,21 +3678,28 @@ class EstreUiPageManager {
         var component = sections[page.component];
         var existComponent = false;
         if (component == null) {
-            if (page.isOverlay && page.componentIsInatant) {
-                if (page.isComponent) {
-                    component = estreUi.openManagedOverlay(page.component, intent);
-                    componentIntentPushed = true;
-                } else component = estreUi.openManagedOverlay(page.component);
-            } else if (page.isMenu && page.componentIsInatant) {
-                if (page.isComponent) {
-                    component = estreUi.openMenuArea(page.component, intent);
-                    componentIntentPushed = true;
-                } else component = estreUi.openMenuArea(page.component);
-            } else if (page.isBlinded && page.componentIsInatant) {
-                if (page.isComponent) {
-                    component = estreUi.openInstantBlinded(page.component, intent);
-                    componentIntentPushed = true;
-                } else component = estreUi.openInstantBlinded(page.component);
+            if (page.componentIsInatant) {
+                if (page.isMenu) {
+                    if (page.isComponent) {
+                        component = estreUi.openMenuArea(page.component, intent);
+                        componentIntentPushed = true;
+                    } else component = estreUi.openMenuArea(page.component);
+                } else if (page.isBlinded) {
+                    if (page.isComponent) {
+                        component = estreUi.openInstantBlinded(page.component, intent);
+                        componentIntentPushed = true;
+                    } else component = estreUi.openInstantBlinded(page.component);
+                } else if (page.isOverlay) {
+                    if (page.isComponent) {
+                        component = estreUi.openManagedOverlay(page.component, intent);
+                        componentIntentPushed = true;
+                    } else component = estreUi.openManagedOverlay(page.component);
+                } else if (page.isHeader) {
+                    if (page.isComponent) {
+                        component = estreUi.openHeaderBar(page.component, intent);
+                        componentIntentPushed = true;
+                    } else component = estreUi.openHeaderBar(page.component);
+                } else return false;
             } else return false;
         } else existComponent = true;
         if (component == null) return null;
@@ -3379,12 +3755,15 @@ class EstreUiPageManager {
                 }
             case "component":
                 if (success) {
-                    if (page.isOverlay) {
-                        if (!isIntentNone && existComponent && (page.isComponent || isRootMain)) targetProcessed.component = estreUi.showManagedOverlay(page.component, intent);
-                        else targetProcessed.component = estreUi.showManagedOverlay(page.component);
+                    if (page.isHeader) {
+                        if (!isIntentNone && existComponent && (page.isComponent || isRootMain)) targetProcessed.component = estreUi.showHeaderBar(page.component, intent);
+                        else targetProcessed.component = estreUi.showHeaderBar(page.component);
                     } else if (page.isMenu) {
                         if (!isIntentNone && existComponent && (page.isComponent || isRootMain)) targetProcessed.component = estreUi.showMenuArea(page.component, intent);
                         else targetProcessed.component = estreUi.showMenuArea(page.component);
+                    } else if (page.isOverlay) {
+                        if (!isIntentNone && existComponent && (page.isComponent || isRootMain)) targetProcessed.component = estreUi.showManagedOverlay(page.component, intent);
+                        else targetProcessed.component = estreUi.showManagedOverlay(page.component);
                     } else if (page.isBlinded) {
                         if (!isIntentNone && existComponent && (page.isComponent || isRootMain)) targetProcessed.component = estreUi.showInstantBlinded(page.component, intent);
                         else targetProcessed.component = estreUi.showInstantBlinded(page.component);
@@ -3503,7 +3882,7 @@ class EstreUiPageManager {
             if (page.isOverlay || page.isMenu || page.isBlinded) {
                 targetProcessed.component = component.hide();
             } else if (component.isModal) {
-                targetProcessed.component = estreUi.closeModalTab(page.component, component);
+                targetProcessed.component = estreUi.closeModalTab(page.component, $(component));
             } else {
                 targetProcessed.component = estreUi.switchRootTab("home");
             }
@@ -3550,7 +3929,7 @@ class EstreUiPageManager {
             } else if (page.isBlinded) {
                 targetProcessed.component = await estreUi.closeInstantBlinded(page.component);
             } else if (component.isModal) {
-                targetProcessed.component = await estreUi.closeModalTab(page.component, component);
+                targetProcessed.component = await estreUi.closeModalTab(page.component, $(component));
             } else {
                 targetProcessed.component = estreUi.switchRootTab("home");
             }
@@ -9029,38 +9408,43 @@ const estreUi = {
 
     menuSections: {},
     menuSectionList: [],
+    get menuArea() { return this.menuSections["menuArea"]; },
+
+    headerSections: {},
+    headerSectionList: [],
+    get appbar() { return this.headerSections["appbar"]; },
 
     overlayCurrentOnTop: null,
-    menuCurrentOnTop: null,
     blindedCurrentOnTop: null,
     mainCurrentOnTop: null,
+    menuCurrentOnTop: null,
+    headerCurrentOnTop: null,
 
     //elements
-    $mainMenu: null,
-    $menuArea: null,
-    $grabArea: null,
-
-    $appbar: null,
-    $homeBtn: null,
-    $appbarLeft: null,
-    $mainMenuBtn: null,
-    $mainMenuBtnLottie: null,
-    $appbarRight: null,
-
     $fixedBottom: null,
     $rootbar: null,
     $rootTabs: null,
 
     $overlayArea: null,
     get $overlaySections() { return this.$overlayArea.find(c.c + se); },
-
+    
     $blindArea: null,
     get $blindSections() { return this.$blindArea.find(c.c + se); },
 
     $mainArea: null,
     get $mainSections() { return this.$mainArea.find(c.c + se); },
-
+    
+    $mainMenu: null,
     get $menuSections() { return this.$mainMenu.find(c.c + se); },
+    $menuArea: null,
+    $grabArea: null,
+
+    $fixedTop: null,
+    get $headerSections() { return this.$fixedTop.find(c.c + se); },
+    $appbar: null,
+    $homeBtn: null,
+    $mainMenuBtn: null,
+    $mainMenuBtnLottie: null,
 
     $more: null,
     $sessionManager: null,
@@ -9070,9 +9454,11 @@ const estreUi = {
     $openedPages: null,
     $openedPageList: null,
 
-
+    //handles
     menuSwipeHandler: null,
 
+    //properties
+    prevRootTabId: null,
 
     //getter and setter
     get isOpenMainMenu() { return this.$mainMenu.attr(eds.opened) == t1; },
@@ -9091,25 +9477,24 @@ const estreUi = {
         EstreUiPage.commit();
         scheduleDataSet.commit();
 
-        this.$mainMenu = $("nav#mainMenu");
-        this.$menuArea = this.$mainMenu.find("section#menuArea");
-        this.$grabArea = this.$mainMenu.find("section#grabArea");
-
-        this.$appbar = $("nav#appbar");
-        this.$homeBtn = this.$appbar.find("button#home");
-        this.$mainMenuBtn = this.$appbar.find("button#mainMenuBtn");
-        this.$mainMenuBtnLottie = this.$mainMenuBtn.find("dotlottie-player");
-        this.$appbarLeft = this.$appbar.find("nav#appbarLeft");
-        this.$appbarRight = this.$appbar.find("nav#appbarRight");
-
-        this.$fixedBottom = $("#fixedBottom");
-        this.$rootbar = this.$fixedBottom.find("nav#rootbar");
-
         this.$blindArea = $("main#instantDoc");
         
         this.$mainArea = $("main#staticDoc");
         
         this.$overlayArea = $("nav#managedOverlay");
+
+        this.$mainMenu = $("nav#mainMenu");
+        this.$menuArea = this.$mainMenu.find("section#menuArea");
+        this.$grabArea = this.$mainMenu.find("section#grabArea");
+
+        this.$fixedTop = $("header#fixedTop");
+        this.$appbar = this.$fixedTop.find("section#appbar");
+        this.$homeBtn = this.$appbar.find("button#home");
+        this.$mainMenuBtn = this.$appbar.find("button#mainMenuBtn");
+        this.$mainMenuBtnLottie = this.$mainMenuBtn.find("dotlottie-player");
+
+        this.$fixedBottom = $("#fixedBottom");
+        this.$rootbar = this.$fixedBottom.find("nav#rootbar");
 
         
         // events
@@ -9128,6 +9513,7 @@ const estreUi = {
         this.initInstantContents();
         this.initStaticContents();
         this.initStaticMenus();
+        this.initHeaderBars();
         this.initSessionManager();
 
 
@@ -9149,8 +9535,8 @@ const estreUi = {
 
     setBackNavigation: function () {
         const inst = this;
-        $(window).on("popstate", function(e) {
-            if (inst.onBack()) {
+        $(window).on("popstate", async function(e) {
+            if (await inst.onBack()) {
                 e.preventDefault();
                 return false;
             }
@@ -9317,6 +9703,48 @@ const estreUi = {
     },
 // ===========================
 
+    showExactAppbar: function(component, container, article) {
+        const appbar = this.appbar;
+        if (appbar == null) return;
+        const currentExactComponent = this.isOpenMainMenu ? this.menuCurrentOnTop : this.mainCurrentOnTop;
+        if (component == null) component = currentExactComponent;
+        if (component == null) return;
+        if (container != null && component != currentExactComponent) return null;
+        const currentExactContainer = currentExactComponent.currentOnTop;
+        if (article != null && container != currentExactContainer) return null;
+
+        const isHomeComponent = component.isHome;
+        const topContainer = component.currentTop;
+        const isRootContainer = topContainer != null ? topContainer.isRoot : true;
+        const isSingleContainer = component.isSingleContainer;
+        const isRootOrSingle = isRootContainer || isSingleContainer;
+
+        const topArticle = topContainer?.currentTop;
+        const isMainArticle = topArticle != null ? topArticle.isMain : true;
+        const isSingleArticle = container.isSingleArticle;
+        const isMainOrSingle = isMainArticle || isSingleArticle;
+
+        let success = false;
+        if (!success && topArticle != null) success = appbar.showContainer("article_" + topArticle.id);
+        if (!success && topContainer != null) success = appbar.showContainer("container_" + topContainer.id);
+        if (!success && isRootContainer) success = appbar.showContainer(component.id);
+        if (!success && isHomeComponent && isRootOrSingle && isMainOrSingle) success = appbar.showContainer("home");
+        if (!success && isMainArticle) success = appbar.showContainer("main");
+        if (!success && isRootContainer) success = appbar.showContainer("root");
+        if (!success && (!isHomeComponent || !isRootContainer)) success = appbar.showContainer("sub");
+        estreUi.releaseAppbarPageTitle();
+
+        return success;
+    },
+
+    setAppbarPageTitle: function(text) {
+        this.appbar?.handler?.setPageTitle(text);
+    },
+
+    releaseAppbarPageTitle: function() {
+        this.setAppbarPageTitle(this.isOpenMainMenu ? this.menuCurrentOnTop?.title ?? "" : this.mainCurrentOnTop?.title ?? "");
+    },
+
     rootTabOnClick: function(e) {
         const target = this.tagName == BTN ? this : (e.target.tagName == BTN ? e.target : e.target.parentElement);
         estreUi.switchRootTab(target);
@@ -9353,17 +9781,22 @@ const estreUi = {
                 const $elseSections = this.$mainSections.filter(asv(eds.onTop, t1) + nti(id));
                 if ($elseSections.length > 0) {
                     for (var section of $elseSections) section.pageHandle?.hide();
+                    this.prevRootTabId = $elseSections.attr("id");
                 }
                 this.$rootTabs.filter(aiv(eds.active, t1) + naiv(eds.tabId, id)).attr(eds.active, "");
 
                 const targetComponent = this.mainSections[id];
                 if (targetComponent.isOnTop) {
                     unhandled = true;
-                    //do nothing //추후 방향에 따라 섹션 새로고침 등 구현
+                    
+                    //현재 선택된 탭을 다시 선택했을 때
+                    targetComponent.back();
                 } else {
                     targetComponent.pushIntent(intent);
                     targetComponent.show(false);
                     this.mainCurrentOnTop = targetComponent;
+
+                    this.showExactAppbar(targetComponent);
                 }
 
                 this.$rootTabs.blur();
@@ -9377,6 +9810,14 @@ const estreUi = {
                 return !unhandled;
                 //break;
         }
+    },
+
+    switchRootTabPrev() {
+        if (this.prevRootTabId != null) {
+            const processed = this.switchRootTab(this.prevRootTabId);
+            if (processed) this.prevRootTabId = null;
+            return processed;
+        } else return false;
     },
 
     openInstantBlinded: function(id, intent) {
@@ -9443,7 +9884,7 @@ const estreUi = {
         const page = pageManager.getComponent(id);
         if (page == null) return null;
         if (page.statement == "static") return null;
-        this.$menuArea.append(page.raw);
+        this.$mainMenu.append(page.raw);
         const $section = this.$menuSections.filter(eid + id);
         if ($section == null || $section.length < 1) return null;
         const component = this.initStaticMenu($section[0], intent);
@@ -9474,7 +9915,9 @@ const estreUi = {
             unhandled = true;
         } else {
             targetComponent.show(false);
-            this.blindedCurrentOnTop = targetComponent;
+            this.menuCurrentOnTop = targetComponent;
+
+            this.showExactAppbar(targetComponent);
         }
 
         return !unhandled;
@@ -9499,6 +9942,66 @@ const estreUi = {
         }
     },
 
+    openHeaderBar: function(id, intent) {
+        const page = pageManager.getComponent(id);
+        if (page == null) return null;
+        if (page.statement == "static") return null;
+        this.$headerArea.append(page.raw);
+        const $section = this.$headerSections.filter(eid + id);
+        if ($section == null || $section.length < 1) return null;
+        const component = this.initHeaderBar($section[0], intent);
+        // if (component.isOnTop) component.show(false);
+        return component;
+    },
+
+    showHeaderBar: function(id, intent) {
+        const $targetSection = this.$headerSections.filter(eid + id);
+        const isModal = $targetSection.hasClass("modal");
+
+        var unhandled = false;
+        if (isModal) {
+            const onTop = $targetSection.attr(eds.onTop);
+            if (onTop == t1 || onTop == "1*") {
+                //do nothing
+            } else return this.openModalSection(id, this.$headerSections, $targetSection, intent);
+        }
+
+        const $elseSections = this.$headerSections.filter(asv(eds.onTop, t1) + nti(id));
+        if ($elseSections.length > 0) {
+            for (var section of $elseSections) section.pageHandle?.hide(false);
+        }
+
+        const targetComponent = this.headerSections[id];
+        targetComponent.pushIntent(intent);
+        if (targetComponent.isOnTop) {
+            unhandled = true;
+        } else {
+            targetComponent.show(false);
+            this.headerCurrentOnTop = targetComponent;
+        }
+
+        return !unhandled;
+    },
+
+    closeHeaderBar: async function(id) {
+        const component = this.headerSections[id];
+        if (component == null) return null;
+        const $targetSection = component.$host;
+        const isModal = $targetSection.hasClass("modal");
+
+        if (isModal) {
+            if (component.isOnTop) {
+                const closed = await this.closeModalSection(id, this.$headerSections, $targetSection);
+                if (!component.isStatic) this.releaseInstantContent(component);
+                return closed;
+            } else return null;
+        } else {
+            const closed = await component.close(false);
+            if (!component.isStatic) this.releaseInstantContent(component);
+            return closed;
+        }
+    },
+
     openManagedOverlay: function(id, intent) {
         const page = pageManager.getComponent(id, "overlay");
         if (page == null) return null;
@@ -9507,7 +10010,7 @@ const estreUi = {
         const $section = this.$overlaySections.filter(eid + id);
         if ($section == null || $section.length < 1) return null;
         const component = this.initOverlayContent($section[0], intent);
-        if (component.isOnTop) component.show(false);
+        // if (component.isOnTop) component.show(false);
         return component;
     },
 
@@ -9574,7 +10077,15 @@ const estreUi = {
 
         if ($targetSection == null) $targetSection = $sectionSet.filter(eid + id);
 
-        const component = $sectionSet == this.$mainSections ? this.mainSections[id] : ($sectionSet == this.$blindSections ? this.blindSections[id] : ($sectionSet == this.$menuSections ? this.menuSections[id] : null));
+        const isMainSection = $sectionSet == this.$mainSections;
+        const isBlildSection = $sectionSet == this.$blindSections;
+        const isMenuSection = $sectionSet == this.$menuSections;
+        const isOverlaySection = $sectionSet == this.$overlaySections;
+        const isHeaderSection = $sectionSet == this.$headerSections;
+        const component = isMainSection ? this.mainSections[id] : (isBlildSection ? this.blindSections[id] : (isMenuSection ? this.menuSections[id] : (isOverlaySection ? this.overlaySections[id] : (isHeaderSection ? this.headerSections[id] : null))));
+
+        if (isMainSection && this.mainCurrentOnTop != null) this.prevRootTabId = this.mainCurrentOnTop.id;
+
         component?.pushIntent(intent);
         
         $targetSection.off("click");
@@ -9596,17 +10107,19 @@ const estreUi = {
         return $targetSection[0]?.pageHandle?.show(false);
     },
 
-    closeModalTab: async function(id, targetSection, $sectionSet = this.$mainSections) {
+    closeModalTab: async function(id, $targetSection, $sectionSet = this.$mainSections) {
         var $target = this.$fixedBottom.find(btn + aiv(eds.tabId, id));
         if ($target.length < 1) $target = this.$sessionGroupHolder.find(btn + aiv(eds.contained, "root") + aiv(eds.containerId, id));
 
         $target.attr(eds.active, "");
 
-        return await this.closeModalSection(id, $sectionSet, targetSection);
+        return await this.closeModalSection(id, $sectionSet, $targetSection);
     },
 
     closeModalSection: async function(id, $sectionSet = this.$mainSections, $targetSection) {
         if ($targetSection == null) $targetSection = $sectionSet.filter(eid + id);
+
+        if ($sectionSet == this.$mainSections) this.prevRootTabId = $targetSection.attr("id");
 
         $targetSection.off("click");
         $targetSection.find(c.c + div + uis.container).off("click");
@@ -9619,9 +10132,9 @@ const estreUi = {
 
         for (var i=0; i<$oss.length; i++) this.initOverlayContent($oss[i], null, true);
 
-        // const $top = this.$overlaySections.filter(asv(eds.onTop, t1));
+        // let $top = this.$overlaySections.filter(asv(eds.onTop, t1));
         // if ($top.length < 1) $top = this.$overlaySections;
-        // $top[$top.length - 1]?.pageHandle?.show();
+        // $top[$top.length - 1]?.pageHandle?.show(false);
     },
 
     releaseOverlayContent(component) {
@@ -9649,9 +10162,13 @@ const estreUi = {
 
         for (var i=0; i<$bss.length; i++) this.initInstantContent($bss[i], null, true);
 
-        // const $top = this.$blindSections.filter(asv(eds.onTop, t1));
+        const $top = this.$blindSections.filter(asv(eds.onTop, t1));
         // if ($top.length < 1) $top = this.$blindSections;
-        // $top[$top.length - 1]?.pageHandle?.show();
+        if ($top.length > 0) {
+            const targetComponent = $top[$top.length - 1].pageHandle;
+            targetComponent?.show(false);
+            this.blindedCurrentOnTop = targetComponent;
+        }
     },
 
     releaseInstantContent(component) {
@@ -9680,8 +10197,14 @@ const estreUi = {
         for (var i=0; i<$mss.length; i++) this.initStaticContent($mss[i], null, true);
 
         const $top = this.$mainSections.filter(asv(eds.onTop, t1));
+        if ($top.length < 1) $top = this.$mainSections.filter(eid + "home");
+        if ($top.length < 1) $top = this.$mainSections.filter(cls + "home");
         if ($top.length < 1) $top = this.$mainSections;
-        $top[$top.length - 1]?.pageHandle?.show();
+        if ($top.length > 0) {
+            const targetComponent = $top[0].pageHandle;
+            targetComponent?.show(false);
+            this.mainCurrentOnTop = targetComponent;
+        }
     },
 
     releaseStaticContent(component) {
@@ -9712,8 +10235,12 @@ const estreUi = {
         for (var i=0; i<$mss.length; i++) this.initStaticMenu($mss[i], null, true);
 
         let $top = this.$menuSections.filter(asv(eds.onTop, t1));
-        if ($top.length < 1) $top = this.$menuSections;
-        $top[$top.length - 1]?.pageHandle?.show();
+        if ($top.length < 1) $top = this.$menuSections.filter(eid + "menuArea");
+        if ($top.length > 0) {
+            const targetComponent = $top[$top.length - 1].pageHandle;
+            targetComponent?.show(false);
+            this.menuCurrentOnTop = targetComponent;
+        }
     },
 
     releaseStaticMenu(component) {
@@ -9730,6 +10257,41 @@ const estreUi = {
         if (!init || component.isStatic) {
             this.menuSections[component.id] = component;
             this.menuSectionList.push(component);
+        }
+        component.init(intent);
+        // if (component.isOnTop) component.show(false);
+        return component;
+    },
+
+    initHeaderBars: function() {
+        const $hss = this.$headerSections;
+
+        for (var i=0; i<$hss.length; i++) this.initHeaderBar($hss[i], null, true);
+
+        let $top = this.$headerSections.filter(asv(eds.onTop, t1));
+        if ($top.length < 1) $top = this.$headerSections.filter(eid + "appbar");
+        if ($top.length < 1) $top = this.$headerSections;
+        if ($top.length > 0) {
+            const targetComponent = $top[$top.length - 1].pageHandle;
+            targetComponent?.show(false);
+            this.headerCurrentOnTop = targetComponent;
+        }
+    },
+
+    releaseHeaderBar(component) {
+        if (component == null) return;
+        component.release(component.isStatic ? null : true);
+        if (this.headerSections[component.id] != null) delete this.headerSections[component.id];
+        const index = this.headerSectionList.indexOf(component);
+        if (index > -1) this.headerSectionList.splice(index, 1);
+    },
+
+    initHeaderBar(bound, intent = null, init = false) {
+        this.releaseHeaderBar(bound.pageHandle);
+        const component = new EstreHeaderComponent(bound);
+        if (!init || component.isStatic) {
+            this.headerSections[component.id] = component;
+            this.headerSectionList.push(component);
         }
         component.init(intent);
         // if (component.isOnTop) component.show(false);
@@ -9790,8 +10352,12 @@ const estreUi = {
         return this.onReload();
     },
 
-    back() {
-        return this.onBack();
+    async back() {
+        return await this.onBack();
+    },
+
+    async closeContainer() {
+        return await this.onCloseContainer();
     },
 
 
@@ -9800,12 +10366,22 @@ const estreUi = {
             this.onReloadBlinded() || this.onReloadMain();
     },
 
-    onBack() {
-        return this.onBackOverlay() ||
-            this.isOpenMainMenu ? this.closeMainMenu() : false ||
-            this.onBackBlinded() || this.onBackMain();
+    async onBack() {
+        return await this.onBackOverlay() ||
+            this.isOpenMainMenu ? await this.onBackMenu() || await this.closeMainMenu() : false ||
+            await this.onBackBlinded() || await this.onBackMain();
     },
 
+    async onCloseContainer() {
+        return this.isOpenMainMenu ? await this.menuCurrentOnTop?.onCloseContainer() ?? false : false ||
+            await this.mainCurrentOnTop?.onCloseContainer();
+    },
+
+
+    onReloadHeader() {
+        const currentOnTop = this.headerCurrentOnTop;
+        return currentOnTop?.onReload() ?? false;
+    },
 
     onReloadMenu() {
         const currentOnTop = this.menuCurrentOnTop;
@@ -9824,22 +10400,29 @@ const estreUi = {
     },
 
 
-    onBackOverlay() {
+    async onBackOverlay() {
         if (this.$overlaySections.filter(asv(eds.onTop, t1)).length > 0) {
-            return this.overlayCurrentOnTop?.onBack() ?? false;
+            return await this.overlayCurrentOnTop?.onBack() ?? false;
         } else return false;
     },
 
-    onBackBlinded() {
+    async onBackMenu() {
+        const currentOnTop = this.menuCurrentOnTop ?? this.menuArea;
+        return await currentOnTop?.onBack() ?? false;
+    },
+
+    async onBackBlinded() {
         if (this.$blindSections.filter(asv(eds.onTop, t1)).length > 0) {
-            return this.blindedCurrentOnTop?.onBack() ?? false;
+            return await this.blindedCurrentOnTop?.onBack() ?? false;
         } else return false;
     },
 
-    onBackMain() {
+    async onBackMain() {
         const currentOnTop = this.mainCurrentOnTop;
-        if (currentOnTop?.id == "home") return false;
-        else return currentOnTop?.onBack() ?? false;
+        let processed = false;
+        if (currentOnTop != null) processed = await currentOnTop.onBack();
+        if (!processed && !currentOnTop.isHome) processed = this.switchRootTabPrev();
+        return processed;
     },
 
 

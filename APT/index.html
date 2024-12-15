@@ -60,6 +60,76 @@ if ("serviceWorker" in navigator) {
         </section>
     </main>
 
+    <header id="fixedTop" data-hide="">
+        <section id="appbar" data-static="1" data-on-top="1">
+            <div class="container" data-container-id="home" data-static="1" data-on-top="1">
+                <article class="appbarLeft" data-article-id="left" data-static="1" data-on-top="1">
+                    <button id="mainMenuBtn" class="tp_tiled_btn" title="toggle menu">
+                        <dotlottie-player src="../lotties/menu_and_back_btn.json" background="transparent" speed="1" direction="1" mode="normal"></dotlottie-player>
+                    </button>
+                    <nav class="tool_set" data-on-bound="root">
+                    </nav>
+                </article>
+                <article class="appbarCenter" data-article-id="center" data-static="1">
+                    <button id="appTitleBtn" class="tp_tiled_btn" title="go next floor" onclick="floor++; if (floor >= topFloor) $('#rootbar > button').last().attr('data-is-hidden', ''); ">
+                        <span style="font-size: 40px; font-weight: 600; ">APT.</span>
+                    </button>
+                    <nav class="tool_set" data-on-bound="root">
+                    </nav>
+                </article>
+                <article class="appbarRight" data-article-id="right" data-static="1">
+                    <nav class="tool_set" data-on-bound="root">
+                    </nav>
+                </article>
+            </div>
+            <div class="container" data-container-id="root" data-static="1">
+                <article class="appbarLeft" data-article-id="left" data-static="1" data-on-top="1">
+                    <button id="mainMenuBtn" class="tp_tiled_btn" title="toggle menu">
+                        <dotlottie-player src="../lotties/menu_and_back_btn.json" background="transparent" speed="1" direction="1" mode="normal"></dotlottie-player>
+                    </button>
+                    <button class="back_navigation tp_tiled_btn" title="return to back" style="margin-left: 2px; "></button>
+                    <label class="page_title_holder" style="margin-left: 6px; "><span id="pageTitle">main</span></label>
+                    <nav class="tool_set" data-on-bound="root">
+                    </nav>
+                </article>
+                <article class="appbarCenter" data-article-id="center" data-static="1">
+                    <button id="appTitleBtn" class="tp_tiled_btn" title="go next floor" onclick="floor++; if (floor >= topFloor) $('#rootbar > button').last().attr('data-is-hidden', ''); ">
+                        <span style="font-size: 40px; font-weight: 600; ">APT.</span>
+                    </button>
+                    <nav class="tool_set" data-on-bound="!home">
+                    </nav>
+                    <nav class="tool_set" data-on-bound="root">
+                    </nav>
+                </article>
+                <article class="appbarRight" data-article-id="right" data-static="1">
+                    <nav class="tool_set" data-on-bound="root">
+                    </nav>
+                </article>
+            </div>
+            <div class="container" data-container-id="sub" data-static="1">
+                <article class="appbarLeft" data-article-id="left" data-static="1">
+                    <button id="mainMenuBtn" class="tp_tiled_btn" title="toggle menu">
+                        <dotlottie-player src="../lotties/menu_and_back_btn.json" background="transparent" speed="1" direction="1" mode="normal"></dotlottie-player>
+                    </button>
+                    <button class="back_navigation tp_tiled_btn" title="return to back" style="margin-left: 2px; "></button>
+                    <label class="page_title_holder" style="margin-left: 6px; "><span id="pageTitle">main</span></label>
+                    <nav class="tool_set" data-on-bound="sub">
+                    </nav>
+                </article>
+                <article class="appbarCenter" data-article-id="center" data-static="1">
+                    <button id="appTitleBtn" class="tp_tiled_btn" title="go next floor" onclick="floor++; if (floor >= topFloor) $('#rootbar > button').last().attr('data-is-hidden', ''); ">
+                        <span style="font-size: 40px; font-weight: 600; ">APT.</span>
+                    </button>
+                    <nav class="tool_set" data-on-bound="sub">
+                    </nav>
+                </article>
+                <article class="appbarRight" data-article-id="right" data-static="1">
+                    <nav class="tool_set" data-on-bound="sub">
+                    </nav>
+                </article>
+            </div>
+        </section>
+    </header>
     <nav id="mainMenu" data-opened="">
         <section id="menuArea" class="vfv_scroll" data-static="1">
             <div class="container" data-container-id="root" data-static="1" style="display: flex; flex-flow: column nowrap; height: 100%; justify-content: space-between; ">
@@ -77,20 +147,7 @@ if ("serviceWorker" in navigator) {
         </section>
         <section id="grabArea" data-static="1"><div class="pad"></div></section>
     </nav>
-    <header id="fixedTop">
-        <nav id="appbar">
-            <button id="home" class="tp_tiled_btn" title="go next floor" onclick="floor++; if (floor >= topFloor) $('#rootbar > button').last().attr('data-is-hidden', ''); ">
-                <span style="font-size: 40px; font-weight: 600; ">APT.</span>
-            </button>
-            <nav id="appbarLeft" class="float_area">
-                <button id="mainMenuBtn" class="tp_tiled_btn" title="toggle menu">
-                    <dotlottie-player src="../lotties/menu_and_back_btn.json" background="transparent" speed="1" direction="1" mode="normal"></dotlottie-player>
-                </button>
-            </nav>
-            <nav id="appbarRight" class="float_area">
-            </nav>
-        </nav>
-    </header>
+
     <div id="ptr"><div><dotlottie-player src="../lotties/ptr_indic.json" background="transparent" speed="1" direction="1" mode="normal"></dotlottie-player></div></div>
     <main id="staticDoc">
         <!-- Main tabs content - must be match id of button on fixedBottom navs -->
