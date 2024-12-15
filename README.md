@@ -37,18 +37,21 @@ Document index
 Structure
 --
 ### Rimwork root elements (childs of document.body)
+- **header#fixedTop** - Appbar layer (such as Android's that)
 - **main#splashRoot** - Prime layer for splash
 - **nav#mainMenu** - Main menu layer
-- **header#fixedTop** - Appbar layer (such as Android's that)
 - **div#ptr** - Layer for indicate pull to refresh => *Currently not implemented
 - **main#staticDoc** - Main content layer (under fixedTop & fidedBottom and Main menu)
 - **footer#fixedBottom** - Bottom fixed menu(like as tabs, and such as taskbar of Windows) layer
 - **main#instantDoc** - Overlay contents layer (to be covers whole things except splash when exist page opened)
+- **nav#managedOverlay** - Managed overlay layer for essential UIs of application
 
 #### Section bounds (root page holder)
+- **headerSections** has component sections of ***header#fixedTop***
 - **menuSections** has component sections of ***nav#mainManu***
 - **mainSections** has component sections of ***main#staticDoc*** and component has button pairs on ***footer#fixedBottm***
 - **blindSections** has component sections of ***main#instantDoc***
+- **overlaySections** has component sections of ***nav#managedOverlay***
 
 
 
@@ -127,6 +130,7 @@ Handle is like as View of Android framework.
 Handler is independent attachable functional controller.
 Estre UI has to be provided continuously more stock handlers.
 
+<br />
 
 Lifecycle
 --
@@ -189,6 +193,52 @@ but fully static(parent page handles any one has no instant statement) page hand
 
 this is like as onDestroy() in Android fragment lifecycle.
 
+<br />
+
+Essential methods
+--
+
+### alert(args..) / estreAlert({options..})
+It's overrided classic alert method. call classicAlert() for basic alert method.
+
+Recommanded to use 'await' for syncronized sequence codes.  
+
+### confirm(args..) / estreConfirm({options..})
+It's overrided classic confirm method. call classicConfirm() for basic confirm method.
+
+Recommanded to use 'await' for syncronized sequence codes.  
+To be fallbacked to classic method when not assigned second(message) argument.
+
+### prompt(args..) / estrePrompt({options..})
+It's overrided classic prompt method. call classicPrompt() for basic prompt method.
+
+Recommanded to use 'await' for syncronized sequence codes.  
+To be fallbacked to classic method when not assigned second(message) argument.
+
+<br />
+
+### wait()
+Open whole screen cover infinite loading animation page.
+
+### go()
+Close whole screen cover infinite loading animation page.
+
+### going()
+Open whole screen cover guaged loading animation page.
+
+### arrived()
+Close whole screen cover guaged loading animation page.
+
+<br />
+
+### noti() *is not implemented currently
+Post notification card on top of screen.
+And to be added Notification slide page.
+
+### note()
+Post note card(such as Toast of Android) on bottom of screen.
+
+<br />
 
 ***
 
