@@ -9721,7 +9721,7 @@ const estreUi = {
 
         const topArticle = topContainer?.currentTop;
         const isMainArticle = topArticle != null ? topArticle.isMain : true;
-        const isSingleArticle = container.isSingleArticle;
+        const isSingleArticle = container?.isSingleArticle ?? topContainer.isSingleArticle;
         const isMainOrSingle = isMainArticle || isSingleArticle;
 
         let success = false;
