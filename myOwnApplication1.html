@@ -174,51 +174,72 @@ if ("serviceWorker" in navigator) {
     <main id="staticDoc">
         <!-- Main tabs content - must be match id of button on fixedBottom navs -->
         <section id="home" class="root_tab_content" data-static="1" data-on-top="1">
-            <div class="container vfv_scroll" data-container-id="root" data-static="1">
-                <article id="app" class="constraint" data-article-id="main" data-static="1">
+            <div class="container vfv_scroll" data-container-id="root" data-static="1" data-title="Home">
+                <article id="app" class="constraint" data-article-id="main" data-static="1" data-title="Home">
                     <div class="line_block" style="text-align: left; "><span>home tab<br />constaint (single fullscreen article)</span></div>
                 </article>
             </div>
         </section>
         <section id="tab1" class="root_tab_content" data-static="1">
-            <div class="container vfv_scroll" data-container-id="root" data-static="1" style="background-color: #DEF; ">
-                <article class="constraint vertical_fit" data-article-id="main" data-static="1">
+            <div class="container vfv_scroll" data-container-id="root" data-static="1" data-title="Tab1" style="background-color: #DEF; ">
+                <article class="constraint vertical_fit" data-article-id="main" data-static="1" data-title="Tab1">
                     <div class="line_block" style="text-align: center; "><span>tab 1<br />constaint (single fullscreen article)</span></div>
+                    <button class="" data-open-target="container" data-open-container="article" data-open-id="tab1_next"><span>next article</span></button>
                 </article>
-                <article class="constraint" data-article-id="tab1_next" data-static="" onclick="this.pageHandle?.close(); ">
+                <article class="constraint" data-article-id="tab1_next" data-static="" data-title="Tab1-1" onclick="this.pageHandle?.close(); ">
                 </article>
             </div>
         </section>
         <section id="tab2" class="root_tab_content" data-static="1">
-            <div class="container vfv_scroll" data-container-id="root" data-static="1">
+            <div class="container vfv_scroll" data-container-id="root" data-static="1" data-title="Tab2">
                 <article class="constraint vertical_fit" data-article-id="main" data-static="1" style="background-color: #DEF; ">
                     <div class="line_block" style="text-align: right; "><span>tab 2<br />constaint (single fullscreen article)</span></div>
+                    <button class="" data-open-target="component" data-open-container="container" data-open-id="tab2_next"><span>next container</span></button>
                 </article>
-                <article class="fwvs" data-article-id="tab2_next" data-static="">
+            </div>
+            <div class="container vfv_scroll" data-container-id="tab2_next" data-static="1" data-title="Tab2-2">
+                <article class="fwvs" data-article-id="main" data-static="">
+                    <div class="line_block" style="text-align: right; "><span>tab 2<br />constaint (single fullscreen article) container 2</span></div>
+                    <button class="flow_block tp_tiled_btn" data-open-target="root" data-open-container="component" data-open-id="activity2"><span>go to hidden tab (activity 2)</span></button>
                 </article>
             </div>
         </section>
         <section id="activity1" class="root_tab_content" data-static="1">
-            <div class="container vfv_scroll" data-container-id="root" data-static="1" style="background-color: #EEE; ">
-                <article class="fwvs" data-article-id="item1" data-static="1">
+            <div class="container vfv_scroll" data-container-id="root" data-static="1" data-title="Activity1" style="background-color: #EEE; ">
+                <article class="fwvs" data-article-id="item1" data-static="1" data-title="Activity1">
                     <div class="float_center">
                         <div class="line_block"><span>activity 1<br />(static)<br />article 1</span></div>
+                        <div class="line_block">
+                            <button class="" data-open-target="container" data-open-container="article" data-open-id="item1" disabled><span>article 1</span></button>
+                            <button class="" data-open-target="container" data-open-container="article" data-open-id="item2"><span>article 2</span></button>
+                            <button class="" data-open-target="container" data-open-container="article" data-open-id="item3"><span>article 3</span></button>
+                        </div>
                     </div>
                 </article>
-                <article class="fwvs" data-article-id="item2" data-static="1">
+                <article class="fwvs" data-article-id="item2" data-static="1" data-title="Activity1-a2">
                     <div class="float_center">
                         <div class="line_block"><span>article 2</span></div>
+                        <div class="line_block">
+                            <button class="" data-open-target="container" data-open-container="article" data-open-id="item1"><span>article 1</span></button>
+                            <button class="" data-open-target="container" data-open-container="article" data-open-id="item2" disabled><span>article 2</span></button>
+                            <button class="" data-open-target="container" data-open-container="article" data-open-id="item3"><span>article 3</span></button>
+                        </div>
                     </div>
                 </article>
-                <article class="fwvs" data-article-id="item3" data-static="1">
+                <article class="fwvs" data-article-id="item3" data-static="1" data-title="Activity1-a3">
                     <div class="float_center">
                         <div class="line_block"><span>article 3</span></div>
+                        <div class="line_block">
+                            <button class="" data-open-target="container" data-open-container="article" data-open-id="item1"><span>article 1</span></button>
+                            <button class="" data-open-target="container" data-open-container="article" data-open-id="item2"><span>article 2</span></button>
+                            <button class="" data-open-target="container" data-open-container="article" data-open-id="item3" disabled><span>article 3</span></button>
+                        </div>
                     </div>
                 </article>
             </div>
         </section>
         <section id="activity2" class="" data-static="">
-            <div class="container vfv_scroll" data-container-id="root" data-static="1">
+            <div class="container vfv_scroll" data-container-id="root" data-static="1" data-title="Activity2">
                 <article class="fwvs" data-article-id="main" data-static="1">
                     <div class="float_center">
                         <div class="line_block"><span>activity 2<br />(instant)</span></div>
