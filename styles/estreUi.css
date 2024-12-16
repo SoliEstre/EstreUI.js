@@ -793,7 +793,8 @@ article .flow_block.bordered { --border-color: var(--color-boundary-light); outl
 article .flow_block::after { content: '>'; position: absolute; top: 0; bottom: 0; right: 0; height: fit-content; margin: auto; margin-right: 8px; font-size: 1.6rem; }
 article .flow_block:hover { background-color: var(--bg-hover); }
 article .flow_block:active { background-color: var(--bg-active); }
-article .line_block { position: relative; display: flex; flex-direction: row; flex-wrap: nowrap; justify-content: space-evenly; align-items: baseline; padding-top: 2px; padding-bottom: 4px; margin-bottom: 4px; border-bottom: solid 1px rgb(var(--cp) / 30%); border-radius: 100%; }
+article .line_block { position: relative; display: flex; flex-direction: row; flex-wrap: nowrap; justify-content: space-evenly; align-items: baseline; border-bottom: solid 1px rgb(var(--cp) / 30%); border-radius: 100%; }
+article .line_block.bolder { padding-top: 4px; padding-bottom: 4px; margin-bottom: 4px; } 
 article .line_block.hide_block_when_empty:empty { display: none; }
 article .line_block:last-of-type { border-bottom-color: transparent !important; }
 article .line_block.wrappable { flex-wrap: wrap; border-radius: 7%; align-items: center; }
@@ -898,23 +899,27 @@ article .num_keypad > button { }
 article .date_shower { }
 article .date_shower .date_replacer { cursor: pointer; }
 
+article .text_capsule { --height: 1.5em; --color: var(--color-text); --bg-color: var(--color-boundary-light); --font-size: 1rem; display: inline-flex; padding-inline: 0.5em; justify-content: center; align-items: center; border-style: none; border-radius: calc(var(--height) / 2); background-color: var(--bg-color); color: var(--color); font-size: var(--font-size); line-height: var(--height); }
+
 article .h_icon_set { display: flex; flex-flow: row nowrap; }
 article .h_icon_set > .icon_place { width: fit-content; height: 100%; flex-grow: 0; flex-shrink: 0; }
 article .h_icon_set > .icon_place > img { height: 100%; }
 article .h_icon_set > .icon_place > img[src=""] { width: 0; }
 article .h_icon_set > .content_place { width: 100%; flex-grow: 1; flex-shrink: 1; }
 
-article .icon_list { --icon-size: 64px; justify-content: space-around; }
+article .icon_list { --icon-size: 64px; --text-margin: 8px; --text-color: var(--color-text); --font-size: 0.875rem; --line-height: 1.5em; justify-content: space-around; }
 article .icon_list > .list_item { }
 article .icon_list > .list_item:not(:has(> button)) { display: flex; flex-direction: column; flex-wrap: nowrap; padding: 16px 8px 8px; align-items: center; }
 article .icon_list > .list_item > button { display: flex; flex-direction: column; flex-wrap: nowrap; width: 100%; height: 100%; padding: 16px 8px 8px; align-items: center; border-style: none; background-color: transparent; } 
+article .icon_list > .list_item > button.no_pad { padding: 0; }
 article .icon_list > .list_item .item_logo { --width: var(--icon-size); --bg-color: transparent; position: relative; width: var(--width); aspect-ratio: 1; background-color: var(--bg-color); overflow: hidden; }
 article .icon_list > .list_item .item_logo.circle { border-radius: calc(var(--width) / 2); }
 article .icon_list > .list_item .item_logo.bg_gray { --bg-color: var(--color-adaptive-bright); }
-article .icon_list > .list_item .item_logo:is(:not(:not([data-style=""]):not(:has(> img:not([src=""])))), .bordered) { outline: solid 1px rgb(var(--cbl) / 40%); outline-offset: -1px; }
-article .icon_list > .list_item .item_logo:not([data-style=""]):not(:has(> img:not([src=""]))) { background-image: var(--src); background-size: cover; background-position: center; background-repeat: no-repeat; }
-article .icon_list > .list_item .item_logo:not(:not([data-style=""]):not(:has(> img:not([src=""]))))::after { content: '로고'; position: absolute; display: inline-block; top: 0; bottom: 0; left: 0; right: 0; margin: auto; width: fit-content; height: fit-content; font-size: 0.875rem; }
-article .icon_list > .list_item .item_name { margin: 8px 0; }
+article .icon_list > .list_item .item_logo:is(:not([style*="--src:"]):not(:has(> img:not([src=""]))), .bordered) { outline: solid 1px rgb(var(--cbl) / 40%); outline-offset: -1px; }
+article .icon_list > .list_item .item_logo[style*="--src:"]:not(:has(> img:not([src=""]))) { background-image: var(--src); background-size: cover; background-position: center; background-repeat: no-repeat; }
+article .icon_list > .list_item .item_logo:not([style*="--src:"]):not(:has(> img:not([src=""])))::after { content: '로고'; position: absolute; display: inline-block; top: 0; bottom: 0; left: 0; right: 0; margin: auto; width: fit-content; height: fit-content; font-size: 0.875rem; }
+article .icon_list > .list_item .item_logo > img { position: absolute; top: 0; bottom: 0; left: 0; right: 0; width: fit-content; height: fit-content; margin: auto; }
+article .icon_list > .list_item .item_name { margin: var(--text-margin) 0; color: var(--text-color); font-size: var(--font-size); line-height: var(--line-height); }
 
 article .double_methods { flex-wrap: wrap !important; padding-inline: 4px; justify-content: center; }
 article .double_methods > .method_item { width: 48%; flex-grow: 1; flex-shrink: 0; }
