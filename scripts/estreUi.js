@@ -943,7 +943,7 @@ class EstrePageHandle {
     }
 
     onShow() {
-        if (!this.isShowing) {
+        if (this.isOpened && !this.isShowing) {
             console.log("[onShow] " + this.sectionBound + " " + this.hostType + " " + EstreUiPage.from(this)?.pid?.split("=")?.[1], this.host);
             this.#isShowing = true;
             if (this.handler?.onShow != null) this.handler.onShow(this);
@@ -1079,11 +1079,15 @@ class EstrePageHostHandle extends EstrePageHandle {
 
 
     showSubPage(id, intent) {
-
+        return false;
     }
 
     openSubPage(id, intent) {
-        
+        return false;
+    }
+
+    bringSubPage(id, intent) {
+        return false;
     }
 
     async closeSubPage(id) {
@@ -1254,6 +1258,10 @@ class EstreComponent extends EstrePageHostHandle {
         return this.openContainer(id, intent);
     }
 
+    bringSubPage(id, intent) {
+        return this.bringContainer(id, intent);
+    }
+
     async closeSubPage(id) {
         return await this.closeContainer(id);
     }
@@ -1315,6 +1323,13 @@ class EstreComponent extends EstrePageHostHandle {
             }
         }
         return null;
+    }
+
+    bringContainer(id, intent) {
+        if (this.containers[id] == null) {
+            if (this.openContainer(id, intent)) return this.showContainer(id);
+            else return false;
+        } else return this.showContainer(id, intent);
     }
 
     async onCloseContainer() {
@@ -2044,6 +2059,10 @@ class EstreContainer extends EstrePageHostHandle {
         return this.openArticle(id, intent);
     }
 
+    bringSubPage(id, intent) {
+        return this.bringArticle(id, intent);
+    }
+
     async closeSubPage(id) {
         return await this.closeArticle(id);
     }
@@ -2147,6 +2166,13 @@ class EstreContainer extends EstrePageHostHandle {
         const article = this.registerArticle($article[0], intent);
         //this.#updateStepNavigation();
         return article;
+    }
+
+    bringArticle(id, intent) {
+        if (this.articles[id] == null) {
+            if (this.openArticle(id, intent)) return this.showArticle(id);
+            else return false;
+        } else return this.showArticle(id, intent);
     }
 
     async closeArticle(id) {
