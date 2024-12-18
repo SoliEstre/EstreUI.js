@@ -23,6 +23,7 @@ html, body {
     padding: 0;
     overflow: hidden;
     overscroll-behavior: none;
+    -webkit-text-size-adjust: none;
 }
 
 html {
@@ -401,8 +402,8 @@ div#ptr > div { position: absolute; top: calc(var(--top-pad) + var(--initial) + 
 div#ptr > div > lottie-player { width: var(--size); height: var(--size); margin: calc(var(--crop) * -1); }
 
 /* main content area commons */
-body > main { display: flex; flex-direction: row; flex-wrap: nowrap; position: fixed; box-sizing: border-box; width:100%; height: 100%; padding: var(--top-safe-pad) 0 var(--bottom-safe-pad) 0; overflow: hidden; overscroll-behavior-y: contain; }
-body > main > section { container-name: main-static-section; container-type: size; display: none; flex-grow: 0; position: absolute; top: 0; bottom: 0; left: 0; right: 0; width: 100%; padding: var(--top-safe-pad) var(--right-pad) var(--bottom-safe-pad) var(--left-pad); background-color: var(--common-bg-color); overflow: hidden; overscroll-behavior-y: none; }
+body > main { display: flex; flex-direction: row; flex-wrap: nowrap; position: fixed; box-sizing: border-box; width: 100%; height: 100%; padding: var(--top-safe-pad) 0 var(--bottom-safe-pad) 0; overflow: hidden; overscroll-behavior-y: contain; }
+body > main > section { container-name: main-static-section; container-type: size; display: none; flex-grow: 0; position: absolute; top: 0; bottom: 0; left: 0; right: 0; width: 100%; box-sizing: border-box; padding: var(--top-safe-pad) var(--right-pad) var(--bottom-safe-pad) var(--left-pad); background-color: var(--common-bg-color); overflow: hidden; overscroll-behavior-y: none; }
 body > main > section.tpbg { background-color: transparent; }
 body > :is(main, header, footer) > section:not([data-on-top=""]) { display: block; flex-grow: 1; opacity: 0; transition-timing-function: ease-in; transition-delay: 0.2s; transition-duration: 0.2s; will-change: auto; }
 body > :is(main, header, footer) > section:is([data-on-top="1"], [data-on-top="0*"]) { opacity: 1; transition-timing-function: ease-out; transition-delay: 0s; }
@@ -650,7 +651,7 @@ nav#managedOverlay > section#interaction > div.container > article.popup_interfa
 nav#managedOverlay > section#interaction > div.container > article.popup_interface > .dialog > div.actions :is(input, button) { border-radius: 1.25em; background-color: rgb(255 255 255 / 0%); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
 nav#managedOverlay > section#interaction > div.container > article.popup_interface > .dialog > div.actions :is(input, button):focus { outline-color: rgb(var(--cpl) / 50%); }
 nav#managedOverlay > section#interaction > div.container > article.popup_interface > .dialog > div.actions input { margin-right: 8px; padding: 16px 12px; border-style: none; }
-nav#managedOverlay > section#interaction > div.container > article.popup_interface > .dialog > div.actions button { width: 100%; padding: 8px; border: solid 1px var(--color-adaptive); border-radius: 0.75em; font-size: 1.25rem; cursor: pointer; }
+nav#managedOverlay > section#interaction > div.container > article.popup_interface > .dialog > div.actions button { width: 100%; min-width: 4.5em; padding: 8px; border: solid 1px var(--color-adaptive); border-radius: 0.75em; font-size: 1.25rem; word-break: keep-all; cursor: pointer; }
 nav#managedOverlay > section#interaction > div.container > article.popup_interface > .dialog > div.actions:has(> span) { flex-direction: row-reverse; justify-content: space-between; }
 nav#managedOverlay > section#interaction > div.container > article.popup_interface > .dialog > div.actions > span { display: flex; flex-flow: row nowrap; justify-content: space-evenly; }
 nav#managedOverlay > section#interaction > div.container > article.popup_interface > .dialog > div.actions > span.left { }
@@ -1760,7 +1761,7 @@ main#staticDoc > section.modal.top > div.container { bottom: unset; }
 main#staticDoc > section.modal.bottom > div.container { top: unset; }
 main#staticDoc > section.modal.left > div.container { right: unset; }
 main#staticDoc > section.modal.right > div.container { left: unset; }
-main#staticDoc > section.modal.stickyRootbar > div.container { left: calc(((100% - min(100%, var(--width-wrap))) / 2) + var(--left-pad)); right: calc(((100% - min(100%, var(--width-wrap))) / 2) + var(--right-pad)); padding-inline: 0; }
+main#staticDoc > section.modal.stickyRootbar > div.container { left: calc((100% - min(100%, var(--width-wrap))) / 2); right: calc((100% - min(100%, var(--width-wrap))) / 2); padding-inline: 0; }
 main#staticDoc > section.modal.stickyRootbar.left > div.container { margin-inline-end: auto; }
 main#staticDoc > section.modal.stickyRootbar.right > div.container { margin-inline-start: auto; }
 main#staticDoc > section.modal > div.container > article { padding: 8px; }

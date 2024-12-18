@@ -585,109 +585,109 @@ if ("serviceWorker" in navigator) {
             </div>
         </section>
     </main>
-</body>
-
-<nav id="managedOverlay">
-    <section id="interaction" class="tpbg" data-static="1" data-on-top="">
-        <div class="container blind" data-container-id="onRunning" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(0 0 0 / 50%);">
-            <article class="constraint" data-article-id="main" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
-                <div class="float_center">
-                    <dotlottie-player src="./lotties/loading_circle_pink.json" background="transparent" speed="1.5" style="width: 150px; height: 150px; " loop autoplay></dotlottie-player>
-                </div>
-            </article>
-        </div>
-        <div class="container blind" data-container-id="onProgress" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(0 0 0 / 50%);">
-            <article class="constraint" data-article-id="main" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
-                <div class="float_center">
-                    <dotlottie-player src="../lotties/progress_bar.json" background="transparent" speed="1" style="width: 144px; height: 108px; filter: drop-shadow(0 0 2px #DDDA); "></dotlottie-player>
-                </div>
-            </article>
-        </div>
-        <div class="container blind" data-container-id="alert" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(0 0 0 / 50%);">
-            <article class="constraint popup_interface" data-article-id="main" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
-                <div class="fixed_center dialog">
-                    <div class="title">
-                        <button class="back"></button>
-                        <span data-bind="title"></span>
-                        <button class="close"></button>
+    
+    <nav id="managedOverlay">
+        <section id="interaction" class="tpbg" data-static="1" data-on-top="">
+            <div class="container blind" data-container-id="onRunning" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(0 0 0 / 50%);">
+                <article class="constraint" data-article-id="main" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
+                    <div class="float_center">
+                        <dotlottie-player src="./lotties/loading_circle_pink.json" background="transparent" speed="1.5" style="width: 150px; height: 150px; " loop autoplay></dotlottie-player>
                     </div>
-                    <div class="message"><span data-bind="message"></span></div>
-                    <div class="actions"><button class="confirm"><span data-bind="ok">확인</span></button></div>
-                </div>
-            </article>
-        </div>
-        <div class="container blind" data-container-id="confirm" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(0 0 0 / 50%);">
-            <article class="constraint popup_interface" data-article-id="main" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
-                <div class="fixed_center dialog">
-                    <div class="title">
-                        <button class="back"></button>
-                        <span data-bind="title"></span>
-                        <button class="close"></button>
+                </article>
+            </div>
+            <div class="container blind" data-container-id="onProgress" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(0 0 0 / 50%);">
+                <article class="constraint" data-article-id="main" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
+                    <div class="float_center">
+                        <dotlottie-player src="../lotties/progress_bar.json" background="transparent" speed="1" style="width: 144px; height: 108px; filter: drop-shadow(0 0 2px #DDDA); "></dotlottie-player>
                     </div>
-                    <div class="message"><span data-bind="message"></span></div>
-                    <div class="actions">
-                        <span class="right">
-                            <button class="positive"><span data-bind="positive">예</span></button>
-                            <button class="negative"><span data-bind="negative">아니오</span></button>
-                        </span>
-                        <span class="left">
-                            <button class="neutral"><span data-bind="neutral">나중에</span></button>
-                        </span>
+                </article>
+            </div>
+            <div class="container blind" data-container-id="alert" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(0 0 0 / 50%);">
+                <article class="constraint popup_interface" data-article-id="main" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
+                    <div class="fixed_center dialog">
+                        <div class="title">
+                            <button class="back"></button>
+                            <span data-bind="title"></span>
+                            <button class="close"></button>
+                        </div>
+                        <div class="message"><span data-bind="message"></span></div>
+                        <div class="actions"><button class="confirm"><span data-bind="ok">확인</span></button></div>
                     </div>
-                </div>
-            </article>
-        </div>
-        <div class="container blind" data-container-id="prompt" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(0 0 0 / 50%);">
-            <article class="constraint popup_interface" data-article-id="main" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
-                <div class="fixed_center dialog">
-                    <div class="title">
-                        <button class="back"></button>
-                        <span data-bind="title"></span>
-                        <button class="close"></button>
-                    </div>
-                    <div class="message"><span data-bind="message"></span></div>
-                    <div class="actions">
-                        <input data-bind-attr="type@type placeholder@placeholder value@value" />
-                        <button class="confirm"><span data-bind="confirm">확인</span></button>
-                    </div>
-                </div>
-            </article>
-        </div>
-    </section>
-    <section id="operation" class="tpbg" data-static="1" data-on-top="">
-        <div class="container top slider blind" data-container-id="root" data-static="1" data-on-top="" style="background-color: rgb(0 0 0 / 50%);">
-            <article class="constraint" data-article-id="timeline" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
-
-            </article>
-            <article class="constraint" data-article-id="quickPanel" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
-
-            </article>
-        </div>
-    </section>
-    <section id="notification" class="tpbg" data-static="1" data-on-top="">
-        <div class="container top" data-container-id="noti" data-static="1" data-on-top="1">
-            <article class="" data-article-id="noti" data-static="" data-multi-instance="1" data-instance-origin="">
-                <div class="h_icon_set post_block" data-bind-attr="interactive@data-interactive" data-bind-style="bgColor@--bg-color">
-                    <div class="icon_place"><img data-bind-attr="iconSrc@src" /></div>
-                    <div class="content_place">
-                        <div class="title_line"><span data-bind="contentTitle"></span></div>
-                        <div class="h_icon_Set content_area">
-                            <div class="content_place" data-bind="content" data-bind-style="textColor@--color textSize@--size textWeight@--weight"></div>
-                            <div class="icon_place"><img data-bind-attr="subIconSrc@src" /></div>
+                </article>
+            </div>
+            <div class="container blind" data-container-id="confirm" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(0 0 0 / 50%);">
+                <article class="constraint popup_interface" data-article-id="main" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
+                    <div class="fixed_center dialog">
+                        <div class="title">
+                            <button class="back"></button>
+                            <span data-bind="title"></span>
+                            <button class="close"></button>
+                        </div>
+                        <div class="message"><span data-bind="message"></span></div>
+                        <div class="actions">
+                            <span class="right">
+                                <button class="positive"><span data-bind="positive">예</span></button>
+                                <button class="negative"><span data-bind="negative">아니오</span></button>
+                            </span>
+                            <span class="left">
+                                <button class="neutral"><span data-bind="neutral">나중에</span></button>
+                            </span>
                         </div>
                     </div>
-                </div>
-            </article>
-        </div>
-        <div class="container bottom" data-container-id="note" data-static="1" data-on-top="1">
-            <article class="" data-article-id="note" data-static="" data-multi-instance="1" data-instance-origin="">
-                <div class="h_icon_set post_block" data-bind-attr="interactive@data-interactive" data-bind-style="bgColor@--bg-color">
-                    <div class="icon_place"><img data-bind-attr="iconSrc@src" /></div>
-                    <div class="content_place"><span data-bind="content" data-bind-style="textColor@--color textSize@--size textWeight@--weight"></span></div>
-                </div>
-            </article>
-        </div>
-    </section>
-</nav>
-<script>doc.ebi("splash").dataset.onTop = t1; //trigger for fade in splash</script>
+                </article>
+            </div>
+            <div class="container blind" data-container-id="prompt" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(0 0 0 / 50%);">
+                <article class="constraint popup_interface" data-article-id="main" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
+                    <div class="fixed_center dialog">
+                        <div class="title">
+                            <button class="back"></button>
+                            <span data-bind="title"></span>
+                            <button class="close"></button>
+                        </div>
+                        <div class="message"><span data-bind="message"></span></div>
+                        <div class="actions">
+                            <input data-bind-attr="type@type placeholder@placeholder value@value" />
+                            <button class="confirm"><span data-bind="confirm">확인</span></button>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+        <section id="operation" class="tpbg" data-static="1" data-on-top="" style="display: none; note: 'currently not implemented'; ">
+            <div class="container top slider blind" data-container-id="root" data-static="1" data-on-top="" style="background-color: rgb(0 0 0 / 50%);">
+                <article class="constraint" data-article-id="timeline" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
+
+                </article>
+                <article class="constraint" data-article-id="quickPanel" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
+
+                </article>
+            </div>
+        </section>
+        <section id="notification" class="tpbg" data-static="1" data-on-top="">
+            <div class="container top" data-container-id="noti" data-static="1" data-on-top="1">
+                <article class="" data-article-id="noti" data-static="" data-multi-instance="1" data-instance-origin="">
+                    <div class="h_icon_set post_block" data-bind-attr="interactive@data-interactive" data-bind-style="bgColor@--bg-color">
+                        <div class="icon_place"><img data-bind-attr="iconSrc@src" /></div>
+                        <div class="content_place">
+                            <div class="title_line"><span data-bind="contentTitle"></span></div>
+                            <div class="h_icon_Set content_area">
+                                <div class="content_place" data-bind="content" data-bind-style="textColor@--color textSize@--size textWeight@--weight"></div>
+                                <div class="icon_place"><img data-bind-attr="subIconSrc@src" /></div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+            <div class="container bottom" data-container-id="note" data-static="1" data-on-top="1">
+                <article class="" data-article-id="note" data-static="" data-multi-instance="1" data-instance-origin="">
+                    <div class="h_icon_set post_block" data-bind-attr="interactive@data-interactive" data-bind-style="bgColor@--bg-color">
+                        <div class="icon_place"><img data-bind-attr="iconSrc@src" /></div>
+                        <div class="content_place"><span data-bind="content" data-bind-style="textColor@--color textSize@--size textWeight@--weight"></span></div>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </nav>
+    <script>doc.ebi("splash").dataset.onTop = t1; //trigger for fade in splash</script>
+</body>
 </html>

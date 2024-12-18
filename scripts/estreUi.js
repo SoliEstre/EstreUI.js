@@ -789,7 +789,11 @@ class EstrePageHandle {
     #isFocused = false;
     get isFocused() { return this.isShowing && this.#isFocused; }
 
-    currentOnTop = null;
+    #currentOnTop = null;
+    get currentOnTop() { return this.#currentOnTop; };
+    set currentOnTop(handle) {
+        this.#currentOnTop = handle;
+    }
 
 
     constructor(host) {
@@ -1060,7 +1064,11 @@ class EstrePageHostHandle extends EstrePageHandle {
 
     get currentTop() { return this.currentOnTop ?? this.subPageList.at(-1); }
 
-    prevSubPageId = null;
+    #prevSubPageId = null;
+    get prevSubPageId() { return this.#prevSubPageId; };
+    set prevSubPageId(id) { 
+        this.#prevSubPageId = id;
+    };
 
     get isAvailablePrevSubPage() { return this.prevSubPageId != null && this.subPages[this.prevSubPageId] != null; }
 
@@ -1270,7 +1278,19 @@ class EstreComponent extends EstrePageHostHandle {
         if (id != null) {
             const container = this.containers[id];
             if (container != null) {
-                if (id != this.currentTop.id && this.currentTop.id != this.prevSubPageId) this.prevSubPageId = this.currentTop.id;
+                const currentTopHandle = this.currentTop;
+                const currentTopHandleId = currentTopHandle.id;
+                if (id != currentTopHandleId && currentTopHandleId != this.prevSubPageId) {
+                    this.prevSubPageId = currentTopHandleId;
+
+                    // if (estreUi.euiState == "onReady" && currentTopHandle != null) switch (currentTopHandle.sectionBound) {
+                    //     case "blind":
+                    //     case "menu":
+                    //     case "main":
+                    //         estreUi.pushCurrentState(currentTopHandle);
+                    //         break;
+                    // }
+                }
                 for (var current of this.containerList) if (current.isOnTop && current != container) {
                     current.hide();
                 }
@@ -1384,7 +1404,7 @@ class EstreComponent extends EstrePageHostHandle {
     async close(isRequest = true) {
         if (isRequest) {
             if (this.isModal) {
-                return await estreUi.closeModalTab(this.id, this.$host);
+                return this.onTop ? await estreUi.closeModalTab(this.id, this.$host) : false;
             } else return false;
         } else return await super.close(false);
     }
@@ -1866,7 +1886,15 @@ class EstreContainer extends EstrePageHostHandle {
         let $top = this.$articles.filter(asv(eds.onTop, t1));
         if ($top.length < 1) $top = this.$articles.filter(aiv(eds.articleId, "main"));
         if ($top.length < 1) $top = this.$articles;
-        $top[$top.length - 1]?.pageHandle?.show(false);
+        const handle = $top[$top.length - 1]?.pageHandle;
+        
+        if (handle != null) {
+            if (handle.show(false)) {
+                if (estreUi.euiState == "onReady") {
+                    estreUi.replaceCurrentState(handle);
+                }
+            }
+        }
     }
 
     registerArticle(element, intent) {
@@ -2016,9 +2044,13 @@ class EstreContainer extends EstrePageHostHandle {
         if ($top.length < 1) $top = this.$articles;
         const article = $top[$top.length - 1]?.pageHandle;
         if (article != null) {
-            article.onShow();
+            const processed = article.onShow();
             this.currentOnTop = article;
             // article.onFocus();
+
+            if (estreUi.euiState == "onReady" && processed) {
+                estreUi.replaceCurrentState(article);
+            }
         }
         return processed;
     }
@@ -2074,7 +2106,13 @@ class EstreContainer extends EstrePageHostHandle {
                 const onlyOne = this.$articles.filter(ntc("dummy")).length === 1;
                 const $currentTop = this.$articles.filter(asv(eds.onTop, t1));
                 //console.log($currentTop);
-                if (id != this.currentTop.id && this.currentTop.id != this.prevSubPageId) this.prevSubPageId = this.currentTop.id;
+                const currentTopHandle = this.currentTop;
+                const currentTopHandleId = currentTopHandle.id;
+                if (id != currentTopHandleId && currentTopHandleId != this.prevSubPageId) {
+                    this.prevSubPageId = currentTopHandleId;
+
+                    // if (estreUi.euiState == "onReady" && currentTopHandle != null) estreUi.pushCurrentState(currentTopHandle);
+                }
                 if (this.$host.hasClass("v_stack") || this.$host.hasClass("h_stack")) {
                     $target[0]?.pageHandle?.pushIntent(intent);
                     const current = this.currentArticleStepIndex;
@@ -2112,6 +2150,7 @@ class EstreContainer extends EstrePageHostHandle {
                     const targetArticle = $target.pageHandle;
                     this.currentOnTop = targetArticle;
 
+                    if (estreUi.euiState == "onReady" && targetArticle != null) estreUi.replaceCurrentState(targetArticle);
                     switch (this.sectionBound) {
                         case "menu":
                         case "main":
@@ -2131,6 +2170,8 @@ class EstreContainer extends EstrePageHostHandle {
                     targetArticle?.show(false);
                     this.currentOnTop = targetArticle;
 
+
+                    if (estreUi.euiState == "onReady" && targetArticle != null) estreUi.replaceCurrentState(targetArticle);
                     switch (this.sectionBound) {
                         case "menu":
                         case "main":
@@ -2186,7 +2227,9 @@ class EstreContainer extends EstrePageHostHandle {
                         if ($articles.length > 0) {
                             if (this.prevSubPageId != null) {
                                 if (this.showArticle(this.prevSubPageId)) this.prevSubPageId = null;
-                            } else $articles?.[$articles.length - 1]?.pageHandle?.show();
+                            } else {
+                                $articles?.[$articles.length - 1]?.pageHandle?.show();
+                            }
                         } else setTimeout(() => {
                             if (this.$articles.filter(naiv(eds.articleId, id)).length < 1) this?.close();
                         }, 0);
@@ -2913,7 +2956,8 @@ class EstreUiPage {
                 this.$backNavigation.click(function (e) {
                     e.preventDefault();
 
-                    estreUi.back();
+                    // estreUi.back();
+                    history.back();
 
                     return false;
                 });
@@ -9446,6 +9490,16 @@ const estreUi = {
     menuCurrentOnTop: null,
     headerCurrentOnTop: null,
 
+    get currentTopComponent() {
+        return this.blindedCurrentOnTop ?? (this.isOpenMainMenu ? this.menuCurrentOnTop : null) ?? this.mainCurrentOnTop;
+    },
+    get currentTopPage() {
+        return this.currentTopComponent?.currentTop?.currentTop;
+    },
+    get currentTopPid() {
+        return EstreUiPage.from(this.currentTopPage)?.pid;
+    },
+
     //elements
     $fixedBottom: null,
     $rootbar: null,
@@ -9484,7 +9538,12 @@ const estreUi = {
     menuSwipeHandler: null,
 
     //properties
+    euiState: "exit",
+    initialHistoryOffset: null,
+    isBackwardFlow: false,
+
     prevRootTabId: null,
+    prevBlindedId: null,
 
     //getter and setter
     get isOpenMainMenu() { return this.$mainMenu.attr(eds.opened) == t1; },
@@ -9561,12 +9620,88 @@ const estreUi = {
 
     setBackNavigation: function () {
         const inst = this;
-        $(window).on("popstate", async function(e) {
-            if (await inst.onBack()) {
-                e.preventDefault();
-                return false;
+        window.addEventListener("popstate", async function (e) {
+            const state = e.state;
+
+            if (state?.offset != null && state?.offset < history.length) {
+                inst.isBackwardFlow = true;
+
+                if (await inst.onBack()) {
+                    // note("[" + history.length + "] poped - " + history.state?.euiState + " / [" + history.state?.offset + "] " + history.state?.currentTopPid);
+
+                } else {
+                    if (history.length < inst.initialHistoryOffset + 1 || state?.euiState == "initializing") {
+                        note("다시 한번 뒤로 이동하면 앱을 종료합니다");
+                        // inst.pushCurrentState(inst.currentTopPage, state);
+                    }
+                }
+
+                inst.isBackwardFlow = false;
             }
-        });
+        }, false);
+
+        // window.addEventListener("pageshow", async function (e) {
+        //     if (await inst.onBack()) {
+        //         e.preventDefault();
+        //         note("prevented");
+        //         return false;
+        //     }
+        // });
+
+        // $(window).on("beforeunload", async function(e) {
+        //     if (await inst.onBack()) {
+        //         e.preventDefault();
+        //         e.returnValue = "";
+        //         return false;
+        //     } else {
+        //         alert(e.type);
+        //     }
+        // });
+    },
+
+    pushCurrentState(pageHandle = this.currentTopPage, currentState = history.state) {
+        if (this.isBackwardFlow) return false;
+        let currentTopPid = currentState?.currentTopPid;
+
+        if (pageHandle != null && currentTopPid == null) {
+            const sectionBound = pageHandle.sectionBound;
+            if (sectionBound != "main" && sectionBound != "blind" && sectionBound != "menu") return false;
+
+            currentTopPid = pageHandle != null ? EstreUiPage.from(pageHandle)?.pid : null;
+        }
+        // if (currentTopPid == null) currentTopPid = this.currentTopPid;
+        if (currentTopPid == null) return false;
+
+        const euiState = currentState?.euiState ?? this.euiState;
+        const offset = currentState?.offset ?? history.length;
+        history.pushState({ euiState, currentTopPid, offset }, null);
+        // note("[" + history.length + "] pushed - " + euiState + " / [" + offset + "] " + currentTopPid);
+
+        return true;
+    },
+
+    replaceCurrentState(pageHandle = this.currentTopPage) {
+        if (pageHandle != null) {
+            const sectionBound = pageHandle.sectionBound;
+            if (sectionBound != "main" && sectionBound != "blind" && sectionBound != "menu") return false;
+
+        }
+
+        let currentTopPid = pageHandle != null ? EstreUiPage.from(pageHandle)?.pid : null;
+        // if (currentTopPid == null) currentTopPid = this.currentTopPid;
+
+        if (currentTopPid != null) {
+            if (currentTopPid == history.state?.currentTopPid) return false;
+
+            if (history.state != null) this.pushCurrentState();
+        }
+
+        const euiState = this.euiState;
+        const offset = history.length;
+        history.replaceState({ euiState, currentTopPid, offset }, null);
+        // note("[" + history.length + "] replaced - " + euiState + " / [" + offset + "] "  + currentTopPid);
+
+        return true;
     },
 
 
@@ -9601,8 +9736,8 @@ const estreUi = {
     },
 
     toggleMainMenuButton: function() {
-        if (this.isOpenMainMenu) this.closeMainMenu();
-        else this.openMainMenu();
+        if (this.isOpenMainMenu) return this.closeMainMenu();
+        else return this.openMainMenu();
     },
 
     openMainMenu: function() {
@@ -9612,10 +9747,12 @@ const estreUi = {
             $top[$top.length - 1]?.pageHandle?.focus();
 
             const lottie = this.getMainMenuLottie();
-            lottie.pause();
-            lottie.setDirection(1);
-            lottie.setSegment(0, 30);
-            lottie.goToAndPlay(0, true);
+            if (lottie != null) {
+                lottie.pause();
+                lottie.setDirection(1);
+                lottie.setSegment(0, 30);
+                lottie.goToAndPlay(0, true);
+            }
             return true;
         } else return false;
     },
@@ -9627,15 +9764,17 @@ const estreUi = {
             $top[$top.length - 1]?.pageHandle?.blur();
 
             const lottie = this.getMainMenuLottie();
-            lottie.pause();
-            lottie.setDirection(-1);
-            lottie.goToAndPlay(30, true);
+            if (lottie != null) {
+                lottie.pause();
+                lottie.setDirection(-1);
+                lottie.goToAndPlay(30, true);
+            }
             return true;
         } else return false;
     },
 
     getMainMenuLottie: function() {
-        return this.$mainMenuBtnLottie[0].getLottie();
+        return this.$mainMenuBtnLottie[0]?.getLottie?.();
     },
 
 
@@ -9807,7 +9946,16 @@ const estreUi = {
                 const $elseSections = this.$mainSections.filter(asv(eds.onTop, t1) + nti(id));
                 if ($elseSections.length > 0) {
                     for (var section of $elseSections) section.pageHandle?.hide();
-                    this.prevRootTabId = $elseSections.attr("id");
+
+                    const currentTopHandle = this.mainCurrentOnTop;
+                    const currentTopHandleId = currentTopHandle?.id;
+                    if (id != currentTopHandleId && currentTopHandleId != this.prevRootTabId) {
+                        this.prevRootTabId = currentTopHandleId;
+    
+                        // if (estreUi.euiState == "onReady" && currentTopHandle != null) {
+                        //     estreUi.pushCurrentState(currentTopHandle);
+                        // }
+                    }
                 }
                 this.$rootTabs.filter(aiv(eds.active, t1) + naiv(eds.tabId, id)).attr(eds.active, "");
 
@@ -9816,7 +9964,8 @@ const estreUi = {
                     unhandled = true;
                     
                     //현재 선택된 탭을 다시 선택했을 때
-                    targetComponent.back();
+                    // targetComponent.back();
+                    history.back();
                 } else {
                     targetComponent.pushIntent(intent);
                     targetComponent.show(false);
@@ -9873,6 +10022,16 @@ const estreUi = {
         const $elseSections = this.$blindSections.filter(asv(eds.onTop, t1) + nti(id));
         if ($elseSections.length > 0) {
             for (var section of $elseSections) section.pageHandle?.hide(false);
+
+            const currentTopHandle = this.blindedCurrentOnTop;
+            const currentTopHandleId = currentTopHandle?.id;
+            if (id != currentTopHandleId && currentTopHandleId != this.prevBlindedId) {
+                this.prevBlindedId = currentTopHandleId;
+
+                // if (estreUi.euiState == "onReady" && currentTopHandle != null) {
+                //     estreUi.pushCurrentState(currentTopHandle);
+                // }
+            }
         }
 
         const targetComponent = this.blindSections[id];
@@ -10110,7 +10269,7 @@ const estreUi = {
         const isHeaderSection = $sectionSet == this.$headerSections;
         const component = isMainSection ? this.mainSections[id] : (isBlildSection ? this.blindSections[id] : (isMenuSection ? this.menuSections[id] : (isOverlaySection ? this.overlaySections[id] : (isHeaderSection ? this.headerSections[id] : null))));
 
-        if (isMainSection && this.mainCurrentOnTop != null) this.prevRootTabId = this.mainCurrentOnTop.id;
+        // if (isMainSection && this.mainCurrentOnTop != null) this.prevRootTabId = this.mainCurrentOnTop.id;
 
         component?.pushIntent(intent);
         
@@ -10145,7 +10304,7 @@ const estreUi = {
     closeModalSection: async function(id, $sectionSet = this.$mainSections, $targetSection) {
         if ($targetSection == null) $targetSection = $sectionSet.filter(eid + id);
 
-        if ($sectionSet == this.$mainSections) this.prevRootTabId = $targetSection.attr("id");
+        // if ($sectionSet == this.$mainSections) this.prevRootTabId = $targetSection.attr("id");
 
         $targetSection.off("click");
         $targetSection.find(c.c + div + uis.container).off("click");
@@ -10438,9 +10597,14 @@ const estreUi = {
     },
 
     async onBackBlinded() {
-        if (this.$blindSections.filter(asv(eds.onTop, t1)).length > 0) {
-            return await this.blindedCurrentOnTop?.onBack() ?? false;
-        } else return false;
+        const currentOnTop = this.blindedCurrentOnTop;
+        let processed = false;
+        if (currentOnTop != null) processed = await currentOnTop.onBack();
+        if (!processed && this.prevBlindedId != null) {
+            processed = this.showInstantBlinded(this.prevBlindedId);
+            if (processed) this.prevBlindedId = null;
+        }
+        return processed;
     },
 
     async onBackMain() {
@@ -10451,11 +10615,22 @@ const estreUi = {
         return processed;
     },
 
+    async onReady() {
+        this.initialHistoryOffset = history.length;
+        // note("[" + history.length + "] initial - null / null");
+        this.euiState = "initializing";
+        this.replaceCurrentState(null);
+        this.euiState = "onReady";
+        this.replaceCurrentState();
+
+        this.setUiOnReady();
+    },
+
 
     checkOnReady() {
         EUX.setOnImagesFullyLoaded(() => {
             EstreAsyncManager.setOnFinishedCurrentWorks(() => {
-                this.setUiOnReady();
+                this.onReady();
             });
         });
     },
