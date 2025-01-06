@@ -376,9 +376,10 @@ const dpx = (name, value, wa = t, ca = t, ea = f, classes = [obj, fnc, str, num,
     });
 });
 const definePropertyPlex = dpx;
+const ESTRE_MODERNISM_COMPATIBILITY_PREFIX = "__emcp_";
 const dspgs = (cls, name, gets, sets, ca = t, ea = f, extras = {}) => obj.defineProperty(cls, name, {
-    "get": gets,
-    "set": sets,
+    "get": function () { return nxu(this[ESTRE_MODERNISM_COMPATIBILITY_PREFIX + name]) ? this[ESTRE_MODERNISM_COMPATIBILITY_PREFIX + name] : gets() },
+    "set": function (val) { if (xu(sets)) this[ESTRE_MODERNISM_COMPATIBILITY_PREFIX + name] = val; else sets(val); },
     configurable: ca,
     enumerable: ea,
     ...extras,
