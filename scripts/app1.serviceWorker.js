@@ -1,3 +1,5 @@
+const MY_HOST = "estreui.mpsolutions.kr";
+
 const CACHE_VERSION_NAME = "cache-v1.0";
  
 const CACHE_LIST = [
@@ -16,6 +18,7 @@ const CACHE_LIST = [
     "https://code.jquery.com/jquery-3.7.1.js",
     "https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs",
     "/scripts/jcodd.js",
+    "/scripts/modernism.js",
     "/scripts/estreU0EEOZ.js",
     "/scripts/estreUi.js",
     "/scripts/app1.js",
@@ -51,7 +54,7 @@ self.addEventListener("fetch", (event) => {
     console.log("Fetch intercepted for: ", event.request.url);
     event.respondWith(
         (async () => {
-            if (event.request.url.indexOf("appparents.edudoc.co.kr") < 0) {
+            if (event.request.url.indexOf(MY_HOST) < 0) {
                 // Try to get the response from a cache.
                 const cachedResponse = await caches.match(event.request);
                 // Return it if we found one.
@@ -67,4 +70,16 @@ self.addEventListener("fetch", (event) => {
             });
           })()
     );
+});
+
+self.addEventListener("message", async (event) => {
+    let response = null;
+    switch (event.data.type) {
+        case "clearCache":
+            response = await caches.delete(CACHE_NAME_BY_VERSION).then(() => {
+                console.log("Cache cleared: ", CACHE_NAME_BY_VERSION);
+            });
+            break;
+    }
+    event.source.postMessage({ type: "worked", request: event.data, response });
 });

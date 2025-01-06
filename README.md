@@ -1,7 +1,7 @@
 # EstreUI.js
 <img src="https://estreui.mpsolutions.kr/images/EstreUI-flatter-144x144.png">
 
-## Estre UI rimwork(like as framework)
+# Estre UI rimwork(like as framework)
 
 This project provided by [MP Solutions inc.](https://mpsolutions.kr) at 2024
 
@@ -17,8 +17,10 @@ This Estre UI rimwork developed by requires rim(runnable frame) for Universal(Mo
 - This rimwork can be arranged many things with given web abilities for your project.
 - This rimwork provided basic implementation of SPA and PWA for quicker build Web application service.
 
-Preview
---
+<br />
+
+# Preview
+
 Application preview page on this repo.
 
 [Example web app 1](https://estreui.mpsolutions.kr/myOwnApplication1.html)
@@ -28,15 +30,19 @@ Applications for Estre UI demonstration
 [APT.](https://estreui.mpsolutions.kr/APT)
 
 
-Document index
---
+<br />
+
+# Document index
+
 - [Structure](#Structure)
 - [Lifecycle](#Lifecycle)
 
 
-Structure
---
-### Rimwork root elements (childs of document.body)
+<br />
+
+# Structure
+
+## Rimwork root elements (childs of document.body)
 - **header#fixedTop** - Appbar layer (such as Android's that)
 - **main#splashRoot** - Prime layer for splash
 - **nav#mainMenu** - Main menu layer
@@ -46,16 +52,18 @@ Structure
 - **main#instantDoc** - Overlay contents layer (to be covers whole things except splash when exist page opened)
 - **nav#managedOverlay** - Managed overlay layer for essential UIs of application
 
-#### Section bounds (root page holder)
+<br />
+
+## Section bounds (root page holder)
 - **headerSections** has component sections of ***header#fixedTop***
 - **menuSections** has component sections of ***nav#mainManu***
 - **mainSections** has component sections of ***main#staticDoc*** and component has button pairs on ***footer#fixedBottm***
 - **blindSections** has component sections of ***main#instantDoc***
 - **overlaySections** has component sections of ***nav#managedOverlay***
 
+<br />
 
-
-### Page
+## Page
 Page is a unit of managed section(such as a component) with lifecycle.   
 and has three page handles be sequenced layer as: **Component > Container > Article**   
 Pages be managed(bring and close) by pageManager(EstreUiPageManager's obejct).
@@ -65,32 +73,34 @@ it formatted as: **${statement}&{sectionBound}={component id}#{container id}@{ar
 PID needs to calling bring and close pages.
 can you see imported pages refers on **pageManager.pages** when after Estre UI initialized.
 
-#### Component
+### Component
 Component is root item of Page structure.   
 It's query specfied as: **section#{component id}**   
 Component can be had many containers.
 Initial component's ID is **"home"** or not exist home tab in main sections, all of sections is root tab (exit app on back pressed any tab) except modal tab.
 
-#### Container
+### Container
 Conatiner is full screen content holder.   
 It's query specfied as: **div.container\[data-container-id\="{container id}"]**   
 container pages only shows one in component has **data-on-top="1"** attribute.
 and component can be had many articles.
 Single or initial container's ID is **"root"**.
 
-#### Article
+### Article
 Article is minimum unit of page.   
 It's query specfied as: **article\[data-article-id="{article id}"\]**   
 article can be shoing on full screes(in safe area) or part of container.
 Single or initial article's ID is **"main"**.
 
 
-### Page Handle
+<br />
+
+## Page Handle
 Page handle is implementation of page works.
 it's own element be called **"host"**.
 Page handle like as provided Activity/Fragment implementation of Android framework.
 
-#### statement
+### statement
 Statement is has two type static or instant.
 Static page is never removes from DOM. but when parent pages fully static.
 When instant page's child page was static, that be released together when parent page releases.
@@ -99,13 +109,15 @@ and append(be created) to DOM on page has bring.
 Pages statement has to be never changed when browser loaded.
 It's assigned by attribute  ***data-static="1"*** or not.
 
-#### intent
+### intent
 Estre UI can push intent datas on bring(open) page or on show page.
 intent can contains your cusom data for pages want bring. and can assign provided specific actions on any lifecycle on times.
 currently provided actions is very little bit.
 Intent is little like as intent of Android fremework.
 
-### Page Handler
+<br />
+
+## Page Handler
 > extends EstrePageHandler or custom page handler based empty class
 
 Page handler is controller. has be called each lifecycle items by page handle's lifecycle.
@@ -115,7 +127,9 @@ handler callback provided page handle object. can you access handle host DOM and
 Page handler implementation has probably not be changed.
 
 
-### Handle
+<br />
+
+## Handle
 > extends EstreHandle
 
 Handle is operation controller of specfied bound.
@@ -124,7 +138,9 @@ Handles own element be called **"bound"**.
 Handle is like as View of Android framework.
 
 
-### Handler
+<br />
+
+## Handler
 > each implementations, class name begins "Estre" and ends "Handler"
 
 Handler is independent attachable functional controller.
@@ -132,8 +148,7 @@ Estre UI has to be provided continuously more stock handlers.
 
 <br />
 
-Lifecycle
---
+# Lifecycle
 
 ### onBring()
 Be called on created page host element and page handle.
@@ -195,27 +210,53 @@ this is like as onDestroy() in Android fragment lifecycle.
 
 <br />
 
-Essential methods
---
+# Essential methods
+Recommanded to use 'await' for syncronized sequence codes.  
 
+## Basic dialogs
+Basic center popup dialogs
+<br />
 ### alert(args..) / estreAlert({options..})
 It's overrided classic alert method. call classicAlert() for basic alert method.
-
-Recommanded to use 'await' for syncronized sequence codes.  
 
 ### confirm(args..) / estreConfirm({options..})
 It's overrided classic confirm method. call classicConfirm() for basic confirm method.
 
-Recommanded to use 'await' for syncronized sequence codes.  
 To be fallbacked to classic method when not assigned second(message) argument.
 
 ### prompt(args..) / estrePrompt({options..})
 It's overrided classic prompt method. call classicPrompt() for basic prompt method.
 
-Recommanded to use 'await' for syncronized sequence codes.  
 To be fallbacked to classic method when not assigned second(message) argument.
 
 <br />
+
+## Toast up slide dialogs
+It's like as Bottom Sheet Dialog of Android.
+Recommanded to use 'await' for syncronized sequence codes.  
+
+### toastAlert(args..) / estreToastAlert({options..})
+Toast up slide version alert dialog.
+
+### toastConfirm(args..) / estreToastConfirm({options..})
+Toast up slide version confirm dialog.
+
+### toastPrompt(args..) / estreToastPrompt({options..})
+Toast up slide version prompt dialog.
+
+### toastOption(args..) / estreToastOption({options..})
+#### optionToast([selections], ..)
+Simple selection from option list.
+This is like as options menu of Android.
+
+### toastSelection(args..) / estreToastSelection({options..})
+#### selectionToast([selections], ..)
+Select with checkbox and confirming single to multi selection dialog.
+This is a checklist board. and returns checked item list object when confirm by user.
+
+<br />
+
+## Progress indicators
 
 ### wait()
 Open whole screen cover infinite loading animation page.
@@ -231,12 +272,16 @@ Close whole screen cover guaged loading animation page.
 
 <br />
 
+## Notification posts
+
 ### noti() *is not implemented currently
 Post notification card on top of screen.
 And to be added Notification slide page.
 
 ### note()
 Post note card(such as Toast of Android) on bottom of screen.
+
+<br />
 
 <br />
 

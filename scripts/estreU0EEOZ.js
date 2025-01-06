@@ -10,22 +10,6 @@
     https://estreui.mpsolutions.kr
 */
 
-// common constants
-const N = "null";
-const U = "undefined";
-const T = "true";
-const F = "false";
-const n = null;
-const u = undefined;
-const t = true;
-const f = false;
-const eoo = u;
-const STR = "string";
-const NUM = "number";
-const str = String;
-const num = Number;
-
-
 // document aliases
 const doc = {
     get b() { return document.body; },
@@ -38,13 +22,13 @@ const doc = {
         return element;
     },
 
-    ebi: (id) => document.getElementById(id),
-    ebn: (name) => document.getElementsByName(name),
-    ebt: (tagName) => document.getElementsByTagName(tagName),
-    ebc: (classNames) => document.getElementsByClassName(classNames),
+    ebi: id => document.getElementById(id),
+    ebn: name => document.getElementsByName(name),
+    ebt: tagName => document.getElementsByTagName(tagName),
+    ebc: classNames => document.getElementsByClassName(classNames),
 
-    qs: (selectors) => document.querySelector(selectors),
-    qsa: (selectors) => document.querySelectorAll(selectors),
+    qs: selectors => document.querySelector(selectors),
+    qsa: selectors => document.querySelectorAll(selectors),
 };
 
 // jQuery fallback placeholder
@@ -73,17 +57,22 @@ const ar = "article";
 const se = "section";
 const ul = "ul";
 const li = "li";
+const br = "br";
+const hr = "hr";
 const lbl = "label";
 const sp = "span";
 const rb = "ruby";
 const rp = "rp";
 const rt = "rt";
+const pg = "p";
+const img = "img";
 const frm = "form";
 const btn = "button";
 const inp = "input";
 const ta = "textarea";
 const sel = "select";
 const opt = "option";
+const lp = "lottie-player";
 const dlp = "dotlottie-player";
 
 // Tag alias constants (Upper case) - for compare
@@ -92,101 +81,278 @@ const AR = "ARTICLE";
 const SE = "SECTION";
 const UL = "UL";
 const LI = "LI";
+const BR = "BR";
+const HR = "HR";
 const LBL = "LABEL";
 const SP = "SPAN";
 const RB = "RUBY";
 const RP = "RP";
 const RT = "RT";
+const PG = "P";
+const IMG = "IMG";
 const FRM = "FORM";
 const BTN = "BUTTON";
 const INP = "INPUT";
 const TA = "TEXTAREA";
 const SEL = "SELECT";
 const OPT = "OPTION";
+const LP = "LOTTIE-PLAYER";
 const DLP = "DOTLOTTIE-PLAYER";
+
+
+// HTML escaped constants
+const hee = val => ms + val + sc;
+const hei = val => ms + i + val + sc;
+const nbsp = hee("nbsp");
+const ltt = hee("lt");
+const gtt = hee("gt");
+
+
+// inline tag constants
+const itt = (tagName, attributes = {}, enumables = []) => {
+    let texts = [lt + tagName];
+
+    if (nn(attributes) && tj(attributes)) fkv((k, v) => { if (nne(k) && nn(v)) texts.push(k + eq + v4(v)); });
+    if (nn(enumables) && tj(enumables) && ia(enumables)) fo(v => { if (nne(v)) texts.push(v); });
+
+    texts.push(ss + gt);
+    return texts.join(s);
+}
+const tbr = (className, id) => itt(br, { class: className, id });
+const thr = (className, id) => itt(hr, { class: className, id });
+const tig = (src, alt, className, id) => itt(img, { class: className, id, src, alt });
+const tip = (type, name, className, id) => itt(inp, { class: className, id, type, name });
+
+// packing tag constants
+const tag = (tagName, innerHtml = "", attributes = {}, enumables = []) => {
+    let texts = [lt + tagName];
+
+    if (nn(attributes) && tj(attributes)) fkv((k, v) => { if (nne(k) && nn(v)) texts.push(k + eq + v4(v)); });
+    if (nn(enumables) && tj(enumables) && ia(enumables)) fo(v => { if (nne(v)) texts.push(v); });
+
+    return (texts.join(s) + gt) + innerHtml + (lt + ss + tagName + gt);
+}
+
+// terminal tag constants
+const ttt = (tagName, attributes = {}, enumables = []) => tag(tagName, "", attributes, enumables);
+
+
+// element builder constnat
+const eb = (tagName, attributes = {}, enumables = [], property = {}) => {
+    const elem = document.createElement(tagName);
+
+    if (nn(attributes) && tj(attributes)) fkv((k, v) => { if (nne(k) && nn(v)) elem.setAttribute(k, v); });
+    if (nn(enumables) && tj(enumables) && ia(enumables)) fo(v => { if (nne(v)) elem.setAttribute(v, es); });
+    if (nn(property) && tj(property)) fkv((k, v) => { if (nne(k)) elem[k] = v; });
+
+    return elem;
+}
+const ebr = (className, id) => eb(br, { class: className, id });
+const ehr = (className, id) => eb(hr, { class: className, id });
+const eig = (src, alt, className, id) => eb(img, { class: className, id, src, alt });
+const eip = (type, name, className, id) => eb(inp, { class: className, id, type, name });
+
 
 // Tag attribute constants
 const m = {
-    cls: "class",
+    get k() { return "checked"; },
+    get v() { return "checked"; },
+    get ck() { return "checked"; },
+    get ckd() { return "checked"; },
+    get c() { return "class"; },
+    get cls() { return "class"; },
+    get ce() { return "contenteditable"; },
+    get d() { return "disabled"; },
+    get dad() { return "disabled"; },
+    get f() { return "for"; },
+    get i() { return "id"; },
+    get id() { return "id"; },
+    get name() { return "name"; },
+    get tp() { return "type"; },
+    get ro() { return "readonly"; },
 };
+
+// Tag type case constants
+const tp = "type";
+const tv = {
+    get a() { return "contenteditable"; },
+    get b() { return "button"; },
+    get c() { return "color"; },
+    get cb() { return "checkbox"; },
+    get d() { return "date"; },
+    get dt() { return "datetime"; },
+    get dtl() { return "datetime-local"; },
+    get e() { return "email"; },
+    get f() { return "file"; },
+    get g() { return "range"; },
+    get h() { return "hidden"; },
+    get i() { return "image"; },
+    get j() { return "datetime"; },
+    get k() { return "tel"; },
+    get l() { return "datetime-local"; },
+    get m() { return "month"; },
+    get n() { return "number"; },
+    get o() { return ""; },
+    get p() { return "password"; },
+    get q() { return "search"; },
+    get r() { return "radio"; },
+    get rst() { return "reset"; },
+    get s() { return "submit"; },
+    get sr() { return "search"; },
+    get t() { return "time"; },
+    get tx() { return "text"; },
+    get tel() { return "tel"; },
+    get tp() { return "tel"; },
+    get u() { return "url"; },
+    get v() { return "checkbox"; },
+    get w() { return "week"; },
+    get x() { return "text"; },
+    get z() { return "reset"; },
+};
+const ipt = typeText => inp + (en(typeText) ? ax(tp) : aiv(tp, typeText));
+const itc = typeCase => ipt(tv[typeCase]);
+
 
 // CSS combinator constants
 const c = {
-    a: "+",
-    b: " ",
-    c: ">",
-    d: " ",
-    g: "~",
-    w: "*",
-
-    eoo: eoo
+    get a() { return ad; },
+    get b() { return s; },
+    get c() { return gt; },
+    get d() { return s; },
+    get g() { return ti; },
+    get w() { return ak; },
 };
 
 // CSS group constant
-const cor = ",";
+const cor = l;
 
 // CSS prefix constant
-const eid = "#";
-const cls = ".";
+const eid = i;
+const cls = d;
 
-// CSS selector constant
-const sq = "'";
-const dq = '"';
-const bro = "(";
-const is = ":is(";
-const nto = ":not(";
-const clo = ")";
-const opa = "[";
-const cla = "]";
-const equ = "=";
-const stb = "^=";
-const edb = "$=";
-const isv = '="';
-const clv = '"]';
-const nao = ":not(["
-const cao = "])"
+// CSS selector common constant
+const st = cf;
+const ed = ds;
+const equ = eq;
+
+const ops = "(";
+const cps = ")";
+const obk = "[";
+const cbk = "]";
+const obc = "{";
+const cbc = "}";
+
+
+// CSS puesedo selector constant
+const iz = ":is";
+const nz = ":not";
+const hs = ":has";
+const hst = ":host";
+const lng = ":lang";
+
+const blk = ":blank";
+const ept = ":empty";
+const ead = ":enabled";
+const dad = ":disabled";
+const ckd = ":checked";
+const fcs = ":focus";
+const fwi = ":focus-within";
+const hvr = ":hover";
+const atv = ":active";
+
+const fcd = ":first-child";
+const fot = ":first-of-type";
+const ocd = ":only-child";
+const oot = ":only-of-type";
+const lcd = ":last-child";
+const lot = ":last-of-type";
+
+const ntd = ":nth-child";
+const ntp = ":nth-of-type";
+const nld = ":nth-last-child";
+const nlp = ":nth-last-of-type";
+
+const rut = ":root";
+
+const bfr = "::before";
+const ftr = "::after";
+const ctt = "::content";
+const phd = "::placeholder";
+
+
+const iso = iz + ops;
+const nto = nz + ops;
+const hso = hs + ops;
+const hsto = hst + ops;
+const lngo = lng + ops;
+
+const ntdo = ntd + ops;
+const ntpo = ntp + ops;
+const nldo = nld + ops;
+const nlpo = nlp + ops;
+
+const stb = st + equ;
+const edb = ed + equ;
+const isv = equ + dq;
+const clv = dq + cbk;
+const nao = nto + obk;
+const cao = cbk + cps;
+
+const is = function () { return iso + [...arguments].join(l) + cps; };
+const not = function () { return nto + [...arguments].join(l) + cps; };
+const has = val => hso + val + cps;
+const host = val => hsto + val + cps;
+const lang = val => lngo + val + cps;
+
+const cof = nth => ntdo + nth + cps;
+const tof = nth => ntpo + nth + cps;
+const lcof = nth => nldo + nth + cps;
+const ltof = nth => nlpo + nth + cps;
+
+const ncd = not(ckd);
+
 /** brt(val) = (val) */
-const brt = (val) => bro + val + clo;
+const brt = val => opt + val + cps;
 /** brc(val) = (.val) */
-const brc = (val) => bro + cls + val + clo;
+const brc = val => opt + cls + val + cps;
 /** bri(val) = (#val) */
-const bri = (val) => bro + eid + val + clo;
+const bri = val => opt + eid + val + cps;
 /** ax(attr) = [attr] */
-const ax = (attr) => opa + attr + cla;
+const ax = attr => obk + attr + cbk;
 /** ai(attr) = [attr= */
-const ai = (attr) => opa + attr + equ;
+const ai = attr => obk + attr + equ;
 /** as(attr) = [attr^= */
-const as = (attr) => opa + attr + stb;
+const as = attr => obk + attr + stb;
 /** ae(attr) = [attr$= */
-const ae = (attr) => opa + attr + edb;
+const ae = attr => obk + attr + edb;
 /** ah(attr) = [attr~= */
-const ah = (attr) => opa + attr + c.g + equ;
+const ah = attr => obk + attr + c.g + equ;
 /** ac(attr) = [attr*= */
-const ac = (attr) => opa + attr + c.w + equ;
+const ac = attr => obk + attr + c.w + equ;
 /** aiv(attr, val) = [attr="val"] */
-const aiv = (attr, val) => ai(attr) + v4(val) + cla;
+const aiv = (attr, val) => ai(attr) + v4(val) + cbk;
 /** asv(attr, val) = [attr^="val"] */
-const asv = (attr, val) => as(attr) + v4(val) + cla;
+const asv = (attr, val) => as(attr) + v4(val) + cbk;
 /** aev(attr, val) = [attr$="val"] */
-const aev = (attr, val) => ae(attr) + v4(val) + cla;
+const aev = (attr, val) => ae(attr) + v4(val) + cbk;
 /** ahv(attr, val) = [attr~="val"] */
-const ahv = (attr, val) => ah(attr) + v4(val) + cla;
+const ahv = (attr, val) => ah(attr) + v4(val) + cbk;
 /** acv(attr, val) = [attr*="val"] */
-const acv = (attr, val) => ac(attr) + v4(val) + cla;
+const acv = (attr, val) => ac(attr) + v4(val) + cbk;
 /** is(val) = :is(val) */
-const isc = (val) => is + val + clo;
+const isc = val => iso + val + cps;
 /** ntt(val) = :not(val) */
-const ntt = (val) => nto + val + clo;
+const ntt = val => nto + val + cps;
 /** ntc(val) = :not(.val) */
-const ntc = (val) => nto + cls + val + clo;
+const ntc = val => nto + cls + val + cps;
 /** nti(val) = :not(#val) */
-const nti = (val) => nto + eid + val + clo;
+const nti = val => nto + eid + val + cps;
 /** nai(attr) = :not([attr= */
-const nai = (attr) => nao + attr + equ;
+const nai = attr => nao + attr + equ;
 /** nav(val) = "val"] */
-const nav = (val) => dq + val + clv;
+const nav = val => dq + val + clv;
 /** naiv(attr, val, append = "") = :not([attr="val"]append) */
-const naiv = (attr, val, append = "") => nai(attr) + nav(val) + append + clo;
+const naiv = (attr, val, append = "") => nai(attr) + nav(val) + append + cps;
 
 // CSS attrib name constant
 const a = {
@@ -202,13 +368,13 @@ const v1 = '"1"';
 const v2 = '"2"';
 const v3 = '"3"';
 /** v4(val) = "val" */
-const v4 = (val) => '"' + val + '"';
+const v4 = val => '"' + val + '"';
 const isv0 = '="0"]';
 const isv1 = '="1"]';
 const isv2 = '="2"]';
 const isv3 = '="3"]';
 /** isv4(val) = ="val"] */
-const isv4 = (val) => '="' + val + '"]';
+const isv4 = val => '="' + val + '"]';
 
 // CSS variable name constant
 const v = {
@@ -221,7 +387,7 @@ const v = {
 };
 
 /** CSS support check */ 
-const csc = (method) => doc.$b.css(v.s(method)) == t1;
+const csc = method => doc.$b.css(v.s(method)) == t1;
 
 /** CSS support methods */
 const csm = {
@@ -242,6 +408,9 @@ const cvt = {
 };
 
 
+
+// Utility constants block --
+
 // Text alias constant
 const t0 = "0";
 const t1 = "1";
@@ -254,6 +423,58 @@ const t7 = "7";
 const t8 = "8";
 const t9 = "9";
 
+const _a = "a";
+const _b = "b";
+const _c = "c";
+const _d = "d";
+const _e = "e";
+const _f = "f";
+const _g = "g";
+const _h = "h";
+const _i = "i";
+const _j = "j";
+const _k = "k";
+const _l = "l";
+const _m = "m";
+const _n = "n";
+const _o = "o";
+const _p = "p";
+const _q = "q";
+const _r = "r";
+const _s = "s";
+const _t = "t";
+const _u = "u";
+const _v = "v";
+const _w = "w";
+const _x = "x";
+const _y = "y";
+const _z = "z";
+const _A = "A";
+const _B = "B";
+const _C = "C";
+const _D = "D";
+const _E = "E";
+const _F = "F";
+const _G = "G";
+const _H = "H";
+const _I = "I";
+const _J = "J";
+const _K = "K";
+const _L = "L";
+const _M = "M";
+const _N = "N";
+const _O = "O";
+const _P = "P";
+const _Q = "Q";
+const _R = "R";
+const _S = "S";
+const _T = "T";
+const _U = "U";
+const _V = "V";
+const _W = "W";
+const _X = "X";
+const _Y = "Y";
+const _Z = "Z";
 
 
 //common methods

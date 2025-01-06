@@ -30,7 +30,7 @@ SOFTWARE.
 //
 // The JSON based lite code format
 //
-// v0.5 / release 2024.10.25
+// v0.5 / release 2024.12.25
 //
 // Take to be liten from JSON code to smaller converted characters for like as BASE64.
 //
@@ -121,7 +121,7 @@ let Jcodd = {
      * 
      * @param {Integer} cc  Char Code
      * 
-     * @returns {String} escaped
+     * @returns {String} unescaped
      */
     esc: function (cc) {
         if (cc < 0x20 || cc > 0x7e) {
@@ -138,7 +138,7 @@ let Jcodd = {
      * 
      * @param {String} str
      * 
-     * @returns {String} escaped
+     * @returns {String} unescaped
      */
     escape: function (str) {
         var escaped = "";
@@ -153,7 +153,7 @@ let Jcodd = {
      * 
      * @param {String} str
      * 
-     * @returns {String} unescaped
+     * @returns {String} escaped
      */
     unescape: function (str) {
         return str.replace(/%u([\dA-F]{4})/gi, (match, block) => 

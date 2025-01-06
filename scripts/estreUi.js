@@ -10,6 +10,9 @@
     https://estreui.mpsolutions.kr
 */
 
+// initializing essential states
+
+
 // UI specifier constants
 const uis = {
 
@@ -154,8 +157,6 @@ const eds = {
     articleStepsId: "data-article-steps-id",
 
     // for page manager,
-    openPage: "data-open-page",
-    closePage: "data-close-page",
 
     // for session manager
     containerType: "data-container-type",
@@ -169,12 +170,15 @@ const eds = {
     bindAttr: "data-bind-attr",
     bindStyle: "data-bind-style",
     bindArray: "data-bind-array",
-    bindArrayIndex: "data-bind-array-index",
     bindArrayItem: "data-bind-array-item",
     bindArrayAmount: "data-bind-array-amount",
     bindArrayValue: "data-bind-array-value",
     bindArrayAttr: "data-bind-array-attr",
     bindArrayStyle: "data-bind-array-style",
+    bindArrayIndex: "data-bind-array-index",
+    bindArrayIndexAmount: "data-bind-array-index-amount",
+    bindArrayIndexValue: "data-bind-array-index-value",
+    bindArrayIndexAttr: "data-bind-array-index-attr",
     bindObjectArrayItem: "data-bind-object-array-item",
     bindObjectArrayAmount: "data-bind-object-array-amount",
     bindObjectArrayValue: "data-bind-object-array-value",
@@ -299,10 +303,15 @@ const eds = {
     withSuffix: "data-with-suffix",
 
 
-    // for internal link
+    // for internal link and page link
     openTarget: "data-open-target",
     openContainer: "data-open-container",
     openId: "data-open-id",
+    openPage: "data-open-page",
+    showPage: "data-show-page",
+    closePage: "data-close-page",
+    openAction: "data-open-action",
+    showAction: "data-show-action",
 
 
     // for swipe handler
@@ -317,6 +326,163 @@ const eds = {
 
     eoo: eoo
 }
+
+
+
+// Toast up slide dialog
+function estreToastAlert(options = {}) {
+    return new Promise((resolve) => pageManager.bringPage("!toastAlert", {
+        data: options,
+        onOk() {
+            this?.data?.callbackOk?.();
+            resolve(t);
+        },
+        onDissmiss() {
+            this?.data?.callbackDissmiss?.();
+            resolve(u);
+        },
+     }));
+}
+
+const toastAlert = (title, message,
+    callbackOk = () => {},
+    callbackDissmiss = () => {},
+    ok = isKorean() ? "확인" : "OK",
+) => estreToastAlert({ title, message, callbackOk, callbackDissmiss, ok });
+
+
+function estreToastConfirm(options = {}) {
+    return new Promise((resolve) => pageManager.bringPage("!toastConfirm", {
+        data: options,
+        onPositive() {
+            this?.data?.callbackPositive?.();
+            resolve(t);
+        },
+        onNegative() {
+            this?.data?.callbackNegative?.();
+            resolve(f);
+        },
+        onNeutral() {
+            this?.data?.callbackNeutral?.();
+            resolve(n);
+        },
+        onDissmiss() {
+            this?.data?.callbackDissmiss?.();
+            resolve(u);
+        },
+    }));
+}
+
+const toastConfirm = (title, message,
+    callbackPositive = () => {},
+    callbackNegative = () => {},
+    callbackDissmiss = () => {},
+    callbackNeutral = null,
+    positive = isKorean() ? "예" : "OK",
+    negative = isKorean() ? "아니오" : "NO",
+    neutral = isKorean() ? "나중에" : "Later",
+) => estreToastConfirm({ title, message, callbackPositive, callbackNegative, callbackDissmiss, callbackNeutral, positive, negative, neutral });
+
+
+function estreToastPrompt(options = {}) {
+    return new Promise((resolve) => pageManager.bringPage("!toastPrompt", {
+        data: options,
+        onConfirm(text) {
+            this?.data?.callbackConfirm?.(text);
+            resolve(text);
+        },
+        onDissmiss() {
+            this?.data?.callbackDissmiss?.();
+            resolve(u);
+        },
+     }));
+}
+
+const toastPrompt = (title,
+    value = "",
+    message,
+    callbackConfirm = (text) => {},
+    callbackDissmiss = () => {},
+    confirm = isKorean() ? "확인" : "Confirm",
+    placeholder = "",
+    type = "text",//number, password
+) => estreToastPrompt({ title, message, callbackConfirm, callbackDissmiss, confirm, placeholder, type, value });
+
+
+function estreToastOption(options = {}) {
+    return new Promise((resolve) => pageManager.bringPage("!toastOption", {
+        data: options,
+        onSelected(key, value) {
+            this?.data?.callbackSelected?.(key, value);
+            resolve(key);
+        },
+        onDissmiss() {
+            this?.data?.callbackDissmiss?.();
+            resolve(u);
+        },
+    }));
+}
+
+const toastOption = (title = "", message = "",
+    options = ["option A", "option B", "option C"],
+    callbackSelected = (key, value) => {},
+    callbackDissmiss = () => {},
+) => estreToastOption({ title, message, options, callbackSelected, callbackDissmiss });
+
+const optionToast = (options = ["option A", "option B", "option C"],
+    callbackSelected = (key, value) => {},
+    callbackDissmiss = () => {},
+    title = "", message = "",
+) => toastOption(title, message, options, callbackSelected, callbackDissmiss);
+
+
+function estreToastSelection(options = {}) {
+    return new Promise((resolve) => pageManager.bringPage("!toastSelection", {
+        data: options,
+        onConfirm(selections, keys, values) {
+            this.data?.callbackConfirm?.(selections, keys, values);
+            resolve(selections)
+        },
+        onSelect(selected, key, value, selections, keys, values) {
+            this?.data?.callbackSelect?.(selected, key, value, selections, keys, values);
+        },
+        onAnother(selections, keys, values) {
+            this?.data?.callbackAnother?.(selections, keys, values);
+            resolve(f);
+        },
+        onDissmiss(selections, keys, values) {
+            this?.data?.callbackDissmiss?.(selections, keys, values);
+            resolve(u);
+        },
+    }));
+}
+
+const toastSelection = (title = "", message = "",
+    minSelection = 1,
+    maxSelection = -1,
+    options = ["option A", "option B", "option C"],
+    defaultSelected = [],
+    callbackConfirm = (selections, keys, values) => {},
+    callbackSelect = (selected, key, value, selections, keys, values) => {},
+    callbackDissmiss = (selections, keys, values) => {},
+    callbackAnother = null,
+    confirm = isKorean() ? "확인" : "Confirm",
+    another = isKorean() ? "나중에" : "later",
+) => estreToastSelection({ title, message, options, minSelection, maxSelection, defaultSelected, callbackConfirm, callbackSelect, callbackDissmiss, callbackAnother, confirm, another });
+
+const selectionToast = (options = ["option A", "option B", "option C"],
+    minSelection = 1,
+    maxSelection = -1,
+    defaultSelected = [],
+    title = "", message = "",
+    callbackConfirm = (selections, keys, values) => {},
+    confirm = isKorean() ? "확인" : "Confirm",
+    callbackAnother = null,
+    another = isKorean() ? "나중에" : "later",
+    callbackDissmiss = (selections, keys, values) => {},
+    callbackSelect = (selected, key, value, selections, keys, values) => {},
+) => toastSelection(title, message, minSelection, maxSelection, options, defaultSelected, callbackConfirm, callbackSelect, callbackDissmiss, callbackAnother, confirm, another);
+
 
 
 
@@ -412,13 +578,31 @@ prompt = (title,
 
 
 // Infinite loop and prograss meter
+let latestIO = null;
+
 /**
  * Show infinite loop wait indicator
  * 
- * @param {instanceOrigin} / instance access origin code
+ * @param {instanceOrigin: string} / instance access origin code
  */
 const wait = function (instanceOrigin) {
-    return pageManager.bringPage("!onRunning") ? instanceOrigin : u;
+    const io = pageManager.bringPage("!onRunning", u, instanceOrigin) ? instanceOrigin : u;
+    latestIO = io;
+    return io;
+}
+
+/**
+ * Show infinite loop wait indicator before stedy specified delay time for go()
+ * 
+ * @param {delay: Number} / wait go() before bring wait indicator (ms, default is 600)
+ * @param {instanceOrigin: string} / instance access origin code (default is to be auto generated)
+ */
+const stedy = function (delay = 600, instanceOrigin = "stedy" + Date.now()) {
+    latestIO = instanceOrigin;
+    setTimeout(() => {
+        if (latestIO == instanceOrigin) wait(instanceOrigin);
+    }, delay);
+    return instanceOrigin;
 }
 
 /**
@@ -427,7 +611,10 @@ const wait = function (instanceOrigin) {
  * @param {instanceOrigin} / instance access origin code
  */
 const go = function (instanceOrigin) {
-    return pageManager.closePage("!onRunning", false, instanceOrigin);
+    if (instanceOrigin != null && latestIO != instanceOrigin) return
+    const aio = pageManager.closePage("!onRunning", false, instanceOrigin);
+    latestIO = null;
+    return aio;
 }
 
 
@@ -435,7 +622,7 @@ const go = function (instanceOrigin) {
  * Show progress bar(or own custom shape)
  * 
  * @param {meter: object} { current: is 0 to 1000, null to finish } is binded to UI
- * @param {instanceOrigin} / instance access origin code
+ * @param {instanceOrigin: string} / instance access origin code
  * 
  * @returns {bindedHandle: object} Adjust bindedHandle.current value to progress animation
  */
@@ -447,7 +634,7 @@ const going = function (meter = { current: 0 }, instanceOrigin) {
 /**
  * Hide progress bar(or own custom shape)
  * 
- * @param {instanceOrigin} / instance access origin code
+ * @param {instanceOrigin: string} / instance access origin code
  */
 const arrived = function (instanceOrigin) {
     return pageManager.closePage("!onProgress", false, instanceOrigin);
@@ -509,21 +696,21 @@ class EstreNotationManager {
 
     // instance property
     data = {
-        posted: null,
-        content: null,
-        showTime: null,
-        interactive: null,
-        resolver: null,
+        posted: u,
+        content: u,
+        showTime: u,
+        interactive: u,
+        resolver: u,
 
         //options
-        iconSrc: null,
-        textSize: null,
-        textWeight: null,
-        textColor: null,
-        bgColor: null,
+        iconSrc: u,
+        textSize: u,
+        textWeight: u,
+        textColor: u,
+        bgColor: u,
     };
 
-    onTakeInteraction = null;
+    onTakeInteraction = u;
 
     constructor(message, showTime = 3000, onTakeInteraction = EstreNotationManager.noInteraction, options = {}, resolver) {
         for (const item in options) this.data[item] = options[item];
@@ -705,6 +892,63 @@ const ESS = new ES(sessionStorage, "SS_");
 const ELS = new ES(localStorage, "LS_");
 
 
+/***
+ * Parameter manager
+ */
+class EstreUiParameterManager {
+
+    get ssPrefix() { return this.#prefix + "PARAMETER_MANAGER_"; }
+    
+    get forLS() { return {
+
+    }; }
+
+    get forSS() { return {
+        get page() { return "requestPage"; },
+        get origin() { return "requestOrigin"; },
+    }; }
+
+    // class property
+    #prefix;
+    #params;
+
+    #lsMatch = {};
+    #ssMatch = {};
+
+    constructor(prefix = "", lsMatch = {}, ssMatch = {}, search = location.search) {
+        this.#prefix = prefix ?? "";
+        this.#params = new URLSearchParams(search);
+        this.#lsMatch = lsMatch ?? {};
+        this.#ssMatch = ssMatch ?? {};
+    }
+    
+
+    init() {
+        for (const [key, value] of this.#params) {
+            let keyName = this.#lsMatch[key] ?? this.forLS[key];
+            if (keyName != null) {
+                ELS.setString(keyName.length > 0 ? keyName : this.ssPrefix + key, value);
+            } else {
+                keyName = this.#ssMatch[key] ?? this.forSS[key];
+                ESS.setString(keyName != null && keyName.length > 0 ? keyName : this.ssPrefix + key, value);
+            }
+        }
+
+        return this;
+    }
+
+    get(key) {
+        let keyName = this.#lsMatch[key] ?? this.forLS[key];
+        if (keyName != null) {
+            return ELS.getString(keyName.length > 0 ? keyName : this.ssPrefix + key);
+        } else {
+            keyName = this.#ssMatch[key] ?? this.forSS[key];
+            return ESS.getString(keyName != null && keyName.length > 0 ? keyName : this.ssPrefix + key);
+        }
+    }
+}
+
+
 /**
  * Async works manager
  */
@@ -840,7 +1084,7 @@ class EstrePageHandle {
             if (intent === f) this.#intent = null;
             else if (this.intent == null) this.#intent = intent;
             else for (var key in intent) this.intent[key] = intent[key];
-            if (this.intent != null) console.log("pushed intent on " + this.hostType + " " + EstreUiPage.from(this).pid + "\n");//, this.intent);
+            console.log("pushed intent on " + this.hostType + " " + EstreUiPage.from(this).pid + "\n", this.intent);
             return true;
         } else false;
     }
@@ -874,10 +1118,10 @@ class EstrePageHandle {
         else if (this.#isOpened) {
             const onTop = this.currentOnTop;
             const onReload = this.handler?.onReload;
-            return (onTop != null && onTop.onReload()) || (onReload != null && (() => {
+            return (onTop != null && onTop.onReload()) || (onReload != null && ((handle) => {
                 console.log("[performReload] " + this.sectionBound + " " + this.hostType + " " + EstreUiPage.from(this)?.pid, this.host);
-                return onReload(this);
-            })());
+                return handle?.handler?.onReload(this);
+            })(this));
         } else return false;
     }
 
@@ -886,10 +1130,10 @@ class EstrePageHandle {
         else if (this.isShowing) {
             const onTop = this.currentOnTop;
             const onBack = this.handler?.onBack;
-            return (onTop != null && await onTop.onBack()) || (onBack != null && await (async () => {
+            return (onTop != null && await onTop.onBack()) || (onBack != null && await (async (handle) => {
                 console.log("[performBack] " + this.sectionBound + " " + this.hostType + " " + EstreUiPage.from(this)?.pid, this.host);
-                return await onBack(this);
-            })());
+                return await handle?.handler?.onBack(this);
+            })(this));
         } else return false;
     }
 
@@ -1044,6 +1288,506 @@ class EstrePageHandle {
         return this;
     }
 
+
+
+    // content brokers
+    initDataBind() {
+        const eachTarget = ($elem, attrId, each = (target, prefix = "", suffix = "") => {}) => {
+            const specifier = $elem.attr(attrId);
+            if (specifier != null && specifier != "") {
+                const targets = specifier.split(" ");
+                for (let target of targets) {
+                    let prefix = "", suffix = "";
+                    if (target.indexOf("^") > -1) [target, prefix] = target.split("^");
+                    if (target.indexOf("$") > -1) [suffix, target] = target.split("$");
+                    each(target, prefix, suffix);
+                }
+            }
+        }
+        const eachTargetFor = ($elem, attrId, each = (targetItem, targetName, prefix = "", suffix = "") => {}) => {
+            const specifier = $elem.attr(attrId);
+            if (specifier != null && specifier != "") {
+                const targets = specifier.split(" ");
+                for (const target of targets) {
+                    let [targetItem, targetName] = target.split("@");
+                    let prefix = "", suffix = "";
+                    if (targetItem.indexOf("^") > -1) [targetItem, prefix] = targetItem.split("^");
+                    if (targetItem.indexOf("$") > -1) [suffix, targetItem] = targetItem.split("$");
+                    each(targetItem, targetName, prefix, suffix);
+                }
+            }
+        }
+
+        if (this.intent != null) {
+            const data = this.intent.data;
+
+            if (data != null) for (var item in data) {
+                const value = data[item];
+
+                if (en(value)) continue;
+
+                if (this.$host.is(aiv(eds.bind, item))) this.$host.html(value);
+                if (this.$host.is(aiv(eds.bindAmount, item))) this.$host.html(v2a(value));
+                if (this.$host.is(aiv(eds.bindValue, item))) this.$host.val(value);
+                this.$host.find(aiv(eds.bind, item)).html(value);
+                this.$host.find(aiv(eds.bindAmount, item)).html(v2a(value));
+                this.$host.find(aiv(eds.bindValue, item)).val(value);
+
+                if (this.$host.is(acv(eds.bindAttr, item + "@"))) eachTargetFor(this.$host, eds.bindAttr, (targetItem, targetAttr, prefix = "", suffix = "") => {
+                    if (targetItem == item) this.$host.attr(targetAttr, prefix + value + suffix);
+                });
+                this.$host.find(acv(eds.bindAttr, item + "@")).each((i, elem) => {
+                    const $elem = $(elem);
+                    eachTargetFor($elem, eds.bindAttr, (targetItem, targetAttr, prefix = "", suffix = "") => {
+                        if (targetItem == item) $elem.attr(targetAttr, prefix + value + suffix);
+                    });
+                });
+
+                if (this.$host.find(acv(eds.bindStyle, item + "@"))) eachTargetFor(this.$host, eds.bindStyle, (targetItem, targetStyle, prefix = "", suffix = "") => {
+                    if (targetItem == item) this.$host.css(targetStyle, prefix + value + suffix);
+                });
+                this.$host.find(acv(eds.bindStyle, item + "@")).each((i, elem) => {
+                    const $elem = $(elem);
+                    eachTargetFor($elem, eds.bindStyle, (targetItem, targetStyle, prefix = "", suffix = "") => {
+                        if (targetItem == item) $elem.css(targetStyle, prefix + value + suffix);
+                    });
+                });
+
+                if (value instanceof Array) this.$host.find(aiv(eds.bindArray, item)).each((i, elem) => {
+                    const $elem = $(elem);
+
+                    const liHtml = $elem.first().html().trim();
+                    $elem.empty();
+                    
+                    for (var index in value) {
+                        const arrayItem = value[index];
+
+                        const li = $.parseHTML(liHtml);
+                        const $li = $(li);
+                        $elem.append($li);
+
+                        const valueIsObject = typeof arrayItem == "object";
+
+                        var arrayItemValue = arrayItem;
+
+                        if (nn(arrayItemValue)) {
+                            if (valueIsObject) {
+                                arrayItemValue = JSON.stringify(arrayItem);
+
+                                for (var objItem in arrayItem) {
+                                    const value = arrayItem[objItem];
+
+                                    if (en(value)) continue;
+
+                                    if ($li.is(aiv(eds.bindObjectArrayItem, objItem))) $li.html(value);
+                                    if ($li.is(aiv(eds.bindObjectArrayAmount, objItem))) $li.html(v2a(value));
+                                    if ($li.is(aiv(eds.bindObjectArrayValue, objItem))) $li.val(value);
+                                    $li.find(aiv(eds.bindObjectArrayItem, objItem)).html(value);
+                                    $li.find(aiv(eds.bindObjectArrayAmount, objItem)).html(v2a(value));
+                                    $li.find(aiv(eds.bindObjectArrayValue, objItem)).val(value);
+
+                                    if ($li.is(acv(eds.bindObjectArrayAttr, objItem + "@"))) eachTargetFor($li, eds.bindObjectArrayAttr, (targetItem, targetAttr, prefix = "", suffix = "") => {
+                                        if (targetItem == objItem) $li.attr(targetAttr, prefix + value + suffix);
+                                    });
+                                    $li.find(acv(eds.bindObjectArrayAttr, objItem + "@")).each((i, elem) => {
+                                        const $elem = $(elem);
+                                        eachTargetFor($elem, eds.bindObjectArrayAttr, (targetItem, targetAttr, prefix = "", suffix = "") => {
+                                            if (targetItem == objItem) $elem.attr(targetAttr, prefix + value + suffix);
+                                        });
+                                    });
+
+                                    const styleValue = ee(value) ? "unset" : value;
+
+                                    if ($li.is(acv(eds.bindObjectArrayStyle, objItem + "@"))) eachTargetFor($li, eds.bindObjectArrayStyle, (targetItem, targetStyle, prefix = "", suffix = "") => {
+                                        if (targetItem == objItem) $li.css(targetStyle, prefix + styleValue + suffix);
+                                    });
+                                    $li.find(acv(eds.bindObjectArrayStyle, objItem + "@")).each((i, elem) => {
+                                        const $elem = $(elem);
+                                        eachTargetFor($elem, eds.bindObjectArrayStyle, (targetItem, targetStyle, prefix = "", suffix = "") => {
+                                            if (targetItem == objItem) $elem.css(targetStyle, prefix + styleValue + suffix);
+                                        });
+                                    });
+                                }
+                            }
+
+                            if ($li.is(ax(eds.bindArrayItem))) $li.html(arrayItemValue);
+                            if ($li.is(ax(eds.bindArrayAmount))) $li.html(v2a(arrayItemValue));
+                            if ($li.is(ax(eds.bindArrayValue))) $li.val(arrayItemValue);
+                            $li.find(ax(eds.bindArrayItem)).html(arrayItemValue);
+                            $li.find(ax(eds.bindArrayAmount)).html(v2a(arrayItemValue));
+                            $li.find(ax(eds.bindArrayValue)).val(arrayItemValue);
+
+                            if ($li.is(ax(eds.bindArrayIndex))) $li.html(index);
+                            if ($li.is(ax(eds.bindArrayIndexAmount))) $li.html(v2a(index));
+                            if ($li.is(ax(eds.bindArrayIndexValue))) $li.val(index);
+                            $li.find(ax(eds.bindArrayIndex)).html(index);
+                            $li.find(ax(eds.bindArrayIndexAmount)).html(v2a(index));
+                            $li.find(ax(eds.bindArrayIndexValue)).val(index);
+                            
+                            if (valueIsObject) arrayItemValue = btoa(Jcodd.toCodd(arrayItemValue));
+
+
+                            if ($li.is(ax(eds.bindArrayIndexAttr))) eachTarget($li, eds.bindArrayIndexAttr, (target, prefix = "", suffix = "") => {
+                                $li.attr(target, prefix + index + suffix);
+                            });
+                            $li.find(ax(eds.bindArrayIndexAttr)).each((i, elem) => {
+                                const $elem = $(elem);
+                                eachTarget($elem, eds.bindArrayIndexAttr, (target, prefix = "", suffix = "") => {
+                                    $elem.attr(target, prefix + index + suffix);
+                                });
+                            });
+
+
+                            if ($li.is(ax(eds.bindArrayAttr))) eachTarget($li, eds.bindArrayAttr, (target, prefix = "", suffix = "") => {
+                                $li.attr(target, prefix + arrayItemValue + suffix);
+                            });
+                            $li.find(ax(eds.bindArrayAttr)).each((i, elem) => {
+                                const $elem = $(elem);
+                                eachTarget($elem, eds.bindArrayAttr, (target, prefix = "", suffix = "") => {
+                                    $elem.attr(target, prefix + arrayItemValue + suffix);
+                                });
+                            });
+
+                            const styleArrayItemValue = ee(value) ? "unset" : value;
+
+                            if ($li.find(ax(eds.bindArrayStyle))) eachTarget($li, eds.bindArrayStyle, (target, prefix = "", suffix = "") => {
+                                $li.css(target, prefix + styleArrayItemValue + suffix);
+                            });
+                            $li.find(ax(eds.bindArrayStyle)).each((i, elem) => {
+                                const $elem = $(elem);
+                                eachTarget($elem, eds.bindArrayStyle, (target, prefix = "", suffix = "") => {
+                                    $elem.css(target, prefix + styleArrayItemValue + suffix);
+                                });
+                            });
+                        }
+
+
+                        if ($li.is(ax(eds.showOnExistsObjectArrayItem))) {
+                            if (en(arrayItem) || noe(arrayItem[$li.attr(eds.showOnExistsObjectArrayItem)])) $li.css("display", "none");
+                        }
+                        $li.find(ax(eds.showOnExistsObjectArrayItem)).each((i, elem) => {
+                            if (en(arrayItem) || noe(arrayItem[elem.dataset.showOnExistsObjectArrayItem])) $(elem).css("display", "none");
+                        });
+            
+                        if ($li.is(acv(eds.showOnEqualsObjectArrayItem, "="))) {
+                            const [objItem, matchValue] = $li.attr(eds.showOnEqualsObjectArrayItem).split("=");
+                            if (en(arrayItem) || arrayItem[objItem] != matchValue) $li.css("display", "none");
+                        }
+                        $li.find(acv(eds.showOnEqualsObjectArrayItem, "=")).each((i, elem) => {
+                            const [objItem, matchValue] = elem.dataset.showOnEqualsObjectArrayItem.split("=");
+                            if (en(arrayItem) || arrayItem[objItem] != matchValue) $(elem).css("display", "none");
+                        });            
+                    }
+                });
+            }
+
+            if (this.$host.is(ax(eds.showOnExists))) {
+                if (en(data) || noe(data[this.$host.attr(eds.showOnExists)])) this.$host.css("display", "none");
+            }
+            this.$host.find(ax(eds.showOnExists)).each((i, elem) => {
+                if (en(data) || noe(data[elem.dataset.showOnExists])) $(elem).css("display", "none");
+            });
+
+            if (this.$host.is(acv(eds.showOnEquals, "="))) {
+                const [item, matchValue] = this.$host.attr(eds.showOnEquals).split("=");
+                if (en(data) || data[item] != matchValue) this.$host.css("display", "none");
+            }            
+            this.$host.find(acv(eds.showOnEquals, "=")).each((i, elem) => {
+                const [item, matchValue] = elem.dataset.showOnEquals.split("=");
+                if (en(data) || data[item] != matchValue) $(elem).css("display", "none");
+            });            
+        }
+    }
+
+    initInternalLink(on = this.$host) {
+        if (on.is(ax(eds.openTarget) + ax(eds.openContainer) + ax(eds.openId))) this.setEventInternalLink(on[0]);
+        const $links = on.find(ax(eds.openTarget) + ax(eds.openContainer) + ax(eds.openId));
+        for (var item of $links) this.setEventInternalLink(item);
+    }
+
+    initPageLink(on = this.$host) {
+        if (on.is(ax(eds.closePage))) this.setEventPageCloseLink(on[0]);
+        const $closeLinks = on.find(ax(eds.closePage));
+        for (var item of $closeLinks) this.setEventPageCloseLink(item);
+        
+        if (on.is(ax(eds.openPage))) this.setEventPageOpenLink(on[0]);
+        const $openLinks = on.find(ax(eds.openPage));
+        for (var item of $openLinks) this.setEventPageOpenLink(item);
+
+        if (on.is(ax(eds.showPage))) this.setEventPageShowLink(on[0]);
+        const $showLinks = on.find(ax(eds.showPage));
+        for (var item of $showLinks) this.setEventPageShowLink(item);
+    }
+
+
+    // event handlers
+    setEventInternalLink(item) {
+        const handle = this;
+
+        $(item).off("click").click(function(e) {
+            e.preventDefault();
+
+            const $this = $(this);
+
+            const targetSet = $this.attr(eds.openTarget).split("@");
+            const target = targetSet.length < 2 ? "self" : targetSet[0];//$this.closest(se + uis.rootTabContent).attr("id")
+            const targetBound = targetSet[targetSet.length < 2 ? 0 : 1];
+            const container = $this.attr(eds.openContainer);
+            const id = $this.attr(eds.openId);
+            const action = $this.attr(eds.openAction);
+
+            const intent = action != null && action.length > 0 ? { action } : u;
+            let pushedIntent = typeof intent == U;
+
+            switch (targetBound) {
+                case "root":
+                    switch (container) {
+                        case "component":
+                            let component;
+                            switch (handle.sectionBound) {
+                                case "main":
+                                    if (pushedIntent) estreUi.switchRootTab(id);
+                                    else {
+                                        estreUi.switchRootTab(id, intent);
+                                        pushedIntent = true;
+                                    }
+                                    break;
+                    
+                                case "blind":
+                                    component = estreUi.blindSections[id];
+                                    if (component == null) {
+                                        if (pushedIntent) estreUi.openInstantBlinded(id);
+                                        else {
+                                            estreUi.openInstantBlinded(id, intent);
+                                            pushedIntent = true;
+                                        }
+                                        component = estreUi.blindSections[id];
+                                    }
+                                    if (component != null) {
+                                        if (pushedIntent) estreUi.showInstantBlinded(id);
+                                        else estreUi.showInstantBlinded(id, intent);
+                                    }
+                                    break;
+                    
+                                case "overlay":
+                                    component = estreUi.overlaySections[id];
+                                    if (component == null) {
+                                        if (pushedIntent) estreUi.openManagedOverlay(id);
+                                        else {
+                                            estreUi.openManagedOverlay(id, intent);
+                                            pushedIntent = true;
+                                        }
+                                        component = estreUi.overlaySections[id];
+                                    }
+                                    if (component != null) {
+                                        if (pushedIntent) estreUi.showManagedOverlay(id);
+                                        else estreUi.showManagedOverlay(id, intent);
+                                    }
+                                    break;
+                    
+                                case "menu":
+                                    component = estreUi.menuSections[id];
+                                    if (component == null) {
+                                        if (pushedIntent) estreUi.openMenuArea(id);
+                                        else {
+                                            estreUi.openMenuArea(id, intent);
+                                            pushedIntent = true;
+                                        }
+                                        component = estreUi.menuSections[id];
+                                    }
+                                    if (component != null) {
+                                        if (pushedIntent) estreUi.showMenuArea(id);
+                                        else estreUi.showMenuArea(id, intent);
+                                    }
+                                    break;
+                    
+                                case "header":
+                                    component = estreUi.headerSections[id];
+                                    if (component == null) {
+                                        if (pushedIntent) estreUi.openHeaderBar(id);
+                                        else {
+                                            estreUi.openHeaderBar(id, intent);
+                                            pushedIntent = true;
+                                        }
+                                        component = estreUi.headerSections[id];
+                                    }
+                                    if (component != null) {
+                                        if (pushedIntent) estreUi.showHeaderBar(id);
+                                        else estreUi.showHeaderBar(id, intent);
+                                    }
+                                    break;
+                            }
+                            break;
+                    }
+                    break;
+
+                case "component":
+                    switch (container) {
+                        case "container":
+                            const isSelf = target == "self";
+                            const thisComponent = handle.container.component;
+                            let component;
+                            if (isSelf) component = thisComponent;
+                            else switch (thisComponent.sectionBound) {
+                                case "main":
+                                    component = estreUi.mainSections[target];
+                                    if (component == null) {
+                                        //estreUi.switchRootTab(target);
+                                        component = estreUi.mainSections[target];
+                                    }
+                                    break;
+                    
+                                case "blind":
+                                    component = estreUi.blindSections[target];
+                                    if (component == null) {
+                                        estreUi.openInstantBlinded(target);
+                                        component = estreUi.blindSections[target];
+                                    }
+                                    break;
+                    
+                                case "overlay":
+                                    component = estreUi.overlaySections[target];
+                                    if (component == null) {
+                                        estreUi.openManagedOverlay(target);
+                                        component = estreUi.overlaySections[target];
+                                    }
+                                    break;
+                    
+                                case "menu":
+                                    component = estreUi.menuSections[target];
+                                    if (component == null) {
+                                        estreUi.openMenuArea(target);
+                                        component = estreUi.menuSections[target];
+                                    }
+                                    break;
+                    
+                                case "header":
+                                    component = estreUi.headerSections[target];
+                                    if (component == null) {
+                                        estreUi.openHeaderBar(target);
+                                        component = estreUi.headerSections[target];
+                                    }
+                                    break;
+                            }
+                            if (component != null) {
+                                let targetContainer = component.containers[id];
+                                if (targetContainer == null) {
+                                    if (pushedIntent) component.openContainer(id);
+                                    else {
+                                        component.openContainer(id, intent);
+                                        pushedIntent = true;
+                                    }
+                                    targetContainer = component.containers[id];
+                                }
+                                if (targetContainer != null) {
+                                    let success = pushedIntent ? targetContainer.show() : component.showContainer(id, intent);
+                                    if (success && !isSelf) switch (component.sectionBound) {
+                                        case "main":
+                                            estreUi.switchRootTab(target);
+                                            break;
+                                            
+                                        case "blind":
+                                            estreUi.showInstantBlinded(target);
+                                            break;
+
+                                        case "overlay":
+                                            estreUi.showManagedOverlay(target);
+                                            break;
+
+                                        case "menu":
+                                            estreUi.showMenuArea(target);
+                                            break;
+
+                                        case "header":
+                                            estreUi.showHeaderBar(target);
+                                            break;
+                                    }
+                                }
+                            }
+                            break;
+                    }
+                    break;
+
+                case "container":
+                    switch (container) {
+                        case "article":
+                            const isSelf = target == "self";
+                            const component = handle.container.component;
+                            let targetContainer = isSelf ? handle.container : component.containers[target];
+                            if (targetContainer == null) {
+                                component.openContainer(target);
+                                targetContainer = component.containers[target];
+                            }
+                            if (targetContainer != null) {
+                                let article = targetContainer.articles[id];
+                                if (article == null) {
+                                    if (pushedIntent) targetContainer.openArticle(id);
+                                    else {
+                                        targetContainer.openArticle(id, intent);
+                                        pushedIntent = true;
+                                    }
+                                    article = targetContainer.articles[id];
+                                }
+                                if (article != null) {
+                                    let success = pushedIntent ? article.show() : targetContainer.showArticle(id, intent);
+                                    if (success) targetContainer.show();
+                                }
+                            }
+                            break;
+                    }
+                    break;
+
+            }
+
+            return false;
+        });
+    }
+
+    setEventPageOpenLink(item) {
+        $(item).click(function(e) {
+            e.stopPropagation();
+
+            const $this = $(this);
+
+            const pid = $this.attr(eds.openPage);
+            const action = $this.attr(eds.openAction);
+
+            const intent = action != null && action.length > 0 ? { action } : u;
+            let intentReady = typeof intent != U;
+
+            if (intentReady) pageManager.bringPage(pid, intent);
+            else pageManager.bringPage(pid);
+        });
+    }
+
+    setEventPageShowLink(item) {
+        $(item).click(function(e) {
+            e.stopPropagation();
+
+            const $this = $(this);
+
+            const pid = $this.attr(eds.showPage);
+            const action = $this.attr(eds.showAction);
+
+            const intent = action != null && action.length > 0 ? { action } : u;
+            let intentReady = typeof intent != U;
+
+            if (intentReady) pageManager.showPage(pid, intent);
+            else pageManager.showPage(pid);
+        });
+    }
+
+    setEventPageCloseLink(item) {
+        $(item).click(function(e) {
+            e.stopPropagation();
+
+            const $this = $(this);
+
+            const pid = $this.attr(eds.closePage);
+
+            pageManager.closePage(pid);
+        });
+    }
 }
 
 
@@ -1888,7 +2632,7 @@ class EstreContainer extends EstrePageHostHandle {
                 break;
         }
 
-        $scalables.filter(opa + eds.registered + equ + v0 + cla).attr(eds.lookScale, t0);
+        $scalables.filter(obk + eds.registered + equ + v0 + cbk).attr(eds.lookScale, t0);
 
         let $top = this.$articles.filter(asv(eds.onTop, t1));
         if ($top.length < 1) $top = this.$articles.filter(aiv(eds.articleId, "main"));
@@ -2322,168 +3066,6 @@ class EstreArticle extends EstrePageHandle {
         }
     }
 
-    initDataBind() {
-        if (this.intent != null) {
-            const data = this.intent.data;
-
-            if (data != null) for (var item in data) {
-                const value = data[item];
-
-                this.$host.find(aiv(eds.bind, item)).html(value);
-                this.$host.find(aiv(eds.bindAmount, item)).html(v2a(value));
-                this.$host.find(aiv(eds.bindValue, item)).val(value);
-
-                this.$host.find(acv(eds.bindAttr, item + "@")).each((i, elem) => {
-                    const $elem = $(elem);
-                    const attr = $elem.attr(eds.bindAttr);
-                    if (attr != null && attr != "") {
-                        const targets = attr.split(" ");
-                        for (var target of targets) {
-                            const targetInfos = target.split("@");
-                            const targetItem = targetInfos[0];
-                            const targetAttr = targetInfos[1];
-                            if (targetItem == item) $elem.attr(targetAttr, value);
-                        }
-                    }
-                });
-
-                this.$host.find(acv(eds.bindStyle, item + "@")).each((i, elem) => {
-                    const $elem = $(elem);
-                    const style = $elem.attr(eds.bindStyle);
-                    if (style != null && style != "") {
-                        const targets = style.split(" ");
-                        for (var target of targets) {
-                            const targetInfos = target.split("@");
-                            const targetItem = targetInfos[0];
-                            const targetStyle = targetInfos[1];
-                            if (targetItem == item) $elem.css(targetStyle, value);
-                        }
-                    }
-                });
-
-                this.$host.find(acv(eds.bindAttr, item + "@")).each((i, elem) => {
-                    const $elem = $(elem);
-                    const attr = $elem.attr(eds.bindAttr);
-                    if (attr != null && attr != "") {
-                        const targets = attr.split(" ");
-                        for (var target of targets) {
-                            const targetInfos = target.split("@");
-                            const targetItem = targetInfos[0];
-                            const targetAttr = targetInfos[1];
-                            if (targetItem == item) $elem.attr(targetAttr, value);
-                        }
-                    }
-                });
-
-                if (value instanceof Array) this.$host.find(aiv(eds.bindArray, item)).each((i, elem) => {
-                    const $elem = $(elem);
-
-                    const liHtml = $elem.first().html();
-                    $elem.empty();
-                    
-                    for (var index in value) {
-                        const arrayItem = value[index];
-
-                        const li = $.parseHTML(liHtml);
-                        const $li = $(li);
-                        $elem.append($li);
-
-                        $li.find(ax(eds.bindArrayIndex)).each((i, elem) => {
-                            const $elem = $(elem);
-                            $elem.attr($elem.attr(eds.bindArrayIndex), index);
-                        });
-
-                        const valueIsObject = typeof arrayItem == "object";
-
-                        var arrayItemValue = arrayItem;
-                        if (valueIsObject) {
-                            arrayItemValue = JSON.stringify(arrayItem);
-
-                            for (var objItem in arrayItem) {
-                                const value = arrayItem[objItem];
-
-                                $li.find(aiv(eds.bindObjectArrayItem, objItem)).html(value);
-                                $li.find(aiv(eds.bindObjectArrayAmount, objItem)).html(v2a(value));
-                                $li.find(aiv(eds.bindObjectArrayValue, objItem)).val(value);
-
-                                $li.find(acv(eds.bindObjectArrayAttr, objItem + "@")).each((i, elem) => {
-                                    const $elem = $(elem);
-                                    const attr = $elem.attr(eds.bindObjectArrayAttr);
-                                    if (attr != null && attr != "") {
-                                        const targets = attr.split(" ");
-                                        for (var target of targets) {
-                                            const targetInfos = target.split("@");
-                                            const targetItem = targetInfos[0];
-                                            const targetAttr = targetInfos[1];
-                                            if (targetItem == objItem) $elem.attr(targetAttr, value);
-                                        }
-                                    }
-                                });
-
-                                $li.find(acv(eds.bindObjectArrayStyle, objItem + "@")).each((i, elem) => {
-                                    const $elem = $(elem);
-                                    const style = $elem.attr(eds.bindObjectArrayStyle);
-                                    if (style != null && style != "") {
-                                        const targets = style.split(" ");
-                                        for (var target of targets) {
-                                            const targetInfos = target.split("@");
-                                            const targetItem = targetInfos[0];
-                                            const targetStyle = targetInfos[1];
-                                            if (targetItem == objItem) $elem.css(targetStyle, value);
-                                        }
-                                    }
-                                });
-                            }
-                        }
-
-                        $li.find(ax(eds.bindArrayItem)).html(arrayItemValue);
-                        $li.find(ax(eds.bindArrayAmount)).html(v2a(arrayItemValue));
-                        $li.find(ax(eds.bindArrayValue)).val(arrayItemValue);
-
-                        if (valueIsObject) arrayItemValue = btoa(Jcodd.toCodd(arrayItemValue));
-
-                        $li.find(ax(eds.bindArrayAttr)).each((i, elem) => {
-                            const $elem = $(elem);
-                            const attrs = $elem.attr(eds.bindArrayAttr);
-                            if (attrs != null && attrs != "") {
-                                const targets = attrs.split(" ");
-                                for (var target of targets) $elem.attr(target, arrayItemValue);
-                            }
-                        });
-
-                        $li.find(ax(eds.bindArrayStyle)).each((i, elem) => {
-                            const $elem = $(elem);
-                            const styles = $elem.attr(eds.bindArrayStyle);
-                            if (styles != null && styles != "") {
-                                const targets = styles.split(" ");
-                                for (var target of targets) $elem.css(target, arrayItemValue);
-                            }
-                        });
-
-
-                        $li.find(ax(eds.showOnExistsObjectArrayItem)).each((i, elem) => {
-                            if (arrayItem == null || arrayItem[elem.dataset.showOnExistsObjectArrayItem] == null || arrayItem[elem.dataset.showOnExistsObjectArrayItem] == "") $(elem).css("display", "none");
-                        });
-            
-                        $li.find(acv(eds.showOnEqualsObjectArrayItem, "=")).each((i, elem) => {
-                            const divided = elem.dataset.showOnEqualsObjectArrayItem.split("=");
-                            if (arrayItem == null || arrayItem[divided[0]] != divided[1]) $(elem).css("display", "none");
-                        });            
-                    }
-                });
-            }
-
-            this.$host.find(ax(eds.showOnExists)).each((i, elem) => {
-                if (data == null || data[elem.dataset.showOnExists] == null || data[elem.dataset.showOnExists] == "") $(elem).css("display", "none");
-            });
-
-            this.$host.find(acv(eds.showOnEquals, "=")).each((i, elem) => {
-                const divided = elem.dataset.showOnEquals.split("=");
-                if (data == null || data[divided[0]] != divided[1]) $(elem).css("display", "none");
-            });            
-        }
-    }
-
     releaseHandles() {
         EstreHandle.releaseHandles(this.$host, this);
     }
@@ -2500,229 +3082,6 @@ class EstreArticle extends EstrePageHandle {
     unregisterHandle(specifier, handle) {
         const index = this.handles[specifier].indexOf(handle);
         this.handles[specifier].splice(index, 1);
-    }
-
-
-    initInternalLink() {
-        if (this.$host.is(ax(eds.openTarget) + ax(eds.openContainer) + ax(eds.openId))) this.setEventInternalLink(this.host);
-        const $links = this.$host.find(ax(eds.openTarget) + ax(eds.openContainer) + ax(eds.openId));
-        for (var item of $links) this.setEventInternalLink(item);
-    }
-
-    initPageLink() {
-        if (this.$host.is(ax(eds.closePage))) this.setEventPageCloseLink(this.host);
-        const $closeLinks = this.$host.find(ax(eds.closePage));
-        for (var item of $closeLinks) this.setEventPageCloseLink(item);
-        
-        if (this.$host.is(ax(eds.openPage))) this.setEventPageOpenLink(this.host);
-        const $openLinks = this.$host.find(ax(eds.openPage));
-        for (var item of $openLinks) this.setEventPageOpenLink(item);
-    }
-
-
-
-
-    // event handlers
-    setEventInternalLink(item) {
-        const inst = this;
-
-        $(item).click(function(e) {
-            e.preventDefault();
-
-            const $this = $(this);
-
-            const targetSet = $this.attr(eds.openTarget).split("@");
-            const target = targetSet.length < 2 ? "self" : targetSet[0];//$this.closest(se + uis.rootTabContent).attr("id")
-            const targetBound = targetSet[targetSet.length < 2 ? 0 : 1];
-            const container = $this.attr(eds.openContainer);
-            const id = $this.attr(eds.openId);
-
-            switch (targetBound) {
-                case "root":
-                    switch (container) {
-                        case "component":
-                            let component;
-                            switch (inst.sectionBound) {
-                                case "main":
-                                    estreUi.switchRootTab(id);
-                                    break;
-                    
-                                case "blind":
-                                    component = estreUi.blindSections[id];
-                                    if (component == null) {
-                                        estreUi.openInstantBlinded(id);
-                                        component = estreUi.blindSections[id];
-                                    }
-                                    if (component != null) estreUi.showInstantBlinded(id);
-                                    break;
-                    
-                                case "overlay":
-                                    component = estreUi.overlaySections[id];
-                                    if (component == null) {
-                                        estreUi.openManagedOverlay(id);
-                                        component = estreUi.overlaySections[id];
-                                    }
-                                    if (component != null) estreUi.showManagedOverlay(id);
-                                    break;
-                    
-                                case "menu":
-                                    component = estreUi.menuSections[id];
-                                    if (component == null) {
-                                        estreUi.openMenuArea(id);
-                                        component = estreUi.menuSections[id];
-                                    }
-                                    if (component != null) estreUi.showMenuArea(id);
-                                    break;
-                    
-                                case "header":
-                                    component = estreUi.headerSections[id];
-                                    if (component == null) {
-                                        estreUi.openHeaderBar(id);
-                                        component = estreUi.headerSections[id];
-                                    }
-                                    if (component != null) estreUi.showHeaderBar(id);
-                                    break;
-                            }
-                            break;
-                    }
-                    break;
-
-                case "component":
-                    switch (container) {
-                        case "container":
-                            const isSelf = target == "self";
-                            const thisComponent = inst.container.component;
-                            let component;
-                            if (isSelf) component = thisComponent;
-                            else switch (thisComponent.sectionBound) {
-                                case "main":
-                                    component = estreUi.mainSections[target];
-                                    if (component == null) {
-                                        estreUi.switchRootTab(target);
-                                        component = estreUi.mainSections[target];
-                                    }
-                                    break;
-                    
-                                case "blind":
-                                    component = estreUi.blindSections[target];
-                                    if (component == null) {
-                                        estreUi.openInstantBlinded(target);
-                                        component = estreUi.blindSections[target];
-                                    }
-                                    break;
-                    
-                                case "overlay":
-                                    component = estreUi.overlaySections[target];
-                                    if (component == null) {
-                                        estreUi.openManagedOverlay(target);
-                                        component = estreUi.overlaySections[target];
-                                    }
-                                    break;
-                    
-                                case "menu":
-                                    component = estreUi.menuSections[target];
-                                    if (component == null) {
-                                        estreUi.openMenuArea(target);
-                                        component = estreUi.menuSections[target];
-                                    }
-                                    break;
-                    
-                                case "header":
-                                    component = estreUi.headerSections[target];
-                                    if (component == null) {
-                                        estreUi.openHeaderBar(target);
-                                        component = estreUi.headerSections[target];
-                                    }
-                                    break;
-                            }
-                            if (component != null) {
-                                let targetContainer = component.containers[id];
-                                if (targetContainer == null) {
-                                    component.openContainer(id);
-                                    targetContainer = component.containers[id];
-                                }
-                                if (targetContainer != null) {
-                                    let success = targetContainer.show();
-                                    if (success && !isSelf) switch (component.sectionBound) {
-                                        case "main":
-                                            estreUi.switchRootTab(target);
-                                            break;
-                                            
-                                        case "blind":
-                                            estreUi.showInstantBlinded(target);
-                                            break;
-
-                                        case "overlay":
-                                            estreUi.showManagedOverlay(target);
-                                            break;
-
-                                        case "menu":
-                                            estreUi.showMenuArea(target);
-                                            break;
-
-                                        case "header":
-                                            estreUi.showHeaderBar(target);
-                                            break;
-                                    }
-                                }
-                            }
-                            break;
-                    }
-                    break;
-
-                case "container":
-                    switch (container) {
-                        case "article":
-                            const isSelf = target == "self";
-                            const component = inst.container.component;
-                            let targetContainer = isSelf ? inst.container : component.containers[target];
-                            if (targetContainer == null) {
-                                component.openContainer(target);
-                                targetContainer = component.containers[target];
-                            }
-                            if (targetContainer != null) {
-                                let article = targetContainer.articles[id];
-                                if (article == null) {
-                                    targetContainer.openArticle(id);
-                                    article = targetContainer.articles[id];
-                                }
-                                if (article != null) {
-                                    let success = article.show();
-                                    if (success) targetContainer.show();
-                                }
-                            }
-                            break;
-                    }
-                    break;
-
-            }
-
-            return false;
-        });
-    }
-
-    setEventPageOpenLink(item) {
-        $(item).click(function(e) {
-            e.stopPropagation();
-
-            const $this = $(this);
-
-            const pid = $this.attr(eds.openPage);
-
-            pageManager.bringPage(pid);
-        });
-    }
-
-    setEventPageCloseLink(item) {
-        $(item).click(function(e) {
-            e.stopPropagation();
-
-            const $this = $(this);
-
-            const pid = $this.attr(eds.closePage);
-
-            pageManager.closePage(pid);
-        });
     }
 
 
@@ -2779,11 +3138,14 @@ class EstrePageHandler {
     #provider = null;
     get provider() { return this.#provider; }
 
-    handle = null;
-    get intent() { this.handle.intent; }
+    #handle = null;
+    get handle() { return this.#handle; }
+    get intent() { return this.handle.intent; }
+    get intentAction() { return this.intent?.action; }
+    get intentData() { return this.intent?.data; }
 
     constructor (handle, provider) {
-        this.handle = handle;
+        this.#handle = handle;
         this.#provider = provider;
     }
     
@@ -2861,18 +3223,22 @@ class EstreDialogPageHandler extends EstrePageHandler {
     $container;
     $article;
     $dialog;
+    $handle
     $title;
     $backer;
     $closer;
+    $options;
     $actions;
 
     onBring(handle) {
         this.$container = handle.$host;
         this.$article = this.$container.find(ar + aiv(eds.articleId, "main"));
         this.$dialog = this.$article.find(div + cls + "dialog");
+        this.$handle = this.$dialog.find(div + cls + "handle")
         this.$title = this.$dialog.find(div + cls + "title")
         this.$backer = this.$title.find(btn + cls + "back")
         this.$closer = this.$title.find(btn + cls + "close")
+        this.$options = this.$dialog.find(div + cls + "options");
         this.$actions = this.$dialog.find(div + cls + "actions");
 
         if (handle.intent?.data?.backButton === true) this.$dialog.attr("data-back", t1);
@@ -2917,7 +3283,8 @@ class EstreDialogPageHandler extends EstrePageHandler {
 
             return false;
         });
-        this.$actions.find("input, button").on("keydown", function (e) {
+        //this.$handler; //<= 스와이프 핸들러 적용
+        this.$actions.find(inp + cor + btn).on("keydown", function (e) {
             if (e.keyCode == 27) {
                 e.preventDefault();
 
@@ -2930,6 +3297,258 @@ class EstreDialogPageHandler extends EstrePageHandler {
 
     onClose(handle) {
         if (handle?.intent?.onDissmiss != null) handle.intent.onDissmiss();
+    }
+}
+
+class EstreAlertDialogPageHandler extends EstreDialogPageHandler {
+    $confirm;
+
+    onBring(handle) {
+        super.onBring(handle);
+
+        this.$confirm = this.$actions.find(btn + cls + "confirm");
+    }
+
+    onOpen(handle) {
+        super.onOpen(handle);
+
+        this.$confirm.click(function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            handle?.intent?.onOk?.();
+            handle?.close();
+            return false;
+        });
+    }
+
+    onFocus(handle) {
+        this.$confirm.focus();
+    }
+}
+
+class EstreConfirmDialogPageHandler extends EstreDialogPageHandler {
+    $positive;
+    $negative;
+    $neutral;
+
+    onBring(handle) {
+        super.onBring(handle);
+
+        this.$positive = this.$actions.find(btn + cls + "positive");
+        this.$negative = this.$actions.find(btn + cls + "negative");
+        this.$neutral = this.$actions.find(btn + cls + "neutral");
+    }
+
+    onOpen(handle) {
+        super.onOpen(handle);
+
+        this.$positive.click(function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            handle?.intent?.onPositive?.();
+            handle?.close();
+            return false;
+        });
+        this.$negative.click(function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            handle?.intent?.onNegative?.();
+            handle?.close();
+            return false;
+        });
+        if (handle?.intent?.data?.callbackNeutral == null) this.$neutral.hide();
+        else this.$neutral.click(function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            handle?.intent?.onNeutral?.();
+            handle?.close();
+            return false;
+        });
+    }
+
+    onFocus(handle) {
+        this.$negative.focus();
+    }
+}
+
+class EstrePromptDialogPageHandler extends EstreDialogPageHandler {
+    $input;
+    $confirm;
+
+    onBring(handle) {
+        super.onBring(handle);
+
+        this.$input = this.$actions.find(inp);
+        this.$confirm = this.$actions.find(btn + cls + "confirm");
+    }
+
+    onOpen(handle) {
+        super.onOpen(handle);
+
+        this.$input.on("keydown", function (e) {
+            if (e.keyCode == 13) {
+                e.preventDefault();
+
+                handle?.handler?.$confirm?.click();
+
+                return false;
+            }
+        });
+        this.$confirm.click(function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            handle?.intent?.onConfirm?.(handle?.handler?.$input?.val());
+            handle?.close();
+            return false;
+        });
+    }
+
+    onFocus(handle) {
+        this.$input.focus();
+    }
+}
+
+class EstreOptionDialogPageHandler extends EstreDialogPageHandler {
+    $optionItems;
+
+    onBring(handle) {
+        super.onBring(handle);
+    }
+
+    onOpen(handle) {
+        super.onOpen(handle);
+
+        this.$optionItems = this.$options.find(c.c + btn);
+        this.$optionItems.click(function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const index = this.dataset.index;
+            const value = handle?.intent?.data?.options?.[index];
+            handle?.intent?.onSelected?.(index, value);
+            handle?.close();
+            return false;
+        });
+    }
+
+    onFocus(handle) {
+        this.$optionItems[0]?.focus();
+    }
+}
+
+class EstreSelectionDialogPageHandler extends EstreDialogPageHandler {
+    $optionItems;
+    $optionCheckboxes;
+
+    $confirm;
+    $another;
+
+    get $selected() {
+        return this.$optionCheckboxes.filter(ckd);
+    }
+    get $unselected() {
+        return this.$optionCheckboxes.filter(ncd);
+    }
+    get $disabled() {
+        return this.$optionCheckboxes.filter(dad);
+    }
+
+    get selected() {
+        const options = this.intentData?.options;
+        const selected = {};
+        if (options != null) for (const checkbox of this.$selected) {
+            const $checkbox = $(checkbox);
+            const index = $checkbox.attr(eds.index);
+            if (index != null) selected[index] = options[index];
+        }
+        return selected;
+    }
+
+    onBring(handle) {
+        super.onBring(handle);
+
+        this.$confirm = this.$actions.find(btn + cls + "confirm");
+        this.$another = this.$actions.find(btn + cls + "another");
+    }
+
+    onOpen(handle) {
+        super.onOpen(handle);
+
+        const defaultSelected = this.intentData?.defaultSelected;
+        if (nn(defaultSelected)) fkv(defaultSelected, (k, v) => {
+            switch(to(v)) {
+                case BLN:
+                    this.$optionCheckboxes.filter(aiv("data-index", k)).prop(m.v, v);
+                    break;
+                
+                case NUM:
+                    this.$optionCheckboxes.filter(aiv("data-index", v)).prop(m.v, t);
+                    break;
+            }
+        });
+
+        const handler = this;
+
+        this.$optionItems = this.$options.find(c.c + btn);
+        this.$optionItems.click(function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            $(this).find(itc(_v)).let(it => {
+                if (!it.prop(m.d)) it.prop(m.v, !it.prop(m.v)).change();
+            });
+
+            return false;
+        });
+
+        this.$optionCheckboxes = this.$optionItems.find(itc(_v));
+        this.$optionCheckboxes.change(function (e) {
+            const index = this.dataset.index;
+            const value = handle?.intent?.data?.options?.[index] ?? this.value;
+            const checked = this.checked;
+            const fineChecked = handler.checkValidSelectAction(handle, handler, index, value, checked);
+            if (fineChecked) {
+                if (checked) handle?.intent?.onSelect?.(index, value);
+            } else this.checked = !checked;
+        });
+
+        this.$confirm.click(function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            handle?.intent?.onConfirm?.(handler.selected);
+            handle?.close();
+            return false;
+        });
+        if (handle?.intent?.data?.callbackAnother == null) this.$another.remove();
+        else this.$another.click(function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            handle?.intent?.onAnother?.(handler.selected);
+            handle?.close();
+            return false;
+        });
+
+        const min = this.intentData?.minSelection ?? 0;
+        if (min > 0 && this.$selected.length < min) this.$confirm.prop(m.d, t);
+    }
+
+    onFocus(handle) {
+        this.$confirm.focus();
+    }
+
+    checkValidSelectAction(handle, handler, index, value, checked) {
+        const intentData = handler.intentData;
+        const min = intentData?.minSelection ?? 0;
+        const max = intentData?.maxSelection ?? -1;
+        const $selected = this.$selected;
+        const length = $selected.length;
+
+        if (max > -1) {
+            if (length >= max) this.$unselected.prop(m.d, t);
+            else this.$disabled.prop(m.d, f);
+        }
+        this.$confirm.prop(m.d, length < min);
+
+        return checked ? max < 0 || length <= max : true;
     }
 }
 
@@ -2963,8 +3582,8 @@ class EstreUiPage {
                 this.$backNavigation.click(function (e) {
                     e.preventDefault();
 
-                    // estreUi.back();
-                    history.back();
+                    estreUi.back();
+                    // history.back();
 
                     return false;
                 });
@@ -2983,10 +3602,26 @@ class EstreUiPage {
         },
 
 
-        "$i&o=interaction#onRunning^": class extends EstreLottieAnimatedHandler {
+        "$i&o=toastUpSlide#alert^": class extends EstreAlertDialogPageHandler {
 
         },
-        "$i&o=interaction#onProgress^": class extends EstreLottieAnimatedHandler {
+        "$i&o=toastUpSlide#confirm^": class extends EstreConfirmDialogPageHandler {
+
+        },
+        "$i&o=toastUpSlide#prompt^": class extends EstrePromptDialogPageHandler {
+
+        },
+        "$i&o=toastUpSlide#option^": class extends EstreOptionDialogPageHandler {
+
+        },
+        "$i&o=toastUpSlide#selection^": class extends EstreSelectionDialogPageHandler {
+
+        },
+
+        "$i&o=toastUpSlide#onRunning^": class extends EstreLottieAnimatedHandler {
+
+        },
+        "$i&o=toastUpSlide#onProgress^": class extends EstreLottieAnimatedHandler {
             get perfectValue()      { return 1000; }    // 100% value
             get zeroPosition()      { return 15; }      // 0% frame
             get halfPosition()      { return 75; }      // 50% frame
@@ -3070,110 +3705,20 @@ class EstreUiPage {
             }
         },
 
-        "$i&o=interaction#alert^": class extends EstreDialogPageHandler {
-            $confirm;
+        "$i&o=interaction#alert^": class extends EstreAlertDialogPageHandler {
 
-            onBring(handle) {
-                super.onBring(handle);
-
-                this.$confirm = this.$actions.find("button.confirm");
-            }
-
-            onOpen(handle) {
-                super.onOpen(handle);
-
-                this.$confirm.click(function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (handle?.intent?.onOk != null) handle.intent.onOk();
-                    handle?.close();
-                    return false;
-                });
-            }
-
-            onFocus(handle) {
-                this.$confirm.focus();
-            }
         },
-        "$i&o=interaction#confirm^": class extends EstreDialogPageHandler {
-            $positive;
-            $negative;
-            $neutral;
+        "$i&o=interaction#confirm^": class extends EstreConfirmDialogPageHandler {
 
-            onBring(handle) {
-                super.onBring(handle);
-
-                this.$positive = this.$actions.find("button.positive");
-                this.$negative = this.$actions.find("button.negative");
-                this.$neutral = this.$actions.find("button.neutral");
-            }
-
-            onOpen(handle) {
-                super.onOpen(handle);
-
-                this.$positive.click(function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (handle?.intent?.onPositive != null) handle.intent.onPositive();
-                    handle?.close();
-                    return false;
-                });
-                this.$negative.click(function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (handle?.intent?.onNegative != null) handle.intent.onNegative();
-                    handle?.close();
-                    return false;
-                });
-                if (handle?.intent?.data?.callbackNeutral == null) this.$neutral.hide();
-                else this.$neutral.click(function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (handle?.intent?.onNeutral != null) handle.intent.onNeutral();
-                    handle?.close();
-                    return false;
-                });
-            }
-
-            onFocus(handle) {
-                this.$negative.focus();
-            }
         },
-        "$i&o=interaction#prompt^": class extends EstreDialogPageHandler {
-            $input;
-            $confirm;
+        "$i&o=interaction#prompt^": class extends EstrePromptDialogPageHandler {
 
-            onBring(handle) {
-                super.onBring(handle);
+        },
+        "$i&o=interaction#option^": class extends EstreOptionDialogPageHandler {
 
-                this.$input = this.$actions.find("input");
-                this.$confirm = this.$actions.find("button.confirm");
-            }
+        },
+        "$i&o=interaction#selection^": class extends EstreSelectionDialogPageHandler {
 
-            onOpen(handle) {
-                super.onOpen(handle);
-
-                this.$input.on("keydown", function (e) {
-                    if (e.keyCode == 13) {
-                        e.preventDefault();
-
-                        handle?.handler?.$confirm?.click();
-
-                        return false;
-                    }
-                });
-                this.$confirm.click(function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (handle?.intent?.onConfirm != null) handle.intent.onConfirm(handle?.handler?.$input?.val());
-                    handle?.close();
-                    return false;
-                });
-            }
-
-            onFocus(handle) {
-                this.$input.focus();
-            }
         },
 
         "$i&o=notification#noti@noti^": class extends EstrePageHandler { },
@@ -3229,16 +3774,43 @@ class EstreUiPage {
         }
     }
 
-    static getHandler(pid) {
-        return this.#pageHandlers[pid];
-    }
-
     static commit() {
         this.#handlerCommited = true;
 
-        for (var pid in this.#registeredPageHandlers) this.#pageHandlers[pid] = this.#registeredPageHandlers[pid];
+        for (const pid in this.#registeredPageHandlers) this.#pageHandlers[pid] = this.#registeredPageHandlers[pid];
     }
 
+
+    static getPidStatementless(pid) {
+        return pid.replace(/^\$\w/, "");
+    }
+
+    static getPidOriginless(pid) {
+        return pid.split("^")[0];
+    }
+
+    static getPidSeamless(pid) {
+        return this.getPidOriginless(this.getPidStatementless(pid));
+    }
+
+    static foundHandler(pid) {
+        let handler = this.#pageHandlers[pid];
+        if (handler != null) return handler;
+        const slpid = this.getPidStatementless(pid)
+        handler = this.#pageHandlers[slpid];
+        if (handler != null) return handler;
+        const olpid = this.getPidOriginless(pid);
+        handler = this.#pageHandlers[olpid];
+        if (handler != null) return handler;
+        const spid = this.getPidOriginless(slpid);
+        handler = this.#pageHandlers[spid];
+        return handler;
+    }
+
+    static getHandler(pid) {
+        return this.foundHandler(pid);
+    }
+    
 
     #raw = null;
     get raw() { return this.#raw; }
@@ -3662,12 +4234,22 @@ class EstreUiPageManager {
         get appbar() { return "$s&h=appbar"; },
 
 
+
+        get toastAlert() { return "$i&o=toastUpSlide#alert^"; },
+        get toastConfirm() { return "$i&o=toastUpSlide#confirm^"; },
+        get toastPrompt() { return "$i&o=toastUpSlide#prompt^"; },
+        get toastOption() { return "$i&o=toastUpSlide#option^"; },
+        get toastSelection() { return "$i&o=toastUpSlide#selection^"; },
+
+
         get onRunning() { return "$i&o=interaction#onRunning^"; },
         get onProgress() { return "$i&o=interaction#onProgress^"; },
 
         get alert() { return "$i&o=interaction#alert^"; },
         get confirm() { return "$i&o=interaction#confirm^"; },
         get prompt() { return "$i&o=interaction#prompt^"; },
+        get option() { return "$i&o=interaction#option^"; },
+        get selection() { return "$i&o=interaction#selection^"; },
 
         get popNoti() { return "$i&o=notification#noti@noti^"; },
         get popNote() { return "$i&o=notification#note@note^"; },
@@ -3698,8 +4280,9 @@ class EstreUiPageManager {
     }
     
 
-    foundPid(pid) {
+    findPid(pid) {
         if (pid == null) return null;
+        else if (this.get(pid) != null) return pid;
         else if (this.get("$i" + pid) != null) return "$i" + pid;
         else if (this.get("$s" + pid) != null) return "$s" + pid;
         else if (this.get("$i" + pid + "^") != null) return "$i" + pid + "^";
@@ -3712,25 +4295,25 @@ class EstreUiPageManager {
     }
 
     getComponent(id, sectionBound = "blind", statement) {
-        var pid = this.foundPid(EstreUiPage.getPidComponent(id, sectionBound, statement));
+        var pid = this.findPid(EstreUiPage.getPidComponent(id, sectionBound, statement));
         if (pid != null) return this.get(pid);
         else return null;
     }
 
     getConatiner(id, componentId, sectionBound, statement) {
-        var pid = this.foundPid(EstreUiPage.getPidContainer(id, componentId, sectionBound, statement));
+        var pid = this.findPid(EstreUiPage.getPidContainer(id, componentId, sectionBound, statement));
         if (pid != null) return this.get(pid);
         else return null;
     }
 
     getArticle(id, containerId, componentId, sectionBound, statement) {
-        var pid = this.foundPid(EstreUiPage.getPidArticle(id, containerId, componentId, sectionBound, statement));
+        var pid = this.findPid(EstreUiPage.getPidArticle(id, containerId, componentId, sectionBound, statement));
         if (pid != null) return this.get(pid);
         else return null;
     }
 
     getStepPagesLength(articleStepsId, containerId, componentId, sectionBound) {
-        var pid0 = this.foundPid(EstreUiPage.getPidArticle(articleStepsId + "%0", containerId, componentId, sectionBound));
+        var pid0 = this.findPid(EstreUiPage.getPidArticle(articleStepsId + "%0", containerId, componentId, sectionBound));
         var pidPrefix = pid0.split("%")[0];
         var length = 0;
         for (var pid in this.pages) if (pid.indexOf(pidPrefix) === 0) length++;
@@ -3743,7 +4326,7 @@ class EstreUiPageManager {
         if (pid == null) return null;
         if (pid.indexOf("*") > -1) pid = this.extPidMap[pid.replace(/^\*/, "")];
         if (pid == null) return null;
-        if (pid.indexOf("$") < 0) pid = this.foundPid(pid);
+        if (pid.indexOf("$") < 0) pid = this.findPid(pid);
         const page = this.get(pid);
         if (page == null) return null;
         const sections = page.sections;
@@ -3849,7 +4432,7 @@ class EstreUiPageManager {
                         else targetProcessed.component = estreUi.openModalTab(page.component, component);
                     } else {
                         if (!isIntentNone && existComponent && (page.isComponent || isRootMain)) targetProcessed.component = estreUi.switchRootTab(page.component, intent);
-                        else targetProcessed.component = estreUi.switchRootTab(page.component);
+                        else targetProcessed.component = estreUi.mainCurrentOnTop == component || estreUi.switchRootTab(page.component);
                     }
                     success = targetProcessed.component;
                 }
@@ -3863,7 +4446,7 @@ class EstreUiPageManager {
         if (pid == null) return null;
         if (pid.indexOf("*") > -1) pid = this.extPidMap[pid.replace(/^\*/, "")];
         if (pid == null) return null;
-        if (pid.indexOf("$") < 0) pid = this.foundPid(pid);
+        if (pid.indexOf("$") < 0) pid = this.findPid(pid);
         const page = this.get(pid);
         if (page == null) return null;
         const sections = page.sections;
@@ -3912,7 +4495,7 @@ class EstreUiPageManager {
                         else targetProcessed.component = estreUi.openModalTab(page.component, component);
                     } else {
                         if (!isIntentNone && (page.isComponent || isRootMain)) targetProcessed.component = estreUi.switchRootTab(page.component, intent);
-                        else targetProcessed.component = estreUi.switchRootTab(page.component, intent);
+                        else targetProcessed.component = estreUi.mainCurrentOnTop == component || estreUi.switchRootTab(page.component, intent);
                     }
                     success = targetProcessed.component;
                 }
@@ -3930,7 +4513,7 @@ class EstreUiPageManager {
         if (pid == null) return null;
         if (pid.indexOf("*") > -1) pid = this.extPidMap[pid.replace(/^\*/, "")];
         if (pid == null) return null;
-        if (pid.indexOf("$") < 0) pid = this.foundPid(pid);
+        if (pid.indexOf("$") < 0) pid = this.findPid(pid);
         const page = this.get(pid);
         if (page == null) return null;
         const sections = page.sections;
@@ -3973,7 +4556,7 @@ class EstreUiPageManager {
         if (pid == null) return null;
         if (pid.indexOf("*") > -1) pid = this.extPidMap[pid.replace(/^\*/, "")];
         if (pid == null) return null;
-        if (pid.indexOf("$") < 0) pid = this.foundPid(pid);
+        if (pid.indexOf("$") < 0) pid = this.findPid(pid);
         const page = this.get(pid);
         if (page == null) return null;
         const sections = page.sections;
@@ -5901,19 +6484,19 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
         const year = this.year[fd.year];
         if (year != null) year.$year.attr(eds.selected, t1);
 
-        this.$month.filter(aiv(eds.selected, t1) + nto + aiv(eds.year, fd.year) + aiv(eds.month, fd.month) + clo).attr(eds.selected, "");
+        this.$month.filter(aiv(eds.selected, t1) + nto + aiv(eds.year, fd.year) + aiv(eds.month, fd.month) + cps).attr(eds.selected, "");
         // const month = year.find(uis.month + aiv(eds.month, fd.month));
         const month = year.month != null ? year.month[fd.month] : null;
         if (month != null) month.$month.attr(eds.selected, t1);
 
-        this.$week.filter(aiv(eds.selected, t1) + nto + aiv(eds.year, fd.year) + aiv(eds.month, fd.month) + aiv(eds.week, fd.week) + clo).attr(eds.selected, "");
+        this.$week.filter(aiv(eds.selected, t1) + nto + aiv(eds.year, fd.year) + aiv(eds.month, fd.month) + aiv(eds.week, fd.week) + cps).attr(eds.selected, "");
         //const week = month.find(uis.week + aiv(eds.week, fd.week));
         if (month != null && month.week != null) {
             const week = month.week[fd.week];
             if (week != null) week.$week.attr(eds.selected, t1);
         }
                 
-        this.$day.filter(aiv(eds.selected, t1) + nto + aiv(eds.year, fd.year) + aiv(eds.month, fd.month) + aiv(eds.date, fd.date) + clo).attr(eds.selected, "");
+        this.$day.filter(aiv(eds.selected, t1) + nto + aiv(eds.year, fd.year) + aiv(eds.month, fd.month) + aiv(eds.date, fd.date) + cps).attr(eds.selected, "");
         // const dateSpecfier = uis.day + aiv(eds.year, fd.year) + aiv(eds.month, fd.month) + aiv(eds.date, fd.date);
         // month.$month.find(dateSpecfier).attr(eds.selected, t1);
         // if (fd.date < 7) {
@@ -6001,7 +6584,7 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
                         month.setWeek(weeks);
                         isLoaded = true;
                     } else {
-                        const dayLoaded = true;
+                        let dayLoaded = true;
                         for (var week of month.subWeeks) if (!week.isLoaded()) {
                             dayLoaded = false;
                             break;
@@ -7868,18 +8451,18 @@ class EstreToggleTabBlock extends EstreToggleBlock {
     }
 
     applyTabSelected(id) {
-        this.$tabs.filter(opa + eds.tabId + equ + v4(id) + cla).attr(eds.tabSelected, t1);
-        this.$tabs.filter(nto + opa + eds.tabId + equ + v4(id) + cla + clo).attr(eds.tabSelected, "");
+        this.$tabs.filter(obk + eds.tabId + equ + v4(id) + cbk).attr(eds.tabSelected, t1);
+        this.$tabs.filter(nto + obk + eds.tabId + equ + v4(id) + cbk + cps).attr(eds.tabSelected, "");
     }
 
     applySubjectSelected(id) {
-        this.$subjects.filter(opa + eds.tabId + equ + v4(id) + cla).attr(eds.tabSelected, t1);
-        this.$subjects.filter(nto + opa + eds.tabId + equ + v4(id) + cla + clo).attr(eds.tabSelected, "");
+        this.$subjects.filter(obk + eds.tabId + equ + v4(id) + cbk).attr(eds.tabSelected, t1);
+        this.$subjects.filter(nto + obk + eds.tabId + equ + v4(id) + cbk + cps).attr(eds.tabSelected, "");
     }
 
     applyContentSelected(id) {
-        this.$contents.filter(opa + eds.tabId + equ + v4(id) + cla).attr(eds.tabSelected, t1);
-        this.$contents.filter(nto + opa + eds.tabId + equ + v4(id) + cla + clo).attr(eds.tabSelected, "");
+        this.$contents.filter(obk + eds.tabId + equ + v4(id) + cbk).attr(eds.tabSelected, t1);
+        this.$contents.filter(nto + obk + eds.tabId + equ + v4(id) + cbk + cps).attr(eds.tabSelected, "");
     }
     
 }
@@ -8074,18 +8657,18 @@ class EstreTabBlock extends EstreHandle {
     }
 
     applyTabSelected(id) {
-        this.$tabs.filter(opa + eds.tabId + equ + v4(id) + cla).attr(eds.tabSelected, t1);
-        this.$tabs.filter(nto + opa + eds.tabId + equ + v4(id) + cla + clo).attr(eds.tabSelected, "");
+        this.$tabs.filter(obk + eds.tabId + equ + v4(id) + cbk).attr(eds.tabSelected, t1);
+        this.$tabs.filter(nto + obk + eds.tabId + equ + v4(id) + cbk + cps).attr(eds.tabSelected, "");
     }
 
     applySubjectSelected(id) {
-        this.$subjects.filter(opa + eds.tabId + equ + v4(id) + cla).attr(eds.tabSelected, t1);
-        this.$subjects.filter(nto + opa + eds.tabId + equ + v4(id) + cla + clo).attr(eds.tabSelected, "");
+        this.$subjects.filter(obk + eds.tabId + equ + v4(id) + cbk).attr(eds.tabSelected, t1);
+        this.$subjects.filter(nto + obk + eds.tabId + equ + v4(id) + cbk + cps).attr(eds.tabSelected, "");
     }
 
     applyContentSelected(id) {
-        this.$contents.filter(opa + eds.tabId + equ + v4(id) + cla).attr(eds.tabSelected, t1);
-        this.$contents.filter(nto + opa + eds.tabId + equ + v4(id) + cla + clo).attr(eds.tabSelected, "");
+        this.$contents.filter(obk + eds.tabId + equ + v4(id) + cbk).attr(eds.tabSelected, t1);
+        this.$contents.filter(nto + obk + eds.tabId + equ + v4(id) + cbk + cps).attr(eds.tabSelected, "");
     }
 
     notifyTabSelected(id, isInit) {
@@ -8304,7 +8887,7 @@ class EstreScopedTabBlock extends EstreTabBlock {
     notifyTabSelected(id, isInit = false) {
         super.notifyTabSelected(id, isInit);
 
-        const $content = this.$contents.filter(opa + eds.tabId + equ + v4(id) + cla);
+        const $content = this.$contents.filter(obk + eds.tabId + equ + v4(id) + cbk);
         const scope = $content.attr(eds.scope);
         this.handler.notifyScopeChanged(scope);
     }
@@ -9923,13 +10506,13 @@ const estreUi = {
 
         const isHomeComponent = component.isHome;
         const topContainer = component.currentTop;
-        const isRootContainer = topContainer != null ? topContainer.isRoot : true;
+        const isRootContainer = topContainer != null ? topContainer?.isRoot ?? false : true;
         const isSingleContainer = component.isSingleContainer;
         const isRootOrSingle = isRootContainer || isSingleContainer;
 
         const topArticle = topContainer?.currentTop;
-        const isMainArticle = topArticle != null ? topArticle.isMain : true;
-        const isSingleArticle = container?.isSingleArticle ?? topContainer.isSingleArticle;
+        const isMainArticle = topArticle != null ? topArticle?.isMain ?? false : true;
+        const isSingleArticle = container?.isSingleArticle ?? topContainer?.isSingleArticle ?? true;
         const isMainOrSingle = isMainArticle || isSingleArticle;
 
         let success = false;
@@ -10007,8 +10590,8 @@ const estreUi = {
                     unhandled = true;
                     
                     //현재 선택된 탭을 다시 선택했을 때
-                    // targetComponent.back();
-                    history.back();
+                    targetComponent.back();
+                    // history.back();
                 } else {
                     targetComponent.pushIntent(intent);
                     targetComponent.show(false);
