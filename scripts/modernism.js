@@ -359,15 +359,16 @@ const defineStaticProperty = dsp;
 const dp = (cls, name, value, wa = t, ca = t, ea = f, extras = {}) => dsp(cls.prototype, name, value, wa, ca, ea, extras);
 const dpx = (name, value, wa = t, ca = t, ea = f, classes = [obj, fnc, str, num, ble, big], extras = {}) => fo(classes, cls => {
     obj.defineProperty(cls.prototype, name, {
-        get value() { return tc(value, {
-            // [FNC]: it => it,//function (...args) { return (value.bind(this))(...args); },
-            // [def]: it => cls(it),
-            [BLE]: it => Boolean(it),
-            [NUM]: it => Number(it),
-            [STR]: it => String(it),
-            [BIG]: it => BigInt(it),
-            [def]: it => it,
-        }); },
+        // get value() { return tc(value, {
+        //     // [FNC]: it => it,//function (...args) { return (value.bind(this))(...args); },
+        //     // [def]: it => cls(it),
+        //     [BLE]: it => Boolean(it),
+        //     [NUM]: it => Number(it),
+        //     [STR]: it => String(it),
+        //     [BIG]: it => BigInt(it),
+        //     [def]: it => it,
+        // }); },
+        value,
         writable: wa,
         configurable: ca,
         enumerable: ea,
