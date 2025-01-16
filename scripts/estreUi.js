@@ -329,6 +329,53 @@ const eds = {
 
 
 
+
+// Popup browser
+function estrePopupBrowser(options = {}) {
+    return new Promise((resolve) => pageManager.bringPage("!popupBrowser", {
+        data: options,
+        onBeforeAttach(handle, iframe) {
+            this?.data?.callbackBeforeAttach?.(handle, iframe);
+        },
+        onAfterAttach(handle, iframe, url) {
+            this?.data?.callbackAfterAttach?.(handle, iframe, url);
+        },
+        onLoad(handle, iframe, url) {
+            this?.data?.callbackLoad?.(handle, iframe, url);
+        },
+        onClosePopup(handle, iframe, url) {
+            this?.data?.callbackClose?.(handle, iframe, url);
+            resolve();
+        },
+        onClickRefresh(handle, iframe, url) {
+            return this?.data?.callbackRefresh?.(handle, iframe, url);
+        },
+        onClickBack(handle, iframe, url) {
+            return this?.data?.callbackBack?.(handle, iframe, url);
+        },
+        onClickForward(handle, iframe, url) {
+            return this?.data?.callbackForward?.(handle, iframe, url);
+        },
+    }));
+}
+
+const popupBrowser = (src = "about:blank", name = "webview",
+    callbackBeforeAttach = (handle, iframe) => {},
+    callbackAfterAttach = (handle, iframe) => {},
+    callbackClose = (handle, iframe, url) => {},
+    fixedTitle = null,
+    callbackLoad = (handle, iframe, url) => {},
+    hideRefresh = false,
+    callbackRefresh = (handle, iframe, url) => false,
+    hideBack = false,
+    callbackBack = (handle, iframe, url) => false,
+    hideForward = false,
+    callbackForward = (handle, iframe, url) => false,
+    hideHome = false,
+) => estrePopupBrowser({ src, name, callbackBeforeAttach, callbackAfterAttach, callbackClose, fixedTitle, callbackLoad, hideRefresh, callbackRefresh, hideBack, callbackBack, hideForward, callbackForward, hideHome });
+
+
+
 // Toast up slide dialog
 function estreToastAlert(options = {}) {
     return new Promise((resolve) => pageManager.bringPage("!toastAlert", {
@@ -3602,6 +3649,117 @@ class EstreUiPage {
         },
 
 
+        "$i&o=functional#popupBrowser^": class extends EstrePageHandler {
+            $browserArea
+            iframe;
+            get cw() { return this.iframe.contentWindow; }
+            get history() {
+                try {
+                    return this.cw?.history;
+                } catch (ex) {
+                    console.error(ex);
+                    return null;
+                }
+            }
+            get location() {
+                try {
+                    return this.cw?.location;
+                } catch (ex) {
+                    console.error(ex);
+                    return null;
+                }
+            }
+            get url() { return this.loction?.href; }
+
+            $iframe;
+            
+            $back;
+            $forward;
+            $home;
+            $title;
+            $refresh;
+            $close;
+
+            onBring(handle) {
+                const handler = this;
+
+                this.$browserArea = handle.$host.find(".browser_area");
+                this.iframe = doc.ce("iframe", "webView");
+                this.iframe.setAttribute("name", this.intentData.name ?? "webview");
+                if (this.intentData.src != null) this.iframe.setAttrubute("src", this.intentData.src);
+                this.$iframe = $(this.iframe);
+
+                this.$back = handle.$host.find("button.back");
+                this.$forward = handle.$host.find("button.forward");
+                this.$home = handle.$host.find("button.home");
+                this.$title = handle.$host.find("span.pageTitle");
+                this.$refresh = handle.$host.find("button.refresh");
+                this.$close = handle.$host.find("button.close");
+
+                // if (this.intentData.name != null) this.$iframe.prop("name", this.intentData.name);
+
+                this.$iframe.on("load", function (e) {
+                    let url = null;
+                    try {
+                        url = this.contentWindow.location.href;
+                    } catch (ex) {
+                        console.error(ex);
+                    }
+                    let title = "";
+                    try {
+                        title = this.contentWindow.document.title;
+                    } catch (ex) {
+                        console.error(ex);
+                    }
+
+                    if (handler.intentData.fixedTitle == null) handler.$title.text(title);
+
+                    handle.intent.onLoad(handle, this, url);
+                });
+
+                if (this.intentData.hideBack) this.$back.hide();
+                if (this.intentData.hideForward) this.$forward.hide();
+                if (this.intentData.hideHome || this.intentData.src == null) this.$home.hide();
+                if (this.intentData.hideRefresh) this.$refresh.hide();
+            }
+
+            onOpen(handle) {
+                const handler = this;
+
+                if (this.intentData.fixedTitle != null) this.$title.text(this.intentData.fixedTitle);
+
+                this.$back.click(function (e) {
+                    if (!handler.intent.onClickBack?.(handle, handler.iframe, handler.url)) handler.history?.back();
+                });
+                this.$forward.click(function (e) {
+                    if (!handler.intent.onClickForward?.(handle, handler.iframe, handler.url)) handler.history?.forward();
+                });
+                this.$home.click(function (e) {
+                    handler.iframe.src = handler.intentData.src;
+                });
+                this.$refresh.click(function (e) {
+                    if (!handler.intent.onClickRefresh?.(handle, handler.iframe, handler.url)) handler.history?.reload();
+                });
+                this.$close.click(function (e) {
+                    handle.close();
+                });
+
+                this.intent.onBeforeAttach(handle, this.iframe);
+                this.$browserArea.append(this.$iframe);
+                this.intent.onAfterAttach(handle, this.iframe, this.url);
+            }
+
+            onReload(handle) {
+                if (this.intentData.hideRefresh || this.intent.onClickRefresh(handle, this.iframe, this.url)) this.history?.reload();
+
+                return true;
+            }
+
+            onClose(handle) {
+                this.intent.onClosePopup?.(handle, this.iframe, this.url);
+            }
+        },
+
         "$i&o=toastUpSlide#alert^": class extends EstreAlertDialogPageHandler {
 
         },
@@ -4233,6 +4391,9 @@ class EstreUiPageManager {
     #managedPidMap = {
         get appbar() { return "$s&h=appbar"; },
 
+
+
+        get popupBrowser() { return "$i&o=functional#popupBrowser^"; },
 
 
         get toastAlert() { return "$i&o=toastUpSlide#alert^"; },
@@ -6754,7 +6915,7 @@ class EstreVariableCalendar extends EstreCalendar {
     }
 
     init() {
-        if (isAndroid()) this.setNoTransition();
+        if (ua.isAndroid) this.setNoTransition();
 
         this.setEventScaler();
 
@@ -6793,8 +6954,8 @@ class EstreVariableCalendar extends EstreCalendar {
         switch (type) {
             case "auto":
                 type = "massive";
-                // if (isAppleMobile()) {
-                //     const iosVersion = getIosVersion();
+                // if (ua.isAppleMobile) {
+                //     const iosVersion = ua.iOsVersion;
                 //     if (iosVersion != null) {
                 //         if (parseInt(iosVersion.split(".")[0]) < 16) type = "simple";
                 //     }
@@ -10222,6 +10383,7 @@ const estreUi = {
         this.initHeaderBars();
         this.initSessionManager();
 
+        $("main#splashRoot").css("z-index", null);
 
         if (setOnReady) this.checkOnReady();
     },

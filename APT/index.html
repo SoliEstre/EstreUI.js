@@ -20,8 +20,15 @@
 // Environment constants
 let isStandalone = !!window.matchMedia("(display-mode: standalone)").matches;
 
+const isMobile = navigator.userAgent.includes("Mobile");
 const isIPhone = navigator.userAgent.includes("iPhone");
+const isIPad = navigator.userAgent.includes("iPad");
+const isIPod = navigator.userAgent.includes("iPod");
+const isAppleMobile = isIPhone || isIPad || isIPod;
+const isAndroid = navigator.userAgent.includes("Android");
+const isAndroidMobile = isAndroid && isMobile;
 const isSamsungBrowser = navigator.userAgent.includes("SamsungBrowser");
+
 
 // Update viewport-fit for PWA
 const updateInsets = function (e) {
@@ -733,6 +740,23 @@ if (isStandalone) {
     </main>
     
     <nav id="managedOverlay">
+        <section id="functional" class="tpbg" data-static="1" data-on-top="">
+            <div class="container blind" data-container-id="popupBrowser" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(var(--cbdm) / 50%);">
+                <article class="constraint" data-article-id="main" data-static="1" style="background-color: var(--color-boundary-bright); ">
+                    <div class="webview">
+                        <div class="browser_area"></div>
+                        <div class="line_block navigation_area">
+                            <button class="tp_tiled_btn back" style="background-image: var(--svg-back-arrow); "></button>
+                            <button class="tp_tiled_btn forward" style="background-image: var(--svg-forward-arrow); "></button>
+                            <button class="tp_tiled_btn home" style="background-image: var(--svg-home); "></button>
+                            <div class="line_block titleArea"><span class="blocked pageTitle" style="flex-grow: 1; font-weight: 700; "></span></div>
+                            <button class="tp_tiled_btn refresh" style="background-image: var(--svg-reload); "></button>
+                            <button class="tp_tiled_btn close" style="background-image: var(--svg-close); "></button>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
         <section id="toastUpSlide" class="tpbg" data-static="1" data-on-top="">
             <div class="container blind" data-container-id="alert" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(var(--cbdm) / 50%);">
                 <article class="fwvs limit_on_screen popup_interface" data-article-id="main" data-static="1" style="background-color: rgb(var(--cbbr) / 25%);">

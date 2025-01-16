@@ -558,33 +558,33 @@ const parseBoolean = function (value) {
 function isKorean() { return navigator.language.indexOf("ko") > -1; }
 
 
-function getUA(lowercase = true) {
-    var ua = navigator.userAgent;
-    if (lowercase) ua = ua.toLowerCase();
-    return ua;
-}
+const UA = navigator.userAgent;
+const ua = {
+    get lc() {
+        return UA.toLowerCase();
+    },
 
 
-function isAndroid() {
-    return getUA().indexOf("android") > -1;
-}
+    get isAndroid() {
+        return this.lc.indexOf("android") > -1;
+    },
 
-function isAppleMobile() {
-    const ua = getUA();
-    return ua.indexOf("ipad") > -1 || ua.indexOf("iphone") > -1 || ua.indexOf("ipod") > -1;
-}
+    get isAppleMobile() {
+        const lc = this.lc;
+        return lc.indexOf("ipad") > -1 || lc.indexOf("iphone") > -1 || lc.indexOf("ipod") > -1;
+    },
 
-function isSafari() {
-    return ua.indexOf("safari") > -1;
-}
+    get isSafari() {
+        return this.lc.indexOf("safari") > -1;
+    },
 
-function getIosVersion() {
-    const ua = getUA();
-    const matches = ua.match(/os (\d+(_\d+)+)\s/);
-    if (matches != null) {
-        const raw = matches[1];
-        return raw != null ? raw.replace(/_/g, ".") : null;
-    } else return null;
+    get iOsVersion() {
+        const matches = this.lc.match(/os (\d+(_\d+)+)\s/);
+        if (matches != null) {
+            const raw = matches[1];
+            return raw != null ? raw.replace(/_/g, ".") : null;
+        } else return null;
+    },
 }
 
 
