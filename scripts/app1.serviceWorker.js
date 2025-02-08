@@ -23,7 +23,7 @@ const CACHE_LIST = [
     "/scripts/estreUi.js",
     "/scripts/app1.js",
 
-    "/vactors/more_vertical_slim_icon.svg",
+    "/vectors/more_vertical_slim_icon.svg",
 
 ];
 
