@@ -30,14 +30,14 @@ SOFTWARE.
 //
 // The JSON based lite code format
 //
-// v0.5 / release 2024.12.25
+// v0.6 / release 2025.02.07
 //
 // Take to be liten from JSON code to smaller converted characters for like as BASE64.
 //
 //
 // :: Code regulations
 //
-// 1. null is n.
+// 1. null is n, true is t, false is f.
 // 2. No space and carriage return & line feed on code. Only allowed in data.
 // 3. Omit "" variable definition.
 
@@ -56,13 +56,17 @@ let Jcodd = {
         let p1 = JSON.stringify(JSON.parse(json));
         //Convert null to n
         let p2 = p1.replace(/([\[\,\:])null([\]\,\}])/g, "$1n$2").replace(/([\[\,\:])null([\]\,\}])/g, "$1n$2");
-        //Remove ""
-        let p3 = p2.replace(/([\{\,])\"([^\"]*)\"\:/g, "$1$2:");
+        //Convert true to t
+        let p3 = p2.replace(/([\[\,\:])true([\]\,\}])/g, "$1t$2").replace(/([\[\,\:])true([\]\,\}])/g, "$1t$2");
+        //Convert false to f
+        let p4 = p3.replace(/([\[\,\:])false([\]\,\}])/g, "$1f$2").replace(/([\[\,\:])false([\]\,\}])/g, "$1f$2");
+        //Rem4ve ""
+        let p5 = p4.replace(/([\{\,])\"([^\"]*)\"\:/g, "$1$2:");
         //Check convert unicode
-        if (p3.match(/[\u0000-\u001F|\u0080-\uFFFF]/g) != null) {
-            let p4 = this.escape(p3);
-            ex = p4;
-        } else ex = p3;
+        if (p5.match(/[\u0000-\u001F|\u0080-\uFFFF]/g) != null) {
+            let p6 = this.escape(p5);
+            ex = p6;
+        } else ex = p5;
 
         // console.log(p1);
         // console.log(p2);
@@ -96,11 +100,15 @@ let Jcodd = {
         //unescape
         let p1 = this.unescape(codd);//unescape(codd);//=> deprecated
         //Assign ""
-        let p2 = p1.replace(/(\{|\}\,|\]\,|\"\,|[\-0-9]+\,)([^\"\{\}\[\]\,\:]*)\:/g, '$1"$2":');
+        let p2 = p1.replace(/(\{|\}\,|\]\,|\"\,|[eE]?[+\-]?[\d.]+\,|[ntf]\,|true\,|false\,)([^\"\{\}\[\]\,\:]*)\:/g, '$1"$2":');
         //Convert n to null
         let p3 = p2.replace(/([\[\,\:])n([\]\,\}])/g, "$1null$2").replace(/([\[\,\:])n([\]\,\}])/g, "$1null$2");
+        //Convert t to true
+        let p4 = p3.replace(/([\[\,\:])t([\]\,\}])/g, "$1true$2").replace(/([\[\,\:])t([\]\,\}])/g, "$1true$2");
+        //Convert f to false
+        let p5 = p4.replace(/([\[\,\:])f([\]\,\}])/g, "$1false$2").replace(/([\[\,\:])f([\]\,\}])/g, "$1false$2");
 
-        return p3;
+        return p5;
     },
 
     /**

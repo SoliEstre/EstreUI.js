@@ -87,6 +87,32 @@ if (isStandalone) {
     document.querySelector("head").append(meta);
 }
 
+
+const releaseInsetForApp = () => {
+    const insets = window.safeAreaInsets;
+
+    if (insets != null) {
+        const root = document.documentElement;
+
+        root.style.setProperty('--safe-area-inset-top', `${insets.top}px`);
+        root.style.setProperty('--safe-area-inset-bottom', `${insets.bottom}px`);
+        root.style.setProperty('--safe-area-inset-left', `${insets.left}px`);
+        root.style.setProperty('--safe-area-inset-right', `${insets.right}px`);
+
+        root.style.setProperty('--viewport-inset-top', `${insets.top}px`);
+        root.style.setProperty('--viewport-inset-bottom', `${insets.bottom}px`);
+        root.style.setProperty('--viewport-inset-left', `${insets.left}px`);
+        root.style.setProperty('--viewport-inset-right', `${insets.right}px`);
+    }
+}
+
+// Receive safe area from App when showing on webview
+window.addEventListener('safeAreaInsetsChanged', function () {
+    releaseInsetForApp();
+});
+releaseInsetForApp();
+
+
 // Service Worker
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
@@ -201,17 +227,18 @@ if (isStandalone) {
     </script>
 </head>
 <body class="vfv_scroll">
-    <main id="splashRoot">
+    <main id="splashRoot" style="z-index: 500; ">
         <section id="splash" data-on-top="0">
             <div class="container" data-container-id="root" style="background-color: #222; ">
                 <article class="constraint" data-article-id="main" style="background-color: transparent; ">
-                    <div class="float_center" style="--width: min(50vw, 240px);">
+                    <div class="float_center" style="--width: min(50vw, 240px);" ondblclick="location.reload(); ">
                         <img src="./images/APT_512.png" style="width: var(--width); " />
                     </div>
                 </article>
             </div>
         </section>
     </main>
+    <script>$('head > link[href*="estreUi.css"]').on("load", e => setTimeout(() => $("#splashRoot").css("z-index", null)), 0); </script>
 
     <header id="fixedTop" data-hide="">
         <section id="appbar" data-static="1" data-on-top="1">

@@ -9,7 +9,7 @@
     <meta property="og:image:height" content="192" />
     <meta property="og:image:alt" content="Estre UI logo" />
     <meta property="og:description" content="My own EstreUI.js sample application 1" />
-    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, viewport-fit=cover">
+    <!-- <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, viewport-fit=cover"> -->
 	<meta name="mobile-web-app-capable" content="yes">
 	<meta name="apple-mobile-web-app-capable" content="yes">
 	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -87,10 +87,36 @@ if (isStandalone) {
     document.querySelector("head").append(meta);
 }
 
+
+const releaseInsetForApp = () => {
+    const insets = window.safeAreaInsets;
+
+    if (insets != null) {
+        const root = document.documentElement;
+
+        root.style.setProperty('--safe-area-inset-top', `${insets.top}px`);
+        root.style.setProperty('--safe-area-inset-bottom', `${insets.bottom}px`);
+        root.style.setProperty('--safe-area-inset-left', `${insets.left}px`);
+        root.style.setProperty('--safe-area-inset-right', `${insets.right}px`);
+
+        root.style.setProperty('--viewport-inset-top', `${insets.top}px`);
+        root.style.setProperty('--viewport-inset-bottom', `${insets.bottom}px`);
+        root.style.setProperty('--viewport-inset-left', `${insets.left}px`);
+        root.style.setProperty('--viewport-inset-right', `${insets.right}px`);
+    }
+}
+
+// Receive safe area from App when showing on webview
+window.addEventListener('safeAreaInsetsChanged', function () {
+    releaseInsetForApp();
+});
+releaseInsetForApp();
+
+
 // Service Worker
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./scripts/app1.serviceWorker.js");
+        navigator.serviceWorker.register("./scripts/serviceWorker.js");
     });
 }
 
@@ -175,6 +201,21 @@ serviceWorkerHandler.init();
     <style>
 /* in html styles */
     </style>
+    <script>
+
+if (isStandalone) {
+    // is PWA
+
+} else {
+    // isn't PWA
+    updateInsets({ type: "init"});
+    // setTimeout(() => updateInsets(), 3000);
+    window.addEventListener("load", updateInsets);
+    window.addEventListener('resize', updateInsets);
+    window.addEventListener('orientationchange', updateInsets);
+    document.addEventListener('scrollend', updateInsets);
+}
+    </script>
     <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
     <script type="text/javascript" src="./scripts/jcodd.js"></script>
@@ -187,17 +228,18 @@ serviceWorkerHandler.init();
     </script>
 </head>
 <body class="vfv_scroll">
-    <main id="splashRoot">
+    <main id="splashRoot" style="z-index: 500; ">
         <section id="splash" data-on-top="0">
             <div class="container" data-container-id="root">
                 <article class="constraint" data-article-id="main">
-                    <div class="float_center" style="--width: min(50vw, 240px);">
+                    <div class="float_center" style="--width: min(50vw, 240px);" ondblclick="location.reload(); ">
                         <img src="./images/EstreUI-flatter-512x512.png" style="width: var(--width); " />
                     </div>
                 </article>
             </div>
         </section>
     </main>
+    <script>$('head > link[href*="estreUi.css"]').on("load", e => setTimeout(() => $("#splashRoot").css("z-index", null)), 0); </script>
 
     <header id="fixedTop" data-hide="">
         <section id="appbar" data-static="1" data-on-top="1">

@@ -845,6 +845,26 @@ const Ecal = {
         return null;
     },
 
+    getPrevMonth(year, month) {
+        let date;
+        if (year instanceof Date) date = year;
+        else date = new Date(year, month - 1, 1);
+
+        date.setMonth(date.getMonth() - 1);
+
+        return date;
+    },
+
+    getNextMonth(year, month) {
+        let date;
+        if (year instanceof Date) date = year;
+        else date = new Date(year, month - 1, 1);
+
+        date.setMonth(date.getMonth() + 1);
+
+        return date;
+    },
+
     getDateSetNearPosition(criteria, offset = 0, unit = "day") {
         if (unit == null) return null;
         else return this.getDateSet(this.getNearPosition(criteria, offset, unit));
@@ -864,6 +884,24 @@ const Ecal = {
 
     getDateSetFrom(offset) {
         return this.getDateSet(this.getDateFrom(offset));
+    },
+
+    getMonthOffset(year, month0) {
+        if (year instanceof Date) {
+            month0 = year.getMonth();
+            year = year.getFullYear();
+        }
+        return year * 12 + month0;
+    },
+
+    getDateFromMonth(offset, date = 1) {
+        const year = parseInt(offset / 12);
+        const month0 = offset % 12;
+        return new Date(year, month0, date < 28 ? date : Math.min(date, Ecal.getLastDay(year, month0)));
+    },
+
+    getDateSetFromMonth(offset, date = 1) {
+        return this.getDateSet(this.getDateFromMonth(offset, date));
     },
 
     getDayEmoji(date) {

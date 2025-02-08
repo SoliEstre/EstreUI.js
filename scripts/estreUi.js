@@ -42,6 +42,7 @@ const uis = {
     toLarger: ".to_larger",
     areaHandler: ".area_handler",
     areaResizer: ".area_resizer",
+    placeholder: ".placeholder",
 
     // unified calendar
     unifiedCalendar: ".unified_calendar",
@@ -109,6 +110,11 @@ const uis = {
     pageHandle: "button.page_handle",
     infiniteHPager: ".infinite_h_pager",
     boundHost: ".bound_host",
+
+
+    // month selector bar
+    monthSelectorBar: ".month_selector_bar",
+
 
     // date shower
     dateShower: ".date_shower",
@@ -185,11 +191,15 @@ const eds = {
     bindObjectArrayAttr: "data-bind-object-array-attr",
     bindObjectArrayStyle: "data-bind-object-array-style",
     showOnExists: "data-show-on-exists",
+    showOnNotExists: "data-show-on-not-exists",
     showOnEquals: "data-show-on-equals",
     showOnExistsObjectArrayItem: "data-show-on-exists-object-array-item",
+    showOnNotExistsObjectArrayItem: "data-show-on-not-exists-object-array-item",
     showOnEqualsObjectArrayItem: "data-show-on-equals-object-array-item",
 
     // for estre ui attribute
+    lead: "data-lead",
+    trail: "data-trail",
     prefix: "data-prefix",
     suffix: "data-suffix",
     fore: "data-fore",
@@ -232,6 +242,9 @@ const eds = {
     for: "data-for",
     name: "data-name",
     ally: "data-ally",
+    current: "data-current",
+    autoInit: "data-auto-init",
+    placeholder: "data-placeholder",
 
     // body global switch
     onResizing: "data-on-resizing",
@@ -301,6 +314,9 @@ const eds = {
     // for date shower
     dateFrom: "data-date-from",
     withSuffix: "data-with-suffix",
+
+    // for month selector bar
+    dropdownOpen: "data-dropdown-open",
 
 
     // for internal link and page link
@@ -374,6 +390,11 @@ const popupBrowser = (src = "about:blank", name = "webview",
     hideHome = false,
 ) => estrePopupBrowser({ src, name, callbackBeforeAttach, callbackAfterAttach, callbackClose, fixedTitle, callbackLoad, hideRefresh, callbackRefresh, hideBack, callbackBack, hideForward, callbackForward, hideHome });
 
+
+const closePopupBrowserWhenOnTop = async () => {
+    const container = estreUi.showingOverlayTopArticle?.container;
+    if (container?.handler.id == "popupBrowser") return await container.close();
+}
 
 
 // Toast up slide dialog
@@ -775,6 +796,56 @@ const note = function (message, showTime = 3000, onTakeInteraction = EstreNotati
 
 
 
+// For Native storage 
+class AsyncStorage {}
+class NativeStorage extends AsyncStorage {
+
+    constructor() {
+        super();
+
+        this.#getLength();
+    }
+
+    #length = 0;
+
+    get length() {
+        return this.#length;
+    }
+
+    async #getLength() {
+        this.#length = await window.app?.request?.("getLengthOfNativeStorage") ?? 0;
+        return this.#length;
+    }
+
+    async key(index) {
+        return await window.app?.request?.("getFromNativeStorageAt", index);
+    }
+
+    async getItem(keyName) {
+        return await window.app?.request?.("getFromNativeStorage", keyName);
+    }
+
+    async setItem(keyName, keyValue) {
+        const returns = await window.app?.request?.("setToNativeStorage", keyName, keyValue);
+        await this.#getLength();
+        return returns;
+    }
+
+    async removeItem(keyName) {
+        const returns = await window.app?.request?.("removeFromNativeStorage", keyName);
+        await this.#getLength();
+        return returns;
+    }
+
+    async clear() {
+        const returns = await window.app?.request?.("clearNativeStorage");
+        await this.#getLength();
+        return returns;
+    }
+
+}
+window.nativeStorage = new NativeStorage();
+
 // Storage handler
 const ES_PREFIX = "ESAF_";//Estre Syncretic Applicate Framework
 
@@ -783,25 +854,29 @@ const ES_PREFIX = "ESAF_";//Estre Syncretic Applicate Framework
  */
 class ES {
 
-    #storage = null;
-    #storagePrefix = null;
+    _storage = null;
+    _storagePrefix = null;
 
-    get #prefix() { return ES_PREFIX + this.#storagePrefix; }
+    get _prefix() { return ES_PREFIX + this._storagePrefix; }
 
 
-    #getFullKey(key) { return this.#prefix + key; }
+    _getFullKey(key) { return this._prefix + key; }
 
 
 
     constructor(storage, storagePrefix) {
-        this.#storage = storage;
-        this.#storagePrefix = storagePrefix;
+        this._storage = storage;
+        this._storagePrefix = storagePrefix;
     }
 
     
     #get(key, type = "string", def) {
         if (key == null | key == "") return;
-        const value = this.#storage.getItem(this.#getFullKey(key));
+        const value = this._storage.getItem(this._getFullKey(key));
+        return this._getBy(type, value, def);
+    }
+
+    _getBy(type, value, def) {
         switch (type) {
 
             case "boolean":
@@ -852,7 +927,6 @@ class ES {
             default:
                 return value == null ? def : value;
         }
-
     }
 
     getBoolean(key, def) { return this.#get(key, "boolean", def); }
@@ -863,11 +937,18 @@ class ES {
     getBytes(key, def) { return this.#get(key, "bytes", def); }
     getObject(key, def) { return this.#get(key, "object", def); }
 
-    get(key, def) { return this.getString(key, def); }
+    get(key, def) { return this.#get(key, def); }
         
 
     #set(key, type = "string", value) {
         if (key == null | key == "") return undefined;
+        let valueString = this._stringifyBy(type, value);
+        if (valueString === false) return false;
+
+        return this._storage.setItem(this._getFullKey(key), valueString == null ? "" : valueString);
+    }
+
+    _stringifyBy(type, value) {
         let valueString = null;
         switch (type) {
 
@@ -913,7 +994,7 @@ class ES {
                 break;
         }
 
-        return this.#storage.setItem(this.#getFullKey(key), valueString == null ? "" : valueString);
+        return valueString;
     }
 
     setBoolean(key, value) { return this.#set(key, "boolean", value); }
@@ -924,9 +1005,53 @@ class ES {
     setBytes(key, value) { return this.#set(key, "bytes", value); }
     setObject(key, value) { return this.#set(key, "object", value); }
     
-    set(key, value) { return this.setString(key, value); }
+    set(key, value) { return this.#set(key, value); }
     
 }
+
+class EAS extends ES {
+
+    constructor(storage, storagePrefix) {
+        super(storage, storagePrefix);
+    }
+
+    async #get(key, type = "string", def) {
+        if (key == null | key == "") return;
+        const value = await this._storage.getItem(this._getFullKey(key));
+        return this._getBy(type, value, def);
+    }
+
+    async getBoolean(key, def) { return await this.#get(key, "boolean", def); }
+    async getInt(key, def) { return await this.#get(key, "int", def); }
+    async getFloat(key, def) { return await this.#get(key, "float", def); }
+    async getString(key, def) { return await this.#get(key, "string", def); }
+    async getBinary(key, def) { return await this.#get(key, "binary", def); }
+    async getBytes(key, def) { return await this.#get(key, "bytes", def); }
+    async getObject(key, def) { return await this.#get(key, "object", def); }
+
+    async get(key, def) { return await this.getString(key, def); }
+
+
+    async #set(key, type = "string", value) {
+        if (key == null | key == "") return undefined;
+        let valueString = this._stringifyBy(type, value);
+        if (valueString === false) return false;
+
+        return await this._storage.setItem(this._getFullKey(key), valueString == null ? "" : valueString);
+    }
+
+    async setBoolean(key, value) { return await this.#set(key, "boolean", value); }
+    async setInt(key, value) { return await this.#set(key, "int", value); }
+    async setFloat(key, value) { return await this.#set(key, "float", value); }
+    async setString(key, value) { return await this.#set(key, "string", value); }
+    async setBinary(key, value) { return await this.#set(key, "binary", value); }
+    async setBytes(key, value) { return await this.#set(key, "bytes", value); }
+    async setObject(key, value) { return await this.#set(key, "object", value); }
+    
+    async set(key, value) { return await this.#set(key, value); }
+
+}
+
 
 /**
  * Session storage handler
@@ -937,6 +1062,12 @@ const ESS = new ES(sessionStorage, "SS_");
  * Local storage handler
  */
 const ELS = new ES(localStorage, "LS_");
+
+/**
+ * Native storage handler
+ */
+const ENS = new EAS(nativeStorage, "NS_");
+
 
 
 /***
@@ -1132,6 +1263,7 @@ class EstrePageHandle {
             else if (this.intent == null) this.#intent = intent;
             else for (var key in intent) this.intent[key] = intent[key];
             console.log("pushed intent on " + this.hostType + " " + EstreUiPage.from(this).pid + "\n", this.intent);
+            this.onIntentUpdated(this, intent);
             return true;
         } else false;
     }
@@ -1255,6 +1387,14 @@ class EstrePageHandle {
             if (this.intent?.onFocus != null) for (var item of this.intent.onFocus) if (item.from == this.hostType && !item.disabled) this.processAction(item);
             return true;
         } else return false;
+    }
+
+    onIntentUpdated(handle, intent) {
+        if (this.isOpened) {
+            console.log("[onIntentUpdated] " + this.sectionBound + " " + this.hostType + " " + EstreUiPage.from(this)?.pid);//, this.host);
+            if (this.handler?.onIntentUpdated != null) this.handler.onIntentUpdated(this, intent);
+            if (this.intent?.onIntentUpdated != null) for (var item of this.intent.onIntentUpdated) if (item.from == this.hostType && !item.disabled) this.processAction(item);
+        }
     }
 
     onReload() {
@@ -1403,10 +1543,22 @@ class EstrePageHandle {
                 if (value instanceof Array) this.$host.find(aiv(eds.bindArray, item)).each((i, elem) => {
                     const $elem = $(elem);
 
+                    const placeholderMessage = $elem.attr(eds.placeholder);
+                    const $placeholder = $elem.find(uis.placeholder);
+                    $placeholder.remove();
+                    if (nne(placeholderMessage)) $placeholder.find(".message").html(placeholderMessage);
                     const liHtml = $elem.first().html().trim();
                     $elem.empty();
                     
-                    for (var index in value) {
+                    if (value.length < 1) {
+                        if ($placeholder.length > 0) $elem.append($placeholder);
+                        else {
+                            const placeholder = doc.ce(div, "placeholder");
+                            const message = doc.ce(sp, "message", nne(placeholderMessage) ? placeholderMessage : "No data");
+                            placeholder.append(message);
+                            $elem.append(placeholder);
+                        }
+                    } else for (var index in value) {
                         const arrayItem = value[index];
 
                         const li = $.parseHTML(liHtml);
@@ -1516,6 +1668,13 @@ class EstrePageHandle {
                             if (en(arrayItem) || noe(arrayItem[elem.dataset.showOnExistsObjectArrayItem])) $(elem).css("display", "none");
                         });
             
+                        if ($li.is(ax(eds.showOnNotExistsObjectArrayItem))) {
+                            if (nn(arrayItem) && nne(arrayItem[$li.attr(eds.showOnNotExistsObjectArrayItem)])) $li.css("display", "none");
+                        }
+                        $li.find(ax(eds.showOnNotExistsObjectArrayItem)).each((i, elem) => {
+                            if (nn(arrayItem) && nne(arrayItem[elem.dataset.showOnNotExistsObjectArrayItem])) $(elem).css("display", "none");
+                        });
+            
                         if ($li.is(acv(eds.showOnEqualsObjectArrayItem, "="))) {
                             const [objItem, matchValue] = $li.attr(eds.showOnEqualsObjectArrayItem).split("=");
                             if (en(arrayItem) || arrayItem[objItem] != matchValue) $li.css("display", "none");
@@ -1533,6 +1692,13 @@ class EstrePageHandle {
             }
             this.$host.find(ax(eds.showOnExists)).each((i, elem) => {
                 if (en(data) || noe(data[elem.dataset.showOnExists])) $(elem).css("display", "none");
+            });
+
+            if (this.$host.is(ax(eds.showOnNotExists))) {
+                if (nn(data) && nne(data[this.$host.attr(eds.showOnNotExists)])) this.$host.css("display", "none");
+            }
+            this.$host.find(ax(eds.showOnNotExists)).each((i, elem) => {
+                if (nn(data) && nne(data[elem.dataset.showOnNotExists])) $(elem).css("display", "none");
             });
 
             if (this.$host.is(acv(eds.showOnEquals, "="))) {
@@ -3228,7 +3394,7 @@ class EstrePageHandler {
 
     async onBack(handle) {
         return handle.hostType != "component" ? (handle.isCanBack ? (handle.isStatic ? await handle.close() != null : await handle.close()) : false) : (
-        handle.sectionBound == "blind" || !handle.isStatic ? await handle.close() : false);
+            handle.sectionBound == "blind" || !handle.isStatic ? await handle.close() : false);
     }
 
     onHide(handle, fullyHide) {
@@ -3650,6 +3816,8 @@ class EstreUiPage {
 
 
         "$i&o=functional#popupBrowser^": class extends EstrePageHandler {
+            id = "popupBrowser";
+
             $browserArea
             iframe;
             get cw() { return this.iframe.contentWindow; }
@@ -3686,7 +3854,7 @@ class EstreUiPage {
                 this.$browserArea = handle.$host.find(".browser_area");
                 this.iframe = doc.ce("iframe", "webView");
                 this.iframe.setAttribute("name", this.intentData.name ?? "webview");
-                if (this.intentData.src != null) this.iframe.setAttrubute("src", this.intentData.src);
+                if (this.intentData.src != null) this.iframe.setAttribute("src", this.intentData.src);
                 this.$iframe = $(this.iframe);
 
                 this.$back = handle.$host.find("button.back");
@@ -3753,6 +3921,10 @@ class EstreUiPage {
                 if (this.intentData.hideRefresh || this.intent.onClickRefresh(handle, this.iframe, this.url)) this.history?.reload();
 
                 return true;
+            }
+
+            async onBack(handle) {
+                return await handle.close();
             }
 
             onClose(handle) {
@@ -4840,6 +5012,9 @@ class EstreHandle {
 
         get [uis.checkboxSet]() { return EstreCheckboxSet },
         get [uis.checkboxAlly]() { return EstreCheckboxAlly },
+
+        get [uis.monthSelectorBar]() { return EstreMonthSelectorBar },
+
 
         get [uis.dateShower]() { return EstreDateShower },
     }
@@ -9254,6 +9429,8 @@ class EstreCheckboxSet extends EstreHandle {
         this.$checkboxes = this.$bound.find(inp + aiv("type", "checkbox") + aiv("name", this.name));
 
         this.setEvent();
+
+        return this;
     }
 
     setEvent() {
@@ -9324,6 +9501,181 @@ class EstreCheckboxAlly extends EstreHandle {
             const isAlly = inst.$checkboxes.filter(":checked").length == inst.$checkboxes.length;
             inst.$checkboxAlly.prop("checked", isAlly);
         });
+    }
+}
+
+
+/**
+ * Estre month selector bar handle
+ */
+class EstreMonthSelectorBar extends EstreHandle {
+
+    // constants
+
+
+    // statics
+
+
+    // open property
+    get prev() { return Ecal.getPrevMonth(this.current); }
+    get current() { return this.currentMonth.let(it => {
+        const [year, month] = it.split("-");
+        return new Date(parseInt(year), parseInt(month) - 1);
+    }); }
+    get next() { return Ecal.getNextMonth(this.current); }
+
+    get prevMonth() { return Ecal.getDateSet(this.prev).let(it => it.year + "-" + v2d(it.month)); }
+    get currentMonth() { return this.$bound.attr(eds.current); }
+    set currentMonth(value) { this.$bound.attr(eds.current, value); }
+    get nextMonth() { return Ecal.getDateSet(this.next).let(it => it.year + "-" + v2d(it.month)); }
+
+    monthesItemLimit = 12;
+    forMonthesItemShow = (month) => month.replace("-", ".");
+
+
+    onSelectedMonth = (month) => {};
+
+    onBuildMonthesItem = (month, isCurrent, item, button) => button.if(isCurrent, it => $(it).addClass("font_semi_bold"));
+
+    
+    // enclosed property
+
+
+    // getter and setter
+    $selectorBtn;
+    $selectorCurrent;
+
+    $prevBtn;
+    $nextBtn;
+
+    $monthesList;
+
+
+    constructor(checkboxAlly, host) {
+        super(checkboxAlly, host);
+    }
+
+    release(remove) {
+        super.release(remove);
+    }
+
+    init() {
+        super.init();
+
+        this.$selectorBtn = this.$bound.find(btn + cls + "selector");
+        this.$selectorCurrent = this.$selectorBtn.find(sp + cls + "current");
+
+        this.$prevBtn = this.$bound.find(btn + cls + "prev");
+        this.$nextBtn = this.$bound.find(btn + cls + "next");
+
+        this.$monthesList = this.$bound.find(ul + cls + "monthes");
+
+        this.setEvent();
+
+        if (this.$bound.attr(eds.autoInit) == t1) this.initMonthes();
+
+        return this;
+    }
+
+    setEvent() {
+        const inst = this;
+
+        this.$selectorBtn.click(function (e) {
+            e.preventDefault();
+
+            inst.toggleSelector();
+
+            return false;
+        });
+
+        this.$prevBtn.click(function (e) {
+            e.preventDefault();
+
+            inst.monthSelected(inst.prevMonth);
+
+            return false;
+        });
+        this.$nextBtn.click(function (e) {
+            e.preventDefault();
+
+            inst.monthSelected(inst.nextMonth);
+
+            return false;
+        });
+    }
+
+    initMonthes(initMonth) {
+        if (initMonth != null) this.currentMonth = initMonth;
+        else if (noe(this.currentMonth)) this.currentMonth = Ecal.getDateSet().let(it => it.year + "-" + v2d(it.month));
+
+        this.$monthesList.empty();
+        
+        const month = this.currentMonth;
+
+        const currentDate = this.current;
+        const currentOffset = Ecal.getMonthOffset(currentDate);
+
+        const today = new Date();
+        const todayOffset = Ecal.getMonthOffset(today);
+        // const todayMonth = Ecal.getDateSet(today).let(it => it.year + "-" + v2d(it.month));
+
+        const prevLimit = Math.min(Math.max(todayOffset - currentOffset, 0), parseInt((this.monthesItemLimit - 1) / 2));
+        const nextLimit = this.monthesItemLimit - 1 - prevLimit;
+
+        let count = 0;
+        this.$monthesList.append(this.buildMonthesItem(month, true));
+        for (var i = 1; i <= prevLimit; i++) this.$monthesList.prepend(this.buildMonthesItem(Ecal.getDateSetFromMonth(currentOffset + i).let(it => it.year + "-" + v2d(it.month))));
+        for (var i = 1; i <= nextLimit; i++) this.$monthesList.append(this.buildMonthesItem(Ecal.getDateSetFromMonth(currentOffset - i).let(it => it.year + "-" + v2d(it.month))));
+
+        this.setEventMonthes();
+    }
+
+    buildMonthesItem(month, isCurrent = false) {
+        const item = doc.ce(li);
+        const button = doc.ce(btn, "tp_tiled_btn");
+        button.setAttribute(eds.month, month);
+        button.append(doc.ce(sp, null, this.forMonthesItemShow?.(month) ?? month));
+        item.append(button);
+
+        this.onBuildMonthesItem?.(month, isCurrent, item, button);
+        return item;
+    }
+
+    setEventMonthes() {
+        const inst = this;
+
+        this.$monthesList.find(li + c.c + btn).click(function (e) {
+            e.preventDefault();
+
+            inst.monthSelected(this.dataset.month);
+
+            return false;
+        });
+    }
+
+    toggleSelector() {
+        this.$bound.attr(eds.dropdownOpen, this.$bound.attr(eds.dropdownOpen) == t1 ? "" : t1);
+    }
+
+    openSelector() {
+        this.$bound.attr(eds.dropdownOpen, t1);
+    }
+
+    closeSelector() {
+        this.$bound.attr(eds.dropdownOpen, "");
+    }
+
+    monthSelected(month) {
+        if (month != null) this.currentMonth = month;
+        else {
+            if (noe(this.currentMonth)) this.currentMonth = Ecal.getDateSet().let(it => it.year + "-" + v2d(it.month));
+            month = this.currentMonth;
+        }
+
+        this.closeSelector();
+        this.$selectorCurrent.html(this.forMonthesItemShow?.(month) ?? month);
+        this.onSelectedMonth?.(month);
+        this.initMonthes();
     }
 }
 
@@ -10383,7 +10735,17 @@ const estreUi = {
         this.initHeaderBars();
         this.initSessionManager();
 
-        $("main#splashRoot").css("z-index", null);
+        // $("#splashRoot").css("z-index", null);
+
+        const inst = this;
+        window.addEventListener("focus", function (e) {
+            // note("onFocus");
+            inst.onFocus();
+        });
+        window.addEventListener("blur", function (e) {
+            // note("onBlur");
+            inst.onBlur();
+        });
 
         if (setOnReady) this.checkOnReady();
     },
@@ -10847,9 +11209,11 @@ const estreUi = {
                 return closed;
             } else return null;
         } else {
-            const closed = await component.close(false);
-            if (!component.isStatic) this.releaseInstantContent(component);
-            return closed;
+            if (!component.$host.hasClass("home")) {
+                const closed = await component.close(false);
+                if (!component.isStatic) this.releaseInstantContent(component);
+                return closed;
+            } else return false;
         }
     },
 
@@ -11350,7 +11714,7 @@ const estreUi = {
         return await this.onCloseContainer();
     },
 
-
+    
     onReload() {
         return this.isOpenMainMenu ? this.onReloadMenu() : false ||
             this.onReloadBlinded() || this.onReloadMain();
@@ -11419,6 +11783,17 @@ const estreUi = {
         if (!processed && !currentOnTop.isHome) processed = this.switchRootTabPrev();
         return processed;
     },
+
+
+    onFocus() {
+        // <= to do implement
+        // this.focus();
+    },
+    
+    onBlur() {
+        // <= to do implement
+    },
+
 
     async onReady() {
         this.initialHistoryOffset = history.length;

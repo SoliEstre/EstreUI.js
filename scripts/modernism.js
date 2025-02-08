@@ -357,29 +357,28 @@ const dsp = (cls, name, value, wa = t, ca = t, ea = f, extras = {}) => obj.defin
 });
 const defineStaticProperty = dsp;
 const dp = (cls, name, value, wa = t, ca = t, ea = f, extras = {}) => dsp(cls.prototype, name, value, wa, ca, ea, extras);
-const dpx = (name, value, wa = t, ca = t, ea = f, classes = [obj, fnc, str, num, ble, big], extras = {}) => fo(classes, cls => {
-    obj.defineProperty(cls.prototype, name, {
-        // get value() { return tc(value, {
-        //     // [FNC]: it => it,//function (...args) { return (value.bind(this))(...args); },
-        //     // [def]: it => cls(it),
-        //     [BLE]: it => Boolean(it),
-        //     [NUM]: it => Number(it),
-        //     [STR]: it => String(it),
-        //     [BIG]: it => BigInt(it),
-        //     [def]: it => it,
-        // }); },
-        value,
-        writable: wa,
-        configurable: ca,
-        enumerable: ea,
-        ...extras,
-    });
-});
+    // obj.defineProperty(cls.prototype, name, {
+    //     // get value() { return tc(value, {
+    //     //     // [FNC]: it => it,//function (...args) { return (value.bind(this))(...args); },
+    //     //     // [def]: it => cls(it),
+    //     //     [BLE]: it => Boolean(it),
+    //     //     [NUM]: it => Number(it),
+    //     //     [STR]: it => String(it),
+    //     //     [BIG]: it => BigInt(it),
+    //     //     [def]: it => it,
+    //     // }); },
+    //     value,
+    //     writable: wa,
+    //     configurable: ca,
+    //     enumerable: ea,
+    //     ...extras,
+    // });
+const dpx = (name, value, wa = t, ca = t, ea = f, classes = [obj, fnc, str, num, ble, big], extras = {}) => fo(classes, cls => dp(cls, name, value, wa, ca, ea, extras));
 const definePropertyPlex = dpx;
 const ESTRE_MODERNISM_COMPATIBILITY_PREFIX = "__emcp_";
 const dspgs = (cls, name, gets, sets, ca = t, ea = f, extras = {}) => obj.defineProperty(cls, name, {
-    "get": function () { return nxu(this[ESTRE_MODERNISM_COMPATIBILITY_PREFIX + name]) ? this[ESTRE_MODERNISM_COMPATIBILITY_PREFIX + name] : gets() },
-    "set": function (val) { if (xu(sets)) this[ESTRE_MODERNISM_COMPATIBILITY_PREFIX + name] = val; else sets(val); },
+    "get": function () { return nxu(this[ESTRE_MODERNISM_COMPATIBILITY_PREFIX + name]) ? this[ESTRE_MODERNISM_COMPATIBILITY_PREFIX + name] : gets.bind(this)() },
+    "set": function (val) { if (xu(sets)) this[ESTRE_MODERNISM_COMPATIBILITY_PREFIX + name] = val; else sets.bind(this)(val); },
     configurable: ca,
     enumerable: ea,
     ...extras,
@@ -414,6 +413,9 @@ dpx("kindCase", function () { return kc(this.it, ...arguments); });
 dpx("dr", function (does = (it, args) => {}, returns, args = []) { return dr(does, returns, [this.it, ...args]); });
 dpx("drx", function (does = (it, args) => {}, forReturns, args = []) { return drx(does, forReturns, [this.it, ...args]); });
 
+// dpx("apply", function (process = it => it) { process.bind(this)(); return this.it; });
+dpx("also", function (process = it => it) { process(this.it); return this.it; });
+// dpx("run", function (process = it => it) { return process.bind(this)(); });
 dpx("let", function (process = it => it) { return process(this.it); });
 dpx("go", function (asyncProcess = (resolve, reject) => resolve(this.it)) { return new Promise(asyncProcess); });
 
