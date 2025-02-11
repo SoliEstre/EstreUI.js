@@ -837,6 +837,9 @@ nav#managedOverlay > section#toastUpSlide > div.container > article.popup_interf
 nav#managedOverlay > section#toastUpSlide > div.container > article.popup_interface > .dialog > div.actions > span.right { flex-direction: row-reverse; }
 nav#managedOverlay > section#toastUpSlide > div.container > article.popup_interface > .dialog > div.actions > span.right > button { }
 nav#managedOverlay > section#toastUpSlide > div.container > article.popup_interface > .dialog > div.actions > span.right > button:not(:first-child) { margin-right: var(--inter-item-margin); }
+@media all and (min-height: 700px) and (min-width: 740px) {
+nav#managedOverlay > section#toastUpSlide > div.container > article.popup_interface > .dialog { max-width: 450px; }
+}
 
 nav#managedOverlay > section#interaction > div.container > article.popup_interface { }
 nav#managedOverlay > section#interaction > div.container > article.popup_interface > .dialog { --radius: 24px; --bg-color: rgb(from var(--common-bg-color) r g b / 66.6667%); display: flex; flex-flow: column nowrap; min-width: 240px; max-width: calc(100vw - var(--left-pad) - var(--right-pad)); max-height: calc(100vh - var(--top-safe-pad) - var(--bottom-safe-pad)); box-sizing: border-box; padding: 20px; border-radius: var(--radius); background-color: transparent; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
