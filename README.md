@@ -35,7 +35,7 @@ Applications for Estre UI demonstration
 
 # WebView Container Application for Estre UI
 
-[WVCA4UI Github](https://github.com/SoliEstre/WebViewContainerApplication-for-EstreUI.js) - https://github.com/SoliEstre/WebViewContainerApplication-for-EstreUI.js
+[WVCA4EUI Github](https://github.com/SoliEstre/WebViewContainerApplication-for-EstreUI.js) - https://github.com/SoliEstre/WebViewContainerApplication-for-EstreUI.js
 
 > We are opend to the public this reference Flutter project.   
 > it's can make be serviced native interoperated web base application to iOS & Android mobile app store as too easier and quicker.   
@@ -293,6 +293,24 @@ And to be added Notification slide page.
 Post note card(such as Toast of Android) on bottom of screen.
 
 <br />
+
+## Popup browser
+
+This is for provide external web pages on be nested by Estre UI.   
+but isn't support cookie. it's caused by iframe based method.   
+that's limited by browser.   
+If specified external page is required the cookie. use window.open().   
+but it's not supported PWA on iOS and Samsung Browser. use native app container.
+
+### popupBrowser(args..) / estrePopupBrowser({options..})
+
+Open nested(iframe) popup browser on overlay section.
+
+### closePopupBrowserWhenOnTop()
+
+Close popup browser if it is showing on top.   
+this method is for WVCA4EUI.
+
 
 <br />
 
