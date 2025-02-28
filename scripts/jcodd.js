@@ -30,18 +30,21 @@ SOFTWARE.
 //
 // The JSON based lite code format
 //
-// v0.6 / release 2025.02.07
+// v0.8 / release 2025.02.17
 //
 // Take to be liten from JSON code to smaller converted characters for like as BASE64.
+//
+// And JCODD code output is only one exactly from any defined by same object structure & data.
+// Be excepted when different version of JCODD.
 //
 //
 // :: Code regulations
 //
 // 1. null is n, true is t, false is f.
-// 2. No space and carriage return & line feed on code. Only allowed in data.
-// 3. Omit "" variable definition.
+// 2. No space and carriage return & line feed in the code. Only allowed for data definition.
+// 3. Omit "" (double quote) for variable name definition.
 
-let Jcodd = {
+class Jcodd {
 
     /**
      * Characterize JSON
@@ -50,7 +53,12 @@ let Jcodd = {
      * 
      * @returns {string} jcodd
      */
-    toCodd: function (json) {
+    static toCodd (json) {
+        switch (json) {
+            case "true": return "t";
+            case "false": return "f";
+            case "null": return "n";
+        }
         var ex;
         //Get clean json
         let p1 = JSON.stringify(JSON.parse(json));
@@ -74,7 +82,7 @@ let Jcodd = {
         // console.log(ex);
 
         return ex;
-    },
+    }
 
     /**
      * Convert object to JCODD directly
@@ -83,11 +91,11 @@ let Jcodd = {
      * 
      * @returns {string} JCODD
      */
-    coddify: function (obj) {
+    static coddify (obj) {
         let json = JSON.stringify(obj);
 
         return this.toCodd(json);
-    },
+    }
 
     /**
      * Parse JCODD to JSON
@@ -96,7 +104,12 @@ let Jcodd = {
      * 
      * @return {string} json
      */
-    toJson: function (codd) {
+    static toJson (codd) {
+        switch (codd) {
+            case "t": return "true";
+            case "f": return "false";
+            case "n": return "null";
+        }
         //unescape
         let p1 = this.unescape(codd);//unescape(codd);//=> deprecated
         //Assign ""
@@ -109,7 +122,7 @@ let Jcodd = {
         let p5 = p4.replace(/([\[\,\:])f([\]\,\}])/g, "$1false$2").replace(/([\[\,\:])f([\]\,\}])/g, "$1false$2");
 
         return p5;
-    },
+    }
 
     /**
      * Convert JCODD to object directly
@@ -118,11 +131,11 @@ let Jcodd = {
      * 
      * @returns {*} object
      */
-    parse: function (codd) {
+    static parse (codd) {
         let json = this.toJson(codd);
 
         return JSON.parse(json);
-    },
+    }
 
     /**
      * Return to be escaped unicode character from char code
@@ -131,7 +144,7 @@ let Jcodd = {
      * 
      * @returns {String} unescaped
      */
-    esc: function (cc) {
+    static esc (cc) {
         if (cc < 0x20 || cc > 0x7e) {
             let x16 = cc.toString(16);
             var ex;
@@ -139,7 +152,7 @@ let Jcodd = {
             else ex = "%" + x16.padStart(2, '0').toUpperCase();
             return ex;
         } else return String.fromCharCode(cc);
-    },
+    }
 
     /**
      * Return to be escaped unicode characters in string
@@ -148,13 +161,13 @@ let Jcodd = {
      * 
      * @returns {String} unescaped
      */
-    escape: function (str) {
+    static escape (str) {
         var escaped = "";
         for (var i=0; i<str.length; i++) {
             escaped += this.esc(str.charCodeAt(i));
         }
         return escaped;
-    },
+    }
 
     /**
      * Return to be unescaped unicode characters in string
@@ -163,13 +176,41 @@ let Jcodd = {
      * 
      * @returns {String} escaped
      */
-    unescape: function (str) {
+    static unescape (str) {
         return str.replace(/%u([\dA-F]{4})/gi, (match, block) => 
             String.fromCharCode(parseInt(block, 16))
         );
-    },
+    }
+
+
+    #obj;
+    get obj() { return this.#obj; }
+    get json() { return JSON.stringify(this.#obj); }
+    get jcodd() { return Jcodd.coddify(this.#obj); }
+    get base64() { return btoa(this.jcodd); }
+    get code() { return this.jcodd; }
+
+    /**
+     * Quick set object and get converted to any data type
+     * @param {*} any BASE64 orJCODD or JSON or object or primitive
+     */
+    constructor(any) {
+        if (typeof any == "string") try {
+            any = Jcodd.parse(any);
+        } catch (e) {
+            try {
+                any = Jcodd.parse(atob(any));
+            } catch (e) {
+                // do nothing
+            }
+        }
+        this.#obj = any;
+    }
+
+    toString() {
+        return this.code;
+    }
+
 }
 
-let JCODD = function(jcodd) {
-    return Jcodd.parse(jcodd);
-}
+const JCODD = any => new Jcodd(any);

@@ -133,6 +133,14 @@ const uis = {
     // checkbox ally
     checkboxAlly: ".checkbox_ally",
 
+    // toaster slot
+    toasterSlot: ".toaster_slot",
+
+
+    // quick transitions
+    ezHidable: ".ez_hidable",
+    fixedAccess: ".fixed_access",
+
 
     // swipe handler
     blockSwipe: ".block_swipe",
@@ -196,6 +204,9 @@ const eds = {
     showOnExistsObjectArrayItem: "data-show-on-exists-object-array-item",
     showOnNotExistsObjectArrayItem: "data-show-on-not-exists-object-array-item",
     showOnEqualsObjectArrayItem: "data-show-on-equals-object-array-item",
+
+    frozenPlaceholder: "data-frozen-placeholder",
+    frozenItem: "data-frozen-item",
 
     // for estre ui attribute
     lead: "data-lead",
@@ -310,6 +321,12 @@ const eds = {
     // for checkbox set
     checkboxSelection: "data-checkbox-selection",
 
+    // for toaster slot
+    toast: "data-toast",
+    customToast: "data-custom-toast",
+    toastTitle: "data-toast-title",
+    toastMessage: "data-toast-message",
+
 
     // for date shower
     dateFrom: "data-date-from",
@@ -318,6 +335,9 @@ const eds = {
     // for month selector bar
     dropdownOpen: "data-dropdown-open",
 
+
+    // for solid point
+    solid: "data-solid",
 
     // for internal link and page link
     openTarget: "data-open-target",
@@ -1006,7 +1026,14 @@ class ES {
     setObject(key, value) { return this.#set(key, "object", value); }
     
     set(key, value) { return this.#set(key, value); }
+
     
+    #remove(key) {
+        if (key == null | key == "") return undefined;
+        return this._storage.removeItem(this._getFullKey(key));
+    }
+
+    remove(key) { return this.#remove(key); }
 }
 
 class EAS extends ES {
@@ -1049,6 +1076,14 @@ class EAS extends ES {
     async setObject(key, value) { return await this.#set(key, "object", value); }
     
     async set(key, value) { return await this.#set(key, value); }
+
+
+    async #remove(key) {
+        if (key == null | key == "") return undefined;
+        return await this._storage.removeItem(this._getFullKey(key));
+    }
+
+    async remove(key) { return await this.#remove(key); }
 
 }
 
@@ -1246,7 +1281,7 @@ class EstrePageHandle {
     init(intent) {
         if (this.handler == null) this.setHandler(new EstrePageHandler(this));
 
-        this.pushIntent(intent);
+        this.pushIntent(intent, true);
 
         this.onBring();
 
@@ -1257,7 +1292,7 @@ class EstrePageHandle {
         if (this.#handler == null) this.#handler = handler;
     }
     
-    pushIntent(intent) {
+    pushIntent(intent, onInit = false) {
         if (intent != n) {
             if (intent === f) this.#intent = null;
             else if (this.intent == null) this.#intent = intent;
@@ -1477,8 +1512,28 @@ class EstrePageHandle {
 
 
 
+    // active struct master
+    applyActiveStruct($host = this.$host, replaceHandles = false) {
+        this.initContentBrokers($host);
+        this.initLiveElement($host, replaceHandles);
+    }
+
+    applyActiveStructAfterBind($host = this.$host, replaceHandles = false) {
+        this.initContentBrokersAfterBind($host);
+        this.initLiveElement($host, replaceHandles);
+    }
+
     // content brokers
-    initDataBind() {
+    initContentBrokers($host = this.$host) {
+        this.initDataBind($host);
+        this.initContentBrokersAfterBind($host);
+    }
+
+    initContentBrokersAfterBind($host = this.$host) {
+        this.initSolidPoint($host);
+    }
+
+    initDataBind($host = this.$host) {
         const eachTarget = ($elem, attrId, each = (target, prefix = "", suffix = "") => {}) => {
             const specifier = $elem.attr(attrId);
             if (specifier != null && specifier != "") {
@@ -1513,56 +1568,67 @@ class EstrePageHandle {
 
                 if (en(value)) continue;
 
-                if (this.$host.is(aiv(eds.bind, item))) this.$host.html(value);
-                if (this.$host.is(aiv(eds.bindAmount, item))) this.$host.html(v2a(value));
-                if (this.$host.is(aiv(eds.bindValue, item))) this.$host.val(value);
-                this.$host.find(aiv(eds.bind, item)).html(value);
-                this.$host.find(aiv(eds.bindAmount, item)).html(v2a(value));
-                this.$host.find(aiv(eds.bindValue, item)).val(value);
+                if ($host.is(aiv(eds.bind, item))) $host.html(value);
+                if ($host.is(aiv(eds.bindAmount, item))) $host.html(v2a(value));
+                if ($host.is(aiv(eds.bindValue, item))) $host.val(value);
+                $host.find(aiv(eds.bind, item)).html(value);
+                $host.find(aiv(eds.bindAmount, item)).html(v2a(value));
+                $host.find(aiv(eds.bindValue, item)).val(value);
 
-                if (this.$host.is(acv(eds.bindAttr, item + "@"))) eachTargetFor(this.$host, eds.bindAttr, (targetItem, targetAttr, prefix = "", suffix = "") => {
-                    if (targetItem == item) this.$host.attr(targetAttr, prefix + value + suffix);
+                if ($host.is(acv(eds.bindAttr, item + "@"))) eachTargetFor($host, eds.bindAttr, (targetItem, targetAttr, prefix = "", suffix = "") => {
+                    if (targetItem == item) $host.attr(targetAttr, prefix + value + suffix);
                 });
-                this.$host.find(acv(eds.bindAttr, item + "@")).each((i, elem) => {
+                $host.find(acv(eds.bindAttr, item + "@")).each((i, elem) => {
                     const $elem = $(elem);
                     eachTargetFor($elem, eds.bindAttr, (targetItem, targetAttr, prefix = "", suffix = "") => {
                         if (targetItem == item) $elem.attr(targetAttr, prefix + value + suffix);
                     });
                 });
 
-                if (this.$host.find(acv(eds.bindStyle, item + "@"))) eachTargetFor(this.$host, eds.bindStyle, (targetItem, targetStyle, prefix = "", suffix = "") => {
-                    if (targetItem == item) this.$host.css(targetStyle, prefix + value + suffix);
+                if ($host.find(acv(eds.bindStyle, item + "@"))) eachTargetFor($host, eds.bindStyle, (targetItem, targetStyle, prefix = "", suffix = "") => {
+                    if (targetItem == item) $host.css(targetStyle, prefix + value + suffix);
                 });
-                this.$host.find(acv(eds.bindStyle, item + "@")).each((i, elem) => {
+                $host.find(acv(eds.bindStyle, item + "@")).each((i, elem) => {
                     const $elem = $(elem);
                     eachTargetFor($elem, eds.bindStyle, (targetItem, targetStyle, prefix = "", suffix = "") => {
                         if (targetItem == item) $elem.css(targetStyle, prefix + value + suffix);
                     });
                 });
 
-                if (value instanceof Array) this.$host.find(aiv(eds.bindArray, item)).each((i, elem) => {
+                if (value instanceof Array) $host.find(aiv(eds.bindArray, item)).each((i, elem) => {
                     const $elem = $(elem);
 
                     const placeholderMessage = $elem.attr(eds.placeholder);
                     const $placeholder = $elem.find(uis.placeholder);
-                    $placeholder.remove();
-                    if (nne(placeholderMessage)) $placeholder.find(".message").html(placeholderMessage);
-                    const liHtml = $elem.first().html().trim();
-                    $elem.empty();
+                    // $placeholder.remove();
+                    if (elem.dataset.frozenPlaceholder == null) {
+                        $placeholder.find(".message").html("|message|");
+                        const solidPlaceholder = $placeholder.length > 0 ? $placeholder[0].stringified() : (new Doctre("div.placeholder", [["span.message", "|message|"]])).toString();
+                        $elem.attr(eds.frozenPlaceholder, solidPlaceholder);
+                    }
+
+                    // const liHtml = $elem.first().html().trim();
+                    // $elem.empty();
+                    if (elem.dataset.frozenItem == null) elem.solid("frozenItem");
+                    else $elem.empty();
                     
                     if (value.length < 1) {
-                        if ($placeholder.length > 0) $elem.append($placeholder);
-                        else {
-                            const placeholder = doc.ce(div, "placeholder");
-                            const message = doc.ce(sp, "message", nne(placeholderMessage) ? placeholderMessage : "No data");
-                            placeholder.append(message);
-                            $elem.append(placeholder);
-                        }
+                        // if ($placeholder.length > 0) {
+                        //     if (nne(placeholderMessage)) $placeholder.find(".message").html(placeholderMessage);
+                        //     $elem.append($placeholder);
+                        // } else {
+                        //     const placeholder = doc.ce(div, "placeholder");
+                        //     const message = doc.ce(sp, "message", nne(placeholderMessage) ? placeholderMessage : "No data");
+                        //     placeholder.append(message);
+                        //     $elem.append(placeholder);
+                        // }
+                        elem.melt({ "message": (nne(placeholderMessage) ? placeholderMessage : "No data") }, "frozenPlaceholder");
                     } else for (var index in value) {
                         const arrayItem = value[index];
 
-                        const li = $.parseHTML(liHtml);
-                        const $li = $(li);
+                        // const li = $.parseHTML(liHtml);
+                        // const $li = $(li);
+                        const $li = $(elem.hot({}, "frozenItem")).children();
                         $elem.append($li);
 
                         const valueIsObject = typeof arrayItem == "object";
@@ -1687,57 +1753,104 @@ class EstrePageHandle {
                 });
             }
 
-            if (this.$host.is(ax(eds.showOnExists))) {
-                if (en(data) || noe(data[this.$host.attr(eds.showOnExists)])) this.$host.css("display", "none");
+            if ($host.is(ax(eds.showOnExists))) {
+                if (en(data) || noe(data[$host.attr(eds.showOnExists)])) $host.css("display", "none");
             }
-            this.$host.find(ax(eds.showOnExists)).each((i, elem) => {
+            $host.find(ax(eds.showOnExists)).each((i, elem) => {
                 if (en(data) || noe(data[elem.dataset.showOnExists])) $(elem).css("display", "none");
             });
 
-            if (this.$host.is(ax(eds.showOnNotExists))) {
-                if (nn(data) && nne(data[this.$host.attr(eds.showOnNotExists)])) this.$host.css("display", "none");
+            if ($host.is(ax(eds.showOnNotExists))) {
+                if (nn(data) && nne(data[$host.attr(eds.showOnNotExists)])) $host.css("display", "none");
             }
-            this.$host.find(ax(eds.showOnNotExists)).each((i, elem) => {
+            $host.find(ax(eds.showOnNotExists)).each((i, elem) => {
                 if (nn(data) && nne(data[elem.dataset.showOnNotExists])) $(elem).css("display", "none");
             });
 
-            if (this.$host.is(acv(eds.showOnEquals, "="))) {
-                const [item, matchValue] = this.$host.attr(eds.showOnEquals).split("=");
-                if (en(data) || data[item] != matchValue) this.$host.css("display", "none");
+            if ($host.is(acv(eds.showOnEquals, "="))) {
+                const [item, matchValue] = $host.attr(eds.showOnEquals).split("=");
+                if (en(data) || data[item] != matchValue) $host.css("display", "none");
             }            
-            this.$host.find(acv(eds.showOnEquals, "=")).each((i, elem) => {
+            $host.find(acv(eds.showOnEquals, "=")).each((i, elem) => {
                 const [item, matchValue] = elem.dataset.showOnEquals.split("=");
                 if (en(data) || data[item] != matchValue) $(elem).css("display", "none");
             });            
         }
     }
 
-    initInternalLink(on = this.$host) {
-        if (on.is(ax(eds.openTarget) + ax(eds.openContainer) + ax(eds.openId))) this.setEventInternalLink(on[0]);
-        const $links = on.find(ax(eds.openTarget) + ax(eds.openContainer) + ax(eds.openId));
+    initSolidPoint($host = this.$host) {
+        const $solidPoint = $host.find(ax(eds.solid));
+
+        const points = [];
+        for (const point of $solidPoint) {
+            const val = point.dataset.solid;
+            if (nne(val?.trim()) && !isNaN(val)) {
+                const priority = parseInt(val);
+                if (points[priority] == null) points[priority] = [];
+                points[priority].push(point);
+            }
+        }
+
+        for (const index in points) {
+            const pointSet = points[index];
+            if (pointSet != null) for (var i = pointSet.length - 1; i >= 0; i--) {
+                const point = pointSet[i];
+                if (noe(point.dataset.frozen) && point.solid?.() != null) point.dataset.solid = "";
+            }
+        }
+    }
+
+    // live element
+    initLiveElement($host = this.$host, replaceHandles = false) {
+        this.initHandles($host, replaceHandles);
+        this.initPassiveLinks($host);
+    }
+
+    releaseHandles($host = this.$host) {
+        EstreHandle.releaseHandles($host, this);
+    }
+
+    initHandles($host = this.$host, replace = false) {
+        EstreHandle.initHandles($host, this, replace);
+    }
+
+    // passive links
+    initPassiveLinks($host = this.$host) {
+        this.initInternalLink($host);
+        this.initPageLink($host);
+    }
+
+    initInternalLink($host = this.$host) {
+        if ($host.is(ax(eds.openTarget) + ax(eds.openContainer) + ax(eds.openId))) this.setEventInternalLink($host[0]);
+        const $links = $host.find(ax(eds.openTarget) + ax(eds.openContainer) + ax(eds.openId));
         for (var item of $links) this.setEventInternalLink(item);
     }
 
-    initPageLink(on = this.$host) {
-        if (on.is(ax(eds.closePage))) this.setEventPageCloseLink(on[0]);
-        const $closeLinks = on.find(ax(eds.closePage));
+    initPageLink($host = this.$host) {
+        if ($host.is(ax(eds.closePage))) this.setEventPageCloseLink($host[0]);
+        const $closeLinks = $host.find(ax(eds.closePage));
         for (var item of $closeLinks) this.setEventPageCloseLink(item);
         
-        if (on.is(ax(eds.openPage))) this.setEventPageOpenLink(on[0]);
-        const $openLinks = on.find(ax(eds.openPage));
+        if ($host.is(ax(eds.openPage))) this.setEventPageOpenLink($host[0]);
+        const $openLinks = $host.find(ax(eds.openPage));
         for (var item of $openLinks) this.setEventPageOpenLink(item);
 
-        if (on.is(ax(eds.showPage))) this.setEventPageShowLink(on[0]);
-        const $showLinks = on.find(ax(eds.showPage));
+        if ($host.is(ax(eds.showPage))) this.setEventPageShowLink($host[0]);
+        const $showLinks = $host.find(ax(eds.showPage));
         for (var item of $showLinks) this.setEventPageShowLink(item);
     }
 
 
     // event handlers
+    #internalLinkEvent = null;
+    #pageOpenLinkEvent = null;
+    #pageCloseLinkEvent = null;
+    #pageShowLinkEvent = null;
+
     setEventInternalLink(item) {
         const handle = this;
 
-        $(item).off("click").click(function(e) {
+        this.#internalLinkEvent ??= function(e) {
             e.preventDefault();
 
             const $this = $(this);
@@ -1953,11 +2066,13 @@ class EstrePageHandle {
             }
 
             return false;
-        });
+        };
+
+        $(item).off("click", this.#internalLinkEvent).click(this.#internalLinkEvent);
     }
 
     setEventPageOpenLink(item) {
-        $(item).click(function(e) {
+        this.#pageOpenLinkEvent ??= function(e) {
             e.stopPropagation();
 
             const $this = $(this);
@@ -1970,11 +2085,13 @@ class EstrePageHandle {
 
             if (intentReady) pageManager.bringPage(pid, intent);
             else pageManager.bringPage(pid);
-        });
+        };
+
+        $(item).off("click", this.#pageOpenLinkEvent).click(this.#pageOpenLinkEvent);
     }
 
     setEventPageShowLink(item) {
-        $(item).click(function(e) {
+        this.#pageShowLinkEvent ??= function(e) {
             e.stopPropagation();
 
             const $this = $(this);
@@ -1987,11 +2104,13 @@ class EstrePageHandle {
 
             if (intentReady) pageManager.showPage(pid, intent);
             else pageManager.showPage(pid);
-        });
+        };
+
+        $(item).off("click", this.#pageShowLinkEvent).click(this.#pageShowLinkEvent);
     }
 
     setEventPageCloseLink(item) {
-        $(item).click(function(e) {
+        this.#pageCloseLinkEvent ??= function(e) {
             e.stopPropagation();
 
             const $this = $(this);
@@ -1999,7 +2118,9 @@ class EstrePageHandle {
             const pid = $this.attr(eds.closePage);
 
             pageManager.closePage(pid);
-        });
+        };
+
+        $(item).off("click", this.#pageCloseLinkEvent).click(this.#pageCloseLinkEvent);
     }
 }
 
@@ -3264,27 +3385,15 @@ class EstreArticle extends EstrePageHandle {
         EstreUiPage.from(this).fetchHandler(this);
         super.init(intent);
 
-        this.initHandles();
-
-        this.initInternalLink();
-        this.initPageLink();
-
+        this.applyActiveStructAfterBind();
         return this;
     }
 
-    pushIntent(intent) {
-        if (super.pushIntent(intent)) {
+    pushIntent(intent, onInit = false) {
+        if (super.pushIntent(intent, onInit)) {
             console.log("on called data bind - " + EstreUiPage.from(this).pid);
-            this.initDataBind();
+            this.applyActiveStruct();
         }
-    }
-
-    releaseHandles() {
-        EstreHandle.releaseHandles(this.$host, this);
-    }
-
-    initHandles() {
-        EstreHandle.initHandles(this.$host, this);
     }
 
     registerHandle(specifier, handle) {
@@ -5000,23 +5109,26 @@ class EstreHandle {
 
     // constants
     static #handles = {
-        get [uis.unifiedCalendar]() { return EstreUnifiedCalendar },
+        get [uis.unifiedCalendar]() { return EstreUnifiedCalendar; },
 
-        get [uis.scalable]() { return EstreScalable },
-        get [uis.collapsible]() { return EstreCollapsible },
-        get [uis.toggleBlock]() { return EstreToggleBlock },
-        get [uis.toggleTabBlock]() { return EstreToggleTabBlock },
-        get [uis.tabBlock]() { return EstreTabBlock },
+        get [uis.scalable]() { return EstreScalable; },
+        get [uis.collapsible]() { return EstreCollapsible; },
+        get [uis.toggleBlock]() { return EstreToggleBlock; },
+        get [uis.toggleTabBlock]() { return EstreToggleTabBlock; },
+        get [uis.tabBlock]() { return EstreTabBlock; },
 
-        get [uis.numKeypad]() { return EstreNumKeypad },
+        get [uis.numKeypad]() { return EstreNumKeypad; },
 
-        get [uis.checkboxSet]() { return EstreCheckboxSet },
-        get [uis.checkboxAlly]() { return EstreCheckboxAlly },
+        get [uis.checkboxSet]() { return EstreCheckboxSet; },
+        get [uis.checkboxAlly]() { return EstreCheckboxAlly; },
 
-        get [uis.monthSelectorBar]() { return EstreMonthSelectorBar },
+        get [uis.monthSelectorBar]() { return EstreMonthSelectorBar; },
 
 
-        get [uis.dateShower]() { return EstreDateShower },
+        get [uis.dateShower]() { return EstreDateShower; },
+
+        get [uis.ezHidable]() { return EstreEzHidable; },
+        get [uis.fixedAccess]() { return EstreFixedAccess; },
     }
     static get handles() { return this.#handles; }
 
@@ -5060,19 +5172,23 @@ class EstreHandle {
         for (var bound of $bounds) this.unregisterHandle(bound, host, specifier);
     }
 
-    static initHandles($host, host) {
+    static initHandles($host, host, replace = false) {
         for (var specifier in this.handles) {
-            this.initHandle($host, host, specifier, this.handles[specifier]);
+            this.initHandle($host, host, specifier, this.handles[specifier], replace);
         }
     }
 
-    static initHandle($host, host, specifier, handleClass) {
-        if ($host.is(specifier)) this.registerHandle(host.host, host, specifier, handleClass);
+    static initHandle($host, host, specifier, handleClass, replace = false) {
+        if ($host.is(specifier)) this.registerHandle(host.host, host, specifier, handleClass, replace);
         const $bounds = $host.find(specifier);
-        for (var bound of $bounds) this.registerHandle(bound, host, specifier, handleClass);
+        for (var bound of $bounds) this.registerHandle(bound, host, specifier, handleClass, replace);
     }
 
-    static registerHandle(element, host, specifier, handleClass) {
+    static registerHandle(element, host, specifier, handleClass, replace = false) {
+        if (element.handle != null) {
+            if (replace) this.unregisterHandle(element, host, specifier);
+            else return;
+        }
         const handle = new handleClass(element, host);
         host.registerHandle(specifier, handle);
         var loaded = this.activeHandle[specifier];
@@ -9781,6 +9897,77 @@ class EstreDateShower extends EstreHandle {
             });
         }
     }
+}
+
+
+// quick transitions
+class EstreEzHidable extends EstreHandle {
+
+    // constants
+
+
+    // statics
+
+
+    // open property
+
+    
+    // enclosed property
+
+
+    // getter and setter
+
+
+
+    constructor(bound, host) {
+        super(bound, host);
+    }
+
+
+    release() {
+        delete this.bound.hide;
+        delete this.bound.show;
+
+        super.release();
+    }
+
+    init() {
+        super.init();
+
+        this.setTrigger();
+    }
+
+    setTrigger() {
+        this.bound.hide = function() {
+            if (this.dataset.hide != null && this.dataset.hide != "0") {
+                this.dataset.hide = "0";
+                setTimeout(() => {
+                    if (this.dataset.hide == "") this.dataset.hide = "1";
+                }, cvt.t2ms($(this).css(a.trdr)));
+            }
+        };
+
+        this.bound.show = function() {
+            const appear = () => {
+                this.dataset.hide = "";
+                setTimeout(() => {
+                    if (this.dataset.hide == "") delete this.dataset.hide;
+                }, cvt.t2ms($(this).css(a.trdr)));
+            };
+            
+            if (this.dataset.hide == "0") appear();
+            else if (this.dataset.hide == "1") {
+                this.dataset.hide = "0";
+                setTimeout(() => {
+                    if (this.dataset.hide == "0") appear();
+                }, 0);
+            }
+        };
+    }
+}
+
+class EstreFixedAccess extends EstreEzHidable {
+
 }
 
 

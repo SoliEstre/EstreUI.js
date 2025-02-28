@@ -158,6 +158,8 @@ const doWhileIn = dw;
 const to = val => typeof val;
 const tm = (val, type) => to(val) == type;
 const typeMatch = tm;
+const tu = val => typeMatch(val, U);
+const typeUndefined = tu;
 const tf = val => typeMatch(val, FNC);
 const typeFunction = tf;
 const tb = val => typeMatch(val, BLE);
@@ -292,6 +294,21 @@ const drx = (does = args => {}, forReturns, args = []) => { does(...args); retur
 const doAndReturnByExecute = drx;
 
 
+// object method shortcut constant
+const ok = (object) => Object.keys(object);
+const keysOf = ok;
+const waysOf = ok;
+const ov = (object) => Object.values(object);
+const valuesOf = ov;
+const looksOf = ov;
+const oe = (object) => Object.entries(object);
+const entriesOf = oe;
+const entireOf = oe;
+const oc = (object) => ok(object).length;
+const countOf = oc;
+const casesOf = oc;
+
+
 // match case constant
 const mc = (val, cases = { [def]: val => {}, [fin]: (val, returns) => {} }, ignoreCase = f) => {
     let match;
@@ -345,6 +362,44 @@ const cc = (object, cases = { [def]: object => {}, [fin]: (object, returns) => {
 const classCase = (object, cases = { [def]: val => {}, [fin]: (val, returns) => {} }) => cc(object, cases);
 const kc = (kindFrom, cases = { [def]: val => {}, [fin]: val => {val, returns} }) => tc(kindFrom, { ...cases, [OBJ]: () => cc(kindFrom, { ...cases, [fin]: u }) });
 const kindCase = (kindFrom, cases = { [def]: val => {}, [fin]: val => {val, returns} }) => kc(kindFrom, cases);
+
+
+/** variable data copy */
+const cp = (from, dataOnly = t, primitiveOnly = f) => en(from) ? from : tc(from, {
+    [OBJ]: val => {
+        const object = new val.constructor();
+        if (dataOnly || primitiveOnly) {
+            for (const key in val) if (en(val) || tc(val[key], {
+                [FNC]: _ => !dataOnly,
+                [OBJ]: _ => !primitiveOnly,
+                [def]: _ => t
+            })) object[key] = cp(val[key], dataOnly, primitiveOnly);
+        } else for (const key in val) object[key] = cp(val[key], dataOnly, primitiveOnly);
+        return object;
+    },
+    [def]: val => val
+});
+const copy = from => cp(from);
+/** object data patch */
+const pc = (to, from, dataOnly = t, primitiveOnly = f, append = f) => {
+    if (!append) for (const key in to) if (tu(from[key]) && tc(to[key], {
+        [FNC]: _ => !dataOnly,
+        [OBJ]: _ => !primitiveOnly,
+        [def]: _ => t
+    })) delete to[key];
+    for (const key in from) if (en(from[key])) to[key] = from[key];
+    else tc(from[key], {
+        [FNC]: val => {
+            if (!dataOnly) to[key] = val;
+        },
+        [OBJ]: val => {
+            if (!primitiveOnly) pc(to[key], val, dataOnly, primitiveOnly, append);
+        },
+        [def]: val => to[key] = val
+    });
+    return to;
+};
+const patch = pc;
 
 
 // Object function shortcut constants
@@ -413,6 +468,20 @@ dpx("kindCase", function () { return kc(this.it, ...arguments); });
 dpx("dr", function (does = (it, args) => {}, returns, args = []) { return dr(does, returns, [this.it, ...args]); });
 dpx("drx", function (does = (it, args) => {}, forReturns, args = []) { return drx(does, forReturns, [this.it, ...args]); });
 
+dpgs(obj, "ok", function () { return ok(this.it); });
+dpgs(obj, "ways", function () { return ok(this.it); });
+dpgs(obj, "ov", function () { return ov(this.it); });
+dpgs(obj, "looks", function () { return ov(this.it); });
+dpgs(obj, "oe", function () { return oe(this.it); });
+dpgs(obj, "entire", function () { return oe(this.it); });
+dpgs(obj, "oc", function () { return oc(this.it); });
+dpgs(obj, "count", function () { return oc(this.it); });
+
+dpgsx("cp", function () { return cp(this.it); });
+dpgsx("copy", function () { return cp(this.it); });
+dp(obj, "pc", function (from, dataOnly = t, primitiveOnly = f, append = f) { return pc(this.it, from, dataOnly, primitiveOnly, append); });
+dp(obj, "patch", function (from, dataOnly = t, primitiveOnly = f, append = f) { return pc(this.it, from, dataOnly, primitiveOnly, append); });
+
 // dpx("apply", function (process = it => it) { process.bind(this)(); return this.it; });
 dpx("also", function (process = it => it) { process(this.it); return this.it; });
 // dpx("run", function (process = it => it) { return process.bind(this)(); });
@@ -437,7 +506,7 @@ const em = ep;
 const at = "@";
 const ds = "$";
 const ms = "&";
-const pc = "%";
+const ps = "%";
 const cf = "^";
 const ak = "*";
 const mp = ak;

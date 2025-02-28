@@ -10,17 +10,25 @@
     https://estreui.mpsolutions.kr
 */
 
+Doctre?.patch?.();
+
 // document aliases
 const doc = {
     get b() { return document.body; },
     get $b() { return $(this.b); },
 
-    ce: (tagName, className, innerHTML) => {
-        const element = document.createElement(tagName);
-        if (className != null) element.setAttribute(m.cls, className);
-        if (innerHTML != null) element.innerHTML = innerHTML;
-        return element;
+    ce: (tagName, classIdName, contentData, style, attrs = {}, datas = {}) => Doctre.createElement(tagName, classIdName, contentData, style, attrs, datas),
+    cte: (innerHtml) => {
+        const tmp = document.createElement("template");
+        if (innerHtml != null) tmp.innerHTML = innerHtml;
+        return tmp;
     },
+    cdf: () => document.createDocumentFragment(),
+    ctn: (string) => document.createTextNode(string),
+
+    l: (frostOrCold, matchReplacer = {}) => Doctre.live(frostOrCold, matchReplacer),
+    s: (nodeOrListOrCold, prettyJson = false, trimBobbleNode = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp) => Doctre.stringify(nodeOrListOrCold, prettyJson, trimBobbleNode, trimHecp, styleToObject, trimIndent),
+    tre: (solidIdOrExtracted, contentData, style = {}, attrs = {}, datas = {}) => new Doctre(solidIdOrExtracted, contentData, style, attrs, datas),
 
     ebi: id => document.getElementById(id),
     ebn: name => document.getElementsByName(name),
@@ -55,6 +63,11 @@ if (typeof $ == U) $ = jQuery;
 const div = "div";
 const ar = "article";
 const se = "section";
+const h1 = "h1";
+const h2 = "h2";
+const h3 = "h3";
+const h4 = "h4";
+const h5 = "h5";
 const ul = "ul";
 const li = "li";
 const br = "br";
@@ -79,6 +92,11 @@ const dlp = "dotlottie-player";
 const DIV = "DIV";
 const AR = "ARTICLE";
 const SE = "SECTION";
+const H1 = "H1";
+const H2 = "H2";
+const H3 = "H3";
+const H4 = "H4";
+const H5 = "H5";
 const UL = "UL";
 const LI = "LI";
 const BR = "BR";
@@ -170,6 +188,8 @@ const m = {
     get name() { return "name"; },
     get tp() { return "type"; },
     get ro() { return "readonly"; },
+    get st() { return "style"; },
+    get t() { return "title"; },
 };
 
 // Tag type case constants
