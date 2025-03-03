@@ -94,10 +94,10 @@ const ft = (toward, work = i => { return false; }) => {
     for (let i=0; i<toward; i++) if (work(i)) break;
 }
 const forZeroToBefore = ft;
-const fr = (toward, work = i => { return false; }) => {
+const item = (toward, work = i => { return false; }) => {
     for (let i=0; i<=toward; i++) if (work(i)) break;
 }
-const forZeroToReach = fr;
+const forZeroToReach = item;
 const fz = (begins, work = i => { return false; }) => {
     for (let i=begins; i>=0; i--) if (work(i)) break;
 }

@@ -30,7 +30,7 @@ SOFTWARE.
 // 
 // Cold(array object) assigning of HTML Tree for make to JSON string.
 // 
-// v0.3 / release 2025.02.26
+// v0.5 / release 2025.03.04
 // 
 // cold = [] - Cold HTML child node list
 // cold[0] - Tag name, classes, id, name, type = "tag.class1.class2#id@name$type" : string
@@ -169,6 +169,7 @@ class Doctre {
 
         if (matchReplacer != null) for (const key in matchReplacer) {
             const replacer = matchReplacer[key];
+            if (replacer == null) continue;
             const regex = new RegExp("\\|" + key + "\\|", "g");
             switch (typeof replacer) {
                 case "string":
@@ -176,6 +177,12 @@ class Doctre {
                     break;
                 case "function":
                     frostOrString = frostOrString.replace(regex, replacer(key));
+                    break;
+                case "object":
+                    frostOrString = frostOrString.replace(regex, JSON.stringify(replacer));
+                    break;
+                default:
+                    frostOrString = frostOrString.replace(regex, "" + replacer);
                     break;
             }
         }

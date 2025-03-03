@@ -256,6 +256,7 @@ const eds = {
     current: "data-current",
     autoInit: "data-auto-init",
     placeholder: "data-placeholder",
+    options: "data-options",
 
     // body global switch
     onResizing: "data-on-resizing",
@@ -3617,6 +3618,10 @@ class EstreDialogPageHandler extends EstrePageHandler {
         });
     }
 
+    async onBack(handle) {
+        return await handle.close();
+    }
+
     onClose(handle) {
         if (handle?.intent?.onDissmiss != null) handle.intent.onDissmiss();
     }
@@ -5121,6 +5126,8 @@ class EstreHandle {
 
         get [uis.checkboxSet]() { return EstreCheckboxSet; },
         get [uis.checkboxAlly]() { return EstreCheckboxAlly; },
+
+        get [uis.toasterSlot]() { return EstreToasterSlot; },
 
         get [uis.monthSelectorBar]() { return EstreMonthSelectorBar; },
 
@@ -9619,6 +9626,67 @@ class EstreCheckboxAlly extends EstreHandle {
         });
     }
 }
+
+
+/**
+ * Toaster slots handle
+ */
+class EstreToasterSlot extends EstreHandle {
+
+    // constants
+
+
+    // statics
+
+
+    // open property
+    
+    // enclosed property
+
+
+    // getter and setter
+
+
+    constructor(toasterSlot, host) {
+        super(toasterSlot, host);
+    }
+
+    release(remove) {
+        super.release(remove);
+    }
+
+    init() {
+        super.init();
+
+        this.setEvent();
+    }
+
+    setEvent() {
+        const inst = this;
+
+        this.$bound.click(function (e) {
+            e.preventDefault();
+
+            switch (this.dataset.toast) {
+                case "option":
+                const options = this.dataset.options;
+                try {
+                    const parsed = JSON.parse(options);
+                    toastOption(this.dataset.toastTitle ?? "", this.dataset.toastMessage ?? "", parsed, (index, value) => this.onselected?.(index, value));
+                } catch (e) {
+                    console.log(e);
+                }
+                break;
+
+                // <= 케이스 추가 구현
+            }
+
+            return false;
+        });
+
+    }
+}
+
 
 
 /**
