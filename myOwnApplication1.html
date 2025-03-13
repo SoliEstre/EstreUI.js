@@ -86,6 +86,9 @@ if (isStandalone) {
     meta.content = "user-scalable=no, width=device-width, initial-scale=1";
     document.querySelector("head").append(meta);
 }
+if (isAppleMobile) {
+    document.documentElement.style.setProperty('--viewport-inset-bottom', 'var(--safe-area-inset-bottom)');
+}
 
 
 const releaseInsetForApp = () => {

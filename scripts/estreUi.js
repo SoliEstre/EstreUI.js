@@ -170,7 +170,7 @@ const eds = {
     // for container
     articleStepsId: "data-article-steps-id",
 
-    // for page manager,
+    // for page manager
 
     // for session manager
     containerType: "data-container-type",
@@ -178,6 +178,9 @@ const eds = {
     articleId: "data-article-id",
 
     // for page handle
+    appbarLeft: "data-appbar-left",
+    appbarCenter: "data-appbar-center",
+    appbarRight: "data-appbar-right",
     bind: "data-bind",
     bindAmount: "data-bind-amount",
     bindValue: "data-bind-value",
@@ -363,7 +366,6 @@ const eds = {
 
     eoo: eoo
 }
-
 
 
 
@@ -1219,6 +1221,7 @@ class EstrePageHandle {
     id = null;
 
     get isStatic() { return this.$host?.attr(eds.static) == t1; }
+    get isFullyStatic() { return this.isStatic; }
     get isModal() { return this.$host?.hasClass("modal"); }
     get isOnTop() {
         const onTop = this.$host?.attr(eds.onTop);
@@ -1228,6 +1231,43 @@ class EstrePageHandle {
     get isCanBack() { return false; }
 
     get title() { return this.$host?.attr(eds.title); }
+
+    #appbarLeft = n;
+    #appbarRight = n;
+    #appbarCenter = n;
+    get appbarLeft() { return val(this.#appbarLeft, it => it ?? val(this.$host?.attr(eds.appbarLeft)?.trim(), aa => en(aa) || aa.length < 2 ? it : (aa == "tp" ? u : aa))); }
+    set appbarLeft(value) { this.#appbarLeft = value; } //this.$host?.attr(eds.appbarLeft, Doctre.stringify(value)); }
+    get appbarRight() { return val(this.#appbarRight, it => it ?? val(this.$host?.attr(eds.appbarRight)?.trim(), aa => en(aa) || aa.length < 2 ? it : (aa == "tp" ? u : aa))); }
+    set appbarRight(value) { this.#appbarRight = value; } //this.$host?.attr(eds.appbarRight, Doctre.stringify(value)); }
+    get appbarCenter() { return val(this.#appbarCenter, it => it ?? val(this.$host?.attr(eds.appbarCenter)?.trim(), aa => en(aa) || aa.length < 2 ? it : (aa == "tp" ? u : aa))); }
+    set appbarCenter(value) { this.#appbarCenter = value; } //this.$host?.attr(eds.appbarCenter, Doctre.stringify(value)); }
+    get isAppbarLeftAssigned() { return this.hostType != "component" && !(this.isStatic && !this.isFullyStatic) && (this.$host.let(it => it.hasClass("constraint") || (it.hasClass("fwvs") && !EUX.isExtensive))) ? !tu(this.appbarLeft) : nn(this.appbarLeft); }
+    get isAppbarRightAssigned() { return this.hostType != "component" && !(this.isStatic && !this.isFullyStatic) && (this.$host.let(it => it.hasClass("constraint") || (it.hasClass("fwvs") && !EUX.isExtensive))) ? !tu(this.appbarRight) : nn(this.appbarRight); }
+    get isAppbarCenterAssigned() { return this.hostType != "component" && !(this.isStatic && !this.isFullyStatic) && (this.$host.let(it => it.hasClass("constraint") || (it.hasClass("fwvs") && !EUX.isExtensive))) ? !tu(this.appbarCenter) : nn(this.appbarCenter); }
+    get appbarLeftFeed() { return setter => {
+        const $set = setter(this.appbarLeft)?.let(it => $(it));
+        this.$appbarLeft = $set;
+        this.onInitAppbarLeft($set);
+        return $set;
+    } }
+    get appbarRightFeed() { return setter => {
+        const $set = setter(this.appbarRight)?.let(it => $(it));
+        this.$appbarRight = $set;
+        this.onInitAppbarRight($set);
+        return $set;
+    } }
+    get appbarCenterFeed() { return setter => {
+        const $set = setter(this.appbarCenter)?.let(it => $(it));
+        this.$appbarCenter = $set;
+        this.onInitAppbarCenter($set);
+        return $set;
+    } }
+    $appbarLeft;
+    $appbarRight;
+    $appbarCenter;
+    onInitAppbarLeft = $appbarLeft => {};
+    onInitAppbarRight = $appbarRight => {};
+    onInitAppbarCenter = $appbarCenter => {};
 
     get isFullyHided() {
         const onTop = this.$host?.attr(eds.onTop);
@@ -1519,6 +1559,10 @@ class EstrePageHandle {
         this.initLiveElement($host, replaceHandles);
     }
 
+    applyActiveStructLocalBind($host = this.$host) {
+        this.initDataBind($host);
+    }
+
     applyActiveStructAfterBind($host = this.$host, replaceHandles = false) {
         this.initContentBrokersAfterBind($host);
         this.initLiveElement($host, replaceHandles);
@@ -1532,6 +1576,7 @@ class EstrePageHandle {
 
     initContentBrokersAfterBind($host = this.$host) {
         this.initSolidPoint($host);
+        this.initLocalStyle($host);
     }
 
     initDataBind($host = this.$host) {
@@ -1800,6 +1845,13 @@ class EstrePageHandle {
             }
         }
     }
+
+    // local styler
+    initLocalStyle($host = this.$host) {
+        const $localStyles = $host.find("local-style");
+        for (const elem of $localStyles) LocalStyle.localize(elem);
+    }
+    
 
     // live element
     initLiveElement($host = this.$host, replaceHandles = false) {
@@ -2132,6 +2184,19 @@ class EstrePageHandle {
 class EstrePageHostHandle extends EstrePageHandle {
 
     get title() { return this.currentOnTop?.title ?? this.$host?.attr(eds.title); }
+
+    // get appbarLeft() { return val(this.currentOnTop?.appbarLeft, it => tu(it) ? super.appbarLeft : it); }
+    // set appbarLeft(value) { super.appbarLeft = value; }
+    // get appbarRight() { return val(this.currentOnTop?.appbarRight, it => tu(it) ? super.appbarRight : it); }
+    // set appbarRight(value) { super.appbarRight = value; }
+    // get appbarCenter() { return val(this.currentOnTop?.appbarCenter, it => tu(it) ? super.appbarCenter : it); }
+    // set appbarCenter(value) { super.appbarCenter = value; }
+    get isAppbarLeftAssigned() { return this.currentOnTop?.isAppbarLeftAssigned || super.isAppbarLeftAssigned; }
+    get isAppbarRightAssigned() { return this.currentOnTop?.isAppbarRightAssigned || super.isAppbarRightAssigned; }
+    get isAppbarCenterAssigned() { return this.currentOnTop?.isAppbarCenterAssigned || super.isAppbarCenterAssigned; }
+    get appbarLeftFeed() { return this.currentOnTop?.isAppbarLeftAssigned ? this.currentOnTop?.appbarLeftFeed : super.appbarLeftFeed; }
+    get appbarRightFeed() { return this.currentOnTop?.isAppbarRightAssigned ? this.currentOnTop?.appbarRightFeed : super.appbarRightFeed; }
+    get appbarCenterFeed() { return this.currentOnTop?.isAppbarCenterAssigned ? this.currentOnTop?.appbarCenterFeed : super.appbarCenterFeed; }
 
     get subPages() { return {}; }
     get subPageList() { return []; }
@@ -2810,6 +2875,8 @@ class EstreContainer extends EstrePageHostHandle {
 
     #onMasterButtonClick = null;
 
+    get isFullyStatic() { return this.component.isFullyStatic && this.isStatic; }
+
     get isCanBack() { return this.component.isExistBackContainer; }
 
     get isRoot() { return this.id == "root"; }
@@ -3348,7 +3415,7 @@ class EstreArticle extends EstrePageHandle {
 
     container = null;
 
-    get isStatic() { return this.$host?.attr(eds.static) == t1; }
+    get isFullyStatic() { return this.container.isFullyStatic && this.isStatic; }
 
     get isMain() { return this.id == "main"; }
     get isSub() { return this.id != "main"; }
@@ -3925,6 +3992,22 @@ class EstreUiPage {
 
             setPageTitle(title) {
                 this.$pageTitle.html(title);
+            }
+
+            setAppbarRightToolSet(frostOrCold, matchReplacer, dataName = "frozen") {
+                const exactContainer = this.handle.currentOnTop;
+                const $exactArticle = exactContainer?.$article?.["right"];
+                const $exactToolSet = $exactArticle?.find(nv + cls + "tool_set");
+                if ($exactToolSet != null) {
+                    const nodes = [];
+                    if (nn(frostOrCold)) {
+                        for (const toolset of $exactToolSet) toolset.alone(frostOrCold, matchReplacer)?.let(it => nodes.push(...it));
+                    } else {
+                        for (const toolset of $exactToolSet) toolset.melt(matchReplacer, dataName)?.let(it => nodes.push(...it));
+                    }
+                    this.handle.applyActiveStructAfterBind($exactToolSet);
+                    return nodes;
+                } return null;
             }
         },
 
@@ -6043,11 +6126,11 @@ class EstreCalendar {
     }
 
     // for scheduler
-    pushUpdateFocused() {
+    pushUpdateFocused(forceUpdate = false) {
         if (this.unical != null && this.unical.scheduler != null) {
             const scopes = ["yearly", "monthly", "weekly", "daily"];
             
-            for (var scope of scopes) this.unical.scheduler.initPages(scope);
+            for (var scope of scopes) this.unical.scheduler.initPages(scope, forceUpdate);
         }
     }
 
@@ -6100,6 +6183,7 @@ class EstreCalendar {
 class EstreVoidCalendarStructure {
     
     calendar = null;
+    get commonGroups() { return this.calendar.commonGroups; }
 
     $structure = null;
 
@@ -6636,14 +6720,12 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
         basic.setAttribute(m.cls, "scheduled");
         basic.setAttribute(eds.group, "basic");
         dy.append(basic);
-        const whole = doc.ce(ul);
-        whole.setAttribute(m.cls, "scheduled");
-        whole.setAttribute(eds.group, "whole");
-        dy.append(whole);
-        const timely = doc.ce(ul);
-        timely.setAttribute(m.cls, "scheduled");
-        timely.setAttribute(eds.group, "timely");
-        dy.append(timely);
+        for (const group of this.commonGroups) {
+            const block = doc.ce(ul);
+            block.setAttribute(m.cls, "scheduled");
+            block.setAttribute(eds.group, group);
+            dy.append(block);
+        }
         const data = doc.ce(ul);
         data.setAttribute(m.cls, "scheduled");
         data.setAttribute(eds.group, "data");
@@ -7165,6 +7247,8 @@ class EstreVariableCalendar extends EstreCalendar {
     $areaResizer = null;
 
 
+    commonGroups = ["whole", "timely"];
+
     structure = null;
 
     areaResizeHandler = null;
@@ -7215,9 +7299,9 @@ class EstreVariableCalendar extends EstreCalendar {
     init() {
         if (ua.isAndroid) this.setNoTransition();
 
-        this.setEventScaler();
+        this.initCalendarBar();
 
-        this.setEventFilter();
+        this.setEventScaler();
 
         this.setEventAreaHandles();
         
@@ -7227,6 +7311,8 @@ class EstreVariableCalendar extends EstreCalendar {
         this.$showToday[0].checked = false;
 
         super.init(today);
+
+        this.releaseScheduleDataFilter();
 
         return this;
     }
@@ -7281,6 +7367,12 @@ class EstreVariableCalendar extends EstreCalendar {
     initScale(scale = this.$bound.attr(eds.beginScale)) {
         super.initScale(scale);
     }
+
+
+    initCalendarBar() {
+        scheduleDataSet.dataHandler.initScheduleCommonFilter(this);
+    }
+
 
     //getter and setter
     get structureType() { return this.$structure.attr(eds.structureType); }
@@ -7372,19 +7464,6 @@ class EstreVariableCalendar extends EstreCalendar {
             inst.$bound.attr(eds.showToday, this.checked ? t1 : "");
             setTimeout(() => { inst.endTransition(); }, inst.transitionTime);
         });    
-    }
-
-    setEventFilter() {
-        const inst = this;
-
-        this.$filterFixed.find(c.c + li).click(function (e) {
-            const $this = $(this);
-            const selected = $this.attr(eds.selected) == t1 ? "" : t1;
-            $this.attr(eds.selected, selected);
-            inst.$bound.attr(eds.showSchedulePrefix + $this.attr(eds.group), selected);
-        });
-
-        scheduleDataSet.dataHandler.initScheduledDataFilter(this);
     }
 
     setEventAreaHandles() {
@@ -7699,9 +7778,9 @@ class EstreVariableCalendar extends EstreCalendar {
         const dateBeginEnd = Escd.getDateBeginEndFrom(focusedYear);
         if (focusedYear != this.prevFocusedYear) {
             const tag = basicOrigin != null && basicOrigin != "" ? "|" + basicOrigin : "";
-            const groups = ["basic" + tag, "whole", "timely"];
+            const groups = ["basic" + tag, ...this.commonGroups];
             if (dataOrigin != "") groups.push("data|" + dataOrigin);
-            const forClear = ["whole", "timely"];
+            const forClear = [...this.commonGroups];
             if (this.prevScheduleBasicOrigin != "") forClear.unshift("basic");
             if (this.prevScheduleDataOrigin != "") forClear.push("data");
             this.structure.clearScheduled(forClear, focusedYear);
@@ -7735,6 +7814,18 @@ class EstreVariableCalendar extends EstreCalendar {
         }
     }
 
+    releaseCalendarChanges() {
+        this.releaseToday();
+
+        this.checkLoadSchedule();
+
+        this.pushUpdateFocused(true);
+    }
+
+    async releaseScheduleDataFilter() {
+        await scheduleDataSet.dataHandler.initScheduledDataFilter(this);
+    }
+
 
     // from scheduleDataSet
     pushDailySchedule(listGrouped, dateId) {
@@ -7762,6 +7853,7 @@ class EstreUnifiedScheduler {
     // instance property
     unical = null;
     calendar = null;
+    get commonGroups() { return this.calendar?.commonGroups ?? []; }
     area = null;
     $area = null;
 
@@ -7835,10 +7927,10 @@ class EstreUnifiedScheduler {
         }
     }
 
-    initPages(scope, bounds = Escd.getBounds(scope, this.calendar.dateFocused)) {
+    initPages(scope, forceUpdate = false, bounds = Escd.getBounds(scope, this.calendar.dateFocused)) {
         const content = this.content[scope];
         const selected = content.find(c.c + c.w + aiv(eds.pageSelected, t1));
-        if (selected.find(c.c + c.w).length > 0 && bounds[0] == selected.attr(eds.bound)) return;
+        if (!forceUpdate && selected.find(c.c + c.w).length > 0 && bounds[0] == selected.attr(eds.bound)) return;
         if (content != null) {
             const $content = $(content);
             const preload = $content.attr(eds.preload) == t1;
@@ -7889,14 +7981,13 @@ class EstreUnifiedScheduler {
             holder.setAttribute(eds.group, "basic");
             holder.setAttribute(eds.dateId, dateId);
             division.append(holder);
-            var holder = doc.ce(ul, "schedule_holder");
-            holder.setAttribute(eds.group, "whole");
-            holder.setAttribute(eds.dateId, dateId);
-            division.append(holder);
-            var holder = doc.ce(ul, "schedule_holder");
-            holder.setAttribute(eds.group, "timely");
-            holder.setAttribute(eds.dateId, dateId);
-            division.append(holder);
+
+            for (const group of this.commonGroups) {
+                const holder = doc.ce(ul, "schedule_holder");
+                holder.setAttribute(eds.group, group);
+                holder.setAttribute(eds.dateId, dateId);
+                division.append(holder);
+            }
         }
 
         $page.append(division);
@@ -8006,7 +8097,7 @@ class EstreUnifiedScheduler {
         const basicOrigin = this.calendar.basicOrigin;
         // const dataOrigin = this.calendar.dataOrigin;
         const tag = basicOrigin != null && basicOrigin != "" ? "|" + basicOrigin : "";
-        const groups = ["basic" + tag, "whole", "timely"];
+        const groups = ["basic" + tag, ...this.commonGroups];
         // if (dataOrigin != "") groups.push("data|" + dataOrigin);
 
         const dateBeginEnd = Escd.getDateBeginEndFrom(bound, scope);
@@ -8092,12 +8183,11 @@ class ScheduleDataSet {
 
     issueRequest(delayed = false) {
         if (this.requestIssuer == null) {
-            const inst = this;
-            this.requestIssuer = setTimeout(function () { inst.requestProcessor(); }, delayed ? 100 : 0);
+            this.requestIssuer = setTimeout(async () => await this.requestProcessor(), delayed ? 100 : 0);
         }
     }
 
-    requestProcessor() {
+    async requestProcessor() {
         this.requestIssuer = null;
 
         for (const [origin, requests] of this.dataRequests) {
@@ -8125,7 +8215,7 @@ class ScheduleDataSet {
             }
 
             for (var range of ranges) {
-                this.dataHandler.notifyRequestData(origin, range.begin, range.end);
+                await this.dataHandler.notifyRequestData(origin, range.begin, range.end);
             }
         }
 
@@ -8295,7 +8385,7 @@ class ScheduleDataSet {
         this.callers.delete(caller);
     }
     
-    requestPushDataYear(year, caller, groups = ["basic", "whole", "timely"]) {
+    requestPushDataYear(year, caller, groups = ["basic", ...caller.commonGroups]) {
         if (caller != null) this.callers.add(caller);
         
         const dataReady = this.dataReadyYear[year];
@@ -11023,7 +11113,7 @@ const estreUi = {
         window.addEventListener("popstate", async function (e) {
             const state = e.state;
 
-            if (state?.offset != null && state?.offset < history.length) {
+            if (state?.offset != null && state?.offset <= history.length) {
                 inst.isBackwardFlow = true;
 
                 if (await inst.onBack()) {
@@ -11303,6 +11393,7 @@ const estreUi = {
         if (!success && isRootContainer) success = appbar.showContainer("root");
         if (!success && (!isHomeComponent || !isRootContainer)) success = appbar.showContainer("sub");
         estreUi.releaseAppbarPageTitle();
+        estreUi.releaseAppbarRightToolSet();
 
         return success;
     },
@@ -11313,6 +11404,16 @@ const estreUi = {
 
     releaseAppbarPageTitle: function() {
         this.setAppbarPageTitle(this.isOpenMainMenu ? this.menuCurrentOnTop?.title ?? "" : this.mainCurrentOnTop?.title ?? "");
+    },
+
+    setAppbarRightToolSet: function(frostOrCold, matchReplacer, dataName = "frozen") {
+        if (tf(frostOrCold)) return frostOrCold(feed => this.appbar?.handler?.setAppbarRightToolSet(feed, matchReplacer, dataName));
+        else return $(this.appbar?.handler?.setAppbarRightToolSet(frostOrCold, matchReplacer, dataName));
+    },
+
+    releaseAppbarRightToolSet: function() {
+        const appbarFeed = this.isOpenMainMenu ? this.menuCurrentOnTop?.appbarRightFeed : this.mainCurrentOnTop?.appbarRightFeed;
+        return this.setAppbarRightToolSet(appbarFeed);
     },
 
     rootTabOnClick: function(e) {

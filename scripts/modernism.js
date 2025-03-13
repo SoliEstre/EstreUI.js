@@ -88,6 +88,21 @@ const itx = (args = [], isTrue = args => 1 == "0", work = args => {}, ornot = ()
 }
 const executeWhen = itx;
 
+const ifr = (bool, returns, orNot) => bool ? returns : orNot;
+const ifReturn = ifr;
+
+const roen = (bool, returns) => ifr(bool, returns, 0);
+const ifReturnOrEmptyNumber = roen;
+const roes = (bool, returns) => ifr(bool, returns, "");
+const ifReturnOrEmptyString = roes;
+const roea = (bool, returns) => ifr(bool, returns, []);
+const ifReturnOrEmptyArray = roea;
+const roeo = (bool, returns) => ifr(bool, returns, {});
+const ifReturnOrEmptyObject = roeo;
+
+const val = (value, process = it => it) => process(value);
+const valet = val;
+
 
 // common process shortcut constant
 const ft = (toward, work = i => { return false; }) => {
@@ -98,6 +113,7 @@ const item = (toward, work = i => { return false; }) => {
     for (let i=0; i<=toward; i++) if (work(i)) break;
 }
 const forZeroToReach = item;
+
 const fz = (begins, work = i => { return false; }) => {
     for (let i=begins; i>=0; i--) if (work(i)) break;
 }
@@ -106,6 +122,7 @@ const fp = (begins, work = i => { return false; }) => {
     for (let i=begins; i>0; i--) if (work(i)) break;
 }
 const forToPrimeFrom = fp;
+
 const ff = (from, work = i => { return false; }) => {
     for (let i=0; i<from.length; i++) if (work(i, from[i])) break;
 }
@@ -114,6 +131,7 @@ const fb = (from, work = i => { return false; }) => {
     for (let i=from.length-1; i>=0; i--) if (work(i, from[i])) break;
 }
 const forBackward = fb;
+
 const fi = (from, work = (k, v) => { return false; }) => {
     for (const k in from) if (work(k, from[k])) break;
 }
@@ -122,6 +140,7 @@ const fiv = (from, work = v => { return false; }) => {
     for (const k in from) if (work(from[k])) break;
 }
 const forinner = fiv;
+
 const fo = (from, work = v => { return false; }) => {
     for (const v of from) if (work(v)) break;
 }
@@ -288,9 +307,9 @@ const isNotNullAndEmpty = nne;
 
 
 // do and return inline double takes
-const dr = (does = args => {}, returns, args = []) => { does(...args); return returns; };
+const dr = (does = args => {}, returns, ...args) => { does(...args); return returns; };
 const doAndReturn = dr;
-const drx = (does = args => {}, forReturns, args = []) => { does(...args); return forReturns(...args); };
+const drx = (does = args => {}, forReturns, ...args) => { does(...args); return forReturns(...args); };
 const doAndReturnByExecute = drx;
 
 
@@ -307,6 +326,11 @@ const entireOf = oe;
 const oc = (object) => ok(object).length;
 const countOf = oc;
 const casesOf = oc;
+const occ = (object, checker = (k, v) => t) => {
+    let count = 0;
+    fi(oe(object), ([k, v]) => ifx(checker(k, v), _ => count++));
+    return count;
+}
 
 
 // match case constant
@@ -365,7 +389,7 @@ const kindCase = (kindFrom, cases = { [def]: val => {}, [fin]: val => {val, retu
 
 
 /** variable data copy */
-const cp = (from, dataOnly = t, primitiveOnly = f) => en(from) ? from : tc(from, {
+const cp = (from, dataOnly = t, primitiveOnly = f, recusive = t) => en(from) ? from : tc(from, {
     [OBJ]: val => {
         const object = new val.constructor();
         if (dataOnly || primitiveOnly) {
@@ -373,15 +397,20 @@ const cp = (from, dataOnly = t, primitiveOnly = f) => en(from) ? from : tc(from,
                 [FNC]: _ => !dataOnly,
                 [OBJ]: _ => !primitiveOnly,
                 [def]: _ => t
-            })) object[key] = cp(val[key], dataOnly, primitiveOnly);
+            })) object[key] = recusive ? cp(val[key], dataOnly, primitiveOnly, recusive) : val[key];
         } else for (const key in val) object[key] = cp(val[key], dataOnly, primitiveOnly);
         return object;
     },
     [def]: val => val
 });
+/** Object data only deep copy */
 const copy = from => cp(from);
+/** Object functional shallow copy */
+const twin = from => cp(from, f, f, f);
+/** Object functional deep copy */
+const clone = from => cp(from, f, f, t);
 /** object data patch */
-const pc = (to, from, dataOnly = t, primitiveOnly = f, append = f) => {
+const pc = (to, from, dataOnly = t, primitiveOnly = f, recusive = t, append = f) => {
     if (!append) for (const key in to) if (tu(from[key]) && tc(to[key], {
         [FNC]: _ => !dataOnly,
         [OBJ]: _ => !primitiveOnly,
@@ -393,13 +422,52 @@ const pc = (to, from, dataOnly = t, primitiveOnly = f, append = f) => {
             if (!dataOnly) to[key] = val;
         },
         [OBJ]: val => {
-            if (!primitiveOnly) pc(to[key], val, dataOnly, primitiveOnly, append);
+            if (!primitiveOnly) {
+                if (recusive) pc(to[key], val, dataOnly, primitiveOnly, recusive, append);
+                else to[key] = val;
+            }
         },
         [def]: val => to[key] = val
     });
     return to;
 };
 const patch = pc;
+const rv = (to, from, dataOnly = t, primitiveOnly = f, recusive = t, exceptNew = f) => {
+    fromKeys = ok(from);
+    toKeys = ok(to);
+    scanKeys = exceptNew ? fromKeys : [...new Set([...fromKeys, ...toKeys])];
+    for (const key of scanKeys) if (exceptNew || fromKeys.includes(key)) {
+        if (en(from[key])) to[key] = from[key];
+        else tc(from[key], {
+            [FNC]: val => {
+                if (!dataOnly) to[key] = val;
+            },
+            [OBJ]: val => {
+                if (!primitiveOnly) {
+                    if (recusive) rv(to[key], val, dataOnly, primitiveOnly, recusive, exceptNew);
+                    else to[key] = val;
+                }
+            },
+            [def]: val => to[key] = val,
+        });
+    } else if (en(to[key]) || tc(to[key], {
+        [FNC]: _ => !dataOnly,
+        [OBJ]: _ => !primitiveOnly,
+        [def]: _ => t
+    })) delete to[key];
+};
+const revert = rv;
+
+
+/** run handle */
+const pq = (process = it => it, ...args) => setTimeout(process, 0, ...args);
+const postQueue = pq;
+const pp = (process = it => it, ...args) => new Promise((rs, rj) => process(rs, rj, ...args));
+const postPromise = pp;
+const paq = (process = it => it, ...args) => (async (...args) => await process(...args))(...args);
+const postAsyncQueue = paq;
+const pfq = (process = it => it, ...args) => requestAnimationFrame(() => process(...args));
+const postFrameQueue = pfq;
 
 
 // Object function shortcut constants
@@ -477,15 +545,20 @@ dpgs(obj, "entire", function () { return oe(this.it); });
 dpgs(obj, "oc", function () { return oc(this.it); });
 dpgs(obj, "count", function () { return oc(this.it); });
 
-dpgsx("cp", function () { return cp(this.it); });
-dpgsx("copy", function () { return cp(this.it); });
-dp(obj, "pc", function (from, dataOnly = t, primitiveOnly = f, append = f) { return pc(this.it, from, dataOnly, primitiveOnly, append); });
-dp(obj, "patch", function (from, dataOnly = t, primitiveOnly = f, append = f) { return pc(this.it, from, dataOnly, primitiveOnly, append); });
+dp(obj, "cp", function (dataOnly = t, primitiveOnly = f, recusive = t) { return cp(this, dataOnly, primitiveOnly, recusive); });
+dpgs(obj, "copy", function () { return copy(this); });
+dpgs(obj, "twin", function () { return twin(this); });
+dpgs(obj, "clone", function () { return clone(this); });
+dp(obj, "pc", function (from, dataOnly = t, primitiveOnly = f, recusive = t, append = f) { return pc(this.it, from, dataOnly, primitiveOnly, recusive, append); });
+dp(obj, "patch", function (from, dataOnly = t, primitiveOnly = f, recusive = t, append = f) { return pc(this.it, from, dataOnly, primitiveOnly, recusive, append); });
+dp(obj, "rv", function (from, dataOnly = t, primitiveOnly = f, recusive = t, exceptNew = f) { return rv(this.it, from, dataOnly, primitiveOnly, recusive, exceptNew); });
+dp(obj, "revert", function (from, dataOnly = t, primitiveOnly = f, recusive = t, exceptNew = f) { return rv(this.it, from, dataOnly, primitiveOnly, recusive, exceptNew); });
 
 // dpx("apply", function (process = it => it) { process.bind(this)(); return this.it; });
 dpx("also", function (process = it => it) { process(this.it); return this.it; });
 // dpx("run", function (process = it => it) { return process.bind(this)(); });
 dpx("let", function (process = it => it) { return process(this.it); });
+dpx("wait", async function (process = async it => it) { return await process(this.it); });
 dpx("go", function (asyncProcess = (resolve, reject) => resolve(this.it)) { return new Promise(asyncProcess); });
 
 dpx("if", function (bool, process = it => it, ornot = it => {}) { return ifx(bool, process, [this.it], ornot); });

@@ -30,7 +30,7 @@ SOFTWARE.
 // 
 // Cold(array object) assigning of HTML Tree for make to JSON string.
 // 
-// v0.5 / release 2025.03.04
+// v0.6 / release 2025.03.13
 // 
 // cold = [] - Cold HTML child node list
 // cold[0] - Tag name, classes, id, name, type = "tag.class1.class2#id@name$type" : string
@@ -197,7 +197,14 @@ class Doctre {
     }
 
     static parse(frost, matchReplacer = {}) {
-        return this.createFragment(JSON.parse(this.matchReplace(frost, matchReplacer)));
+        const replaced = this.matchReplace(frost, matchReplacer);
+        var parsed;
+        try {
+            parsed = JSON.parse(replaced);
+        } catch (error) {
+            parsed = JSON.parse(replaced.replace(/\'/g, '"'));
+        }
+        return this.createFragment(parsed);
     }
 
     static live(frostOrCold, matchReplacer = {}) {
@@ -306,12 +313,12 @@ class Doctre {
         return trimHecp ? this.trimHecp(frozen) : frozen;
     }
 
-    static trimTextIndent(text) {
+    static trimTextIndent(text, trimIndent = false) {
         return text.split("\n").map(line => {
             let std = line.trimStart();
-            if (std.length != line.length) std = " " + std;
-            let etd = line.trimEnd();
-            if (etd.lenth != std.length) etd += " ";
+            if (!trimIndent && std.length != line.length) std = " " + std;
+            let etd = std.trimEnd();
+            if (!trimIndent && etd.lenth != std.length) etd += " ";
             return etd;
         }).join("\n");
     }
@@ -367,14 +374,14 @@ class Doctre {
         attach(Element, "frozen", function (prettyJson = false, trimBobbleNode = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp) { return this.childNodes.stringify(prettyJson, trimBobbleNode, trimHecp, styleToObject, trimIndent); });
         attach(Element, "takeFrozen", function (prettyJson = false, trimBobbleNode = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp) { const frozen = this.frozen(prettyJson, trimBobbleNode, trimHecp, styleToObject, trimIndent); this.innerHTML = ""; return frozen; });
 
-        attach(Element, "alive", function (frostOrCold, matchReplacer = {}) { this.append(Doctre.live(frostOrCold, matchReplacer)); return this; });
+        attach(Element, "alive", function (frostOrCold, matchReplacer = {}) { const live = Doctre.live(frostOrCold, matchReplacer); const nodeArray = live == null ? null : NodeArray.box(live); if (live != null) this.append(live); return nodeArray; });
         attach(Element, "alone", function (frostOrCold, matchReplacer = {}) { this.innerHTML = ""; return this.alive(frostOrCold, matchReplacer); });
 
         attach(Element, "freeze", function (dataName = "frozen", trimBobbleNode = true) { this.dataset[dataName] = this.childNodes.stringify(false, trimBobbleNode); return this; });
         attach(Element, "solid", function (dataName = "frozen", trimBobbleNode = true) { this.freeze(dataName, trimBobbleNode); this.innerHTML = ""; return this; });
 
-        attach(Element, "hot", function (matchReplacer = {}, dataName = "frozen") { return Doctre.live(this.dataset[dataName], matchReplacer); });
-        attach(Element, "worm", function (matchReplacer = {}, dataName = "frozen") { const live = this.hot(matchReplacer, dataName); const nodeArray = NodeArray.box(live); this.append(live); return nodeArray; });
+        attach(Element, "hot", function (matchReplacer = {}, dataName = "frozen") { const frozen = this.dataset[dataName]; return frozen == null || frozen.trim().length < 2 ? null : Doctre.live(frozen, matchReplacer); });
+        attach(Element, "worm", function (matchReplacer = {}, dataName = "frozen") { const live = this.hot(matchReplacer, dataName); const nodeArray = live == null ? null : NodeArray.box(live); if (live != null) this.append(live); return nodeArray; });
         attach(Element, "melt", function (matchReplacer = {}, dataName = "frozen") { this.innerHTML = ""; return this.worm(matchReplacer, dataName); });
 
         attach(Element, "burn", function (matchReplacer = {}, dataName = "frozen") { const live = this.hot(matchReplacer, dataName); delete this.dataset.frozen; return live; });

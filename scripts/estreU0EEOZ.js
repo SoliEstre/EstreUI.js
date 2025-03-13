@@ -60,7 +60,9 @@ if (typeof $ == U) $ = jQuery;
 
 
 // Tag alias constants
+const bd = "body";
 const div = "div";
+const nv = "nav";
 const ar = "article";
 const se = "section";
 const h1 = "h1";
@@ -89,7 +91,9 @@ const lp = "lottie-player";
 const dlp = "dotlottie-player";
 
 // Tag alias constants (Upper case) - for compare
+const BD = "BODY";
 const DIV = "DIV";
+const NV = "NAV";
 const AR = "ARTICLE";
 const SE = "SECTION";
 const H1 = "H1";
@@ -614,6 +618,11 @@ const ua = {
  */
 class EUX {
 
+    static get isExtensive() {
+        return $(document.body).css("--ui-extensive") == T;
+    }
+
+
     static setOnImagesFullyLoaded(callback = () => {}, debug = false) {
         Promise.all(Array.from(document.images).map(img => {
             if (img.complete)
@@ -632,6 +641,82 @@ class EUX {
         });
     }
 
+}
+
+
+
+/**
+ * Estre Local styler
+ */
+class LocalStyle {
+
+    static localize(elem, styleText = elem.innerHTML, location = elem.parentElement) {
+        const htmlEntities = {
+            "&nbsp;": " ",
+            "&lt;": "<",
+            "&gt;": ">",
+            "&amp;": "&",
+            "&quot;": '"',
+            "&#39;": "'"
+        };
+        const styles = styleText.replace(/&[a-zA-Z0-9#]+;/g, match => htmlEntities[match] || match);
+
+        const pathTree = [];
+        var current = location;
+        do {
+            pathTree.push(current);
+            current = current.parentElement;
+        } while (current.tagName != BD)
+        pathTree.reverse();
+
+        let localPrefix = "";
+        for (const [index, item] of pathTree.entire) {
+            const { tagName: TagName, className, id } = item;
+            const tagName = TagName.toLowerCase();
+            let parent;
+            let parentChildren;
+            let childIndex;
+
+            if (index > 0) {
+                localPrefix += " > ";
+                parent = pathTree[index - 1];
+                parentChildren = Array.from(parent.children);
+                childIndex = parentChildren.indexOf(item);
+            } else {
+                parent = n;
+                childIndex = n;
+            }
+
+            let specifier = tagName;
+            if (tagName == div && className.replace(" ").includes("container") && nne(item.dataset.containerId)) {
+                specifier += '[data-container-id="' + item.dataset.containerId + '"]';
+            } else if (tagName == ar && nne(item.dataset.articleId)) {
+                specifier += '[data-article-id="' + item.dataset.articleId + '"]';
+            } else {
+                if (nne(id)) specifier += "#" + id;
+                else {
+                    if (nne(className)) specifier += "." + className.replace(" ", ".");
+                    if (nn(childIndex)) {
+                        const moreExistSameSpecfier = occ((k, v) => v != item && v.tagName + roes(nne(v.className), "." + v.className.replace(" ", ".")) == specifier) > 0;
+                        if (moreExistSameSpecfier) specifier += ":nth-child(" + (childIndex + 1) + ")";
+                    }
+                }
+            }
+            localPrefix += specifier;
+        }
+        const localizedStyles = styles.replace(/^([\t\s]*)##/gm, "$1" + localPrefix);
+
+        const styleSheet = doc.ce("style");
+        if (elem == n) location.append(styleSheet);
+        else {
+            styleSheet.innerHTML = localizedStyles;
+            elem.outerHTML = styleSheet.outerHTML;
+        }
+    }
+
+    static appendLocalize(location, localStyle) {
+        this.localize(n, localStyle, location);
+    }
 }
 
 
