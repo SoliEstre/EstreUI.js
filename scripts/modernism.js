@@ -297,12 +297,12 @@ const nt = val => nev(val, t);
 const isNotTruely = nt;
 const nf = val => nev(val, f);
 const isNotFalsely = nf;
-const ne = (val, numberEmptyMatch) => nev(val, es);
+const ne = (val, numberEmptyMatch = 0) => Object.keys(val).length > numberEmptyMatch;
 const isNotEmpty = ne;
 
 const noe = val => en(val) || ee(val);
 const isNullOrEmpty = noe;
-const nne = val => nn(val) && ne(val);
+const nne = (val, numberEmptyMatch = 0) => nn(val) && ne(val, numberEmptyMatch);
 const isNotNullAndEmpty = nne;
 
 

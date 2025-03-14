@@ -10871,9 +10871,9 @@ class EstreSwipeHandler {
     }
 
     #onClick = (e) => {
-        e.preventDefault();
+        //e.preventDefault();
         e.stopPropagation();
-        return false;
+        //return false;
     }
 
     setElement(element = this.element) {
