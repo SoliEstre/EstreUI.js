@@ -426,11 +426,11 @@ function estreToastAlert(options = {}) {
         data: options,
         onOk() {
             this?.data?.callbackOk?.();
-            resolve(t);
+            resolve(true);
         },
         onDissmiss() {
             this?.data?.callbackDissmiss?.();
-            resolve(u);
+            resolve(undefined);
         },
      }));
 }
@@ -447,19 +447,19 @@ function estreToastConfirm(options = {}) {
         data: options,
         onPositive() {
             this?.data?.callbackPositive?.();
-            resolve(t);
+            resolve(true);
         },
         onNegative() {
             this?.data?.callbackNegative?.();
-            resolve(f);
+            resolve(false);
         },
         onNeutral() {
             this?.data?.callbackNeutral?.();
-            resolve(n);
+            resolve(null);
         },
         onDissmiss() {
             this?.data?.callbackDissmiss?.();
-            resolve(u);
+            resolve(undefined);
         },
     }));
 }
@@ -484,7 +484,7 @@ function estreToastPrompt(options = {}) {
         },
         onDissmiss() {
             this?.data?.callbackDissmiss?.();
-            resolve(u);
+            resolve(undefined);
         },
      }));
 }
@@ -509,7 +509,7 @@ function estreToastOption(options = {}) {
         },
         onDissmiss() {
             this?.data?.callbackDissmiss?.();
-            resolve(u);
+            resolve(undefined);
         },
     }));
 }
@@ -539,11 +539,11 @@ function estreToastSelection(options = {}) {
         },
         onAnother(selections, keys, values) {
             this?.data?.callbackAnother?.(selections, keys, values);
-            resolve(f);
+            resolve(false);
         },
         onDissmiss(selections, keys, values) {
             this?.data?.callbackDissmiss?.(selections, keys, values);
-            resolve(u);
+            resolve(undefined);
         },
     }));
 }
@@ -588,11 +588,11 @@ function estreAlert(options = {}) {
         data: options,
         onOk() {
             this?.data?.callbackOk?.();
-            resolve(t);
+            resolve(true);
         },
         onDissmiss() {
             this?.data?.callbackDissmiss?.();
-            resolve(u);
+            resolve(undefined);
         },
      }));
 }
@@ -609,19 +609,19 @@ function estreConfirm(options = {}) {
         data: options,
         onPositive() {
             this?.data?.callbackPositive?.();
-            resolve(t);
+            resolve(true);
         },
         onNegative() {
             this?.data?.callbackNegative?.();
-            resolve(f);
+            resolve(false);
         },
         onNeutral() {
             this?.data?.callbackNeutral?.();
-            resolve(n);
+            resolve(null);
         },
         onDissmiss() {
             this?.data?.callbackDissmiss?.();
-            resolve(u);
+            resolve(undefined);
         },
     }));
 }
@@ -635,7 +635,7 @@ confirm = (title, message,
     negative = isKorean() ? "아니오" : "NO",
     neutral = isKorean() ? "나중에" : "Later",
 ) => {
-    if (typeof message == U) return classicConfirm(title + (message != null ? "\n" + message : ""));
+    if (typeof message == UNDEFINED) return classicConfirm(title + (message != null ? "\n" + message : ""));
     else return estreConfirm({ title, message, callbackPositive, callbackNegative, callbackDissmiss, callbackNeutral, positive, negative, neutral });
 }
 
@@ -649,7 +649,7 @@ function estrePrompt(options = {}) {
         },
         onDissmiss() {
             this?.data?.callbackDissmiss?.();
-            resolve(u);
+            resolve(undefined);
         },
      }));
 }
@@ -663,7 +663,7 @@ prompt = (title,
     placeholder = "",
     type = "text",//number, password
 ) => {
-    if (typeof message == U) return classicPrompt(title + (message != null ? "\n" + message : ""));
+    if (typeof message == UNDEFINED) return classicPrompt(title + (message != null ? "\n" + message : ""));
     else return estrePrompt({ title, message, callbackConfirm, callbackDissmiss, confirm, placeholder, type, value });
 }
 
@@ -677,7 +677,7 @@ let latestIO = null;
  * @param {instanceOrigin: string} / instance access origin code
  */
 const wait = function (instanceOrigin) {
-    const io = pageManager.bringPage("!onRunning", u, instanceOrigin) ? instanceOrigin : u;
+    const io = pageManager.bringPage("!onRunning", undefined, instanceOrigin) ? instanceOrigin : undefined;
     latestIO = io;
     return io;
 }
@@ -719,7 +719,7 @@ const go = function (instanceOrigin) {
  */
 const going = function (meter = { current: 0 }, instanceOrigin) {
     meter.instanceOrigin = instanceOrigin;
-    return pageManager.bringPage("!onProgress", { data: meter }, instanceOrigin) ? meter.binded : u;
+    return pageManager.bringPage("!onProgress", { data: meter }, instanceOrigin) ? meter.binded : undefined;
 }
 
 /**
@@ -787,21 +787,21 @@ class EstreNotationManager {
 
     // instance property
     data = {
-        posted: u,
-        content: u,
-        showTime: u,
-        interactive: u,
-        resolver: u,
+        posted: undefined,
+        content: undefined,
+        showTime: undefined,
+        interactive: undefined,
+        resolver: undefined,
 
         //options
-        iconSrc: u,
-        textSize: u,
-        textWeight: u,
-        textColor: u,
-        bgColor: u,
+        iconSrc: undefined,
+        textSize: undefined,
+        textWeight: undefined,
+        textColor: undefined,
+        bgColor: undefined,
     };
 
-    onTakeInteraction = u;
+    onTakeInteraction = undefined;
 
     constructor(message, showTime = 3000, onTakeInteraction = EstreNotationManager.noInteraction, options = {}, resolver) {
         for (const item in options) this.data[item] = options[item];
@@ -880,7 +880,7 @@ class ES {
     _storage = null;
     _storagePrefix = null;
 
-    get _prefix() { return ES_PREFIX + this._storagePrefix; }
+    get _prefix() { return ES_PREFIX + "RAW_" + this._storagePrefix; }
 
 
     _getFullKey(key) { return this._prefix + key; }
@@ -1039,6 +1039,9 @@ class ES {
     remove(key) { return this.#remove(key); }
 }
 
+/**
+ * Estre Async Storage access handler
+ */
 class EAS extends ES {
 
     constructor(storage, storagePrefix) {
@@ -1092,6 +1095,93 @@ class EAS extends ES {
 
 
 /**
+ * Estre JSON/JCODD Storage access handler
+ */
+class EJS {
+
+    get _typePrefix() { return equalCase(this._codeType, {
+        json: "JSON_",
+        jcodd: "JCODD_",
+    }); }
+
+    _storage = null;
+    _storagePrefix = null;
+
+    _codeType;
+
+    get _prefix() { return ES_PREFIX + this._codeType + this._storagePrefix; }
+
+
+    _getFullKey(key) { return this._prefix + key; }
+
+    constructor(storage, storagePrefix, codeType = "jcodd") {
+        this._storage = storage;
+        this._storagePrefix = storagePrefix;
+        this._codeType = codeType.toLowerCase();
+    }
+
+    get(key, def) {
+        if (key == null | key == "") return;
+        const value = this._storage.getItem(this._getFullKey(key));
+        return value == null ? def : equalCase(this._codeType, {
+            json: JSON.parse(value),
+            jcodd: Jcodd.parse(value),
+        });
+    }
+
+    set(key, value) {
+        if (key == null | key == "") return undefined;
+        let valueString
+        try {
+        valueString = equalCase(this._codeType, {
+            json: JSON.stringify(value),
+            jcodd: Jcodd.coddify(value),
+        });
+        } catch (ex) {
+            console.log(ex);
+        }            
+        return this._storage.setItem(this._getFullKey(key), valueString == null ? "" : valueString);
+    }
+
+}
+
+/**
+ * Estre Async JSON/JCODD Storage access handler
+ */
+class EAJS extends EJS {
+
+    constructor(storage, storagePrefix, codeType) {
+        super(storage, storagePrefix, codeType);
+    }
+
+    async get(key, def) {
+        if (key == null | key == "") return;
+        const value = await this._storage.getItem(this._getFullKey(key));
+        return value == null ? def : equalCase(this._codeType, {
+            json: JSON.parse(value),
+            jcodd: Jcodd.parse(value),
+        });
+    }
+
+    async set(key, value) {
+        if (key == null | key == "") return undefined;
+        let valueString
+        try {
+        valueString = equalCase(this._codeType, {
+            json: JSON.stringify(value),
+            jcodd: Jcodd.coddify(value),
+        });
+        } catch (ex) {
+            console.log(ex);
+        }            
+        return await this._storage.setItem(this._getFullKey(key), valueString == null ? "" : valueString);
+    }
+
+}
+    
+
+
+/**
  * Session storage handler
  */
 const ESS = new ES(sessionStorage, "SS_");
@@ -1105,6 +1195,26 @@ const ELS = new ES(localStorage, "LS_");
  * Native storage handler
  */
 const ENS = new EAS(nativeStorage, "NS_");
+
+
+
+
+/**
+ * Codded Session storage handler
+ */
+const ECSS = new EJS(sessionStorage, "SS_");
+
+/**
+ * Codded Local storage handler
+ */
+const ECLS = new EJS(localStorage, "LS_");
+
+/**
+ * Codded Native storage handler
+ */
+const ECNS = new EAJS(nativeStorage, "NS_");
+
+
 
 
 
@@ -1232,18 +1342,18 @@ class EstrePageHandle {
 
     get title() { return this.$host?.attr(eds.title); }
 
-    #appbarLeft = n;
-    #appbarRight = n;
-    #appbarCenter = n;
-    get appbarLeft() { return val(this.#appbarLeft, it => it ?? val(this.$host?.attr(eds.appbarLeft)?.trim(), aa => en(aa) || aa.length < 2 ? it : (aa == "tp" ? u : aa))); }
+    #appbarLeft = null;
+    #appbarRight = null;
+    #appbarCenter = null;
+    get appbarLeft() { return val(this.#appbarLeft, it => it ?? val(this.$host?.attr(eds.appbarLeft)?.trim(), aa => isNully(aa) || aa.length < 2 ? it : (aa == "tp" ? undefined : aa))); }
     set appbarLeft(value) { this.#appbarLeft = value; } //this.$host?.attr(eds.appbarLeft, Doctre.stringify(value)); }
-    get appbarRight() { return val(this.#appbarRight, it => it ?? val(this.$host?.attr(eds.appbarRight)?.trim(), aa => en(aa) || aa.length < 2 ? it : (aa == "tp" ? u : aa))); }
+    get appbarRight() { return val(this.#appbarRight, it => it ?? val(this.$host?.attr(eds.appbarRight)?.trim(), aa => isNully(aa) || aa.length < 2 ? it : (aa == "tp" ? undefined : aa))); }
     set appbarRight(value) { this.#appbarRight = value; } //this.$host?.attr(eds.appbarRight, Doctre.stringify(value)); }
-    get appbarCenter() { return val(this.#appbarCenter, it => it ?? val(this.$host?.attr(eds.appbarCenter)?.trim(), aa => en(aa) || aa.length < 2 ? it : (aa == "tp" ? u : aa))); }
+    get appbarCenter() { return val(this.#appbarCenter, it => it ?? val(this.$host?.attr(eds.appbarCenter)?.trim(), aa => isNully(aa) || aa.length < 2 ? it : (aa == "tp" ? undefined : aa))); }
     set appbarCenter(value) { this.#appbarCenter = value; } //this.$host?.attr(eds.appbarCenter, Doctre.stringify(value)); }
-    get isAppbarLeftAssigned() { return this.hostType != "component" && !(this.isStatic && !this.isFullyStatic) && (this.$host.let(it => it.hasClass("constraint") || (it.hasClass("fwvs") && !EUX.isExtensive))) ? !tu(this.appbarLeft) : nn(this.appbarLeft); }
-    get isAppbarRightAssigned() { return this.hostType != "component" && !(this.isStatic && !this.isFullyStatic) && (this.$host.let(it => it.hasClass("constraint") || (it.hasClass("fwvs") && !EUX.isExtensive))) ? !tu(this.appbarRight) : nn(this.appbarRight); }
-    get isAppbarCenterAssigned() { return this.hostType != "component" && !(this.isStatic && !this.isFullyStatic) && (this.$host.let(it => it.hasClass("constraint") || (it.hasClass("fwvs") && !EUX.isExtensive))) ? !tu(this.appbarCenter) : nn(this.appbarCenter); }
+    get isAppbarLeftAssigned() { return this.hostType != "component" && !(this.isStatic && !this.isFullyStatic) && (this.$host.let(it => it.hasClass("constraint") || (it.hasClass("fwvs") && !EUX.isExtensive))) ? !typeUndefined(this.appbarLeft) : isNotNully(this.appbarLeft); }
+    get isAppbarRightAssigned() { return this.hostType != "component" && !(this.isStatic && !this.isFullyStatic) && (this.$host.let(it => it.hasClass("constraint") || (it.hasClass("fwvs") && !EUX.isExtensive))) ? !typeUndefined(this.appbarRight) : isNotNully(this.appbarRight); }
+    get isAppbarCenterAssigned() { return this.hostType != "component" && !(this.isStatic && !this.isFullyStatic) && (this.$host.let(it => it.hasClass("constraint") || (it.hasClass("fwvs") && !EUX.isExtensive))) ? !typeUndefined(this.appbarCenter) : isNotNully(this.appbarCenter); }
     get appbarLeftFeed() { return setter => {
         const $set = setter(this.appbarLeft)?.let(it => $(it));
         this.$appbarLeft = $set;
@@ -1334,8 +1444,8 @@ class EstrePageHandle {
     }
     
     pushIntent(intent, onInit = false) {
-        if (intent != n) {
-            if (intent === f) this.#intent = null;
+        if (intent != null) {
+            if (intent === false) this.#intent = null;
             else if (this.intent == null) this.#intent = intent;
             else for (var key in intent) this.intent[key] = intent[key];
             console.log("pushed intent on " + this.hostType + " " + EstreUiPage.from(this).pid + "\n", this.intent);
@@ -1612,7 +1722,7 @@ class EstrePageHandle {
             if (data != null) for (var item in data) {
                 const value = data[item];
 
-                if (en(value)) continue;
+                if (isNully(value)) continue;
 
                 if ($host.is(aiv(eds.bind, item))) $host.html(value);
                 if ($host.is(aiv(eds.bindAmount, item))) $host.html(v2a(value));
@@ -1668,7 +1778,7 @@ class EstrePageHandle {
                         //     placeholder.append(message);
                         //     $elem.append(placeholder);
                         // }
-                        elem.melt({ "message": (nne(placeholderMessage) ? placeholderMessage : "No data") }, "frozenPlaceholder");
+                        elem.melt({ "message": (isNotNullAndEmpty(placeholderMessage) ? placeholderMessage : "No data") }, "frozenPlaceholder");
                     } else for (var index in value) {
                         const arrayItem = value[index];
 
@@ -1681,14 +1791,14 @@ class EstrePageHandle {
 
                         var arrayItemValue = arrayItem;
 
-                        if (nn(arrayItemValue)) {
+                        if (isNotNully(arrayItemValue)) {
                             if (valueIsObject) {
                                 arrayItemValue = JSON.stringify(arrayItem);
 
                                 for (var objItem in arrayItem) {
                                     const value = arrayItem[objItem];
 
-                                    if (en(value)) continue;
+                                    if (isNully(value)) continue;
 
                                     if ($li.is(aiv(eds.bindObjectArrayItem, objItem))) $li.html(value);
                                     if ($li.is(aiv(eds.bindObjectArrayAmount, objItem))) $li.html(v2a(value));
@@ -1707,7 +1817,7 @@ class EstrePageHandle {
                                         });
                                     });
 
-                                    const styleValue = ee(value) ? "unset" : value;
+                                    const styleValue = isEmpty(value) ? "unset" : value;
 
                                     if ($li.is(acv(eds.bindObjectArrayStyle, objItem + "@"))) eachTargetFor($li, eds.bindObjectArrayStyle, (targetItem, targetStyle, prefix = "", suffix = "") => {
                                         if (targetItem == objItem) $li.css(targetStyle, prefix + styleValue + suffix);
@@ -1759,7 +1869,7 @@ class EstrePageHandle {
                                 });
                             });
 
-                            const styleArrayItemValue = ee(value) ? "unset" : value;
+                            const styleArrayItemValue = isEmpty(value) ? "unset" : value;
 
                             if ($li.find(ax(eds.bindArrayStyle))) eachTarget($li, eds.bindArrayStyle, (target, prefix = "", suffix = "") => {
                                 $li.css(target, prefix + styleArrayItemValue + suffix);
@@ -1774,52 +1884,52 @@ class EstrePageHandle {
 
 
                         if ($li.is(ax(eds.showOnExistsObjectArrayItem))) {
-                            if (en(arrayItem) || noe(arrayItem[$li.attr(eds.showOnExistsObjectArrayItem)])) $li.css("display", "none");
+                            if (isNully(arrayItem) || isNullOrEmpty(arrayItem[$li.attr(eds.showOnExistsObjectArrayItem)])) $li.css("display", "none");
                         }
                         $li.find(ax(eds.showOnExistsObjectArrayItem)).each((i, elem) => {
-                            if (en(arrayItem) || noe(arrayItem[elem.dataset.showOnExistsObjectArrayItem])) $(elem).css("display", "none");
+                            if (isNully(arrayItem) || isNullOrEmpty(arrayItem[elem.dataset.showOnExistsObjectArrayItem])) $(elem).css("display", "none");
                         });
             
                         if ($li.is(ax(eds.showOnNotExistsObjectArrayItem))) {
-                            if (nn(arrayItem) && nne(arrayItem[$li.attr(eds.showOnNotExistsObjectArrayItem)])) $li.css("display", "none");
+                            if (isNotNully(arrayItem) && isNotNullAndEmpty(arrayItem[$li.attr(eds.showOnNotExistsObjectArrayItem)])) $li.css("display", "none");
                         }
                         $li.find(ax(eds.showOnNotExistsObjectArrayItem)).each((i, elem) => {
-                            if (nn(arrayItem) && nne(arrayItem[elem.dataset.showOnNotExistsObjectArrayItem])) $(elem).css("display", "none");
+                            if (isNotNully(arrayItem) && isNotNullAndEmpty(arrayItem[elem.dataset.showOnNotExistsObjectArrayItem])) $(elem).css("display", "none");
                         });
             
                         if ($li.is(acv(eds.showOnEqualsObjectArrayItem, "="))) {
                             const [objItem, matchValue] = $li.attr(eds.showOnEqualsObjectArrayItem).split("=");
-                            if (en(arrayItem) || arrayItem[objItem] != matchValue) $li.css("display", "none");
+                            if (isNully(arrayItem) || arrayItem[objItem] != matchValue) $li.css("display", "none");
                         }
                         $li.find(acv(eds.showOnEqualsObjectArrayItem, "=")).each((i, elem) => {
                             const [objItem, matchValue] = elem.dataset.showOnEqualsObjectArrayItem.split("=");
-                            if (en(arrayItem) || arrayItem[objItem] != matchValue) $(elem).css("display", "none");
+                            if (isNully(arrayItem) || arrayItem[objItem] != matchValue) $(elem).css("display", "none");
                         });            
                     }
                 });
             }
 
             if ($host.is(ax(eds.showOnExists))) {
-                if (en(data) || noe(data[$host.attr(eds.showOnExists)])) $host.css("display", "none");
+                if (isNully(data) || isNullOrEmpty(data[$host.attr(eds.showOnExists)])) $host.css("display", "none");
             }
             $host.find(ax(eds.showOnExists)).each((i, elem) => {
-                if (en(data) || noe(data[elem.dataset.showOnExists])) $(elem).css("display", "none");
+                if (isNully(data) || isNullOrEmpty(data[elem.dataset.showOnExists])) $(elem).css("display", "none");
             });
 
             if ($host.is(ax(eds.showOnNotExists))) {
-                if (nn(data) && nne(data[$host.attr(eds.showOnNotExists)])) $host.css("display", "none");
+                if (isNotNully(data) && isNotNullAndEmpty(data[$host.attr(eds.showOnNotExists)])) $host.css("display", "none");
             }
             $host.find(ax(eds.showOnNotExists)).each((i, elem) => {
-                if (nn(data) && nne(data[elem.dataset.showOnNotExists])) $(elem).css("display", "none");
+                if (isNotNully(data) && isNotNullAndEmpty(data[elem.dataset.showOnNotExists])) $(elem).css("display", "none");
             });
 
             if ($host.is(acv(eds.showOnEquals, "="))) {
                 const [item, matchValue] = $host.attr(eds.showOnEquals).split("=");
-                if (en(data) || data[item] != matchValue) $host.css("display", "none");
+                if (isNully(data) || data[item] != matchValue) $host.css("display", "none");
             }            
             $host.find(acv(eds.showOnEquals, "=")).each((i, elem) => {
                 const [item, matchValue] = elem.dataset.showOnEquals.split("=");
-                if (en(data) || data[item] != matchValue) $(elem).css("display", "none");
+                if (isNully(data) || data[item] != matchValue) $(elem).css("display", "none");
             });            
         }
     }
@@ -1830,7 +1940,7 @@ class EstrePageHandle {
         const points = [];
         for (const point of $solidPoint) {
             const val = point.dataset.solid;
-            if (nne(val?.trim()) && !isNaN(val)) {
+            if (isNotNullAndEmpty(val?.trim()) && !isNaN(val)) {
                 const priority = parseInt(val);
                 if (points[priority] == null) points[priority] = [];
                 points[priority].push(point);
@@ -1841,7 +1951,7 @@ class EstrePageHandle {
             const pointSet = points[index];
             if (pointSet != null) for (var i = pointSet.length - 1; i >= 0; i--) {
                 const point = pointSet[i];
-                if (noe(point.dataset.frozen) && point.solid?.() != null) point.dataset.solid = "";
+                if (isNullOrEmpty(point.dataset.frozen) && point.solid?.() != null) point.dataset.solid = "";
             }
         }
     }
@@ -1915,8 +2025,8 @@ class EstrePageHandle {
             const id = $this.attr(eds.openId);
             const action = $this.attr(eds.openAction);
 
-            const intent = action != null && action.length > 0 ? { action } : u;
-            let pushedIntent = typeof intent == U;
+            const intent = action != null && action.length > 0 ? { action } : undefined;
+            let pushedIntent = typeof intent == UNDEFINED;
 
             switch (targetBound) {
                 case "root":
@@ -2133,8 +2243,8 @@ class EstrePageHandle {
             const pid = $this.attr(eds.openPage);
             const action = $this.attr(eds.openAction);
 
-            const intent = action != null && action.length > 0 ? { action } : u;
-            let intentReady = typeof intent != U;
+            const intent = action != null && action.length > 0 ? { action } : undefined;
+            let intentReady = typeof intent != UNDEFINED;
 
             if (intentReady) pageManager.bringPage(pid, intent);
             else pageManager.bringPage(pid);
@@ -2152,8 +2262,8 @@ class EstrePageHandle {
             const pid = $this.attr(eds.showPage);
             const action = $this.attr(eds.showAction);
 
-            const intent = action != null && action.length > 0 ? { action } : u;
-            let intentReady = typeof intent != U;
+            const intent = action != null && action.length > 0 ? { action } : undefined;
+            let intentReady = typeof intent != UNDEFINED;
 
             if (intentReady) pageManager.showPage(pid, intent);
             else pageManager.showPage(pid);
@@ -2465,7 +2575,7 @@ class EstreComponent extends EstrePageHostHandle {
         const page = pageManager.getConatiner(id, this.id, this.sectionBound);
         if (page == null) return null;
         if (page.statement == "static") return null;
-        this.$host.append(page.raw);
+        this.$host.append(page.live);
         const $container = this.$containers.filter(aiv(eds.containerId, id));
         if ($container == null || $container.length < 1) return null;
         return this.registerContainer($container[0], intent);
@@ -3353,8 +3463,8 @@ class EstreContainer extends EstrePageHostHandle {
         }
         const $articles = this.$articles;
         //this.$articles.filter(aiv(eds.onTop, t1)).attr(eds.onTop, "");
-        if ($articles.length > 0) $($articles[$articles.length - 1]).after(page.raw);
-        else this.$host.append(page.raw);
+        if ($articles.length > 0) $($articles[$articles.length - 1]).after(page.live);
+        else this.$host.append(page.live);
         const $article = this.$articles.filter(aiv(eds.articleId, id));
         if ($article == null || $article.length < 1) return null;
         const article = this.registerArticle($article[0], intent);
@@ -3868,14 +3978,14 @@ class EstreSelectionDialogPageHandler extends EstreDialogPageHandler {
         super.onOpen(handle);
 
         const defaultSelected = this.intentData?.defaultSelected;
-        if (nn(defaultSelected)) fkv(defaultSelected, (k, v) => {
+        if (isNotNully(defaultSelected)) forkv(defaultSelected, (k, v) => {
             switch(to(v)) {
-                case BLN:
+                case BOOLEAN:
                     this.$optionCheckboxes.filter(aiv("data-index", k)).prop(m.v, v);
                     break;
                 
-                case NUM:
-                    this.$optionCheckboxes.filter(aiv("data-index", v)).prop(m.v, t);
+                case NUMBER:
+                    this.$optionCheckboxes.filter(aiv("data-index", v)).prop(m.v, true);
                     break;
             }
         });
@@ -3922,7 +4032,7 @@ class EstreSelectionDialogPageHandler extends EstreDialogPageHandler {
         });
 
         const min = this.intentData?.minSelection ?? 0;
-        if (min > 0 && this.$selected.length < min) this.$confirm.prop(m.d, t);
+        if (min > 0 && this.$selected.length < min) this.$confirm.prop(m.d, true);
     }
 
     onFocus(handle) {
@@ -3937,8 +4047,8 @@ class EstreSelectionDialogPageHandler extends EstreDialogPageHandler {
         const length = $selected.length;
 
         if (max > -1) {
-            if (length >= max) this.$unselected.prop(m.d, t);
-            else this.$disabled.prop(m.d, f);
+            if (length >= max) this.$unselected.prop(m.d, true);
+            else this.$disabled.prop(m.d, false);
         }
         this.$confirm.prop(m.d, length < min);
 
@@ -4000,7 +4110,7 @@ class EstreUiPage {
                 const $exactToolSet = $exactArticle?.find(nv + cls + "tool_set");
                 if ($exactToolSet != null) {
                     const nodes = [];
-                    if (nn(frostOrCold)) {
+                    if (isNotNully(frostOrCold)) {
                         for (const toolset of $exactToolSet) toolset.alone(frostOrCold, matchReplacer)?.let(it => nodes.push(...it));
                     } else {
                         for (const toolset of $exactToolSet) toolset.melt(matchReplacer, dataName)?.let(it => nodes.push(...it));
@@ -4341,6 +4451,9 @@ class EstreUiPage {
 
     #raw = null;
     get raw() { return this.#raw; }
+    #cold = null;
+    get cold() { return this.#cold; }
+    get live() { return this.cold?.let(it => Doctre.live(it)); }
 
     #componentStatement = null;//static/instant
     #containerStatement = null;//static/instant
@@ -4699,7 +4812,9 @@ class EstreUiPage {
     #sampleHTML() {
         if (this.#commited || this.#raw != null) return false;
         const $element = this.$element;
-        this.#raw = $element[0].outerHTML;
+        const element = $element[0];
+        this.#raw = element.outerHTML;
+        this.#cold = element.coldify(true, true);
         if (this.statement == "instant") {
             $element.remove();
             return null;
@@ -4863,7 +4978,7 @@ class EstreUiPageManager {
         if (sections == null) return null;
 
         //check open component
-        const isIntentNone = typeof intent == U;
+        const isIntentNone = typeof intent == UNDEFINED;
         var componentIntentPushed = false;
         var component = sections[page.component];
         var existComponent = false;
@@ -4982,7 +5097,7 @@ class EstreUiPageManager {
         const sections = page.sections;
         if (sections == null) return null;
 
-        const isIntentNone = typeof intent == U;
+        const isIntentNone = typeof intent == UNDEFINED;
         var component = sections[page.component];
         if (component == null) return null;
         var container = null;
@@ -9880,7 +9995,7 @@ class EstreMonthSelectorBar extends EstreHandle {
 
     initMonthes(initMonth) {
         if (initMonth != null) this.currentMonth = initMonth;
-        else if (noe(this.currentMonth)) this.currentMonth = Ecal.getDateSet().let(it => it.year + "-" + v2d(it.month));
+        else if (isNullOrEmpty(this.currentMonth)) this.currentMonth = Ecal.getDateSet().let(it => it.year + "-" + v2d(it.month));
 
         this.$monthesList.empty();
         
@@ -9942,7 +10057,7 @@ class EstreMonthSelectorBar extends EstreHandle {
     monthSelected(month) {
         if (month != null) this.currentMonth = month;
         else {
-            if (noe(this.currentMonth)) this.currentMonth = Ecal.getDateSet().let(it => it.year + "-" + v2d(it.month));
+            if (isNullOrEmpty(this.currentMonth)) this.currentMonth = Ecal.getDateSet().let(it => it.year + "-" + v2d(it.month));
             month = this.currentMonth;
         }
 
@@ -11407,7 +11522,7 @@ const estreUi = {
     },
 
     setAppbarRightToolSet: function(frostOrCold, matchReplacer, dataName = "frozen") {
-        if (tf(frostOrCold)) return frostOrCold(feed => this.appbar?.handler?.setAppbarRightToolSet(feed, matchReplacer, dataName));
+        if (typeFunction(frostOrCold)) return frostOrCold(feed => this.appbar?.handler?.setAppbarRightToolSet(feed, matchReplacer, dataName));
         else return $(this.appbar?.handler?.setAppbarRightToolSet(frostOrCold, matchReplacer, dataName));
     },
 
@@ -11505,7 +11620,7 @@ const estreUi = {
         const page = pageManager.getComponent(id);
         if (page == null) return null;
         if (page.statement == "static") return null;
-        this.$blindArea.append(page.raw);
+        this.$blindArea.append(page.live);
         const $section = this.$blindSections.filter(eid + id);
         if ($section == null || $section.length < 1) return null;
         const component = this.initInstantContent($section[0], intent);
@@ -11577,7 +11692,7 @@ const estreUi = {
         const page = pageManager.getComponent(id);
         if (page == null) return null;
         if (page.statement == "static") return null;
-        this.$mainMenu.append(page.raw);
+        this.$mainMenu.append(page.live);
         const $section = this.$menuSections.filter(eid + id);
         if ($section == null || $section.length < 1) return null;
         const component = this.initStaticMenu($section[0], intent);
@@ -11639,7 +11754,7 @@ const estreUi = {
         const page = pageManager.getComponent(id);
         if (page == null) return null;
         if (page.statement == "static") return null;
-        this.$headerArea.append(page.raw);
+        this.$headerArea.append(page.live);
         const $section = this.$headerSections.filter(eid + id);
         if ($section == null || $section.length < 1) return null;
         const component = this.initHeaderBar($section[0], intent);
@@ -11699,7 +11814,7 @@ const estreUi = {
         const page = pageManager.getComponent(id, "overlay");
         if (page == null) return null;
         if (page.statement == "static") return null;
-        this.$overlayArea.append(page.raw);
+        this.$overlayArea.append(page.live);
         const $section = this.$overlaySections.filter(eid + id);
         if ($section == null || $section.length < 1) return null;
         const component = this.initOverlayContent($section[0], intent);

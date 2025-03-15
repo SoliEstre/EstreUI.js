@@ -40,8 +40,8 @@ const doc = {
 };
 
 // jQuery fallback placeholder
-if (typeof jQuery == U) jQuery = function(selector) {
-    if (typeof selector == STR) return jQuery(doc.qsa(selector));
+if (typeof jQuery == UNDEFINED) jQuery = function(selector) {
+    if (typeof selector == STRING) return jQuery(doc.qsa(selector));
     else if (selector instanceof Node || selector instanceof NodeList || selector instanceof Array) return new class extends Array {
         constructor (nodes) {
             super();
@@ -56,7 +56,7 @@ if (typeof jQuery == U) jQuery = function(selector) {
         }
     } (selector);
 };
-if (typeof $ == U) $ = jQuery;
+if (typeof $ == UNDEFINED) $ = jQuery;
 
 
 // Tag alias constants
@@ -134,8 +134,8 @@ const gtt = hee("gt");
 const itt = (tagName, attributes = {}, enumables = []) => {
     let texts = [lt + tagName];
 
-    if (nn(attributes) && tj(attributes)) fkv((k, v) => { if (nne(k) && nn(v)) texts.push(k + eq + v4(v)); });
-    if (nn(enumables) && tj(enumables) && ia(enumables)) fo(v => { if (nne(v)) texts.push(v); });
+    if (isNotNully(attributes) && typeObject(attributes)) forkv((k, v) => { if (isNotNullAndEmpty(k) && isNotNully(v)) texts.push(k + eq + v4(v)); });
+    if (isNotNully(enumables) && typeObject(enumables) && isArray(enumables)) forof(v => { if (isNotNullAndEmpty(v)) texts.push(v); });
 
     texts.push(ss + gt);
     return texts.join(s);
@@ -149,8 +149,8 @@ const tip = (type, name, className, id) => itt(inp, { class: className, id, type
 const tag = (tagName, innerHtml = "", attributes = {}, enumables = []) => {
     let texts = [lt + tagName];
 
-    if (nn(attributes) && tj(attributes)) fkv((k, v) => { if (nne(k) && nn(v)) texts.push(k + eq + v4(v)); });
-    if (nn(enumables) && tj(enumables) && ia(enumables)) fo(v => { if (nne(v)) texts.push(v); });
+    if (isNotNully(attributes) && typeObject(attributes)) forkv((k, v) => { if (isNotNullAndEmpty(k) && isNotNully(v)) texts.push(k + eq + v4(v)); });
+    if (isNotNully(enumables) && typeObject(enumables) && isArray(enumables)) forof(v => { if (isNotNullAndEmpty(v)) texts.push(v); });
 
     return (texts.join(s) + gt) + innerHtml + (lt + ss + tagName + gt);
 }
@@ -163,9 +163,9 @@ const ttt = (tagName, attributes = {}, enumables = []) => tag(tagName, "", attri
 const eb = (tagName, attributes = {}, enumables = [], property = {}) => {
     const elem = document.createElement(tagName);
 
-    if (nn(attributes) && tj(attributes)) fkv((k, v) => { if (nne(k) && nn(v)) elem.setAttribute(k, v); });
-    if (nn(enumables) && tj(enumables) && ia(enumables)) fo(v => { if (nne(v)) elem.setAttribute(v, es); });
-    if (nn(property) && tj(property)) fkv((k, v) => { if (nne(k)) elem[k] = v; });
+    if (isNotNully(attributes) && typeObject(attributes)) forkv((k, v) => { if (isNotNullAndEmpty(k) && isNotNully(v)) elem.setAttribute(k, v); });
+    if (isNotNully(enumables) && typeObject(enumables) && isArray(enumables)) forof(v => { if (isNotNullAndEmpty(v)) elem.setAttribute(v, es); });
+    if (isNotNully(property) && typeObject(property)) forkv((k, v) => { if (isNotNullAndEmpty(k)) elem[k] = v; });
 
     return elem;
 }
@@ -233,7 +233,7 @@ const tv = {
     get x() { return "text"; },
     get z() { return "reset"; },
 };
-const ipt = typeText => inp + (en(typeText) ? ax(tp) : aiv(tp, typeText));
+const ipt = typeText => inp + (isNully(typeText) ? ax(tp) : aiv(tp, typeText));
 const itc = typeCase => ipt(tv[typeCase]);
 
 
@@ -563,18 +563,18 @@ const t2r = function (text, options = "gi") {
 const parseBoolean = function (value) {
     switch (value) {
         default:        
-        case U:
-            return u;
+        case UNDEFINED:
+            return undefined;
 
         case "":
-        case N:
-            return n;
+        case NULL:
+            return null;
 
-        case F:
-            return f;
+        case FALSE:
+            return false;
 
-        case T:
-            return t;
+        case TRUE:
+            return true;
     }
 };
 
@@ -619,7 +619,7 @@ const ua = {
 class EUX {
 
     static get isExtensive() {
-        return $(document.body).css("--ui-extensive") == T;
+        return $(document.body).css("--ui-extensive") == TRUE;
     }
 
 
@@ -683,21 +683,21 @@ class LocalStyle {
                 parentChildren = Array.from(parent.children);
                 childIndex = parentChildren.indexOf(item);
             } else {
-                parent = n;
-                childIndex = n;
+                parent = null;
+                childIndex = null;
             }
 
             let specifier = tagName;
-            if (tagName == div && className.replace(" ").includes("container") && nne(item.dataset.containerId)) {
+            if (tagName == div && className.replace(" ").includes("container") && isNotNullAndEmpty(item.dataset.containerId)) {
                 specifier += '[data-container-id="' + item.dataset.containerId + '"]';
-            } else if (tagName == ar && nne(item.dataset.articleId)) {
+            } else if (tagName == ar && isNotNullAndEmpty(item.dataset.articleId)) {
                 specifier += '[data-article-id="' + item.dataset.articleId + '"]';
             } else {
-                if (nne(id)) specifier += "#" + id;
+                if (isNotNullAndEmpty(id)) specifier += "#" + id;
                 else {
-                    if (nne(className)) specifier += "." + className.replace(" ", ".");
-                    if (nn(childIndex)) {
-                        const moreExistSameSpecfier = occ((k, v) => v != item && v.tagName + roes(nne(v.className), "." + v.className.replace(" ", ".")) == specifier) > 0;
+                    if (isNotNullAndEmpty(className)) specifier += "." + className.replace(" ", ".");
+                    if (isNotNully(childIndex)) {
+                        const moreExistSameSpecfier = checkCount((k, v) => v != item && v.tagName + roes(isNotNullAndEmpty(v.className), "." + v.className.replace(" ", ".")) == specifier) > 0;
                         if (moreExistSameSpecfier) specifier += ":nth-child(" + (childIndex + 1) + ")";
                     }
                 }
@@ -707,7 +707,7 @@ class LocalStyle {
         const localizedStyles = styles.replace(/^([\t\s]*)##/gm, "$1" + localPrefix);
 
         const styleSheet = doc.ce("style");
-        if (elem == n) location.append(styleSheet);
+        if (elem == null) location.append(styleSheet);
         else {
             styleSheet.innerHTML = localizedStyles;
             elem.outerHTML = styleSheet.outerHTML;
@@ -715,7 +715,7 @@ class LocalStyle {
     }
 
     static appendLocalize(location, localStyle) {
-        this.localize(n, localStyle, location);
+        this.localize(null, localStyle, location);
     }
 }
 
