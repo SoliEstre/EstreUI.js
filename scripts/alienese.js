@@ -273,8 +273,7 @@ const dpgsx = defineGetterAndSetterPlex;
 
 
 // additional static function for classes
-defineStaticGetterAndSetter(oj, "n", function () { return new this.constructor(...arguments); });
-
+defineStaticGetterAndSetter(dt, "n", function () { return new Date(...arguments); });
 defineStaticGetterAndSetter(dt, "t", function () { return this.now(); });
 
 
