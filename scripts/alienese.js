@@ -32,7 +32,7 @@ SOFTWARE.
 // This patch aims to create smaller (quicker) and more concise (lighter) JavaScript code.
 // It makes the code more implicit and serves as an alternative to obfuscation.
 // 
-// v0.1 / release 2025.03.15
+// v0.2 / release 2025.03.17
 // 
 // * Must be loaded modernism.js before this script.
 // 
@@ -222,6 +222,11 @@ const noe = isNullOrEmpty;
 const nne = isNotNullAndEmpty;
 
 
+// quick execute by conditions constant
+const inoe = ifNullOrEmpty;
+const inne = ifNotNullAndEmpty;
+
+
 // do and return inline double takes
 const dr = doAndReturn;
 const drx = doAndReturnByExecute;
@@ -247,11 +252,16 @@ const kc = kindCase;
 
 /** variable data copy */
 const cp = copy;
-const mu = mockup;
+const mk = mock;
+const mm = mimic;
 const tw = twin;
 const cn = clone;
 
 const pc = patch;
+const ow = overwrite;
+const tk = takeover;
+const aq = acquire;
+const ih = inherit;
 
 const rv = revert;
 
@@ -285,6 +295,9 @@ definePropertyPlex("tc", function () { return typeCase(this.it, ...arguments); }
 definePropertyPlex("cc", function () { return classCase(this.it, ...arguments); });
 definePropertyPlex("kc", function () { return kindCase(this.it, ...arguments); });
 
+definePropertyPlex("ee", function (process = it => it, ornot = it => it, numberEmptyMatch = 0) { return isEmpty(this.it, numberEmptyMatch) ? process(this.it) : ornot(this.it); });
+definePropertyPlex("ne", function (process = it => it, ornot = it => it, numberEmptyMatch = 0) { return isNotEmpty(this.it, numberEmptyMatch) ? process(this.it) : ornot(this.it); });
+
 definePropertyPlex("dr", function (does = (it, args) => {}, returns, args = []) { return doAndReturn(does, returns, [this.it, ...args]); });
 definePropertyPlex("drx", function (does = (it, args) => {}, forReturns, args = []) { return doAndReturnByExecute(does, forReturns, [this.it, ...args]); });
 
@@ -293,6 +306,11 @@ defineGetterAndSetter(Object, "ov", function () { return valuesOf(this.it); });
 defineGetterAndSetter(Object, "oe", function () { return entriesOf(this.it); });
 defineGetterAndSetter(Object, "oc", function () { return countOf(this.it); });
 defineGetterAndSetter(Object, "occ", function () { return checkCount(this.it, (k, v) => true); });
+
+defineProperty(Object, "fk", function (work = key => { return false; }) { return forof(this.it.ways, work); });
+defineProperty(Object, "fv", function (work = value => { return false; }) { return forof(this.it.looks, work); });
+defineProperty(Object, "fe", function (work = (key, value) => { return false; }) { return forkv(this.it.entire, work); });
+defineProperty(Object, "fkv", function (work = (key, value) => { return false; }) { return forkv(this.it.entire, work); });
 
 defineProperty(Object, "cp", function (dataOnly = true, primitiveOnly = false, recusive = true) { return copy(this, dataOnly, primitiveOnly, recusive); });
 defineProperty(Object, "pc", function (from, dataOnly = true, primitiveOnly = false, recusive = true, append = false) { return patch(this.it, from, dataOnly, primitiveOnly, recusive, append); });

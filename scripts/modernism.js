@@ -31,7 +31,7 @@ SOFTWARE.
 // Collections of bypass for process codes takes be inline,
 // and monkey patching like as modern languages.
 // 
-// v0.1 / release 2025.03.15
+// v0.2 / release 2025.03.17
 // 
 // Author: Estre Soliette
 // Established: 2025.01.05
@@ -233,6 +233,11 @@ const isNullOrEmpty = val => isNully(val) || isEmpty(val);
 const isNotNullAndEmpty = (val, numberEmptyMatch = 0) => isNotNully(val) && isNotEmpty(val, numberEmptyMatch);
 
 
+// quick execute by conditions constant
+const ifNullOrEmpty = (val, process = it => it, orNot = it => it) => isNullOrEmpty(val) ? process(val) : orNot(val);
+const ifNotNullAndEmpty = (val, process = it => it, orNot = it => it, numberEmptyMatch = 0) => isNotNullAndEmpty(val, numberEmptyMatch) ? process(val) : orNot(val);
+
+
 // do and return inline double takes
 const doAndReturn = (does = args => {}, returns, ...args) => { does(...args); return returns; };
 const doAndReturnByExecute = (does = args => {}, forReturns, ...args) => { does(...args); return forReturns(...args); };
@@ -319,8 +324,10 @@ const copy = (from, dataOnly = true, primitiveOnly = false, recusive = true) => 
     },
     [DEFAULT]: val => val
 });
+/** Object data only shallow copy */
+const mock = from => copy(from, true, false, true);
 /** Object data only deep copy */
-const mockup = from => copy(from);
+const mimic = from => copy(from, true, false, true);
 /** Object functional shallow copy */
 const twin = from => copy(from, false, false, false);
 /** Object functional deep copy */
@@ -348,6 +355,14 @@ const patch = (to, from, dataOnly = true, primitiveOnly = false, recusive = true
     });
     return to;
 };
+/** object data overwrite */
+const overwrite = (to, from) => patch(to, from, false, false, true, false);
+/** object data takeover */
+const takeover = (to, from) => patch(to, from, false, false, true, true);
+/** object data acquire */
+const acquire = (to, from) => patch(to, from, true, false, true, false);
+/** object data inherit */
+const inherit = (to, from) => patch(to, from, true, false, true, true);
 
 const revert = (to, from, dataOnly = true, primitiveOnly = false, recusive = true, exceptNew = false) => {
     fromKeys = keysOf(from);
@@ -434,6 +449,9 @@ definePropertyPlex("typeCase", function () { return typeCase(this.it, ...argumen
 definePropertyPlex("classCase", function () { return classCase(this.it, ...arguments); });
 definePropertyPlex("kindCase", function () { return kindCase(this.it, ...arguments); });
 
+definePropertyPlex("ifEmpty", function (process = it => it, ornot = it => it, numberEmptyMatch = 0) { return isEmpty(this.it, numberEmptyMatch) ? process(this.it) : ornot(this.it); });
+definePropertyPlex("ifNotEmpty", function (process = it => it, ornot = it => it, numberEmptyMatch = 0) { return isNotEmpty(this.it, numberEmptyMatch) ? process(this.it) : ornot(this.it); });
+
 definePropertyPlex("doAndReturn", function (does = (it, args) => {}, returns, args = []) { return doAndReturn(does, returns, [this.it, ...args]); });
 definePropertyPlex("doAndReturnByExecute", function (does = (it, args) => {}, forReturns, args = []) { return doAndReturnByExecute(does, forReturns, [this.it, ...args]); });
 
@@ -443,11 +461,23 @@ defineGetterAndSetter(Object, "entire", function () { return entriesOf(this.it);
 defineGetterAndSetter(Object, "count", function () { return countOf(this.it); });
 defineGetterAndSetter(Object, "checkCount", function () { return checkCount(this.it, (k, v) => true); });
 
+defineProperty(Object, "forKeys", function (work = key => { return false; }) { return forof(this.it.ways, work); });
+defineProperty(Object, "forWays", function (work = key => { return false; }) { return forof(this.it.ways, work); });
+defineProperty(Object, "forValues", function (work = value => { return false; }) { return forof(this.it.looks, work); });
+defineProperty(Object, "forLooks", function (work = value => { return false; }) { return forof(this.it.looks, work); });
+defineProperty(Object, "forEntries", function (work = (key, value) => { return false; }) { return forkv(this.it.entire, work); });
+defineProperty(Object, "forEntire", function (work = (key, value) => { return false; }) { return forkv(this.it.entire, work); });
+
 defineProperty(Object, "copy", function (dataOnly = true, primitiveOnly = false, recusive = true) { return copy(this, dataOnly, primitiveOnly, recusive); });
-defineGetterAndSetter(Object, "mockup", function () { return copy(this); });
+defineGetterAndSetter(Object, "mock", function () { return mock(this); });
+defineGetterAndSetter(Object, "mimic", function () { return mimic(this); });
 defineGetterAndSetter(Object, "twin", function () { return twin(this); });
 defineGetterAndSetter(Object, "clone", function () { return clone(this); });
 defineProperty(Object, "patch", function (from, dataOnly = true, primitiveOnly = false, recusive = true, append = false) { return patch(this.it, from, dataOnly, primitiveOnly, recusive, append); });
+defineProperty(Object, "overwrite", function (from) { return overwrite(this.it, from); });
+defineProperty(Object, "takeover", function (from) { return takeover(this.it, from); });
+defineProperty(Object, "acquire", function (from) { return acquire(this.it, from); });
+defineProperty(Object, "inherit", function (from) { return inherit(this.it, from); });
 defineProperty(Object, "revert", function (from, dataOnly = true, primitiveOnly = false, recusive = true, exceptNew = false) { return revert(this.it, from, dataOnly, primitiveOnly, recusive, exceptNew); });
 
 // dpx("apply", function (process = it => it) { process.bind(this)(); return this.it; });

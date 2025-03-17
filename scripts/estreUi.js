@@ -1947,7 +1947,7 @@ class EstrePageHandle {
             }
         }
 
-        for (const index in points) {
+        for (const index of points.ways.reverse()) {
             const pointSet = points[index];
             if (pointSet != null) for (var i = pointSet.length - 1; i >= 0; i--) {
                 const point = pointSet[i];
