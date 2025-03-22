@@ -5312,28 +5312,28 @@ class EstreHandle {
 
     // constants
     static #handles = {
-        get [uis.unifiedCalendar]() { return EstreUnifiedCalendar; },
+        get [uis.unifiedCalendar]() { return EstreUnifiedCalendarHandle; },
 
-        get [uis.scalable]() { return EstreScalable; },
-        get [uis.collapsible]() { return EstreCollapsible; },
-        get [uis.toggleBlock]() { return EstreToggleBlock; },
-        get [uis.toggleTabBlock]() { return EstreToggleTabBlock; },
-        get [uis.tabBlock]() { return EstreTabBlock; },
+        get [uis.scalable]() { return EstreScalableHandle; },
+        get [uis.collapsible]() { return EstreCollapsibleHandle; },
+        get [uis.toggleBlock]() { return EstreToggleBlockHandle; },
+        get [uis.toggleTabBlock]() { return EstreToggleTabBlockHandle; },
+        get [uis.tabBlock]() { return EstreTabBlockHandle; },
 
-        get [uis.numKeypad]() { return EstreNumKeypad; },
+        get [uis.numKeypad]() { return EstreNumKeypadHandle; },
 
-        get [uis.checkboxSet]() { return EstreCheckboxSet; },
-        get [uis.checkboxAlly]() { return EstreCheckboxAlly; },
+        get [uis.checkboxSet]() { return EstreCheckboxSetHandle; },
+        get [uis.checkboxAlly]() { return EstreCheckboxAllyHandle; },
 
-        get [uis.toasterSlot]() { return EstreToasterSlot; },
+        get [uis.toasterSlot]() { return EstreToasterSlotHandle; },
 
-        get [uis.monthSelectorBar]() { return EstreMonthSelectorBar; },
+        get [uis.monthSelectorBar]() { return EstreMonthSelectorBarHandle; },
 
 
-        get [uis.dateShower]() { return EstreDateShower; },
+        get [uis.dateShower]() { return EstreDateShowerHandle; },
 
-        get [uis.ezHidable]() { return EstreEzHidable; },
-        get [uis.fixedAccess]() { return EstreFixedAccess; },
+        get [uis.ezHidable]() { return EstreEzHidableHandle; },
+        get [uis.fixedAccess]() { return EstreFixedAccessHandle; },
     }
     static get handles() { return this.#handles; }
 
@@ -5449,7 +5449,7 @@ class EstreHandle {
 /**
  * Unified calendar handler
  */
-class EstreUnifiedCalendar extends EstreHandle {
+class EstreUnifiedCalendarHandle extends EstreHandle {
     // constants
 
 
@@ -8620,7 +8620,7 @@ const scheduleDataSet = new ScheduleDataSet();
 /**
  * Scalable element handler
  */
-class EstreScalable extends EstreHandle {
+class EstreScalableHandle extends EstreHandle {
     // constants
 
 
@@ -8711,7 +8711,7 @@ class EstreScalable extends EstreHandle {
 /**
  * Collapsible element handler
  */
-class EstreCollapsible extends EstreHandle {
+class EstreCollapsibleHandle extends EstreHandle {
     // constants
 
 
@@ -8816,7 +8816,7 @@ class EstreCollapsible extends EstreHandle {
 /**
  * Toggle block element handler
  */
-class EstreToggleBlock extends EstreHandle {
+class EstreToggleBlockHandle extends EstreHandle {
     // constants
 
     // class property
@@ -8921,7 +8921,7 @@ class EstreToggleBlock extends EstreHandle {
 /**
  * Toggle tab block element handler
  */
-class EstreToggleTabBlock extends EstreToggleBlock {
+class EstreToggleTabBlockHandle extends EstreToggleBlockHandle {
     // constants
 
 
@@ -9136,7 +9136,7 @@ class EstreToggleTabBlock extends EstreToggleBlock {
 /**
  * Tab block element handler
  */
-class EstreTabBlock extends EstreHandle {
+class EstreTabBlockHandle extends EstreHandle {
     // constants
 
 
@@ -9347,7 +9347,7 @@ class EstreTabBlock extends EstreHandle {
  * 
  * is only construct by scope handler
  */
-class EstreScopedTabBlock extends EstreTabBlock {
+class EstreScopedTabBlock extends EstreTabBlockHandle {
     // constants
 
 
@@ -9561,7 +9561,7 @@ class EstreScopedTabBlock extends EstreTabBlock {
 /**
  * Estre number keypad handler
  */
-class EstreNumKeypad extends EstreHandle {
+class EstreNumKeypadHandle extends EstreHandle {
 
     // constants
     get onTrigger() { return new CustomEvent("trigger"); }
@@ -9719,7 +9719,7 @@ class EstreNumKeypad extends EstreHandle {
 /**
  * Estre checkbox set handler
  */
-class EstreCheckboxSet extends EstreHandle {
+class EstreCheckboxSetHandle extends EstreHandle {
 
     // constants
 
@@ -9778,7 +9778,7 @@ class EstreCheckboxSet extends EstreHandle {
 /**
  * Estre checkbox ally handler
  */
-class EstreCheckboxAlly extends EstreHandle {
+class EstreCheckboxAllyHandle extends EstreHandle {
 
     // constants
 
@@ -9836,7 +9836,7 @@ class EstreCheckboxAlly extends EstreHandle {
 /**
  * Toaster slots handle
  */
-class EstreToasterSlot extends EstreHandle {
+class EstreToasterSlotHandle extends EstreHandle {
 
     // constants
 
@@ -9897,7 +9897,7 @@ class EstreToasterSlot extends EstreHandle {
 /**
  * Estre month selector bar handle
  */
-class EstreMonthSelectorBar extends EstreHandle {
+class EstreMonthSelectorBarHandle extends EstreHandle {
 
     // constants
 
@@ -10071,7 +10071,7 @@ class EstreMonthSelectorBar extends EstreHandle {
 
 // showers
 
-class EstreDateShower extends EstreHandle {
+class EstreDateShowerHandle extends EstreHandle {
 
     // constants
 
@@ -10174,7 +10174,7 @@ class EstreDateShower extends EstreHandle {
 
 
 // quick transitions
-class EstreEzHidable extends EstreHandle {
+class EstreEzHidableHandle extends EstreHandle {
 
     // constants
 
@@ -10239,7 +10239,7 @@ class EstreEzHidable extends EstreHandle {
     }
 }
 
-class EstreFixedAccess extends EstreEzHidable {
+class EstreFixedAccessHandle extends EstreEzHidableHandle {
 
 }
 

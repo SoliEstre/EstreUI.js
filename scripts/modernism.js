@@ -31,7 +31,7 @@ SOFTWARE.
 // Collections of bypass for process codes takes be inline,
 // and monkey patching like as modern languages.
 // 
-// v0.2 / release 2025.03.17
+// v0.2.1 / release 2025.03.21
 // 
 // Author: Estre Soliette
 // Established: 2025.01.05
@@ -216,7 +216,12 @@ const isEmpty = (val, numberEmptyMatch = 0) => typeCase(val, {
     [BOOLEAN]: v => !!v <= numberEmptyMatch,
     [NUMBER]: v => v <= numberEmptyMatch,
     [BIGINT]: v => v <= numberEmptyMatch,
-    [DEFAULT]: v => Object.keys(v).length <= numberEmptyMatch,
+    [DEFAULT]: v => {
+        const keys = Object.keys(v);
+        if (keys.includes("length") && Number.isInteger(v.length)) return v.length <= numberEmptyMatch;
+        else if (keys.includes("size") && Number.isInteger(v.size)) return v.size <= numberEmptyMatch;
+        else return keys.length <= numberEmptyMatch
+    },
 });
 
 const isNotNully = val => notEquals(val, null);
@@ -226,7 +231,12 @@ const isNotEmpty = (val, numberEmptyMatch = 0) => typeCase(val, {
     [BOOLEAN]: v => !!v > numberEmptyMatch,
     [NUMBER]: v => v > numberEmptyMatch,
     [BIGINT]: v => v > numberEmptyMatch,
-    [DEFAULT]: v => Object.keys(v).length > numberEmptyMatch,
+    [DEFAULT]: v => {
+        const keys = Object.keys(v);
+        if (keys.includes("length") && Number.isInteger(v.length)) return v.length > numberEmptyMatch;
+        else if (keys.includes("size") && Number.isInteger(v.size)) return v.size > numberEmptyMatch;
+        else return keys.length > numberEmptyMatch
+    },
 });
 
 const isNullOrEmpty = val => isNully(val) || isEmpty(val);

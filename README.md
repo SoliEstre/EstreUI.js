@@ -141,7 +141,7 @@ Page handler implementation has probably not be changed.
 <br />
 
 ## Handle
-> extends EstreHandle
+> extends EstreHandle, class name begins "Estre" and ends "Handle"
 
 Handle is operation controller of specfied bound.
 Estre UI provided stock handles and can register custom handle before init of Estre UI.
