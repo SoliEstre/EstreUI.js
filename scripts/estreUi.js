@@ -143,7 +143,9 @@ const uis = {
 
 
     // swipe handler
+    allowSwipe: ".allow_swipe",
     blockSwipe: ".block_swipe",
+    blockSwipeFilter: "*:not(.block_swipe)",
     
 
 
@@ -10484,7 +10486,7 @@ class EstreSwipeHandler {
         //this.#$outerBound.off(this.#triggers, null, this.#onClick);
         this.#$outerBound = null;
         const $blockTarget = this.#$bound.find(uis.blockSwipe);
-        $blockTarget.off(this.#events, this.#onClick);
+        $blockTarget.off(this.#events, this.#onBlock);
         this.#$bound.css("user-select", "");
         this.#$bound.off("click", null, this.#onClick);
         //this.#$bound.off(this.#handles, null, this.#onHandle);
@@ -10682,6 +10684,20 @@ class EstreSwipeHandler {
 
 
     #onEvent = (e) => {
+        const isSelf = e.target == e.delegateTarget;
+        var isBlocked = false;
+        var curElem = e.target;
+        if (!isSelf) do {
+            const $curElem = $(curElem);
+            if ($curElem.is(uis.allowSwipe)) break;
+            else if ($curElem.is(uis.blockSwipe)) {
+                isBlocked = true;
+                break;
+            }
+            curElem = curElem.parentElement;
+        } while (curElem != document.body && curElem != e.delegateTarget);
+        if (isBlocked) return;
+
         const isTouch = e.type.indexOf("touch") > -1;
         const isMouse = e.type.indexOf("mouse") > -1;
         const isPointer = e.type.indexOf("pointer") > -1;
@@ -10991,6 +11007,12 @@ class EstreSwipeHandler {
         //return false;
     }
 
+    #onBlock = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    }
+
     setElement(element = this.element) {
         const $responseBound = this.#$responseBound;
         const $outerBound = this.#$outerBound;
@@ -11014,7 +11036,7 @@ class EstreSwipeHandler {
         if ($outerBound != null) this.setOuterBound($outerBound);
 
         const $blockTarget = this.#$bound.find(uis.blockSwipe);
-        $blockTarget.on(this.#events, this.#onClick);
+        $blockTarget.on(this.#events, this.#onBlock);
 
         return this;
     }

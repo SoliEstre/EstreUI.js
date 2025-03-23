@@ -663,6 +663,17 @@ body .inset_on_gap_h_half { column-gap: var(--basic-ui-inset-h-half); }
 body .inset_on_gap_h_quarter { column-gap: var(--basic-ui-inset-h-quarter); }
 
 
+
+body .ellipsis_h { text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+body .ellipsis_v { display: -webkit-box; -webkit-box-orient: vertical; text-overflow: ellipsis; overflow: hidden; -webkit-line-clamp: 4; }
+body .ellipsis_v.limit_l1 { -webkit-line-clamp: 1; }
+body .ellipsis_v.limit_l2 { -webkit-line-clamp: 2; }
+body .ellipsis_v.limit_l3 { -webkit-line-clamp: 3; }
+body .ellipsis_v.limit_l4 { -webkit-line-clamp: 4; }
+body .ellipsis_v.limit_l5 { -webkit-line-clamp: 5; }
+body .ellipsis_v.limit_l6 { -webkit-line-clamp: 6; }
+
+
 .back_blur { --back-blur: 3px; backdrop-filter: blur(var(--back-blur)); -webkit-backdrop-filter: blur(var(--back-blur)); }
 .back_blur.bb1 { --back-blur: 1px; }
 .back_blur.bb2 { --back-blur: 2px; }
@@ -727,12 +738,29 @@ body .inset_on_gap_h_quarter { column-gap: var(--basic-ui-inset-h-quarter); }
 .flexh_fill { width: 0%; flex-grow: 1; flex-shrink: 1; }
 .flexh_fit { width: fit-content; flex-grow: 1; flex-shrink: 1; }
 
-.self_auto { align-self: auto; }
-.self_start { align-self: flex-start; }
-.self_end { align-self: flex-end; }
-.self_center { align-self: center; }
-.self_baseline { align-self: baseline; }
-.self_stretch { align-self: stretch; }
+.self_auto { place-self: auto; }
+.self_start { place-self: flex-start; }
+.self_st_ed { place-self: flex-start flex-end; }
+.self_end { place-self: flex-end; }
+.self_ed_st { place-self: flex-end flex-start; }
+.self_center { place-self: center; }
+.self_baseline { place-self: baseline; }
+.self_stretch { place-self: stretch; }
+
+.self_justify_auto { justify-self: auto; }
+.self_justify_start { justify-self: flex-start; }
+.self_justify_end { justify-self: flex-end; }
+.self_justify_center { justify-self: center; }
+.self_justify_baseline { justify-self: baseline; }
+.self_justify_stretch { justify-self: stretch; }
+
+.self_align { align-self: center; }
+.self_align_start { align-self: flex-start; }
+.self_align_end { align-self: flex-end; }
+.self_align_center { align-self: center; }
+.self_align_baseline { align-self: baseline; }
+.self_align_stretch { align-self: stretch; }
+
 
 /* EstreUI rim figure */
 /* pull to refresh */
