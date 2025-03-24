@@ -579,6 +579,27 @@ const parseBoolean = function (value) {
 };
 
 
+class EstreBytes{
+    static shorten(bytes) {
+        var bytes = parseInt(bytes);
+        var level = 0;
+        while (bytes > 999) {
+            bytes /= 1024;
+            level++;
+        }
+        return bytes.toFixed(bytes < 1 ? 2 : 1) + this.getByteUnit(level);
+    }
+
+    static get byteUnits() { return ["byte", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"]; }
+
+    static getByteUnit(level) {
+        if (level < this.byteUnits.length) return this.byteUnits[level];
+        else return "·2^" + (level * 10) + "Byte";
+    }
+}
+
+
+
 function isKorean() { return navigator.language.indexOf("ko") > -1; }
 
 

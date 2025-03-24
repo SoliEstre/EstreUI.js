@@ -31,7 +31,7 @@ SOFTWARE.
 // Collections of bypass for process codes takes be inline,
 // and monkey patching like as modern languages.
 // 
-// v0.2.1 / release 2025.03.21
+// v0.2.2 / release 2025.03.24
 // 
 // Author: Estre Soliette
 // Established: 2025.01.05
@@ -357,8 +357,10 @@ const patch = (to, from, dataOnly = true, primitiveOnly = false, recusive = true
         },
         [OBJECT]: val => {
             if (!primitiveOnly) {
-                if (recusive) patch(to[key], val, dataOnly, primitiveOnly, recusive, append);
-                else to[key] = val;
+                if (recusive) {
+                    if (isNully(to[key])) to[key] = from[key].constructor();
+                    patch(to[key], val, dataOnly, primitiveOnly, recusive, append);
+                } else to[key] = val;
             }
         },
         [DEFAULT]: val => to[key] = val

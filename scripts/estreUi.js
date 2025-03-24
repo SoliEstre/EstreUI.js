@@ -38,8 +38,11 @@ const uis = {
     toggleArea: "div.toggle",
     toggleBtn: "button.toggle",
     basic: ".basic",
+    settings: ".settings",
+    settingsPanel: ".settings_panel",
     toSmaller: ".to_smaller",
     toLarger: ".to_larger",
+    controlArea: ".control_area",
     areaHandler: ".area_handler",
     areaResizer: ".area_resizer",
     placeholder: ".placeholder",
@@ -289,7 +292,7 @@ const eds = {
     loaded: "data-loaded",
     scheduleUnit: "data-schedule-unit",
     
-    // for calendarstructure
+    // for calendar structure
     todayYear: "data-today-y",
     todayMonth: "data-today-m",
     todayWeek: "data-today-w",
@@ -298,6 +301,8 @@ const eds = {
     focusMonth: "data-focus-m",
     focusWeek: "data-focus-w",
     focusDay: "data-focus-d",
+    hideWeekage: "data-hide-weekage",
+    hideWeekend: "data-hide-weekend",
 
     // for scheduler
     preload: "data-preload",
@@ -1886,43 +1891,53 @@ class EstrePageHandle {
 
 
                         if ($li.is(ax(eds.showOnExistsObjectArrayItem))) {
-                            if (isNully(arrayItem) || isNullOrEmpty(arrayItem[$li.attr(eds.showOnExistsObjectArrayItem)])) $li.css("display", "none");
+                            if (isNully(arrayItem) || isNully(arrayItem[$li.attr(eds.showOnExistsObjectArrayItem)])) $li.css("display", "none");
+                            else $li.css("display", "");
                         }
                         $li.find(ax(eds.showOnExistsObjectArrayItem)).each((i, elem) => {
-                            if (isNully(arrayItem) || isNullOrEmpty(arrayItem[elem.dataset.showOnExistsObjectArrayItem])) $(elem).css("display", "none");
+                            if (isNully(arrayItem) || isNully(arrayItem[elem.dataset.showOnExistsObjectArrayItem])) $(elem).css("display", "none");
+                            else $(elem).css("display", "");
                         });
             
                         if ($li.is(ax(eds.showOnNotExistsObjectArrayItem))) {
-                            if (isNotNully(arrayItem) && isNotNullAndEmpty(arrayItem[$li.attr(eds.showOnNotExistsObjectArrayItem)])) $li.css("display", "none");
+                            if (isNotNully(arrayItem) && isNotNully(arrayItem[$li.attr(eds.showOnNotExistsObjectArrayItem)])) $li.css("display", "none");
+                            else $li.css("display", "");
                         }
                         $li.find(ax(eds.showOnNotExistsObjectArrayItem)).each((i, elem) => {
-                            if (isNotNully(arrayItem) && isNotNullAndEmpty(arrayItem[elem.dataset.showOnNotExistsObjectArrayItem])) $(elem).css("display", "none");
+                            if (isNotNully(arrayItem) && isNotNully(arrayItem[elem.dataset.showOnNotExistsObjectArrayItem])) $(elem).css("display", "none");
+                            else $(elem).css("display", "");
                         });
             
                         if ($li.is(acv(eds.showOnEqualsObjectArrayItem, "="))) {
                             const [objItem, matchValue] = $li.attr(eds.showOnEqualsObjectArrayItem).split("=");
                             if (isNully(arrayItem) || arrayItem[objItem] != matchValue) $li.css("display", "none");
+                            else $li.css("display", "");
                         }
                         $li.find(acv(eds.showOnEqualsObjectArrayItem, "=")).each((i, elem) => {
                             const [objItem, matchValue] = elem.dataset.showOnEqualsObjectArrayItem.split("=");
                             if (isNully(arrayItem) || arrayItem[objItem] != matchValue) $(elem).css("display", "none");
+                            else $(elem).css("display", "");
                         });            
                     }
                 });
             }
 
             if ($host.is(ax(eds.showOnExists))) {
-                if (isNully(data) || isNullOrEmpty(data[$host.attr(eds.showOnExists)])) $host.css("display", "none");
+                if (isNully(data) || isNully(data[$host.attr(eds.showOnExists)])) $host.css("display", "none");
+                else $host.css("display", "");
             }
             $host.find(ax(eds.showOnExists)).each((i, elem) => {
-                if (isNully(data) || isNullOrEmpty(data[elem.dataset.showOnExists])) $(elem).css("display", "none");
+                if (isNully(data) || isNully(data[elem.dataset.showOnExists])) $(elem).css("display", "none");
+                else $(elem).css("display", "");
             });
 
             if ($host.is(ax(eds.showOnNotExists))) {
-                if (isNotNully(data) && isNotNullAndEmpty(data[$host.attr(eds.showOnNotExists)])) $host.css("display", "none");
+                if (isNotNully(data) && isNotNully(data[$host.attr(eds.showOnNotExists)])) $host.css("display", "none");
+                else $host.css("display", "");
             }
             $host.find(ax(eds.showOnNotExists)).each((i, elem) => {
-                if (isNotNully(data) && isNotNullAndEmpty(data[elem.dataset.showOnNotExists])) $(elem).css("display", "none");
+                if (isNotNully(data) && isNotNully(data[elem.dataset.showOnNotExists])) $(elem).css("display", "none");
+                else $(elem).css("display", "");
             });
 
             if ($host.is(acv(eds.showOnEquals, "="))) {
@@ -7358,6 +7373,10 @@ class EstreVariableCalendar extends EstreCalendar {
     $filterFixed = null;
     $filterVariable = null;
 
+    $controlArea = null;
+    $settings = null;
+    $settingsPanel = null;
+
     $areaHandler = null;
     $areaToSmaller = null;
     $areaToLarger = null;
@@ -7405,10 +7424,15 @@ class EstreVariableCalendar extends EstreCalendar {
         this.$filterFixed = this.$scheduleFilter.find(c.c + uis.filterFixed);
         this.$filterVariable = this.$scheduleFilter.find(c.c + uis.filterVariable);
 
-        this.$areaHandler = this.$calendarBar.find(c.c + uis.areaHandler);
+        this.$controlArea = this.$calendarBar.find(c.c + uis.controlArea);
+        this.$settings = this.$controlArea.find(c.c + uis.settings);
+        this.$settingsPanel = this.$controlArea.find(c.c + nv + uis.settingsPanel);
+
+        this.$areaHandler = this.$controlArea.find(c.c + uis.areaHandler);
         this.$areaToSmaller = this.$areaHandler.find(c.c + uis.toSmaller);
         this.$areaToLarger = this.$areaHandler.find(c.c + uis.toLarger);
-        this.$areaResizer = this.$calendarBar.find(c.c + uis.areaResizer);
+
+        this.$areaResizer = this.$bound.find(c.c + uis.areaResizer);
 
 
     }
@@ -7419,6 +7443,8 @@ class EstreVariableCalendar extends EstreCalendar {
         this.initCalendarBar();
 
         this.setEventScaler();
+
+        this.setEventSettings();
 
         this.setEventAreaHandles();
         
@@ -7581,6 +7607,22 @@ class EstreVariableCalendar extends EstreCalendar {
             inst.$bound.attr(eds.showToday, this.checked ? t1 : "");
             setTimeout(() => { inst.endTransition(); }, inst.transitionTime);
         });    
+    }
+
+    setEventSettings() {
+        const inst = this;
+
+        this.$settings.click(function (e) {
+            inst.$settingsPanel.attr(eds.show, inst.$settingsPanel.attr(eds.show) == t1 ? "" : t1);
+        });
+
+        const $inputs = this.$settingsPanel.find(inp + aiv("type", "checkbox"));
+        $inputs.filter(eid + "hide_weekage").prop("checked", this.$structure.attr(eds.hideWeekage)).change(function (e) {
+            inst.$structure.attr(eds.hideWeekage, this.checked ? t1 : "");
+        });
+        $inputs.filter(eid + "hide_weekend").prop("checked", this.$structure.attr(eds.hideWeekend)).change(function (e) {
+            inst.$structure.attr(eds.hideWeekend, this.checked ? t1 : "");
+        });
     }
 
     setEventAreaHandles() {
@@ -11704,6 +11746,14 @@ const estreUi = {
         } else {
             if (!component.$host.hasClass("home")) {
                 const closed = await component.close(false);
+                setTimeout(() => {
+                    const $components = this.$blindSections.filter(naiv(m.id, id));
+                    if ($components.length > 0) {
+                        const prevComponent = this.prevBlindedId?.let(it => this.blindSections[it]);
+                        if (prevComponent != null) prevComponent.show();
+                        else $components[$components.length - 1]?.pageHandle?.show();
+                    }
+                }, 0);
                 if (!component.isStatic) this.releaseInstantContent(component);
                 return closed;
             } else return false;
