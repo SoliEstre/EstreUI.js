@@ -480,6 +480,8 @@ defineProperty(Object, "forLooks", function (work = value => { return false; }) 
 defineProperty(Object, "forEntries", function (work = (key, value) => { return false; }) { return forkv(this.it.entire, work); });
 defineProperty(Object, "forEntire", function (work = (key, value) => { return false; }) { return forkv(this.it.entire, work); });
 
+defineProperty(Object, "keyOf", function (value) { for (const [key, val] of this.it.entire) if (val === value) return key; return undefined; });
+
 defineProperty(Object, "copy", function (dataOnly = true, primitiveOnly = false, recusive = true) { return copy(this, dataOnly, primitiveOnly, recusive); });
 defineGetterAndSetter(Object, "mock", function () { return mock(this); });
 defineGetterAndSetter(Object, "mimic", function () { return mimic(this); });

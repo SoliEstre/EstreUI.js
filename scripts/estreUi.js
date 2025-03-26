@@ -5389,7 +5389,13 @@ class EstreHandle {
     static commit() {
         this.#handleCommitted = true;
 
-        for (var handleSpecfier in this.#handles) if (this.#handles[handleSpecfier].handleName == null) this.#handles[handleSpecfier].handleName = handleSpecfier;
+        for (var handleSpecfier in this.#handles) {
+            const handle = this.#handles[handleSpecfier];
+            if (handle.handleName == null) {
+                const handleName = uis.keyOf(handleSpecfier);
+                if (handleName != null) handle.handleName = handleName;
+            }
+        }
         for (var handleSpecfier in this.#registeredHandles) this.#handles[handleSpecfier] = this.#registeredHandles[handleSpecfier];
     }
 
