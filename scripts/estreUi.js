@@ -344,6 +344,7 @@ const eds = {
 
     // for date shower
     dateFrom: "data-date-from",
+    withPrefix: "data-with-prefix",
     withSuffix: "data-with-suffix",
 
     // for month selector bar
@@ -5585,6 +5586,10 @@ class EstreUnifiedCalendarHandle extends EstreHandle {
         });
         this.resizeObserver.observe(this.bound);
     }
+    
+    // getter and setter
+    get lang() { return this.$bound.attr("lang") ?? "en"; }
+
 }
 
 class EstreYear {
@@ -6131,6 +6136,8 @@ class EstreCalendar {
     }
 
     //getter and setter
+    get lang() { return this.$bound.attr("lang") ?? this.unical.lang ?? "en"; }
+
     get scale() {
         return this.#scale + "";
     }
@@ -6391,6 +6398,10 @@ class EstreVoidCalendarStructure {
 
         return new Date();
     }
+
+    // getter and setter
+    get lang() { return this.calendar.lang ?? "en"; }
+
 
     // event handler
     releaseSwipeHandler() {
@@ -6875,8 +6886,8 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
         const lb = doc.ce(lbl);
         lb.innerText = week === 0 ? "" : "" + week;
         if (week === 0 || week === "") {
-            lb.setAttribute(eds.prefix, EsLocale.get("monthPrefix") + adjoin + EsLocale.get("monthSuffix"));
-            lb.setAttribute(eds.suffix, EsLocale.get("weekSequencePrefix") + adjoinWeek + EsLocale.get("weekSequenceSuffix"));
+            lb.setAttribute(eds.prefix, EsLocale.get("monthPrefix", this.lang) + adjoin + EsLocale.get("monthSuffix", this.lang));
+            lb.setAttribute(eds.suffix, EsLocale.get("weekSequencePrefix", this.lang) + adjoinWeek + EsLocale.get("weekSequenceSuffix", this.lang));
         }
         wk.append(lb);
         const ds = doc.ce(div);
@@ -8119,6 +8130,12 @@ class EstreUnifiedScheduler {
         return this;
     }    
 
+
+    // getter and setter
+    get lang() { return this.$bound.attr("lang") ?? this.unical.lang ?? "en"; }
+
+
+    // common
     
     registerScope(content, scope = content.dataset.scope, titleSpan) {
         this.content[scope] = content;
@@ -8199,7 +8216,7 @@ class EstreUnifiedScheduler {
         $page.append(division);
     }
 
-    buildPlaceholder(content = EsLocale.get("noSchedule")) {
+    buildPlaceholder(content = EsLocale.get("noSchedule", this.lang)) {
         const block = doc.ce(div, "schedule_placeholder");
         const span = doc.ce(sp, null, content);
         block.append(span);
@@ -8227,7 +8244,7 @@ class EstreUnifiedScheduler {
         datetime.append(ruby);
         datetime.append(doc.ce(sp, "day", dateSet.dayText));
         var span = doc.ce(sp, "timespan");
-        if (info.timeset.isWhole) span.innerText = EsLocale.get("wholeDayShort");
+        if (info.timeset.isWhole) span.innerText = EsLocale.get("wholeDayShort", this.lang);
         else {
             if (info.timeset.begin != null) span.append(dic.ce(sp, "time_begin", info.timeset.begin));
             if (info.timeset.end != null) span.append(dic.ce(sp, "time_begin", info.timeset.end));
@@ -8263,19 +8280,19 @@ class EstreUnifiedScheduler {
             var title;
             switch (scope) {
                 case "yearly":
-                    title = EsLocale.get("yearSequencePrefix") + d.year + EsLocale.get("yearSequenceSuffix");
+                    title = EsLocale.get("yearSequencePrefix", this.lang) + d.year + EsLocale.get("yearSequenceSuffix", this.lang);
                     break;
                     
                 case "monthly":
-                    title = EsLocale.get("yearPrefix") + d.year + EsLocale.get("yearSuffix") + " " + EsLocale.get("monthSequencePrefix") + d.month + EsLocale.get("monthSequenceSuffix");
+                    title = EsLocale.get("yearPrefix", this.lang) + d.year + EsLocale.get("yearSuffix", this.lang) + " " + EsLocale.get("monthSequencePrefix", this.lang) + d.month + EsLocale.get("monthSequenceSuffix", this.lang);
                     break;
     
                 case "weekly":
-                    title = EsLocale.get("monthPrefix") + d.month + EsLocale.get("monthSuffix") + " " + EsLocale.get("weekSequencePrefix") + d.week + EsLocale.get("weekSequenceSuffix");
+                    title = EsLocale.get("monthPrefix", this.lang) + d.month + EsLocale.get("monthSuffix", this.lang) + " " + EsLocale.get("weekSequencePrefix", this.lang) + d.week + EsLocale.get("weekSequenceSuffix", this.lang);
                     break;
     
                 case "daily":
-                    title = EsLocale.get("monthPrefix") + d.month + EsLocale.get("monthSuffix") + " " + EsLocale.get("daySequencePrefix") + d.date + EsLocale.get("daySequenceSuffix") + " (" + d.day + ")";
+                    title = EsLocale.get("monthPrefix", this.lang) + d.month + EsLocale.get("monthSuffix", this.lang) + " " + EsLocale.get("daySequencePrefix", this.lang) + d.date + EsLocale.get("daySequenceSuffix", this.lang) + " (" + d.day + ")";
                     break;
             }
             titleSpan.innerText = title;
@@ -10229,35 +10246,56 @@ class EstreDateShowerHandle extends EstreHandle {
             $bound.attr(eds.dateId, Ecal.getDateOffset(this.#date));
 
             $bound.find(uis.fullYear).each((i, el) => {
-                el.innerText = ds.year;
-                if ($(el).attr(eds.withSuffix) == t1) el.innerText += EsLocale.get("yearSuffix");
+                var text = "";
+                if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("yearSuffix");
+                text += ds.year;
+                if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("yearSuffix");
+                el.innerText = text;
             });
             $bound.find(uis.year2d).each((i, el) => {
-                el.innerText = ds.year % 100;
-                if ($(el).attr(eds.withSuffix) == t1) el.innerText += EsLocale.get("yearSuffix");
+                var text = "";
+                if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("yearSuffix");
+                text += ds.year % 100;
+                if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("yearSuffix");
+                el.innerText = text;
             });
 
             $bound.find(uis.month).each((i, el) => {
-                el.innerText = ds.month;
-                if ($(el).attr(eds.withSuffix) == t1) el.innerText += EsLocale.get("monthSuffix");
+                var text = "";
+                if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("monthSuffix");
+                text += ds.month;
+                if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("monthSuffix");
+                el.innerText = text;
             });
             $bound.find(uis.paddedMonth).each((i, el) => {
-                el.innerText = m2d;
-                if ($(el).attr(eds.withSuffix) == t1) el.innerText += EsLocale.get("monthSuffix");
+                var text = "";
+                if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("monthSuffix");
+                text += m2d;
+                if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("monthSuffix");
+                el.innerText = text;
             });
 
             $bound.find(uis.date).each((i, el) => {
-                el.innerText = ds.date;
-                if ($(el).attr(eds.withSuffix) == t1) el.innerText += EsLocale.get("daySuffix");
+                var text = "";
+                if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("daySuffix");
+                text += ds.date;
+                if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("daySuffix");
+                el.innerText = text;
             });
             $bound.find(uis.paddedDate).each((i, el) => {
-                el.innerText = d2d;
-                if ($(el).attr(eds.withSuffix) == t1) el.innerText += EsLocale.get("daySuffix");
+                var text = "";
+                if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("daySuffix");
+                text += d2d;
+                if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("daySuffix");
+                el.innerText = text;
             });
 
             $bound.find(uis.day).each((i, el) => {
-                el.innerText = ds.dayText;
-                if ($(el).attr(eds.withSuffix) == t1) el.innerText += EsLocale.get("weekdaySuffix");
+                var text = "";
+                if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("weekdaySuffix");
+                text += ds.dayText;
+                if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("weekdaySuffix");
+                el.innerText = text;
             });
         }
     }

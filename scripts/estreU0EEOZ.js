@@ -882,8 +882,8 @@ class EsLocale {
         },
     }
 
-    static get(item, lang = this.currentLanguage) {
-        return this.collections[lang][item] ?? this.collections["en"][item];
+    static get(item, lang = this.currentLocale) {
+        return this.collections[lang]?.[item] ?? this.collections[lang.split("-")[0]]?.[item] ?? this.collections["en"][item];
     }
 }
 
@@ -894,7 +894,6 @@ class EsLocale {
 const Ecal = {
 
     get currentLocale() { return EsLocale.currentLocale; },
-    get currentLanguage() { return EsLocale.currentLanguage; },
 
     getLastDate(year, month0) {
         if (year instanceof Date) {
@@ -1244,7 +1243,6 @@ const Ecal = {
 const Escd = {
 
     get currentLocale() { return EsLocale.currentLocale; },
-    get currentLanguage() { return EsLocale.currentLanguage; },
 
     getScopeBy(bound) {
         bound += "";
