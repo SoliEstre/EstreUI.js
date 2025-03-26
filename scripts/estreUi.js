@@ -6930,7 +6930,7 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
         dh.setAttribute(m.cls, "days_holder");
         const lb = doc.ce(lbl);
         const s = doc.ce(sp);
-        s.innerText = "" + month;
+        s.innerText = "" + EsLocale.get("months", this.lang)[month-1];
         lb.append(s);
         dh.append(lb);
         const days = doc.ce(div);
@@ -6947,7 +6947,7 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
         d.setAttribute(eds.day, day);
         const lb = doc.ce(lbl);
         lb.setAttribute(eds.fore, Ecal.getDayEmoji(day));
-        lb.innerText = Ecal.getDayText(day);
+        lb.innerText = EsLocale.get("weekdaysShort", this.lang)[day].toUpperCase();
         d.append(lb);
         return d;
     }
@@ -8298,12 +8298,12 @@ class EstreUnifiedScheduler {
                     break;
     
                 case "weekly":
-                    const weekBlock = EsLocale.get("weekSequencePrefix", this.lang) + d.week + EsLocale.get("weekSequenceSuffix", this.lang);
+                    const weekBlock = EsLocale.get("weekSequencePrefix", this.lang).toLowerCase() + d.week + EsLocale.get("weekSequenceSuffix", this.lang).toLowerCase();
                     title = monthBlock + " " + weekBlock;
                     break;
     
                 case "daily":
-                    const dateSeqBlock = EsLocale.get("daySequencePrefix", this.lang) + d.date + EsLocale.get("daySequenceSuffix", this.lang);
+                    const dateSeqBlock = EsLocale.get("daySequencePrefix", this.lang).toLowerCase() + d.date + EsLocale.get("daySequenceSuffix", this.lang).toLowerCase();
                     const dayBlock = EsLocale.get("weekdayShortPrefix", this.lang) + d.day + EsLocale.get("weekdayShortSuffix", this.lang);
                     title = [...dateSeq.replace("y", "")].join(" ").replace("m", monthBlock).replace("d", dateSeqBlock) + " " + dayBlock;
                     break;
