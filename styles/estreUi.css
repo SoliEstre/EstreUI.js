@@ -2024,8 +2024,8 @@ div.variable_calendar:lang(ko) > div.calendar_structure[data-structure-type="mas
 div.variable_calendar:lang(ko) > div.calendar_structure[data-structure-type="massive"] div.days_subjects > div.days_holder > label > span:not(:empty)::after { content: '월'; }
 div.variable_calendar > div.calendar_structure[data-structure-type="massive"] div.days_subjects > div.days_holder > div.days { }
 div.variable_calendar > div.calendar_structure[data-structure-type="massive"] div.days_subjects > div.days_holder > div.days > div { }
-div.variable_calendar > div.calendar_structure[data-structure-type="massive"] div.days_subjects > div.days_holder > div.days > div > label { font-size: 0.8125rem; }
-div.variable_calendar > div.calendar_structure[data-structure-type="massive"] div.days_subjects > div.days_holder > div.days > div > label:before { font-size: 1.153846em; line-height: 1em; translate: 0 1px; }
+div.variable_calendar > div.calendar_structure[data-structure-type="massive"] div.days_subjects > div.days_holder > div.days > div > label { letter-spacing: -0.1em; font-size: 0.8125rem; }
+div.variable_calendar > div.calendar_structure[data-structure-type="massive"] div.days_subjects > div.days_holder > div.days > div > label:before { position: relative; z-index: -1; font-size: 1.153846em; letter-spacing: -0.6em; line-height: 1em; translate: 0 1px; opacity: 0.8; }
 
 div.variable_calendar > div.calendar_structure[data-structure-type="massive"] .month[data-today="1"] > div.days_subjects > div.days_holder > label > span { background-color: rgb(var(--ctdv) / 90%); }
 div.variable_calendar > div.calendar_structure[data-structure-type="massive"] .month[data-selected="1"] > div.days_subjects > div.days_holder > label > span { background-color: rgb(var(--csdv) / 90%); }
