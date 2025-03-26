@@ -6213,7 +6213,7 @@ class EstreCalendar {
     }
 
     get dateSetFocused() {
-        return Ecal.getDateSet(this.dateFocused);
+        return Ecal.getDateSet(this.dateFocused, this.lang);
     }
 
     get dateFocused() {
@@ -7855,9 +7855,9 @@ class EstreVariableCalendar extends EstreCalendar {
     checkSetDayFocused(toScaledBe) {
         const fd = this.dateSetFocused;
         this.setYearIndic(fd.ymw.year);
-        this.setMonthIndic(fd.ymw.month);
+        this.setMonthIndic(EsLocale.get("months", this.lang)[fd.ymw.month0]);
         this.setWeekIndic(fd.ymw.week);
-        this.setDateIndic(fd.year, fd.month, fd.date);
+        this.setDateIndic(fd);
         this.setDayIndic(fd.dayText);
 
         this.releaseDate(toScaledBe);
@@ -7887,10 +7887,15 @@ class EstreVariableCalendar extends EstreCalendar {
         dayIndic.text(day);
     }
 
-    setDateIndic(year, month, date) {
+    setDateIndic(dateSet) {
         const dateIndic = this.$scalers.filter(uis.date).find(c.c + "label");
-        dateIndic.text(("" + date).padStart(2, "0"));
-        dateIndic.attr(eds.prefix, (year % 100) + cls + ("" + month).padStart(2, "0") + cls);
+        dateIndic.text(dateSet.date2d);
+        const divider = EsLocale.get("dateDevider", this.lang);
+        const seq = [...EsLocale.get("dateSequence", this.lang)].join(divider);
+        const prefix = seq.substring(0, seq.indexOf("d"));
+        const suffix = seq.substring(seq.indexOf("d") + 1);
+        dateIndic.attr(eds.suffix, prefix.replace("y", dateSet.year2d).replace("m", dateSet.month2d));
+        dateIndic.attr(eds.prefix, suffix.replace("y", dateSet.year2d).replace("m", dateSet.month2d));
     }    
 
     releaseDate(toScaledBe, fd = this.dateSetFocused) {
@@ -8276,7 +8281,7 @@ class EstreUnifiedScheduler {
     pushScopeTitle(bound, scope) {
         const titleSpan = this.titleSpan[scope];
         if (titleSpan != null) {
-            const d = Escd.parseBound(bound, scope);
+            const d = Escd.parseBound(bound, scope, this.lang);
             var title;
             switch (scope) {
                 case "yearly":
@@ -10243,7 +10248,7 @@ class EstreDateShowerHandle extends EstreHandle {
             $bound.attr(eds.dateY, ds.year);
             $bound.attr(eds.dateM, m2d);
             $bound.attr(eds.dateD, d2d);
-            $bound.attr(eds.dateId, Ecal.getDateOffset(this.#date));
+            $bound.attr(eds.dateId, Ecal.getDateOffset(this.#date, this.lang));
 
             $bound.find(uis.fullYear).each((i, el) => {
                 var text = "";
@@ -10263,7 +10268,7 @@ class EstreDateShowerHandle extends EstreHandle {
             $bound.find(uis.month).each((i, el) => {
                 var text = "";
                 if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("monthSuffix");
-                text += ds.month;
+                text += ds.monthText;
                 if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("monthSuffix");
                 el.innerText = text;
             });

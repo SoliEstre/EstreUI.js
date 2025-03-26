@@ -1957,7 +1957,7 @@ div.variable_calendar > div.date_indicate_area > div.date_indicator > span > lab
 div.variable_calendar > div.date_indicate_area > div.date_indicator > span > label::after { color: var(--color-text-lightest); }
 div.variable_calendar > div.date_indicate_area > div.date_indicator > span.years { }
 div.variable_calendar > div.date_indicate_area > div.date_indicator > span.years > label { }
-div.variable_calendar > div.date_indicate_area > div.date_indicator > span.years > label::before { content: 'Year\A0'; }
+div.variable_calendar > div.date_indicate_area > div.date_indicator > span.years > label::before { content: ''; }
 div.variable_calendar > div.date_indicate_area > div.date_indicator > span.years > label::after { content: ''; }
 div.variable_calendar:lang(ko) > div.date_indicate_area > div.date_indicator > span.years > label::before { content: ''; }
 div.variable_calendar:lang(ko) > div.date_indicate_area > div.date_indicator > span.years > label::after { content: '년도'; }
