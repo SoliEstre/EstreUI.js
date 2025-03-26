@@ -8304,7 +8304,7 @@ class EstreUnifiedScheduler {
     
                 case "daily":
                     const dateSeqBlock = EsLocale.get("daySequencePrefix", this.lang) + d.date + EsLocale.get("daySequenceSuffix", this.lang);
-                    const dayBlock = EsLocale.get("weekdayShortPrefix", this.lang) + EsLocale.get("weekdaysShort", this.lang)[d.day] + EsLocale.get("weekdayShortSuffix", this.lang);
+                    const dayBlock = EsLocale.get("weekdayShortPrefix", this.lang) + d.day + EsLocale.get("weekdayShortSuffix", this.lang);
                     title = [...dateSeq.replace("y", "")].join(" ").replace("m", monthBlock).replace("d", dateSeqBlock) + " " + dayBlock;
                     break;
             }
