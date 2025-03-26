@@ -1953,21 +1953,34 @@ div.variable_calendar > div.date_indicate_area > div.date_indicator > span > lab
         }
     }
 }
+div.variable_calendar > div.date_indicate_area > div.date_indicator > span > label::before { color: var(--color-text-lightest); }
 div.variable_calendar > div.date_indicate_area > div.date_indicator > span > label::after { color: var(--color-text-lightest); }
 div.variable_calendar > div.date_indicate_area > div.date_indicator > span.years { }
 div.variable_calendar > div.date_indicate_area > div.date_indicator > span.years > label { }
-div.variable_calendar > div.date_indicate_area > div.date_indicator > span.years > label::after { content: '년도'; }
+div.variable_calendar > div.date_indicate_area > div.date_indicator > span.years > label::before { content: 'Year\A0'; }
+div.variable_calendar > div.date_indicate_area > div.date_indicator > span.years > label::after { content: ''; }
+div.variable_calendar:lang(ko) > div.date_indicate_area > div.date_indicator > span.years > label::before { content: ''; }
+div.variable_calendar:lang(ko) > div.date_indicate_area > div.date_indicator > span.years > label::after { content: '년도'; }
 div.variable_calendar > div.date_indicate_area > div.date_indicator > span.months { }
 div.variable_calendar > div.date_indicate_area > div.date_indicator > span.months > label { }
-div.variable_calendar > div.date_indicate_area > div.date_indicator > span.months > label::after { content: '월'; }
+div.variable_calendar > div.date_indicate_area > div.date_indicator > span.months > label::before { content: ''; }
+div.variable_calendar > div.date_indicate_area > div.date_indicator > span.months > label::after { content: ''; }
+div.variable_calendar:lang(ko) > div.date_indicate_area > div.date_indicator > span.months > label::before { content: ''; }
+div.variable_calendar:lang(ko) > div.date_indicate_area > div.date_indicator > span.months > label::after { content: '월'; }
 div.variable_calendar > div.date_indicate_area > div.date_indicator > span.weeks { }
 div.variable_calendar > div.date_indicate_area > div.date_indicator > span.weeks > label { }
-div.variable_calendar > div.date_indicate_area > div.date_indicator > span.weeks > label::after { content: '주차'; }
+div.variable_calendar > div.date_indicate_area > div.date_indicator > span.weeks > label::before { content: 'week\A0'; }
+div.variable_calendar > div.date_indicate_area > div.date_indicator > span.weeks > label::after { content: ''; }
+div.variable_calendar:lang(ko) > div.date_indicate_area > div.date_indicator > span.weeks > label::before { content: ''; }
+div.variable_calendar:lang(ko) > div.date_indicate_area > div.date_indicator > span.weeks > label::after { content: '주차'; }
 div.variable_calendar > div.date_indicate_area > div.date_indicator > span.month { }
 div.variable_calendar > div.date_indicate_area > div.date_indicator > span.month > label { }
 div.variable_calendar > div.date_indicate_area > div.date_indicator > span.days { }
 div.variable_calendar > div.date_indicate_area > div.date_indicator > span.days > label { }
-div.variable_calendar > div.date_indicate_area > div.date_indicator > span.days > label::after { content: '요일'; }
+div.variable_calendar > div.date_indicate_area > div.date_indicator > span.days > label::before { content: ''; }
+div.variable_calendar > div.date_indicate_area > div.date_indicator > span.days > label::after { content: 'day'; }
+div.variable_calendar:lang(ko) > div.date_indicate_area > div.date_indicator > span.days > label::before { content: ''; }
+div.variable_calendar:lang(ko) > div.date_indicate_area > div.date_indicator > span.days > label::after { content: '요일'; }
 div.variable_calendar > div.date_indicate_area > div.date_indicator > span.date { }
 div.variable_calendar > div.date_indicate_area > div.date_indicator > span.date > label { }
 div.variable_calendar > div.date_indicate_area > div.date_indicator > span.date > label::before { display: inline-block; letter-spacing: -0.05em; margin-inline: -0.1em -0.15em; scale: 0.9 1; }
@@ -2005,7 +2018,10 @@ div.variable_calendar > div.calendar_structure[data-structure-type="massive"] di
         }
     }
 }
-div.variable_calendar > div.calendar_structure[data-structure-type="massive"] div.days_subjects > div.days_holder > label > span:not(:empty)::after { content: '월'; }
+div.variable_calendar > div.calendar_structure[data-structure-type="massive"] div.days_subjects > div.days_holder > label > span:not(:empty)::before { content: ''; }
+div.variable_calendar > div.calendar_structure[data-structure-type="massive"] div.days_subjects > div.days_holder > label > span:not(:empty)::after { content: ''; }
+div.variable_calendar:lang(ko) > div.calendar_structure[data-structure-type="massive"] div.days_subjects > div.days_holder > label > span:not(:empty)::before { content: ''; }
+div.variable_calendar:lang(ko) > div.calendar_structure[data-structure-type="massive"] div.days_subjects > div.days_holder > label > span:not(:empty)::after { content: '월'; }
 div.variable_calendar > div.calendar_structure[data-structure-type="massive"] div.days_subjects > div.days_holder > div.days { }
 div.variable_calendar > div.calendar_structure[data-structure-type="massive"] div.days_subjects > div.days_holder > div.days > div { }
 div.variable_calendar > div.calendar_structure[data-structure-type="massive"] div.days_subjects > div.days_holder > div.days > div > label { font-size: 0.8125rem; }
@@ -2183,12 +2199,18 @@ div.variable_calendar:is([data-scale="1"], [data-scale="2"]) > div.calendar_stru
 @container unical-str-months (aspect-ratio < 5 / 19) {
 div.variable_calendar:is([data-scale="1"], [data-scale="2"]) > div.calendar_structure[data-structure-type="massive"] > .years > .year > .months > .month { width: 100%; height: 8%; }
 }
-div.variable_calendar > div.calendar_structure[data-structure-type="massive"] > .years > .year > .months > .month > label:after { content: '월'; }
+div.variable_calendar > div.calendar_structure[data-structure-type="massive"] > .years > .year > .months > .month > label:before { content: ''; }
+div.variable_calendar > div.calendar_structure[data-structure-type="massive"] > .years > .year > .months > .month > label:after { content: ''; }
+div.variable_calendar:lang(ko) > div.calendar_structure[data-structure-type="massive"] > .years > .year > .months > .month > label:before { content: ''; }
+div.variable_calendar:lang(ko) > div.calendar_structure[data-structure-type="massive"] > .years > .year > .months > .month > label:after { content: '월'; }
 div.variable_calendar > div.calendar_structure[data-structure-type="massive"] > .years > .year > .months > .month > .weeks { container-name: unical-str-weeks; container-type: size; display: flex; flex-direction: column; flex-wrap: nowrap; height: 100%; flex-grow: 1; flex-shrink: 1; text-align: left; }
 div.variable_calendar > div.calendar_structure[data-structure-type="massive"] > .years > .year > .months > .month > .weeks > .week { container-name: unical-str-week; container-type: inline-size; display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; height: 16%; flex-grow: 1; flex-shrink: 1; }
 div.variable_calendar > div.calendar_structure[data-structure-type="massive"] > .years > .year > .months > .month > .weeks > .week > * { }
 div.variable_calendar > div.calendar_structure[data-structure-type="massive"] > .years > .year > .months > .month > .weeks > .week > label { width: min(5em, calc(100% / 8)); font-size: 0.8125rem; }
-div.variable_calendar > div.calendar_structure[data-structure-type="massive"] > .years > .year > .months > .month > .weeks > .week > label:not(:empty):after { content: '주차'; }
+div.variable_calendar > div.calendar_structure[data-structure-type="massive"] > .years > .year > .months > .month > .weeks > .week > label:not(:empty):before { content: 'Week\A0'; }
+div.variable_calendar > div.calendar_structure[data-structure-type="massive"] > .years > .year > .months > .month > .weeks > .week > label:not(:empty):after { content: ''; }
+div.variable_calendar:lang(ko) > div.calendar_structure[data-structure-type="massive"] > .years > .year > .months > .month > .weeks > .week > label:not(:empty):before { content: ''; }
+div.variable_calendar:lang(ko) > div.calendar_structure[data-structure-type="massive"] > .years > .year > .months > .month > .weeks > .week > label:not(:empty):after { content: '주차'; }
 div.variable_calendar > div.calendar_structure[data-structure-type="massive"] > .years > .year > .months > .month > .weeks > .week > label:empty:not([data-suffix])::after { content: ''; }
 div.variable_calendar > div.calendar_structure[data-structure-type="massive"] > .years > .year > .months > .month > .weeks > .week > label:empty { display: inline-flex; flex-direction: row; flex-wrap: wrap; min-width: min-content; }
 div.variable_calendar > div.calendar_structure[data-structure-type="massive"] > .years > .year > .months > .month > .weeks > .week > label:empty::before { color: var(--color-boundary); }
@@ -2381,8 +2403,6 @@ div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedu
 div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > ul.fixed > li > label { position: relative; padding-inline: 8px calc(8px + 1.1em); font-size: 0.8125rem; cursor: pointer; }
 /* div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > ul.fixed > li > label::before { position: relative; display: inline-block; top: -2px; height: fit-content; } */
 div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > ul.fixed > li[data-selected="1"] > label::after { top: -2px; bottom: 0; right: calc(8px + -0.2em); height: 1em; margin: auto 0; line-height: 1em; }
-div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > ul.fixed > li[data-group="whole"] > label::before { content: '종일'; }
-div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > ul.fixed > li[data-group="timely"] > label::before { content: '시간'; }
 div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > ul.variable { display: flex; flex-direction: row; flex-wrap: nowrap; }
 div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > ul.variable > li { }
 div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > ul.variable > li > label { cursor: pointer; transition-duration: 0.2s; }
@@ -2460,10 +2480,15 @@ div.variable_calendar > div.area_resizer:active { background-color: rgb(var(--cb
 .schedule_list .schedule_host .datetime .date::before { content: '.'; }
 .schedule_list .schedule_host .datetime rt.week { text-wrap: nowrap; }
 .schedule_list .schedule_host .datetime rt.week > .month { }
-.schedule_list .schedule_host .datetime rt.week > .month::after { content: '월'; }
+.schedule_list .schedule_host .datetime rt.week > .month::before { content: ''; }
+.schedule_list .schedule_host .datetime rt.week > .month::after { content: ''; }
+.schedule_list:lang(ko) .schedule_host .datetime rt.week > .month::before { content: ''; }
+.schedule_list:lang(ko) .schedule_host .datetime rt.week > .month::after { content: '월'; }
 .schedule_list .schedule_host .datetime rt.week > .week { }
-.schedule_list .schedule_host .datetime rt.week > .week::before { content: '\A0'; }
-.schedule_list .schedule_host .datetime rt.week > .week::after { content: '주차'; }
+.schedule_list .schedule_host .datetime rt.week > .week::before { content: '\A0Week\A0'; }
+.schedule_list .schedule_host .datetime rt.week > .week::after { content: ''; }
+.schedule_list:lang(ko) .schedule_host .datetime rt.week > .week::before { content: '\A0'; }
+.schedule_list:lang(ko) .schedule_host .datetime rt.week > .week::after { content: '주차'; }
 .schedule_list .schedule_host .datetime > .day { }
 .schedule_list .schedule_host .datetime > .timespan { }
 .schedule_list .schedule_host .datetime > .timespan > .time_begin { }
