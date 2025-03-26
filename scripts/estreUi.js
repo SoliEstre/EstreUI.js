@@ -5552,6 +5552,8 @@ class EstreUnifiedCalendarHandle extends EstreHandle {
     init() {
         super.init();
 
+        if (isNullOrEmpty(this.$bound.attr("lang"))) this.$bound.attr("lang", this.lang);
+
         this.$calendarArea = this.$bound.find(c.c + uis.calendarArea);
         this.$scheduleList = this.$bound.find(c.c + uis.scheduleList);
 
@@ -5588,7 +5590,7 @@ class EstreUnifiedCalendarHandle extends EstreHandle {
     }
     
     // getter and setter
-    get lang() { return this.$bound.attr("lang") ?? "en"; }
+    get lang() { return this.$bound.attr("lang") ?? EsLocale.currentLocale ?? "en"; }
 
 }
 
