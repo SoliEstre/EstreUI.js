@@ -216,6 +216,9 @@ const eds = {
     frozenPlaceholder: "data-frozen-placeholder",
     frozenItem: "data-frozen-item",
 
+    // for handle
+    handle: "data-handle",
+
     // for estre ui attribute
     lead: "data-lead",
     trail: "data-trail",
@@ -5359,16 +5362,23 @@ class EstreHandle {
     static #handleCommitted = false;
     static get handleCommited() { return this.#handleCommitted; }
 
+    static get $handlePrototypes() { return doc.$b.find(c.c + se + eid + "handlePrototypes"); }
+
 
     // class property
     static #activeHandle = {};
     static get activeHandle() { return this.#activeHandle; }
 
     // class methods
+    static getHandlePrototype(handleName) {
+        return this.$handlePrototypes.find(c.c + ar + c.c + tmp + aiv(eds.handle, handleName)).let(it => it[it.length - 1]);
+    }
+
     static registerCustomHandle(handleName, handleSpecfier, handleClass) {
         if (!this.#handleCommitted) {
             if (uis[handleName] == null) {
                 if (this.handles[handleSpecfier] == null) {
+                    if (handleClass.handleName == null) handleClass.handleName = handleName;
                     uis[handleName] = handleSpecfier;
                     this.#registeredHandles[handleSpecfier] = handleClass;
                 } else console.log("Cannot override exist stock handle specfier");
@@ -5436,6 +5446,7 @@ class EstreHandle {
     $bound = null;
     data = null;
 
+    get prototypeTemplate() { return this.constructor.handleName?.let(it => EstreHandle.getHandlePrototype(it)); }
     
     constructor(bound, host) {
         this.host = host;
@@ -5457,6 +5468,35 @@ class EstreHandle {
     init() {
         if (this.bound.handle != null) this.bound.handle.release();
         this.bound.handle = this;
+        if (this.bound.dataset.setPrototype == t1) this.applyPrototype();
+    }
+
+    applyPrototype() {
+        this.prototypeTemplate?.let(temp => {
+            const bound = this.bound;
+            bound.dataset.setPrototype = "";
+
+            const classes = new Set();
+            bound.classList.forEach(c => classes.add(c));
+            const styles = bound.getAttribute("style")?.let(it => Doctre.getStyleObject(it));
+            const attributes = {};
+            for (const attr of bound.attributes) equalCase(attr.name, {
+                "class": _ => _,
+                "style": _ => _,
+                [def]: name => { attributes[name] = attr.value; }
+            });
+
+            for (const c of temp.classList) classes.add(c);
+            bound.className = [...classes].join(" ");
+            for (const attr of temp.attributes) equalCase(attr.name, {
+                "class": _ => _,
+                [def]: name => bound.setAttribute(name, attr.value)
+            });
+            if (styles != null) for (const [name, value] of styles.entire) bound.style[name] = value;
+            for (const name in attributes) bound.setAttribute(name, attributes[name]);
+            
+            temp.content.cloneNode(true).let(clone => bound.prepend(clone));
+        });
     }
 }
 
