@@ -6875,8 +6875,8 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
         const lb = doc.ce(lbl);
         lb.innerText = week === 0 ? "" : "" + week;
         if (week === 0 || week === "") {
-            lb.setAttribute(eds.prefix, adjoin + "월");
-            lb.setAttribute(eds.suffix, adjoinWeek + "주차");
+            lb.setAttribute(eds.prefix, EsLocale.get("monthPrefix") + adjoin + EsLocale.get("monthSuffix"));
+            lb.setAttribute(eds.suffix, EsLocale.get("weekSequencePrefix") + adjoinWeek + EsLocale.get("weekSequenceSuffix"));
         }
         wk.append(lb);
         const ds = doc.ce(div);
@@ -8199,7 +8199,7 @@ class EstreUnifiedScheduler {
         $page.append(division);
     }
 
-    buildPlaceholder(content = "일정 없음") {
+    buildPlaceholder(content = EsLocale.get("noSchedule")) {
         const block = doc.ce(div, "schedule_placeholder");
         const span = doc.ce(sp, null, content);
         block.append(span);
@@ -8227,7 +8227,7 @@ class EstreUnifiedScheduler {
         datetime.append(ruby);
         datetime.append(doc.ce(sp, "day", dateSet.dayText));
         var span = doc.ce(sp, "timespan");
-        if (info.timeset.isWhole) span.innerText = "종일";
+        if (info.timeset.isWhole) span.innerText = EsLocale.get("wholeDayShort");
         else {
             if (info.timeset.begin != null) span.append(dic.ce(sp, "time_begin", info.timeset.begin));
             if (info.timeset.end != null) span.append(dic.ce(sp, "time_begin", info.timeset.end));
@@ -8263,19 +8263,19 @@ class EstreUnifiedScheduler {
             var title;
             switch (scope) {
                 case "yearly":
-                    title = d.year + "년도";
+                    title = EsLocale.get("yearSequencePrefix") + d.year + EsLocale.get("yearSequenceSuffix");
                     break;
                     
                 case "monthly":
-                    title = d.year + "년 " + d.month + "월";
+                    title = EsLocale.get("yearPrefix") + d.year + EsLocale.get("yearSuffix") + " " + EsLocale.get("monthSequencePrefix") + d.month + EsLocale.get("monthSequenceSuffix");
                     break;
     
                 case "weekly":
-                    title = d.month + "월 " + d.week + "주차";
+                    title = EsLocale.get("monthPrefix") + d.month + EsLocale.get("monthSuffix") + " " + EsLocale.get("weekSequencePrefix") + d.week + EsLocale.get("weekSequenceSuffix");
                     break;
     
                 case "daily":
-                    title = d.month + "월 " + d.date + "일 (" + d.day + ")";
+                    title = EsLocale.get("monthPrefix") + d.month + EsLocale.get("monthSuffix") + " " + EsLocale.get("daySequencePrefix") + d.date + EsLocale.get("daySequenceSuffix") + " (" + d.day + ")";
                     break;
             }
             titleSpan.innerText = title;
@@ -10230,34 +10230,34 @@ class EstreDateShowerHandle extends EstreHandle {
 
             $bound.find(uis.fullYear).each((i, el) => {
                 el.innerText = ds.year;
-                if ($(el).attr(eds.withSuffix) == t1) el.innerText += "년";
+                if ($(el).attr(eds.withSuffix) == t1) el.innerText += EsLocale.get("yearSuffix");
             });
             $bound.find(uis.year2d).each((i, el) => {
                 el.innerText = ds.year % 100;
-                if ($(el).attr(eds.withSuffix) == t1) el.innerText += "년";
+                if ($(el).attr(eds.withSuffix) == t1) el.innerText += EsLocale.get("yearSuffix");
             });
 
             $bound.find(uis.month).each((i, el) => {
                 el.innerText = ds.month;
-                if ($(el).attr(eds.withSuffix) == t1) el.innerText += "월";
+                if ($(el).attr(eds.withSuffix) == t1) el.innerText += EsLocale.get("monthSuffix");
             });
             $bound.find(uis.paddedMonth).each((i, el) => {
                 el.innerText = m2d;
-                if ($(el).attr(eds.withSuffix) == t1) el.innerText += "월";
+                if ($(el).attr(eds.withSuffix) == t1) el.innerText += EsLocale.get("monthSuffix");
             });
 
             $bound.find(uis.date).each((i, el) => {
                 el.innerText = ds.date;
-                if ($(el).attr(eds.withSuffix) == t1) el.innerText += "일";
+                if ($(el).attr(eds.withSuffix) == t1) el.innerText += EsLocale.get("daySuffix");
             });
             $bound.find(uis.paddedDate).each((i, el) => {
                 el.innerText = d2d;
-                if ($(el).attr(eds.withSuffix) == t1) el.innerText += "일";
+                if ($(el).attr(eds.withSuffix) == t1) el.innerText += EsLocale.get("daySuffix");
             });
 
             $bound.find(uis.day).each((i, el) => {
                 el.innerText = ds.dayText;
-                if ($(el).attr(eds.withSuffix) == t1) el.innerText += "요일";
+                if ($(el).attr(eds.withSuffix) == t1) el.innerText += EsLocale.get("weekdaySuffix");
             });
         }
     }
@@ -11347,7 +11347,7 @@ const estreUi = {
 
                 } else {
                     if (history.length < inst.initialHistoryOffset + 1 || state?.euiState == "initializing") {
-                        note("다시 한번 뒤로 이동하면 앱을 종료합니다");
+                        note(EsLocale.get("exitApplicationWhenPressBackAgain"));
                         // inst.pushCurrentState(inst.currentTopPage, state);
                     }
                 }

@@ -743,11 +743,158 @@ class LocalStyle {
 }
 
 
+/**
+ * Locale constants
+ */
+class EsLocale {
+    static get currentLocale() { return navigator.language; }
+    static get currentLanguage() { return this.currentLocale?.split("-")[0] ?? "en"; }
+
+    static collections = {
+        "en": {
+            "weekdays": ["Sun", "Mon", "Tues", "Wednes", "Thurs", "Fri", "Satur"],
+            "weekdaysFull": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+            "weekdaysShort": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+            "months": ["Jan.", "Feb.", "Mar.", "Apr.", "May.", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."],
+            "monthsFull": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+            "monthsShort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+
+            "yearPrefix": "",
+            "yearSuffix": "",
+            "yearSequencePrefix": "Year ",
+            "yearSequenceSuffix": "",
+            "monthPrefix": "",
+            "monthSuffix": "",
+            "monthSequencePrefix": "",
+            "monthSequenceSuffix": "",
+            "weekPrefix": "w",
+            "weekSuffix": "",
+            "weekSequencePrefix": "Week ",
+            "weekSequenceSuffix": "",
+            "dayPrefix": "",
+            "daySuffix": "",
+            "daySequencePrefix": "Day ",
+            "daySequenceSuffix": "",
+            "weekdaySuffix": "",
+
+            "hourPrefix": "",
+            "hourSuffix": "",
+            "minutePrefix": "",
+            "minuteSuffix": "",
+            "secondPrefix": "",
+            "secondSuffix": "",
+
+            "yearly": "Yearly",
+            "monthly": "Monthly",
+            "weekly": "Weekly",
+            "daily": "Daily",
+            "wholeday": "Whole day",
+            "wholedayShort": "Whole",
+            "timely": "Timely",
+            "timelyShort": "Time",
+            "hourly": "Hourly",
+
+            "today": "Today",
+
+            "dateDataDivider": "-",
+            "timeDataDivider": ":",
+            "dateDevider": "/",
+            "timeDevider": ":",
+
+            "dataDataSequence": "ymd",
+            "dateSequence": "mdy",
+            "timeSequence": "hms",
+
+            "weekStart": 0,
+            "weekStartSunday": 0,
+            "weekStartMonday": 1,
+            "weekStartSaturday": 6,
+
+            "noSchedule": "No schedule",
+
+
+            "exitApplicationWhenPressBackAgain": "Press back again to exit",
+        },
+        
+        "ko": {
+            "weekdays": ["일", "월", "화", "수", "목", "금", "토"],
+            "weekdaysFull": ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"],
+            "weekdaysShort": ["일", "월", "화", "수", "목", "금", "토"],
+            "months": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+            "monthsFull": ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"],
+            "monthsShort": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+
+            "yearPrefix": "",
+            "yearSuffix": "년",
+            "yearSequencePrefix": "",
+            "yearSequenceSuffix": "년도",
+            "monthPrefix": "",
+            "monthSuffix": "월",
+            "monthSequencePrefix": "",
+            "monthSequenceSuffix": "월",
+            "weekPrefix": "",
+            "weekSuffix": "주",
+            "weekSequencePrefix": "",
+            "weekSequenceSuffix": "주차",
+            "dayPrefix": "",
+            "daySuffix": "일",
+            "daySequencePrefix": "",
+            "daySequenceSuffix": "일",
+            "weekdaySuffix": "요일",
+
+            "hourPrefix": "",
+            "hourSuffix": "시",
+            "minutePrefix": "",
+            "minuteSuffix": "분",
+            "secondPrefix": "",
+            "secondSuffix": "초",
+
+            "yearly": "연간",
+            "monthly": "월간",
+            "weekly": "주간",
+            "daily": "일간",
+            "wholeday": "하루종일",
+            "wholedayShort": "종일",
+            "timely": "시간별",
+            "timelyShort": "시간",
+            "hourly": "시간별",
+
+            "today": "오늘",
+
+            "dateDataDivider": "-",
+            "timeDataDivider": ":",
+            "dateDevider": ".",
+            "timeDevider": ":",
+
+            "dateDataSequence": "ymd",
+            "dateSequence": "ymd",
+            "timeSequence": "hms",
+
+            "weekStart": 0,
+            "weekStartSunday": 0,
+            "weekStartMonday": 1,
+            "weekStartSaturday": 6,
+
+            "noSchedule": "일정 없음",
+
+
+            "exitApplicationWhenPressBackAgain": "다시 한번 뒤로 이동하면 앱을 종료합니다",
+        },
+    }
+
+    static get(item, lang = this.currentLanguage) {
+        return this.collections[lang][item] ?? this.collections["en"][item];
+    }
+}
+
 
 /**
  * Common calendar methods
  */
 const Ecal = {
+
+    get currentLocale() { return EsLocale.currentLocale; },
+    get currentLanguage() { return EsLocale.currentLanguage; },
 
     getLastDate(year, month0) {
         if (year instanceof Date) {
@@ -1052,41 +1199,35 @@ const Ecal = {
         return "";
     },
 
-    getDayText(date) {
-        switch(date instanceof Date ? date.getDay() : date) {
-            case 0:
-                return "일";
-            case 1:
-                return "월";
-            case 2:
-                return "화";
-            case 3:
-                return "수";
-            case 4:
-                return "목";
-            case 5:
-                return "금";
-            case 6:
-                return "토";
-        }
-        return "";
+    getDayText(date, lang = this.defaultLanguage) {
+        const day = date instanceof Date ? date.getDay() : date;
+        return EsLocale.get("weekdays", lang)[day] ?? "";
     },
 
-    getDayTextDay(date, suffix) {
-        if (suffix == null) suffix = "요일";
+    getDayTextDay(date, lang = this.defaultLanguage, suffix) {
+        if (suffix == null) suffix = EsLocale.get("weekdaySuffix");
         return this.getDayText(date) + suffix;
     },
 
-    getDateSet(date = new Date()) {
+    getDateSet(date = new Date(), lang = this.defaultLanguage) {
+        const month0 = date.getMonth();
+        const day = date.getDay();
         return {
             ymw: this.getYearMonthWeek(date),
             year: date.getFullYear(),
-            month: date.getMonth() + 1,
-            month0: date.getMonth(),
+            month: month0 + 1,
+            month0,
+            monthText: EsLocale.get("monthsShort", lang)[month0],
+            monthFullText: EsLocale.get("monthsFull", lang)[month0],
+            monthShortText: EsLocale.get("months", lang)[month0],
             week: this.getWeek(date),
             date: date.getDate(),
-            day: date.getDay(),
-            dayText: this.getDayText(date),
+            day,
+            dayText: this.getDayText(day, lang),
+            dayTextDay: this.getDayTextDay(day, lang),
+            dayTextFull: EsLocale.get("weekdaysFull", lang)[day],
+            dayTextShort: EsLocale.get("weekdaysShort", lang)[day],
+            dayEmoji: this.getDayEmoji(day),
             time: date.getTime(),
             dateOrigin: new Date(date),
         }
@@ -1101,6 +1242,9 @@ const Ecal = {
  * Common scheduler methods
  */
 const Escd = {
+
+    get currentLocale() { return EsLocale.currentLocale; },
+    get currentLanguage() { return EsLocale.currentLanguage; },
 
     getScopeBy(bound) {
         bound += "";
@@ -1187,7 +1331,7 @@ const Escd = {
         return bounds;
     },
 
-    getBoundBy(offset, bound, scope) {
+    getBoundBy(offset, bound, scope, lang = this.defaultLanguage) {
         const d = this.parseBound(bound, scope);
         var bounds;
         switch (scope) {
@@ -1211,7 +1355,7 @@ const Escd = {
         return bounds[offset];
     },
 
-    parseBound(bound, scope) {
+    parseBound(bound, scope, lang = this.defaultLanguage) {
         switch (scope) {
             case "yearly":
                 return { year: parseInt(bound) };
@@ -1235,7 +1379,7 @@ const Escd = {
                 var year = divided[0];
                 var month = parseInt(divided[1]);
                 var date = parseInt(divided[2]);
-                var day = Ecal.getDayText(new Date(year, month - 1, date));
+                var day = EsLocale.get("weekdaysShort", lang)[new Date(year, month - 1, date).getDay()];
                 return { year: year, month: month, month0: month - 1, date: date, day: day };
         }
     },
