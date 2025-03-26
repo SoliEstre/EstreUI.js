@@ -2400,7 +2400,7 @@ div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedu
 div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > ul.fixed > li { flex-grow: 1; cursor: pointer; transition-duration: 0.2s; }
 div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > ul.fixed > li:hover { background-color: rgb(var(--cpl) / 15%); }
 div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > ul.fixed > li:active { background-color: rgb(var(--cpl) / 35%); }
-div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > ul.fixed > li > label { position: relative; padding-inline: 8px calc(8px + 1.1em); font-size: 0.8125rem; cursor: pointer; }
+div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > ul.fixed > li > label { position: relative; display: flex; flex-flow: row nowrap; justify-content: space-between; align-items: center; padding-inline: 8px calc(8px + 1.1em); font-size: 0.8125rem; cursor: pointer; }
 /* div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > ul.fixed > li > label::before { position: relative; display: inline-block; top: -2px; height: fit-content; } */
 div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > ul.fixed > li[data-selected="1"] > label::after { top: -2px; bottom: 0; right: calc(8px + -0.2em); height: 1em; margin: auto 0; line-height: 1em; }
 div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > ul.variable { display: flex; flex-direction: row; flex-wrap: nowrap; }
