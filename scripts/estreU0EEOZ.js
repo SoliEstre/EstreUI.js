@@ -775,7 +775,10 @@ class EsLocale {
             "daySuffix": "",
             "daySequencePrefix": "Day ",
             "daySequenceSuffix": "",
+            "weekdayPrefix": "",
             "weekdaySuffix": "",
+            "weekdayShortPrefix": "",
+            "weekdayShortSuffix": "",
 
             "hourPrefix": "",
             "hourSuffix": "",
@@ -840,7 +843,10 @@ class EsLocale {
             "daySuffix": "일",
             "daySequencePrefix": "",
             "daySequenceSuffix": "일",
+            "weekdayPrefix": "",
             "weekdaySuffix": "요일",
+            "weekdayShortPrefix": "(",
+            "weekdayShortSuffix": ")",
 
             "hourPrefix": "",
             "hourSuffix": "시",

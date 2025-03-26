@@ -6886,8 +6886,8 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
         const lb = doc.ce(lbl);
         lb.innerText = week === 0 ? "" : "" + week;
         if (week === 0 || week === "") {
-            lb.setAttribute(eds.prefix, EsLocale.get("monthPrefix", this.lang) + adjoin + EsLocale.get("monthSuffix", this.lang));
-            lb.setAttribute(eds.suffix, EsLocale.get("weekSequencePrefix", this.lang) + adjoinWeek + EsLocale.get("weekSequenceSuffix", this.lang));
+            lb.setAttribute(eds.prefix, EsLocale.get("monthPrefix", this.lang) + EsLocale.get("months", this.lang)[adjoin-1] + EsLocale.get("monthSuffix", this.lang));
+            lb.setAttribute(eds.suffix, EsLocale.get("weekSequencePrefix", this.lang).toLowerCase() + adjoinWeek + EsLocale.get("weekSequenceSuffix", this.lang).toLowerCase());
         }
         wk.append(lb);
         const ds = doc.ce(div);
@@ -7894,8 +7894,8 @@ class EstreVariableCalendar extends EstreCalendar {
         const seq = [...EsLocale.get("dateSequence", this.lang)].join(divider);
         const prefix = seq.substring(0, seq.indexOf("d"));
         const suffix = seq.substring(seq.indexOf("d") + 1);
-        dateIndic.attr(eds.suffix, prefix.replace("y", dateSet.year2d).replace("m", dateSet.month2d));
-        dateIndic.attr(eds.prefix, suffix.replace("y", dateSet.year2d).replace("m", dateSet.month2d));
+        dateIndic.attr(eds.prefix, prefix.replace("y", dateSet.year2d).replace("m", dateSet.month2d));
+        dateIndic.attr(eds.suffix, suffix.replace("y", dateSet.year2d).replace("m", dateSet.month2d));
     }    
 
     releaseDate(toScaledBe, fd = this.dateSetFocused) {
@@ -8281,7 +8281,11 @@ class EstreUnifiedScheduler {
     pushScopeTitle(bound, scope) {
         const titleSpan = this.titleSpan[scope];
         if (titleSpan != null) {
+            const dateSeq = EsLocale.get("dateSequence", this.lang);
             const d = Escd.parseBound(bound, scope, this.lang);
+            const monthTextFull = EsLocale.get("months", this.lang)[d.month0];
+            const monthBlock = EsLocale.get("monthPrefix", this.lang) + monthTextFull + EsLocale.get("monthSuffix", this.lang);
+            const monthSeqBlock = EsLocale.get("monthSequencePrefix", this.lang) + monthTextFull + EsLocale.get("monthSequenceSuffix", this.lang);
             var title;
             switch (scope) {
                 case "yearly":
@@ -8289,15 +8293,19 @@ class EstreUnifiedScheduler {
                     break;
                     
                 case "monthly":
-                    title = EsLocale.get("yearPrefix", this.lang) + d.year + EsLocale.get("yearSuffix", this.lang) + " " + EsLocale.get("monthSequencePrefix", this.lang) + d.month + EsLocale.get("monthSequenceSuffix", this.lang);
+                    const yearBock = EsLocale.get("yearPrefix", this.lang) + d.year + EsLocale.get("yearSuffix", this.lang);
+                    title = [...dateSeq.replace("d", "")].join(" ").replace("y", yearBock).replace("m", monthSeqBlock);
                     break;
     
                 case "weekly":
-                    title = EsLocale.get("monthPrefix", this.lang) + d.month + EsLocale.get("monthSuffix", this.lang) + " " + EsLocale.get("weekSequencePrefix", this.lang) + d.week + EsLocale.get("weekSequenceSuffix", this.lang);
+                    const weekBlock = EsLocale.get("weekSequencePrefix", this.lang) + d.week + EsLocale.get("weekSequenceSuffix", this.lang);
+                    title = monthBlock + " " + weekBlock;
                     break;
     
                 case "daily":
-                    title = EsLocale.get("monthPrefix", this.lang) + d.month + EsLocale.get("monthSuffix", this.lang) + " " + EsLocale.get("daySequencePrefix", this.lang) + d.date + EsLocale.get("daySequenceSuffix", this.lang) + " (" + d.day + ")";
+                    const dateSeqBlock = EsLocale.get("daySequencePrefix", this.lang) + d.date + EsLocale.get("daySequenceSuffix", this.lang);
+                    const dayBlock = EsLocale.get("weekdayShortPrefix", this.lang) + EsLocale.get("weekdaysShort", this.lang)[d.day] + EsLocale.get("weekdayShortSuffix", this.lang);
+                    title = [...dateSeq.replace("y", "")].join(" ").replace("m", monthBlock).replace("d", dateSeqBlock) + " " + dayBlock;
                     break;
             }
             titleSpan.innerText = title;
