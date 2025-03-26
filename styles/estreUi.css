@@ -2374,8 +2374,8 @@ div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedu
 div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > ul { height: 100%; }
 div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > ul > li { }
 div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > ul > li > label { }
-div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > ul.fixed { display: flex; flex-direction: column; flex-wrap: wrap; justify-content: space-between; }
-div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > ul.fixed > li { cursor: pointer; transition-duration: 0.2s; }
+div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > ul.fixed { display: flex; flex-direction: column; flex-wrap: wrap; justify-content: stretch; gap: 4px; }
+div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > ul.fixed > li { flex-grow: 1; cursor: pointer; transition-duration: 0.2s; }
 div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > ul.fixed > li:hover { background-color: rgb(var(--cpl) / 15%); }
 div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > ul.fixed > li:active { background-color: rgb(var(--cpl) / 35%); }
 div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > ul.fixed > li > label { position: relative; padding-inline: 8px calc(8px + 1.1em); font-size: 0.8125rem; cursor: pointer; }
