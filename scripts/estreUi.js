@@ -5553,7 +5553,7 @@ class EstreUnifiedCalendarHandle extends EstreHandle {
 
         this.$calendarArea = this.$bound.find(c.c + uis.calendarArea);
         this.$scheduleList = this.$bound.find(c.c + uis.scheduleList);
-        
+
         this.calendar = new EstreVariableCalendar(this.$calendarArea.find(c.c + uis.variableCalendar)[0], this.$calendarArea[0], this);
         this.calendar.init();
         this.scheduler = new EstreUnifiedScheduler(this.$scheduleList.find(c.c + uis.unifiedScheduler)[0], this.$scheduleList[0], this.calendar, this).init();
@@ -6046,10 +6046,10 @@ class EstreDay {
 
             const list = listGrouped[groupId];
             if (group == "data") {
-                const dataTypeSet = scheduleDataSet.dataHandler.getDataTypeSet(originId);
-                const dataType = dataTypeSet.dataType;
-                const converted = scheduleDataSet.dataHandler.convertDataToDisplay(list, dataType);
-                switch (typeof converted) {
+                const dataTypeSet = scheduleDataSet.dataHandler?.getDataTypeSet(originId);
+                const dataType = dataTypeSet?.dataType;
+                const converted = scheduleDataSet.dataHandler?.convertDataToDisplay(list, dataType);
+                if (converted != null) switch (typeof converted) {
                     case "string":
                         const item = this.buildItem(converted, dataType);
                         target.append(item);
@@ -7560,7 +7560,7 @@ class EstreVariableCalendar extends EstreCalendar {
 
 
     initCalendarBar() {
-        scheduleDataSet.dataHandler.initScheduleCommonFilter(this);
+        scheduleDataSet.dataHandler?.initScheduleCommonFilter(this);
     }
 
 
@@ -8029,7 +8029,7 @@ class EstreVariableCalendar extends EstreCalendar {
     }
 
     async releaseScheduleDataFilter() {
-        await scheduleDataSet.dataHandler.initScheduledDataFilter(this);
+        await scheduleDataSet.dataHandler?.initScheduledDataFilter(this);
     }
 
 
@@ -8421,7 +8421,7 @@ class ScheduleDataSet {
             }
 
             for (var range of ranges) {
-                await this.dataHandler.notifyRequestData(origin, range.begin, range.end);
+                await this.dataHandler?.notifyRequestData(origin, range.begin, range.end);
             }
         }
 
@@ -8627,7 +8627,7 @@ class ScheduleDataSet {
 
         for (var group of groups) dataRequests.add(group);
 
-        if (this.dataHandler != null) this.dataHandler.notifyRequestYear(year);
+        this.dataHandler?.notifyRequestYear(year);
     }
 
     pushDataAlreadyHas(caller, groups, year, month, date) {
