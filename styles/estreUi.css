@@ -1896,7 +1896,7 @@ body .toaster_slot > span {}
 .unified_calendar section.schedule_list { flex-grow: 1; flex-shrink: 1; height: -webkit-fill-available; }
 
 
-.calendar_area { --cal-area-height-ratio: 0.5; --min-height: 0px; --indic-area-min-height: 28px; --cal-bar-height: 60px; --side-pad: 0px; position: relative; height: calc(max(calc((100% - var(--indic-area-min-height) - var(--cal-bar-height) - var(--bottom-pad)) * var(--cal-area-height-ratio)), var(--min-height)) + var(--indic-area-min-height) + var(--cal-bar-height)); margin: 0; padding: 0 max(var(--side-pad), 4px); transition-timing-function: ease; transition-duration: 0.4s; user-select: none; }
+.calendar_area { --cal-area-height-ratio: 0.5; --min-height: 0px; --indic-area-min-height: 28px; --cal-bar-height: 84px; --side-pad: 0px; position: relative; height: calc(max(calc((100% - var(--indic-area-min-height) - var(--cal-bar-height) - var(--bottom-pad)) * var(--cal-area-height-ratio)), var(--min-height)) + var(--indic-area-min-height) + var(--cal-bar-height)); margin: 0; padding: 0 max(var(--side-pad), 4px); transition-timing-function: ease; transition-duration: 0.4s; user-select: none; }
 .calendar_area[data-size="0"] { --cal-area-height-ratio: 0; }
 .calendar_area[data-size="1"] { --cal-area-height-ratio: 0.4; --min-height: 240px; }
 .calendar_area[data-size="2"] { --cal-area-height-ratio: 0.6; --min-height: 320px; }
