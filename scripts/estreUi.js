@@ -5540,9 +5540,6 @@ class EstreUnifiedCalendarHandle extends EstreHandle {
     constructor(unical, host) {
         super(unical, host);
         this.maxSize = this.data.maxSize;
-        this.$calendarArea = this.$bound.find(c.c + uis.calendarArea);
-        this.$scheduleList = this.$bound.find(c.c + uis.scheduleList);
-
     }
 
     release() {
@@ -5554,6 +5551,9 @@ class EstreUnifiedCalendarHandle extends EstreHandle {
     init() {
         super.init();
 
+        this.$calendarArea = this.$bound.find(c.c + uis.calendarArea);
+        this.$scheduleList = this.$bound.find(c.c + uis.scheduleList);
+        
         this.calendar = new EstreVariableCalendar(this.$calendarArea.find(c.c + uis.variableCalendar)[0], this.$calendarArea[0], this);
         this.calendar.init();
         this.scheduler = new EstreUnifiedScheduler(this.$scheduleList.find(c.c + uis.unifiedScheduler)[0], this.$scheduleList[0], this.calendar, this).init();
