@@ -24,7 +24,7 @@ It is developed to function as a rim (a runnable frame) for universal (Mobile & 
 
 Application preview page on this repo.
 
-[Example web app 1](https://estreui.mpsolutions.kr/myOwnApplication1.html)
+[Example web app 1](https://estreui.mpsolutions.kr/App1)
 
 Applications for Estre UI demonstration  
 [APT.](https://estreui.mpsolutions.kr/APT)
@@ -343,7 +343,7 @@ Estre UI Rimwork은 프론트엔드 프레임워크와 유사하지만 여러 �
 
 본 리포지터리에 포함된 애플리케이션 미리보기 페이지
 
-[예제 웹 앱 1](https://estreui.mpsolutions.kr/myOwnApplication1.html)
+[예제 웹 앱 1](https://estreui.mpsolutions.kr/App1)
 
 
 Estre UI 데모를 위한 애플리케이션   

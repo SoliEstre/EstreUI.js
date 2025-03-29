@@ -11,22 +11,10 @@
 /* Current application customs */
 html {
 
-    --color-my-own-dark: #3c596d;   --cmod: 60 89 109;
-    --color-my-own: #51a7e0;        --cmo: 81 167 224;
-    --color-my-own-light: #81c2ec;  --cmol: 129 194 236;
-
-    --color-point-dark: var(--color-my-own-dark);      --cpd: var(--cmod);
-    --color-point: var(--color-my-own);                --cp: var(--cmo);
-    --color-point-light: var(--color-my-own-light);    --cpl: var(--cmol);
-
-
-    /* --top-pad: calc(env(safe-area-inset-top) + 0px);
-    --bottom-pad: calc(env(safe-area-inset-bottom) + 0px); */
-
 }
 
 body {
-    --common-bg-color: #F1F1FA;
+    --common-bg-color: #FFFFFF;
 
     font-family: 'Noto Sans KR';
 
@@ -44,21 +32,14 @@ body[data-dark-mode="1"] {
 main { font-family: 'Noto Sans KR'; }
 main button, main input, main textarea { font-family: 'Noto Sans KR'; }
 
-article { --article-theme-color: transparent; }
 
-article button { padding: 1em; border-style: none; border-radius: 1em; }
 
 
 /* override EstreUI */
 
-/* footer#fixedBottom { transition-timing-function: ease; transition-duration: 0.3s; }
-footer#fixedBottom:not(:hover) { bottom: -44px; } */
 
 
 /* custom element styles */
-article .line_block { border-bottom: none; border-radius: 0; }
-
-article .bg_pointed { --bg-basic: rgb(var(--cpl) / 15%); --bg-hover: rgb(var(--cpl) / 30%); --bg-active: rgb(var(--cpl) / 60%); }
 
 
 
@@ -70,6 +51,3 @@ article .bg_pointed { --bg-basic: rgb(var(--cpl) / 15%); --bg-hover: rgb(var(--c
 
 /* extra preset */
 
-.my_own_user_handle { }
-.my_own_user_handle label { min-width: fit-content; overflow: hidden; }
-.my_own_user_handle .sign_out { cursor: pointer; }

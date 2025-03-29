@@ -1,18 +1,20 @@
-const MY_HOST = "estreui.mpsolutions.kr";
+const MY_HOST = "app.host.domain";
 
 const CACHE_VERSION_NAME = "cache-v1.0";
  
 const CACHE_LIST = [
+    "/favicon.ico",
+    "/index.html",
     "/webmanifest.json",
 
-    "/images/EstreUI-flatter-16x16.png",
-    "/images/EstreUI-flatter-32x32.png",
-    "/images/EstreUI-flatter-48x48.png",
-    "/images/EstreUI-flatter-144x144.png",
-    "/images/EstreUI-flatter-167x167.png",
-    "/images/EstreUI-flatter-180x180.png",
-    "/images/EstreUI-flatter-192x192.png",
-    "/images/EstreUI-flatter-512x512.png",
+    "/images/app_icon_16x16.png",
+    "/images/app_icon_32x32.png",
+    "/images/app_icon_48x48.png",
+    "/images/app_icon_144x144.png",
+    "/images/app_icon_167x167.png",
+    "/images/app_icon_180x180.png",
+    "/images/app_icon_192x192.png",
+    "/images/app_icon_512x512.png",
 
     "/lotties/menu_and_back_btn.json",
     "/lotties/menu_and_close_btn.json",
@@ -34,7 +36,7 @@ const CACHE_LIST = [
     "/scripts/main.js",
 
     "/vectors/more_vertical_slim_icon.svg",
-    "/vectors/EstreUI-flatter.svg",
+    "/vectors/app_icon.svg",
 
 ];
 
