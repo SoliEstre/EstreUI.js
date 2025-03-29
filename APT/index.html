@@ -994,20 +994,20 @@ if (isStandalone) {
         <!-- Estre UI stock handle prototype assigned area -->
         <!-- NOTE: Do not change this implementation. this is reference structure. -->
         <article class="stock">
-            <template data-handle="unifiedCalendar" class="unified_calendar" data-article-id="main" data-static="1">
+            <template data-handle="unifiedCalendar" class="unified_calendar">
                 <section class="calendar_area" data-size="2" data-max-size="3">
                     <div class="variable_calendar" data-scale="3" data-begin-scale="3" data-show-today="1" data-show-schedule-whole="1" data-show-schedule-timely="1" data-current-schedule-data-origin="">
                         <div class="date_indicate_area">
                             <div class="date_indicator">
-                                <span class="scaler years" data-scale-id="1" title="연도 선택"><label>2024</label></span>
-                                <span class="scaler months" data-scale-id="2" title="월 선택"><label>6</label></span>
-                                <span class="scaler weeks" data-scale-id="3" title="달력형 보기"><label>3</label></span>
-                                <span class="scaler days" data-scale-id="5" title="주 단위 보기"><label>금</label></span>
-                                <span class="scaler month" data-scale-id="3" data-scale-selected="1" title="달력형 보기"><label>🗓️</label></span>
-                                <span class="scaler date" data-scale-id="5" title="하루 보기"><label data-prefix="24.06.">21</label></span>
-                                <span class="today" title="오늘 보기">
+                                <span class="scaler years" data-scale-id="1" title="Choose year"><label>2024</label></span>
+                                <span class="scaler months" data-scale-id="2" title="Choose month"><label>6</label></span>
+                                <span class="scaler weeks" data-scale-id="3" title="Show monthly"><label>3</label></span>
+                                <span class="scaler days" data-scale-id="5" title="Show weekly"><label>Fri</label></span>
+                                <span class="scaler month" data-scale-id="3" data-scale-selected="1" title="Show monthly"><label>🗓️</label></span>
+                                <span class="scaler date" data-scale-id="5" title="Show daily"><label data-prefix="24.06.">21</label></span>
+                                <span class="today" title="Show today">
                                     <input type="checkbox" id="unicalShowToday" checked />
-                                    <label for="unicalShowToday">오늘</label>
+                                    <label for="unicalShowToday">Today</label>
                                 </span>
                             </div>
                         </div>
@@ -1016,12 +1016,12 @@ if (isStandalone) {
                         <div class="calendar_bar">
                             <div class="schedule_filter_area thin_scroll">
                                 <div class="schedule_filter">
-                                    <label><span>내<br/>일정</span></label>
+                                    <label><span>My<br/>Sch.</span></label>
                                     <ul class="fixed">
-                                        <li data-group="whole" data-selected="1"><label></label></li>
-                                        <li data-group="timely" data-selected="1"><label></label></li>
+                                        <li data-group="whole" data-selected="1"><label>Whole day</label></li>
+                                        <li data-group="timely" data-selected="1"><label>Timely</label></li>
                                     </ul>
-                                    <label><span>같이<br/>보기</span></label>
+                                    <label><span>See<br/>Together</span></label>
                                     <ul class="variable">
                                     </ul>
                                     <div class="area_pad"></div>
@@ -1029,22 +1029,22 @@ if (isStandalone) {
                             </div>
                             <div class="control_area">
                                 <nav class="settings_panel">
-                                    <h3>⚙️ 캘린더 설정</h3>
+                                    <h3>⚙️ Calendar settings</h3>
                                     <div class="lines_block inset_on_gap_quarter">
                                         <div class="line_block v_stretch inset_on_gap_quarter">
                                             <input type="checkbox" id="hide_weekage">
-                                            <label for="hide_weekage">주차 숨기기</label>
+                                            <label for="hide_weekage">Hide weekage</label>
                                         </div>
                                         <div class="line_block v_stretch inset_on_gap_quarter">
                                             <input type="checkbox" id="hide_weekend">
-                                            <label for="hide_weekend">주말 숨기기</label>
+                                            <label for="hide_weekend">Hide weekend</label>
                                         </div>
                                     </div>
                                 </nav>
                                 <button class="tp_tiled_btn settings"></button>
                                 <div class="area_handler">
-                                    <button class="tp_tiled_btn to_smaller"></button>
-                                    <button class="tp_tiled_btn to_larger"></button>
+                                    <button class="tp_tiled_btn to_smaller" title="Show calendar to be more smaller"></button>
+                                    <button class="tp_tiled_btn to_larger" title="Show calendar to be more larger"></button>
                                 </div>
                             </div>
                         </div>
@@ -1055,17 +1055,17 @@ if (isStandalone) {
                     <div class="scoped_tab_block unified_scheduler" data-begin-tab="4">
                         <div class="titled_tab_block">
                             <ul class="tab_set">
-                                <li class="yearly" data-tab-id="1" data-scope="yearly"><span>연간</span></li>
-                                <li class="mothly" data-tab-id="2" data-scope="monthly"><span>월간</span></li>
-                                <li class="weekly" data-tab-id="3" data-scope="weekly" data-tab-selected="1"><span>주간</span></li>
-                                <li class="daily" data-tab-id="4" data-scope="daily"><span>일간</span></li>
+                                <li class="yearly" data-tab-id="1" data-scope="yearly"><span>Yearly</span></li>
+                                <li class="mothly" data-tab-id="2" data-scope="monthly"><span>Monthly</span></li>
+                                <li class="weekly" data-tab-id="3" data-scope="weekly" data-tab-selected="1"><span>Weekly</span></li>
+                                <li class="daily" data-tab-id="4" data-scope="daily"><span>Daily</span></li>
                             </ul>
                         </div>
                         <div class="sliding_subject_block">
-                            <div class="span_wrap" data-tab-id="1" data-scope="yearly"><span>2024년도</span></div>
-                            <div class="span_wrap" data-tab-id="2" data-scope="monthly"><span>2024년 6월</span></div>
-                            <div class="span_wrap" data-tab-id="3" data-scope="weekly" data-tab-selected="1"><span>7월 1주차</span></div>
-                            <div class="span_wrap" data-tab-id="4" data-scope="daily"><span>6월 21일 (금)</span></div>
+                            <div class="span_wrap" data-tab-id="1" data-scope="yearly"><span>2024</span></div>
+                            <div class="span_wrap" data-tab-id="2" data-scope="monthly"><span>June / 2024</span></div>
+                            <div class="span_wrap" data-tab-id="3" data-scope="weekly" data-tab-selected="1"><span>July week 1</span></div>
+                            <div class="span_wrap" data-tab-id="4" data-scope="daily"><span>June / 21 (Fri)</span></div>
                             <button class="page_handle tp_tiled_btn" data-direction="prev"></button>
                             <button class="page_handle tp_tiled_btn" data-direction="next"></button>
                         </div>
