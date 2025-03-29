@@ -22,12 +22,12 @@ It is developed to function as a rim (a runnable frame) for universal (Mobile & 
 
 # Preview
 
-Application preview page on this repo.
+Application preview implementations.
 
-[Example web app 1](https://estreui.mpsolutions.kr/App1)
+- **Example web app 1** - [repo](https://github.com/SoliEstre/EstreUI.js-sample-app1) / [preview](https://estreui.mpsolutions.kr/App1)
 
 Applications for Estre UI demonstration  
-[APT.](https://estreui.mpsolutions.kr/APT)
+- **APT.** - [repo](https://github.com/Esterkxz/APT-EstreUI.js-demo) / [preview](https://estreui.mpsolutions.kr/APT)
 
 <br />
 
