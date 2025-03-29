@@ -3,7 +3,16 @@ const MY_HOST = "estreui.mpsolutions.kr";
 const CACHE_VERSION_NAME = "cache-v1.0";
  
 const CACHE_LIST = [
-    "/app1.webmanifest.json",
+    "/webmanifest.json",
+
+    "/images/EstreUI-flatter-16x16.png",
+    "/images/EstreUI-flatter-32x32.png",
+    "/images/EstreUI-flatter-48x48.png",
+    "/images/EstreUI-flatter-144x144.png",
+    "/images/EstreUI-flatter-167x167.png",
+    "/images/EstreUI-flatter-180x180.png",
+    "/images/EstreUI-flatter-192x192.png",
+    "/images/EstreUI-flatter-512x512.png",
 
     "/lotties/menu_and_back_btn.json",
     "/lotties/menu_and_close_btn.json",
@@ -12,18 +21,20 @@ const CACHE_LIST = [
     "/lotties/progress_bar.json",
 
     "/styles/estreUi.css",
-    "/styles/app1.css",
+    "/styles/main.css",
 
-    "/scripts/app1.serviceWorker.js",
+    "/scripts/serviceWorker.js",
     "https://code.jquery.com/jquery-3.7.1.js",
     "https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs",
     "/scripts/jcodd.js",
     "/scripts/modernism.js",
+    "/scripts/alienese.js",
     "/scripts/estreU0EEOZ.js",
     "/scripts/estreUi.js",
-    "/scripts/app1.js",
+    "/scripts/main.js",
 
     "/vectors/more_vertical_slim_icon.svg",
+    "/vectors/EstreUI-flatter.svg",
 
 ];
 
