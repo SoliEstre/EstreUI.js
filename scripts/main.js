@@ -84,7 +84,7 @@ $(document).ready((e) => {
 
 
     //something do while intializes on splash page
-    appPageManager.init(AppPagesProvider.pages, new AppPagesProvider(appPageManager, appActionHandler));
+    appPageManager.init(AppPagesProvider.pages, new AppPagesProvider(appPageManager));
     //initialize scheduleDateSet with own data handler
     // scheduleDataSet.init(appDataHandler);
     //initialize Estre UI after checked user session
