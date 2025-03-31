@@ -1392,6 +1392,16 @@ const Escd = {
         }
     },
 
+    getCategoryEmoji(category) {
+        return matchCase(category, {
+            "holyday": "🏠",
+            "vacation": "🏖️",
+            "closed": "⛓️",
+            "ceremony": "🎉",
+            "exam": "💯",
+            [def]: "📅",
+        });
+    },
 
     eoo
 };

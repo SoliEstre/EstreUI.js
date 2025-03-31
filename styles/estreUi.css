@@ -853,6 +853,8 @@ main#staticDoc > section > div.container[data-on-top="1"] { z-index: 1; }
 main#staticDoc > section > div.container > article { }
 main#staticDoc > section > div.container > article[data-on-top="1"] { z-index: 1; }
 main#staticDoc > section > div.container > article.constraint { top: var(--top-pad); bottom: var(--bottom-pad); height: calc(100% - var(--top-pad) - var(--bottom-pad)); }
+main#staticDoc > section > div.container > article.constraint.extended { top: 0; bottom: 0; height: 100%; }
+main#staticDoc > section > div.container > article.constraint.extended.top_padded { padding-top: var(--top-pad); }
 main#staticDoc > section > div.container > article.fwvs { padding-top: var(--top-pad); padding-bottom: var(--bottom-pad); }
 main#staticDoc > section > div.container > article.fwvs::-webkit-scrollbar {
     width: 8px;
@@ -1348,7 +1350,9 @@ article .inline_block.stretched { justify-content: stretch; align-items: stretch
 article .inline_block.from_start { justify-content: flex-start; }
 article .inline_block.to_end { justify-content: flex-end; }
 article .inline_block.center { justify-content: center; }
+article .inline_block.central { justify-content: space-evenly; }
 article .inline_block.wided { justify-content: space-between; }
+article .inline_block.stretch { justify-content: stretch; }
 article .inline_block.v_center { align-items: center; }
 article .inline_block.v_stretch { align-items: stretch; }
 article .inline_block.spaced { --space: 0.5em; }
@@ -1360,14 +1364,16 @@ article .inline_block.thin_divider > hr { margin-inline: 0; }
 article .line_block { position: relative; display: flex; flex-direction: row; flex-wrap: nowrap; justify-content: space-evenly; align-items: baseline; border-bottom: solid 1px rgb(var(--cp) / 30%); border-radius: 100%; }
 article .line_block.bolder { padding-top: 4px; padding-bottom: 4px; margin-bottom: 4px; } 
 article .line_block.hide_block_when_empty:empty { display: none; }
-article .line_block:last-of-type { border-bottom-color: transparent !important; }
+article .line_block.list_item:last-of-type { border-bottom-color: transparent !important; }
 article .line_block.wrapped { flex-wrap: wrap; }
 article .line_block.wrappable { flex-wrap: wrap; border-radius: 7%; align-items: center; }
 article .line_block.stretched { justify-content: stretch; align-items: stretch; }
 article .line_block.from_start { justify-content: flex-start; }
 article .line_block.to_end { justify-content: flex-end; }
 article .line_block.center { justify-content: center; }
+article .line_block.central { justify-content: space-evenly; }
 article .line_block.wided { justify-content: space-between; }
+article .line_block.stretch { justify-content: stretch; }
 article .line_block.v_center { align-items: center; }
 article .line_block.v_stretch { align-items: stretch; }
 article .line_block.spaced { --space: 0.5em; }
@@ -1571,7 +1577,7 @@ article .info_button { --height: 3.25rem; --height: var(--menu-height); --lead-t
 article .info_button::before { content: attr(data-lead); color: var(--lead-text-color); font-size: var(--lead-text-color); line-height: var(--lead-text-height); user-select: text; }
 article .info_button::after { content: attr(data-trail); color: var(--trail-text-color); font-size: var(--trail-text-size); line-height: var(--trail-text-height); }
 
-article .text_capsule { --height: 1.5em; --color: var(--color-text); --bg-color: var(--color-boundary-light); --font-size: 1em; display: inline-flex; min-width: max-content; padding-inline: 0.5em; justify-content: center; align-items: center; border-style: none; border-radius: calc(var(--height) / 2); background-color: var(--bg-color); color: var(--color); font-size: var(--font-size); line-height: var(--height); }
+article .text_capsule { --height: 1.5em; --radius: calc(var(--height) / 2); --color: var(--color-text); --bg-color: var(--color-boundary-light); --font-size: 1em; display: inline-flex; min-width: max-content; padding-inline: 0.5em; justify-content: center; align-items: center; border-style: none; border-radius: var(--radius); background-color: var(--bg-color); color: var(--color); font-size: var(--font-size); line-height: var(--height); }
 article .text_capsule.bordered { --border-color: var(--color-boundary); --bg-color: transparent; height: var(--height); box-sizing: border-box; border: solid 1px var(--border-color); }
 article .text_capsule.hide_on_empty:empty { display: none; }
 
@@ -2241,6 +2247,7 @@ div.variable_calendar > div.calendar_structure[data-structure-type="massive"]:is
 div.variable_calendar > div.calendar_structure[data-structure-type="massive"] > .years > .year > .months > .month > .weeks > .week > .days > .day > ul.scheduled > li[data-category="holyday"] { background-color: rgb(var(--csunv) / 60%); }
 div.variable_calendar > div.calendar_structure[data-structure-type="massive"] > .years > .year > .months > .month > .weeks > .week > .days > .day > ul.scheduled > li[data-category="vacation"] { background-color: rgb(var(--csatv) / 60%); }
 div.variable_calendar > div.calendar_structure[data-structure-type="massive"] > .years > .year > .months > .month > .weeks > .week > .days > .day > ul.scheduled > li[data-category="closed"] { background-color: rgb(var(--csatv) / 60%); }
+div.variable_calendar > div.calendar_structure[data-structure-type="massive"] > .years > .year > .months > .month > .weeks > .week > .days > .day > ul.scheduled > li[data-category="ceremony"] { background-color: rgb(var(--cidv) / 60%); }
 div.variable_calendar > div.calendar_structure[data-structure-type="massive"] > .years > .year > .months > .month > .weeks > .week > .days > .day > ul.scheduled > li[data-category="exam"] { background-color: rgb(var(--cidv) / 60%); }
 div.variable_calendar > div.calendar_structure[data-structure-type="massive"] > .years > .year > .months > .month > .weeks > .week > .days > .day > ul.scheduled[data-group="data"] { }
 div.variable_calendar > div.calendar_structure[data-structure-type="massive"][data-transition]:not([data-transition=""]):not([data-transition="0"]) > .years > .year > .months > .month > .weeks > .week > .days > .day > ul.scheduled[data-group="data"] { display: none; }
@@ -2338,7 +2345,7 @@ div.variable_calendar:not([data-scale="1"], [data-scale="2"], [data-scale="3"]) 
 div.variable_calendar:not([data-scale="1"], [data-scale="2"], [data-scale="3"]) > div.calendar_structure[data-structure-type="massive"] > .years > .year > .months > .month > .weeks > .week:is([data-week="0"], [data-week=""]):not([data-selected="1"]) { height: 0; border-width: 0; border-color: #FFF0; flex-grow: 0; transition-delay: min(var(--trdl-hide), var(--trdl-item)); transition-duration: var(--trdr-hide); }
 div.variable_calendar:not([data-scale="1"], [data-scale="2"], [data-scale="3"]) > div.calendar_structure[data-structure-type="massive"] > .years > .year > .months > .month > .weeks > .week > .days { /* height: auto; */ }
 div.variable_calendar:not([data-scale="1"], [data-scale="2"], [data-scale="3"]) > div.calendar_structure[data-structure-type="massive"] > .years > .year > .months > .month > .weeks > .week > .days > .day { /* height: auto; min-height: 36px; */ }
-div.variable_calendar:not([data-scale="1"], [data-scale="2"], [data-scale="3"], [data-scale="4"]) > div.calendar_structure[data-structure-type="massive"] > .years > .year > .months > .month > .weeks > .week:not([data-selected="1"], [data-today="1"]) { height: 0; border-width: 0; border-color: #FFF0; flex-grow: 0; transition-delay: min(var(--trdl-hide), var(--trdl-item)); transition-duration: var(--trdr-hide); }
+div.variable_calendar:not([data-scale="1"], [data-scale="2"], [data-scale="3"], [data-scale="4"]) > div.calendar_structure[data-structure-type="massive"] > .years > .year > .months > .month > .weeks > .week:not([data-selected="1"], [data-today="1"]) { height: 0; border-width: 0; border-color: #FFF0; flex-grow: 0; opacity: 0; transition-delay: min(var(--trdl-hide), var(--trdl-item)); transition-duration: var(--trdr-hide); }
 div.variable_calendar:not([data-scale="1"], [data-scale="2"], [data-scale="3"], [data-scale="4"]):not([data-show-today="1"]) > div.calendar_structure[data-structure-type="massive"] > .years > .year > .months > .month > .weeks > .week:not([data-selected="1"])[data-today="1"] { height: 0; border-width: 0; border-color: #FFF0; flex-grow: 0; transition-delay: min(var(--trdl-hide), var(--trdl-item)); transition-duration: var(--trdr-hide); }
 @container unical-str-root (max-height: 184px) {
 div.variable_calendar[data-scale="5"]:not([data-show-today="1"]) > div.calendar_structure[data-structure-type="massive"]:is(:not([data-transition]), [data-transition=""], [data-transition="0"]) > .years > .year[data-today="1"]:not([data-selected="1"]) { height: 0; border-width: 0; flex-grow: 0; opacity: 0; transition-delay: min(var(--trdl-hide), var(--trdl-item)); transition-duration: var(--trdr-hide); }
@@ -2382,7 +2389,7 @@ div.variable_calendar > div.calendar_bar > div { height: 100%; }
 div.variable_calendar > div.calendar_bar > div.schedule_filter_area { width: 100%; padding: 4px 0; box-sizing: border-box; flex-grow: 1; flex-shrink: 1; overflow: overlay hidden; overscroll-behavior-x: none; user-select: none; }
 div.variable_calendar > div.calendar_bar > div.schedule_filter_area::-webkit-scrollbar-thumb { border-right-width: var(--area-handler-width); }
 @media (pointer: fine) {
-div.variable_calendar > div.calendar_bar > div.schedule_filter_area { padding-bottom: 2px; overflow-x: scroll; }
+div.variable_calendar > div.calendar_bar > div.schedule_filter_area { padding-bottom: 2px; }
 }
 div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter { display: flex; flex-direction: row; flex-wrap: nowrap; width: max-content; height: 100%; margin-inline: 8px; align-items: center; }
 div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter label {  }
@@ -2392,7 +2399,7 @@ div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedu
 div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter ul > li[data-selected="1"] > label::after { content: ''; position: absolute; bottom: -0.2em; right: calc(8px + -0.75em); width: 1em; aspect-ratio: 1; background-color: var(--color-point); mask-image: var(--svg-check); }
 div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > label {  }
 div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > label:not(:first-child) { margin-inline: 8px 2px; }
-div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > label > span { display: inline-block; --h-scale-adjust: -14%; margin-inline-end: var(--h-scale-adjust); font-size: 1rem; line-height: 1.3em; scale: calc(100% + var(--h-scale-adjust)) 1; }
+div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > label > span { display: inline-block; --h-scale-adjust: -14%; margin-inline-end: var(--h-scale-adjust); font-size: 1rem; scale: calc(100% + var(--h-scale-adjust)) 1; }
 div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > ul { height: 100%; }
 div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > ul > li { }
 div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > ul > li > label { }
@@ -2418,7 +2425,7 @@ div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedu
 div.variable_calendar > div.calendar_bar > div.schedule_filter_area > div.schedule_filter > div.area_pad { width: var(--area-handler-width); }
 
 div.variable_calendar > div.calendar_bar > div.control_area { position: absolute; display: flex; flex-direction: row; flex-wrap: nowrap; top: 0; bottom: 0; right: 0; width: var(--area-handler-width); box-sizing: border-box; gap: 4px; padding: 4px 4px 6px 6px; backdrop-filter: blur(1.5px); -webkit-backdrop-filter: blur(1.5px); }
-div.variable_calendar > div.calendar_bar > div.control_area button { color: var(--color-point); font-size: 1.125rem; line-height: 1em; text-shadow: 0 0 4px white; box-shadow: 0.5px 0.5px 2px 0 #0002; }
+div.variable_calendar > div.calendar_bar > div.control_area button { color: var(--color-point); font-size: 1.125rem; text-shadow: 0 0 4px white; box-shadow: 0.5px 0.5px 2px 0 #0002; }
 div.variable_calendar > div.calendar_bar > div.control_area > * { flex-basis: 0; flex-grow: 1; align-self: stretch; }
 div.variable_calendar > div.calendar_bar > div.control_area > div { display: flex; flex-direction: column; flex-wrap: nowrap; gap: 4px; }
 div.variable_calendar > div.calendar_bar > div.control_area > div > * { flex-basis: 0; flex-grow: 1; align-self: stretch; }
@@ -2462,14 +2469,16 @@ div.variable_calendar > div.area_resizer:active { background-color: rgb(var(--cb
 .schedule_list .schedule_host li.schedule_item > .event_type { margin: 2px; }
 .schedule_list .schedule_host li.schedule_item > .event_type > span { position: relative; }
 .schedule_list .schedule_host li.schedule_item > .event_type > span::before { content: '📅'; /* 📆🗓️ */ font-size: 1em; }
-.schedule_list .schedule_host li.schedule_item[data-category="holyday"] > .event_type > span::before { content: '🛖'; }
+.schedule_list .schedule_host li.schedule_item[data-category="holyday"] > .event_type > span::before { content: '🏠'; }
 .schedule_list .schedule_host li.schedule_item[data-category="vacation"] > .event_type > span::before { content: '🏖️'; }
 .schedule_list .schedule_host li.schedule_item[data-category="closed"] > .event_type > span::before { content: '⛓️'; }
+.schedule_list .schedule_host li.schedule_item[data-category="ceremony"] > .event_type > span::before { content: '🎉'; }
 .schedule_list .schedule_host li.schedule_item[data-category="exam"] > .event_type > span::before { content: '💯'; }
 .schedule_list .schedule_host li.schedule_item > .event_type > span::after { content: ''; position: absolute; display: block; top: -0.2em; bottom: 0; right: -0.4em; width: 0.25em; height: 1.25em; margin: auto 0; border-radius: 0.1em; background-color: rgb(var(--cbd) / 60%); }
 .schedule_list .schedule_host li.schedule_item[data-category="holyday"] > .event_type > span::after { background-color: rgb(var(--csunv) / 60%); }
 .schedule_list .schedule_host li.schedule_item[data-category="vacation"] > .event_type > span::after { background-color: rgb(var(--csatv) / 60%); }
 .schedule_list .schedule_host li.schedule_item[data-category="closed"] > .event_type > span::after { background-color: rgb(var(--csatv) / 60%); }
+.schedule_list .schedule_host li.schedule_item[data-category="ceremony"] > .event_type > span::after { background-color: rgb(var(--cidv) / 60%); }
 .schedule_list .schedule_host li.schedule_item[data-category="exam"] > .event_type > span::after { background-color: rgb(var(--cidv) / 60%); }
 .schedule_list .schedule_host li.schedule_item > .content { margin-top: 0; flex-grow: 1; text-align: left; }
 .schedule_list .schedule_host .datetime { margin: 0; margin-inline-start: 0.4em; padding: 0; justify-content: flex-start; font-weight: lighter; }

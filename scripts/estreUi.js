@@ -124,8 +124,11 @@ const uis = {
     dateReplacer: ".dete_replacer",
     fullYear: ".full_year",
     year2d: ".year_2d",
+    month2d: ".month_2d",
+    date2d: ".date_2d",
     paddedMonth: ".padded_month",
     paddedDate: ".padded_date",
+    shortDay: ".short_day",
 
     // num keypad
     numKeypad: ".num_keypad",
@@ -8578,7 +8581,7 @@ class ScheduleDataSet {
         if (caller != null) try {
             caller.pushDailySchedule(data, dateId);
         } catch (ex) {
-            console.log(ex.name + "\n" + ex.message);
+            console.log(ex);
         }
     }
 
@@ -10210,7 +10213,9 @@ class EstreDateShowerHandle extends EstreHandle {
 
 
     // getter and setter
+    get date() { return new Date(this.#date); }
 
+    get from() { return this.$bound.attr(eds.dateFrom); }
 
 
     constructor(dateShower, host) {
@@ -10223,14 +10228,6 @@ class EstreDateShowerHandle extends EstreHandle {
 
     init() {
         super.init();
-
-        const from = this.$bound.attr(eds.dateFrom);
-
-        switch (from) {
-            case "today":
-                this.#date = new Date();
-                break;
-        }
 
         this.releaseDate();
 
@@ -10248,68 +10245,86 @@ class EstreDateShowerHandle extends EstreHandle {
     }
 
     releaseDate() {
-        if (this.#date != null) {
+        const from = this.from;
+        switch (from) {
+            case undefined:
+            case null:
+            case "":
+            case "today":
+                this.#date = new Date();
+                break;
+
+            default:
+                this.#date = new Date(from);
+                break;
+        }
+
+       if (this.#date != null) {
             const ds = Ecal.getDateSet(this.#date);
             const $bound = this.$bound;
 
-            const m2d = v2d(ds.month);
-            const d2d = v2d(ds.date);
-            
             $bound.attr(eds.dateY, ds.year);
-            $bound.attr(eds.dateM, m2d);
-            $bound.attr(eds.dateD, d2d);
+            $bound.attr(eds.dateM, ds.month2d);
+            $bound.attr(eds.dateD, ds.date2d);
             $bound.attr(eds.dateId, Ecal.getDateOffset(this.#date, this.lang));
 
             $bound.find(uis.fullYear).each((i, el) => {
                 var text = "";
-                if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("yearSuffix");
+                if ($(el).attr(eds.withPrefix) == t1) text += EsLocale.get("yearPrefix");
                 text += ds.year;
                 if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("yearSuffix");
                 el.innerText = text;
             });
             $bound.find(uis.year2d).each((i, el) => {
                 var text = "";
-                if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("yearSuffix");
-                text += ds.year % 100;
+                if ($(el).attr(eds.withPrefix) == t1) text += EsLocale.get("yearPrefix");
+                text += ds.year2d;
                 if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("yearSuffix");
                 el.innerText = text;
             });
 
             $bound.find(uis.month).each((i, el) => {
                 var text = "";
-                if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("monthSuffix");
+                if ($(el).attr(eds.withPrefix) == t1) text += EsLocale.get("monthPrefix");
                 text += ds.monthText;
                 if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("monthSuffix");
                 el.innerText = text;
             });
-            $bound.find(uis.paddedMonth).each((i, el) => {
+            $bound.find(uis.month2d + cor + uis.paddedMonth).each((i, el) => {
                 var text = "";
-                if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("monthSuffix");
-                text += m2d;
+                if ($(el).attr(eds.withPrefix) == t1) text += EsLocale.get("monthPrefix");
+                text += ds.month2d;
                 if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("monthSuffix");
                 el.innerText = text;
             });
 
             $bound.find(uis.date).each((i, el) => {
                 var text = "";
-                if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("daySuffix");
+                if ($(el).attr(eds.withPrefix) == t1) text += EsLocale.get("dayPrefix");
                 text += ds.date;
                 if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("daySuffix");
                 el.innerText = text;
             });
-            $bound.find(uis.paddedDate).each((i, el) => {
+            $bound.find(uis.date2d + cor + uis.paddedDate).each((i, el) => {
                 var text = "";
-                if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("daySuffix");
-                text += d2d;
+                if ($(el).attr(eds.withPrefix) == t1) text += EsLocale.get("dayPrefix");
+                text += ds.date2d;
                 if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("daySuffix");
                 el.innerText = text;
             });
 
             $bound.find(uis.day).each((i, el) => {
                 var text = "";
-                if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("weekdaySuffix");
+                if ($(el).attr(eds.withPrefix) == t1) text += EsLocale.get("weekdayPrefix");
                 text += ds.dayText;
                 if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("weekdaySuffix");
+                el.innerText = text;
+            });
+            $bound.find(uis.shortDay).each((i, el) => {
+                var text = "";
+                if ($(el).attr(eds.withPrefix) == t1) text += EsLocale.get("weekdayShortPrefix");
+                text += ds.dayTextShort;
+                if ($(el).attr(eds.withSuffix) == t1) text += EsLocale.get("weekdayShortSuffix");
                 el.innerText = text;
             });
         }
