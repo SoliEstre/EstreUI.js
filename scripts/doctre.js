@@ -30,7 +30,7 @@ SOFTWARE.
 // 
 // Cold(array object) assigning of HTML Tree for make to JSON string.
 // 
-// v0.9 / release 2025.03.24
+// v0.10 / release 2025.04.02
 // 
 // cold = [] - Cold HTML child node list
 // cold[0] - Tag name, classes, id, name, type = "tag.class1.class2#id@name$type" : string
@@ -275,6 +275,7 @@ class Doctre {
         for (var item of divided) {
             let [key, value] = item.split(":");
             key = key.trim();
+            if (key == "") continue;
             value = value.trim();
             if (key && value) styles[key] = value;
         }

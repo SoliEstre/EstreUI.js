@@ -31,7 +31,7 @@ SOFTWARE.
 // Collections of bypass for process codes takes be inline,
 // and monkey patching like as modern languages.
 // 
-// v0.2.2 / release 2025.03.24
+// v0.2.3 / release 2025.04.08
 // 
 // Author: Estre Soliette
 // Established: 2025.01.05
@@ -127,7 +127,7 @@ const forof = (from, work = v => { return false; }) => {
     for (const v of from) if (work(v)) break;
 }
 const forkv = (from, work = (k, v) => { return false; }) => {
-    for (const [k, v] of from) if (work(k, v)) break;
+    for (const [k, v] of Object.entries(from)) if (work(k, v)) break;
 }
 
 const whileIn = function (cond = function (self) { return true; }, work = function (self, count) { return false; }, self = {}) {

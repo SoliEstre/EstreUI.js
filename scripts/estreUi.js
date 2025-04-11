@@ -894,7 +894,7 @@ class ES {
     _storage = null;
     _storagePrefix = null;
 
-    get _prefix() { return ES_PREFIX + "RAW_" + this._storagePrefix; }
+    get _prefix() { return ES_PREFIX + this._storagePrefix + "RAW_"; }
 
 
     _getFullKey(key) { return this._prefix + key; }
@@ -1123,7 +1123,7 @@ class EJS {
 
     _codeType;
 
-    get _prefix() { return ES_PREFIX + this._codeType + this._storagePrefix; }
+    get _prefix() { return ES_PREFIX + this._storagePrefix + this._typePrefix; }
 
 
     _getFullKey(key) { return this._prefix + key; }

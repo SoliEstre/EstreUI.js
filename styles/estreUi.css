@@ -14,6 +14,139 @@
 
 
 /* styles */
+/* aliases */
+* {
+    --rem1: 0.0625rem;
+    --rem2: 0.125rem;
+    --rem3: 0.1875rem;
+    --rem4: 0.25rem;
+    --rem5: 0.3125rem;
+    --rem6: 0.375rem;
+    --rem7: 0.4375rem;
+    --rem8: 0.5rem;
+    --rem9: 0.5625rem;
+    --rem10: 0.625rem;
+    --rem11: 0.6875rem;
+    --rem12: 0.75rem;
+    --rem13: 0.8125rem;
+    --rem14: 0.875rem;
+    --rem15: 0.9375rem;
+    --rem16: 1rem;
+    --rem17: 1.0625rem;
+    --rem18: 1.125rem;
+    --rem19: 1.1875rem;
+    --rem20: 1.25rem;
+    --rem21: 1.3125rem;
+    --rem22: 1.375rem;
+    --rem23: 1.4375rem;
+    --rem24: 1.5rem;
+    --rem25: 1.5625rem;
+    --rem26: 1.625rem;
+    --rem27: 1.6875rem;
+    --rem28: 1.75rem;
+    --rem29: 1.8125rem;
+    --rem30: 1.875rem;
+    --rem31: 1.9375rem;
+    --rem32: 2rem;
+    --rem33: 2.0625rem;
+    --rem34: 2.125rem;
+    --rem35: 2.1875rem;
+    --rem36: 2.25rem;
+    --rem37: 2.3125rem;
+    --rem38: 2.375rem;
+    --rem39: 2.4375rem;
+    --rem40: 2.5rem;
+    --rem41: 2.5625rem;
+    --rem42: 2.625rem;
+    --rem43: 2.6875rem;
+    --rem44: 2.75rem;
+    --rem45: 2.8125rem;
+    --rem46: 2.875rem;
+    --rem47: 2.9375rem;
+    --rem48: 3rem;
+    --rem49: 3.0625rem;
+    --rem50: 3.125rem;
+    --rem51: 3.1875rem;
+    --rem52: 3.25rem;
+    --rem53: 3.3125rem;
+    --rem54: 3.375rem;
+    --rem55: 3.4375rem;
+    --rem56: 3.5rem;
+    --rem57: 3.5625rem;
+    --rem58: 3.625rem;
+    --rem59: 3.6875rem;
+    --rem60: 3.75rem;
+    --rem61: 3.8125rem;
+    --rem62: 3.875rem;
+    --rem63: 3.9375rem;
+    --rem64: 4rem;
+
+    --em1: 0.0625em;
+    --em2: 0.125em;
+    --em3: 0.1875em;
+    --em4: 0.25em;
+    --em5: 0.3125em;
+    --em6: 0.375em;
+    --em7: 0.4375em;
+    --em8: 0.5em;
+    --em9: 0.5625em;
+    --em10: 0.625em;
+    --em11: 0.6875em;
+    --em12: 0.75em;
+    --em13: 0.8125em;
+    --em14: 0.875em;
+    --em15: 0.9375em;
+    --em16: 1em;
+    --em17: 1.0625em;
+    --em18: 1.125em;
+    --em19: 1.1875em;
+    --em20: 1.25em;
+    --em21: 1.3125em;
+    --em22: 1.375em;
+    --em23: 1.4375em;
+    --em24: 1.5em;
+    --em25: 1.5625em;
+    --em26: 1.625em;
+    --em27: 1.6875em;
+    --em28: 1.75em;
+    --em29: 1.8125em;
+    --em30: 1.875em;
+    --em31: 1.9375em;
+    --em32: 2em;
+    --em33: 2.0625em;
+    --em34: 2.125em;
+    --em35: 2.1875em;
+    --em36: 2.25em;
+    --em37: 2.3125em;
+    --em38: 2.375em;
+    --em39: 2.4375em;
+    --em40: 2.5em;
+    --em41: 2.5625em;
+    --em42: 2.625em;
+    --em43: 2.6875em;
+    --em44: 2.75em;
+    --em45: 2.8125em;
+    --em46: 2.875em;
+    --em47: 2.9375em;
+    --em48: 3em;
+    --em49: 3.0625em;
+    --em50: 3.125em;
+    --em51: 3.1875em;
+    --em52: 3.25em;
+    --em53: 3.3125em;
+    --em54: 3.375em;
+    --em55: 3.4375em;
+    --em56: 3.5em;
+    --em57: 3.5625em;
+    --em58: 3.625em;
+    --em59: 3.6875em;
+    --em60: 3.75em;
+    --em61: 3.8125em;
+    --em62: 3.875em;
+    --em63: 3.9375em;
+    --em64: 4em;
+}
+
 /* Common */
 :root, html, body {
     position: relative;
@@ -95,7 +228,7 @@ html {
     --color-grayscale-lighten: #B9B9B9;     --cgln: 185 185 185;
     --color-grayscale-lighter: #BBB;        --cglr: 187 187 187;
     --color-grayscale-lightness: #CCC;      --cgls: 204 204 204;
-    --color-grayscale-lightly: #DDD;        --cgly: 221 221 221;
+    --color-grayscale-lightly: #D9D9D9;     --cgly: 217 217 217;
     --color-grayscale-lightest: #E7E7E7;    --cglt: 231 231 231;
     --color-pseudo-white: #F7F7F7;          --cpwht: 247 247 247;
     --color-white: #FFF;                    --cwht: 255 255 255;
@@ -146,17 +279,25 @@ html {
     --color-boundary-o20: rgba(0 0 0 / 20%);
 
 
-    --color-boundary-dim: var(--color-black);                   --cbdm: var(--cblk);
-    --color-boundary-darker: var(--color-grayscale-darker);     --cbdr: var(--cgdr);
-    --color-boundary-darken: var(--color-grayscale-darken);     --cbdn: var(--cgdn);
-    --color-boundary-darkish: var(--color-grayscale-darkish);   --cbdh: var(--cgdh);
-    --color-boundary-dark: var(--color-grayscale-dark);         --cbd: var(--cgd);
-    --color-boundary: var(--color-grayscale-neutral);           --cb: var(--cgn);
-    --color-boundary-light: var(--color-grayscale-light);       --cbl: var(--cgl);
-    --color-boundary-lightish: var(--color-grayscale-lightish); --cblh: var(--cglh);
-    --color-boundary-lighten: var(--color-grayscale-lighten);   --cbln: var(--cgln);
-    --color-boundary-lighter: var(--color-grayscale-lighter);   --cblr: var(--cglr);
-    --color-boundary-bright: var(--color-white);                --cbbr: var(--cwht);
+    --color-boundary-dim: var(--color-black);                       --cbdm: var(--cblk);
+    --color-boundary-dimmy: var(--color-pseudo-black);              --cbdm: var(--cpblk);
+    --color-boundary-darkest: var(--color-grayscale-darkest);       --cbdr: var(--cgdt);
+    --color-boundary-darkly: var(--color-grayscale-darkly);         --cbdr: var(--cgdy);
+    --color-boundary-darkness: var(--color-grayscale-darkness);     --cbdr: var(--cgds);
+    --color-boundary-darker: var(--color-grayscale-darker);         --cbdr: var(--cgdr);
+    --color-boundary-darken: var(--color-grayscale-darken);         --cbdn: var(--cgdn);
+    --color-boundary-darkish: var(--color-grayscale-darkish);       --cbdh: var(--cgdh);
+    --color-boundary-dark: var(--color-grayscale-dark);             --cbd: var(--cgd);
+    --color-boundary: var(--color-grayscale-neutral);               --cb: var(--cgn);
+    --color-boundary-light: var(--color-grayscale-light);           --cbl: var(--cgl);
+    --color-boundary-lightish: var(--color-grayscale-lightish);     --cblh: var(--cglh);
+    --color-boundary-lighten: var(--color-grayscale-lighten);       --cbln: var(--cgln);
+    --color-boundary-lighter: var(--color-grayscale-lighter);       --cblr: var(--cglr);
+    --color-boundary-lightness: var(--color-grayscale-lightness);   --cblr: var(--cgls);
+    --color-boundary-lightly: var(--color-grayscale-lightly);       --cblr: var(--cgly);
+    --color-boundary-lightest: var(--color-grayscale-lightest);     --cblr: var(--cglt);
+    --color-boundary-brighty: var(--color-pseudo-white);            --cbbr: var(--cpwht);
+    --color-boundary-bright: var(--color-white);                    --cbbr: var(--cwht);
 
     --color-point-dim: var(--color-black);                  --cpdm: var(--cblk);
     --color-point-dark: var(--color-grayscale-darker);      --cpd: var(--cgdr);
@@ -493,6 +634,8 @@ body .tp_tiled_btn:not(.seamless):active { background-color: var(--bg-active); }
 body .tp_tiled_btn.minpad > span { padding: 0 8px; }
 body .tp_tiled_btn.padded { padding: 0 12px; }
 body .tp_tiled_btn.padded > span { padding: 0 4px; }
+body .tp_tiled_btn.fit_pad_h { padding-left: 0; padding-right: 0; }
+body .tp_tiled_btn.fit_pad_v { padding-top: 0; padding-bottom: 0; }
 
 /* extra */
 body img.logo { filter: drop-shadow(0 0 5px rgb(var(--cglr) / 60%)); }
@@ -526,13 +669,37 @@ body img.logo { filter: drop-shadow(0 0 5px rgb(var(--cglr) / 60%)); }
 .font_s15 { font-size: 0.9375em; }
 .font_s16 { font-size: 1em; }
 .font_s17 { font-size: 1.0625em; }
-.font_s8 { font-size: 1.125em; }
+.font_s18 { font-size: 1.125em; }
 .font_s19 { font-size: 1.1875em; }
 .font_s20 { font-size: 1.25em; }
 .font_s21 { font-size: 1.3125em; }
 .font_s22 { font-size: 1.375em; }
 .font_s23 { font-size: 1.4375em; }
 .font_s24 { font-size: 1.5em; }
+.font_s25 { font-size: 1.5625em; }
+.font_s26 { font-size: 1.625em; }
+.font_s27 { font-size: 1.6875em; }
+.font_s28 { font-size: 1.75em; }
+.font_s29 { font-size: 1.8125em; }
+.font_s30 { font-size: 1.875em; }
+.font_s31 { font-size: 1.875em; }
+.font_s32 { font-size: 2em; }
+.font_s33 { font-size: 2.0625em; }
+.font_s34 { font-size: 2.0625em; }
+.font_s35 { font-size: 2.1875em; }
+.font_s36 { font-size: 2.25em; }
+.font_s37 { font-size: 2.3125em; }
+.font_s38 { font-size: 2.375em; }
+.font_s39 { font-size: 2.4375em; }
+.font_s40 { font-size: 2.5em; }
+.font_s41 { font-size: 2.5625em; }
+.font_s42 { font-size: 2.625em; }
+.font_s43 { font-size: 2.625em; }
+.font_s44 { font-size: 2.75em; }
+.font_s45 { font-size: 2.8125em; }
+.font_s46 { font-size: 2.875em; }
+.font_s47 { font-size: 2.875em; }
+.font_s48 { font-size: 3em; }
 
 .font_sr8 { font-size: 0.5rem; }
 .font_sr9 { font-size: 0.5625rem; }
@@ -551,6 +718,30 @@ body img.logo { filter: drop-shadow(0 0 5px rgb(var(--cglr) / 60%)); }
 .font_sr22 { font-size: 1.375rem; }
 .font_sr23 { font-size: 1.4375rem; }
 .font_sr24 { font-size: 1.5rem; }
+.font_sr25 { font-size: 1.5625rem; }
+.font_sr26 { font-size: 1.625rem; }
+.font_sr27 { font-size: 1.6875rem; }
+.font_sr28 { font-size: 1.75rem; }
+.font_sr29 { font-size: 1.8125rem; }
+.font_sr30 { font-size: 1.875rem; }
+.font_sr31 { font-size: 1.875rem; }
+.font_sr32 { font-size: 2rem; }
+.font_sr33 { font-size: 2.0625rem; }
+.font_sr34 { font-size: 2.0625rem; }
+.font_sr35 { font-size: 2.1875rem; }
+.font_sr36 { font-size: 2.25rem; }
+.font_sr37 { font-size: 2.3125rem; }
+.font_sr38 { font-size: 2.375rem; }
+.font_sr39 { font-size: 2.4375rem; }
+.font_sr40 { font-size: 2.5rem; }
+.font_sr41 { font-size: 2.5625rem; }
+.font_sr42 { font-size: 2.625rem; }
+.font_sr43 { font-size: 2.625rem; }
+.font_sr44 { font-size: 2.75rem; }
+.font_sr45 { font-size: 2.8125rem; }
+.font_sr46 { font-size: 2.875rem; }
+.font_sr47 { font-size: 2.875rem; }
+.font_sr48 { font-size: 3rem; }
 
 .font_sp8 { font-size: 8px; }
 .font_sp9 { font-size: 9px; }
@@ -569,6 +760,30 @@ body img.logo { filter: drop-shadow(0 0 5px rgb(var(--cglr) / 60%)); }
 .font_sp22 { font-size: 22px; }
 .font_sp23 { font-size: 23px; }
 .font_sp24 { font-size: 24px; }
+.font_sp25 { font-size: 25px; }
+.font_sp26 { font-size: 26px; }
+.font_sp27 { font-size: 27px; }
+.font_sp28 { font-size: 28px; }
+.font_sp29 { font-size: 29px; }
+.font_sp30 { font-size: 30px; }
+.font_sp31 { font-size: 31px; }
+.font_sp32 { font-size: 32px; }
+.font_sp33 { font-size: 33px; }
+.font_sp34 { font-size: 34px; }
+.font_sp35 { font-size: 35px; }
+.font_sp36 { font-size: 36px; }
+.font_sp37 { font-size: 37px; }
+.font_sp38 { font-size: 38px; }
+.font_sp39 { font-size: 39px; }
+.font_sp40 { font-size: 40px; }
+.font_sp41 { font-size: 41px; }
+.font_sp42 { font-size: 42px; }
+.font_sp43 { font-size: 43px; }
+.font_sp44 { font-size: 44px; }
+.font_sp45 { font-size: 45px; }
+.font_sp46 { font-size: 46px; }
+.font_sp47 { font-size: 47px; }
+.font_sp48 { font-size: 48px; }
 
 .eq_btn_font_size button { font-size: 1em; }
 
@@ -602,6 +817,20 @@ body img.logo { filter: drop-shadow(0 0 5px rgb(var(--cglr) / 60%)); }
 .line_h18 { line-height: 1.8em; }
 .line_h19 { line-height: 1.9em; }
 .line_h2 { line-height: 2em; }
+.line_h21 { line-height: 2.1em; }
+.line_h22 { line-height: 2.2em; }
+.line_h225 { line-height: 2.25em; }
+.line_h23 { line-height: 2.3em; }
+.line_h233 { line-height: 2.3333em; }
+.line_h24 { line-height: 2.4em; }
+.line_h25 { line-height: 2.5em; }
+.line_h26 { line-height: 2.6em; }
+.line_h266 { line-height: 2.6666em; }
+.line_h27 { line-height: 2.7em; }
+.line_h275 { line-height: 2.75em; }
+.line_h28 { line-height: 2.8em; }
+.line_h29 { line-height: 2.9em; }
+.line_h3 { line-height: 3em; }
 
 .line_hr8 { line-height: 0.5rem; }
 .line_hr9 { line-height: 0.5625rem; }
@@ -620,6 +849,72 @@ body img.logo { filter: drop-shadow(0 0 5px rgb(var(--cglr) / 60%)); }
 .line_hr22 { line-height: 1.375rem; }
 .line_hr23 { line-height: 1.4375rem; }
 .line_hr24 { line-height: 1.5rem; }
+.line_hr25 { line-height: 1.5625rem; }
+.line_hr26 { line-height: 1.625rem; }
+.line_hr27 { line-height: 1.6875rem; }
+.line_hr28 { line-height: 1.75rem; }
+.line_hr29 { line-height: 1.8125rem; }
+.line_hr30 { line-height: 1.875rem; }
+.line_hr31 { line-height: 1.875rem; }
+.line_hr32 { line-height: 2rem; }
+.line_hr33 { line-height: 2.0625rem; }
+.line_hr34 { line-height: 2.0625rem; }
+.line_hr35 { line-height: 2.1875rem; }
+.line_hr36 { line-height: 2.25rem; }
+.line_hr37 { line-height: 2.3125rem; }
+.line_hr38 { line-height: 2.375rem; }
+.line_hr39 { line-height: 2.4375rem; }
+.line_hr40 { line-height: 2.5rem; }
+.line_hr41 { line-height: 2.5625rem; }
+.line_hr42 { line-height: 2.625rem; }
+.line_hr43 { line-height: 2.625rem; }
+.line_hr44 { line-height: 2.75rem; }
+.line_hr45 { line-height: 2.8125rem; }
+.line_hr46 { line-height: 2.875rem; }
+.line_hr47 { line-height: 2.875rem; }
+.line_hr48 { line-height: 3rem; }
+
+.line_hp8 { line-height: 8px; }
+.line_hp9 { line-height: 9px; }
+.line_hp10 { line-height: 10px; }
+.line_hp11 { line-height: 11px; }
+.line_hp12 { line-height: 12px; }
+.line_hp13 { line-height: 13px; }
+.line_hp14 { line-height: 14px; }
+.line_hp15 { line-height: 15px; }
+.line_hp16 { line-height: 16px; }
+.line_hp17 { line-height: 17px; }
+.line_hp18 { line-height: 18px; }
+.line_hp19 { line-height: 19px; }
+.line_hp20 { line-height: 20px; }
+.line_hp21 { line-height: 21px; }
+.line_hp22 { line-height: 22px; }
+.line_hp23 { line-height: 23px; }
+.line_hp24 { line-height: 24px; }
+.line_hp25 { line-height: 25px; }
+.line_hp26 { line-height: 26px; }
+.line_hp27 { line-height: 27px; }
+.line_hp28 { line-height: 28px; }
+.line_hp29 { line-height: 29px; }
+.line_hp30 { line-height: 30px; }
+.line_hp31 { line-height: 31px; }
+.line_hp32 { line-height: 32px; }
+.line_hp33 { line-height: 33px; }
+.line_hp34 { line-height: 34px; }
+.line_hp35 { line-height: 35px; }
+.line_hp36 { line-height: 36px; }
+.line_hp37 { line-height: 37px; }
+.line_hp38 { line-height: 38px; }
+.line_hp39 { line-height: 39px; }
+.line_hp40 { line-height: 40px; }
+.line_hp41 { line-height: 41px; }
+.line_hp42 { line-height: 42px; }
+.line_hp43 { line-height: 43px; }
+.line_hp44 { line-height: 44px; }
+.line_hp45 { line-height: 45px; }
+.line_hp46 { line-height: 46px; }
+.line_hp47 { line-height: 47px; }
+.line_hp48 { line-height: 48px; }
 
 
 body .inset_on_margin { margin: var(--basic-ui-inset-v) var(--basic-ui-inset-h); }
@@ -1309,7 +1604,7 @@ article button.inline:focus { outline: dashed 2px rgb(var(--cmd) / 20%); outline
 article button.inline:hover { border-color: rgb(var(--cmvl) / 20%); }
 article button.inline:active { border-style: ridge; }
 article button.tpbg { background-color: transparent; }
-article hr { height: 1px; border: none; background-color: rgb(var(--cb) / 20%); }
+article hr { height: 1px; margin: 0; border: none; background-color: var(--color-boundary-o20); }
 
 
 /* for data bind */
@@ -1587,7 +1882,7 @@ article .h_icon_set > .icon_place > img { height: 100%; }
 article .h_icon_set > .icon_place > img[src=""] { width: 0; height: fit-content; }
 article .h_icon_set > .content_place { width: 100%; flex-grow: 1; flex-shrink: 1; }
 
-article .icon_list { --button-pad: 16px 8px 8px; --icon-size: 64px; --text-margin: 8px; --text-color: var(--color-text); --font-size: 0.875rem; --line-height: 1.5em; justify-content: space-around; }
+article .icon_list { --button-pad: 8px; --icon-size: 64px; --text-margin: 8px; --text-color: var(--color-text); --font-size: 0.875rem; --line-height: 1.5em; justify-content: space-around; }
 article .icon_list > .list_item { }
 article .icon_list > .list_item:not(:has(> button)) { display: flex; flex-direction: column; flex-wrap: nowrap; padding: 16px 8px 8px; align-items: center; }
 article .icon_list > .list_item > button { display: flex; flex-direction: column; flex-wrap: nowrap; width: 100%; height: 100%; padding: var(--button-pad); align-items: center; border-style: none; background-color: transparent; } 
@@ -1685,7 +1980,7 @@ article .fixed_access.bottom[data-hide="1"] { translate: 0 16px; }
 
 
 article .circle_border { --border-color: var(--color-boundary-light); border: solid 1px var(--border-color); border-radius: 100%; }
-article .circle_bg { --bg-color: var(--color-boundary-light); background-color: var(--g-color); border-radius: 100%; }
+article .circle_bg { --bg-color: var(--color-boundary-light); background-color: var(--bg-color); border-radius: 100%; }
 article .inner_space { margin: 24px 0 32px; padding: 20px; border-radius: 42px !important; border-top-left-radius: 56px !important; background-color: rgb(var(--cwht) / 66.666%); box-shadow: inset 0px 14px 14px -10px rgb(var(--cmvlr) / 15%), inset 0px -14px 14px -6px rgb(var(--cmvlr) / 15%); overflow-x: hidden; transition-duration: 0.3s; }
 article .inner_space.hide_block_when_empty:empty { display: none; }
 article .inner_space:last-child { margin-bottom: 8px; }
@@ -1746,7 +2041,7 @@ article .toggle_switch[data-on="1"]::after { content: 'ON'; }
 
 article [data-lead]::before { content: attr(data-lead); }
 article [data-trail]::after { content: attr(data-trail); }
-article [data-prefix]::before, article [data-suffix]::after { margin: 0 2px; color: var(--color-boundary-dark); font-size: 0.75em; }
+article [data-prefix]::before, article [data-suffix]::after { margin: 0 2px; color: var(--color-text-lightest); font-size: 0.75em; }
 article [data-prefix]::before { content: attr(data-prefix); }
 article [data-suffix]::after { content: attr(data-suffix); }
 article [data-fore]::before, article [data-hind]::after { display: inline-block; flex-grow: 0; flex-shrink: 0; font-size: 1.375em; font-family: var(--font-for-emoji) !important; font-variant-emoji: emoji; line-height: 1.0625em; translate: 0 3px; }
