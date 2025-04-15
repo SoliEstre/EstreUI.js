@@ -136,8 +136,8 @@ const gtt = hee("gt");
 const itt = (tagName, attributes = {}, enumables = []) => {
     let texts = [lt + tagName];
 
-    if (isNotNully(attributes) && typeObject(attributes)) forkv((k, v) => { if (isNotNullAndEmpty(k) && isNotNully(v)) texts.push(k + eq + v4(v)); });
-    if (isNotNully(enumables) && typeObject(enumables) && isArray(enumables)) forof(v => { if (isNotNullAndEmpty(v)) texts.push(v); });
+    if (isNotNully(attributes) && typeObject(attributes)) forkv(attributes, (k, v) => { if (isNotNullAndEmpty(k) && isNotNully(v)) texts.push(k + eq + v4(v)); });
+    if (isNotNully(enumables) && typeObject(enumables) && isArray(enumables)) forof(enumables, v => { if (isNotNullAndEmpty(v)) texts.push(v); });
 
     texts.push(ss + gt);
     return texts.join(s);
@@ -151,8 +151,8 @@ const tip = (type, name, className, id) => itt(inp, { class: className, id, type
 const tag = (tagName, innerHtml = "", attributes = {}, enumables = []) => {
     let texts = [lt + tagName];
 
-    if (isNotNully(attributes) && typeObject(attributes)) forkv((k, v) => { if (isNotNullAndEmpty(k) && isNotNully(v)) texts.push(k + eq + v4(v)); });
-    if (isNotNully(enumables) && typeObject(enumables) && isArray(enumables)) forof(v => { if (isNotNullAndEmpty(v)) texts.push(v); });
+    if (isNotNully(attributes) && typeObject(attributes)) forkv(attributes, (k, v) => { if (isNotNullAndEmpty(k) && isNotNully(v)) texts.push(k + eq + v4(v)); });
+    if (isNotNully(enumables) && typeObject(enumables) && isArray(enumables)) forof(enumables, v => { if (isNotNullAndEmpty(v)) texts.push(v); });
 
     return (texts.join(s) + gt) + innerHtml + (lt + ss + tagName + gt);
 }
@@ -165,9 +165,9 @@ const ttt = (tagName, attributes = {}, enumables = []) => tag(tagName, "", attri
 const eb = (tagName, attributes = {}, enumables = [], property = {}) => {
     const elem = document.createElement(tagName);
 
-    if (isNotNully(attributes) && typeObject(attributes)) forkv((k, v) => { if (isNotNullAndEmpty(k) && isNotNully(v)) elem.setAttribute(k, v); });
-    if (isNotNully(enumables) && typeObject(enumables) && isArray(enumables)) forof(v => { if (isNotNullAndEmpty(v)) elem.setAttribute(v, es); });
-    if (isNotNully(property) && typeObject(property)) forkv((k, v) => { if (isNotNullAndEmpty(k)) elem[k] = v; });
+    if (isNotNully(attributes) && typeObject(attributes)) forkv(attributes, (k, v) => { if (isNotNullAndEmpty(k) && isNotNully(v)) elem.setAttribute(k, v); });
+    if (isNotNully(enumables) && typeObject(enumables) && isArray(enumables)) forof(enumables, v => { if (isNotNullAndEmpty(v)) elem.setAttribute(v, es); });
+    if (isNotNully(property) && typeObject(property)) forkv(property, (k, v) => { if (isNotNullAndEmpty(k)) elem[k] = v; });
 
     return elem;
 }
@@ -1152,6 +1152,7 @@ const Ecal = {
 
     getDateOffset(year = new Date(), month0, date) {
         if (year instanceof Date) date = new Date(year.getFullYear(), year.getMonth(), year.getDate());
+        else if (typeof year == STR && year.length == 10 && year.indexOf(hp) > -1) date = new Date(year);
         else date = new Date(year, month0, date);
         
         return parseInt(((date.getTime() / 60 / 60 / 1000) + (date.getTimezoneOffset() / -60)) / 24);
@@ -1164,6 +1165,10 @@ const Ecal = {
 
     getDateSetFrom(offset) {
         return this.getDateSet(this.getDateFrom(offset));
+    },
+
+    getDateStringFrom(offset) {
+        return this.getDateString(this.getDateFrom(offset));
     },
 
     getMonthOffset(year, month0) {
@@ -1182,6 +1187,26 @@ const Ecal = {
 
     getDateSetFromMonth(offset, date = 1) {
         return this.getDateSet(this.getDateFromMonth(offset, date));
+    },
+
+    getDateArray(date = new Date()) {
+        return [date.getFullYear(), v2d(date.getMonth() + 1), v2d(date.getDate())];
+    },
+
+    getDateString(date = new Date(), divider = hp) {
+        return this.getDateArray(date).join(divider);
+    },
+
+    getTimeArray(date = new Date()) {
+        return [date.getHours(), v2d(date.getMinutes()), v2d(date.getSeconds())];
+    },
+
+    getTimeString(date = new Date(), divider = cl) {  
+        return this.getTimeArray(date).join(divider);
+    },
+
+    getDateTimeString(date = new Date()) {
+        return [this.getDateString(date), this.getTimeString(date)].join(s);
     },
 
     getDayEmoji(date) {
@@ -1217,6 +1242,11 @@ const Ecal = {
     getDateSet(date = new Date(), lang = this.defaultLanguage) {
         const month0 = date.getMonth();
         const day = date.getDay();
+        const dateArray = this.getDateArray(date);
+        const dateString = dateArray.join(hp);
+        const timeArray = this.getTimeArray(date);
+        const timeString = timeArray.join(cl);
+        const dateTimeString = [this.getDateString(date), timeString].join(s);
         return {
             ymw: this.getYearMonthWeek(date),
             year: date.getFullYear(),
@@ -1237,7 +1267,12 @@ const Ecal = {
             dayTextFull: EsLocale.get("weekdaysFull", lang)[day],
             dayTextShort: EsLocale.get("weekdaysShort", lang)[day],
             dayEmoji: this.getDayEmoji(day),
+            dateArray,
+            dateString,
             time: date.getTime(),
+            timeArray,
+            timeString,
+            dateTimeString,
             dateOrigin: new Date(date),
         }
     },

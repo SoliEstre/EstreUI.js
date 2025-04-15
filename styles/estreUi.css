@@ -2011,8 +2011,10 @@ article .fit_content { width: fit-content; height: fit-content; }
 article .moderate_width { width: max(310px, 80%); margin: 0 auto; overflow-x: visible; }
 article .max_width { width: -webkit-fill-available; }
 article .max_height { height: -webkit-fill-available; }
+article .max_sized { width: -webkit-fill-available; height: -webkit-fill-available; }
 article .match_width { width: 100%; }
 article .match_height { height: 100%; }
+article .match_parent { width: 100%; height: 100%; }
 article .middle_align { vertical-align: middle; }
 
 article .flex_separation { justify-content: space-between; }

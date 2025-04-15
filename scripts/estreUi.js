@@ -974,7 +974,7 @@ class ES {
     getBytes(key, def) { return this.#get(key, "bytes", def); }
     getObject(key, def) { return this.#get(key, "object", def); }
 
-    get(key, def) { return this.#get(key, def); }
+    get(key, def) { return this.#get(key, "string", def); }
         
 
     #set(key, type = "string", value) {
@@ -1042,7 +1042,7 @@ class ES {
     setBytes(key, value) { return this.#set(key, "bytes", value); }
     setObject(key, value) { return this.#set(key, "object", value); }
     
-    set(key, value) { return this.#set(key, value); }
+    set(key, value) { return this.#set(key, "string", value); }
 
     
     #remove(key) {
@@ -1076,7 +1076,7 @@ class EAS extends ES {
     async getBytes(key, def) { return await this.#get(key, "bytes", def); }
     async getObject(key, def) { return await this.#get(key, "object", def); }
 
-    async get(key, def) { return await this.getString(key, def); }
+    async get(key, def) { return await this.getString(key, "string", def); }
 
 
     async #set(key, type = "string", value) {
@@ -1095,7 +1095,7 @@ class EAS extends ES {
     async setBytes(key, value) { return await this.#set(key, "bytes", value); }
     async setObject(key, value) { return await this.#set(key, "object", value); }
     
-    async set(key, value) { return await this.#set(key, value); }
+    async set(key, value) { return await this.#set(key, "string", value); }
 
 
     async #remove(key) {
