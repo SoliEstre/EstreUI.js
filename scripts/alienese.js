@@ -32,7 +32,7 @@ SOFTWARE.
 // This patch aims to create smaller (quicker) and more concise (lighter) JavaScript code.
 // It makes the code more implicit and serves as an alternative to obfuscation.
 // 
-// v0.2 / release 2025.03.17
+// v0.3 / release 2025.04.25
 // 
 // * Must be loaded modernism.js before this script.
 // 
@@ -268,7 +268,9 @@ const rv = revert;
 
 /** run handle */
 const pq = postQueue;
+const pd = postDelayed;
 const pp = postPromise;
+const pb = postBonded;
 const paq = postAsyncQueue;
 const pfq = postFrameQueue;
 
