@@ -807,8 +807,8 @@ class EsLocale {
 
             "dateDataDivider": "-",
             "timeDataDivider": ":",
-            "dateDevider": "/",
-            "timeDevider": ":",
+            "dateDivider": "/",
+            "timeDivider": ":",
 
             "dataDataSequence": "ymd",
             "dateSequence": "mdy",
@@ -875,8 +875,8 @@ class EsLocale {
 
             "dateDataDivider": "-",
             "timeDataDivider": ":",
-            "dateDevider": ".",
-            "timeDevider": ":",
+            "dateDivider": ".",
+            "timeDivider": ":",
 
             "dateDataSequence": "ymd",
             "dateSequence": "ymd",
@@ -954,7 +954,7 @@ const Ecal = {
         const forYear = date.getFullYear();
         const forMonth = date.getMonth();
         const firstDateOfNextMonth = new Date(forYear, forMonth + 1, 1);
-        const beginOfNextMonth = Ecal.getBeginSundayAndWeek(firstDateOfNextMonth);
+        const beginOfNextMonth = this.getBeginSundayAndWeek(firstDateOfNextMonth);
         
         if (date.getTime() >= beginOfNextMonth.date.getTime() && firstDateOfNextMonth.getDay() < 5) {
             const firstDateOfWeek = beginOfNextMonth.date;
@@ -967,7 +967,7 @@ const Ecal = {
             const forDay = date.getDay();
             const weekBeginDate = forDate - forDay;
 
-            const monthBeginSunday = Ecal.getBeginSundayAndWeek(date);
+            const monthBeginSunday = this.getBeginSundayAndWeek(date);
             const beginDate = monthBeginSunday.date;
             var beginWeek = monthBeginSunday.week;
             date.setDate(weekBeginDate);
@@ -981,9 +981,13 @@ const Ecal = {
                 const m0 = date.getMonth();
                 return { year: date.getFullYear(), month: m0 + 1, month0: m0, week: beginWeek };
             } else {
+                const lastDateOfPrevMonth = new Date(forYear, forMonth, 0);
+                const beginDateOfLastWeekOfPrevMonth = lastDateOfPrevMonth.getDate() - lastDateOfPrevMonth.getDay();
+                const weekBeginDate = new Date(forYear, forMonth, beginDateOfLastWeekOfPrevMonth);
+                const monthBeginSunday = this.getBeginSundayAndWeek(weekBeginDate);
                 const thisYear = beginDate.getFullYear();
                 const thisMonth = beginDate.getMonth();
-                const thisWeek = this.getYearMonthWeek(thisYear, thisMonth, beginDate.getDate() - 14).week + 2;
+                const thisWeek = monthBeginSunday.week + parseInt((weekBeginDate.getDate() - monthBeginSunday.date.getDate()) / 7);//this.getYearMonthWeek(thisYear, thisMonth, beginDate.getDate() - 14).week + 2;
                 return { year: thisYear, month: thisMonth + 1, month0: thisMonth, week: thisWeek };
             }
         }
