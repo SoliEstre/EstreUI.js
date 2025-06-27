@@ -615,7 +615,7 @@ alert = (title, message,
     callbackOk = () => {},
     callbackDissmiss = () => {},
     ok = isKorean() ? "확인" : "OK",
-) => estreAlert({ title, message, callbackOk, callbackDissmiss, ok });
+) => tu(title) ? classicAlert() : estreAlert({ title, message, callbackOk, callbackDissmiss, ok });
 
 
 function estreConfirm(options = {}) {
@@ -974,7 +974,7 @@ class ES {
     getBytes(key, def) { return this.#get(key, "bytes", def); }
     getObject(key, def) { return this.#get(key, "object", def); }
 
-    get(key, def) { return this.#get(key, "string", def); }
+    get(key, def) { return this.getString(key, def); }
         
 
     #set(key, type = "string", value) {
@@ -1042,7 +1042,7 @@ class ES {
     setBytes(key, value) { return this.#set(key, "bytes", value); }
     setObject(key, value) { return this.#set(key, "object", value); }
     
-    set(key, value) { return this.#set(key, "string", value); }
+    set(key, value) { return this.setString(key, value); }
 
     
     #remove(key) {
@@ -1076,7 +1076,7 @@ class EAS extends ES {
     async getBytes(key, def) { return await this.#get(key, "bytes", def); }
     async getObject(key, def) { return await this.#get(key, "object", def); }
 
-    async get(key, def) { return await this.getString(key, "string", def); }
+    async get(key, def) { return await this.getString(key, def); }
 
 
     async #set(key, type = "string", value) {
@@ -1095,7 +1095,7 @@ class EAS extends ES {
     async setBytes(key, value) { return await this.#set(key, "bytes", value); }
     async setObject(key, value) { return await this.#set(key, "object", value); }
     
-    async set(key, value) { return await this.#set(key, "string", value); }
+    async set(key, value) { return await this.setString(key, value); }
 
 
     async #remove(key) {
@@ -1455,6 +1455,10 @@ class EstrePageHandle {
 
     setHandler(handler) {
         if (this.#handler == null) this.#handler = handler;
+    }
+
+    placeIntent(intent = {}) {
+        this.#intent ??= intent;
     }
     
     pushIntent(intent, onInit = false) {
@@ -3105,18 +3109,21 @@ class EstreContainer extends EstrePageHostHandle {
                 $masterButton.click(function (e) {
                     e.preventDefault();
 
-                    if (inst.#onMasterButtonClick?.(e, this) !== true) {
-                        const articleStepsId = inst.#articleStepsId;
-                        if (articleStepsId != null) {
-                            const current = inst.currentArticleStepIndex;
-                            if (current != NaN) {
-                                const length = inst.stepPagesLength;
-                                const next = current + 1;
-                                const nextId = articleStepsId + "%" + next;
-                                if (next < length) pageManager.bringPage(EstreUiPage.getPidArticle(nextId, inst.id, inst.component.id, inst.component.sectionBound));
+                    postAsyncQueue(async _ => {
+                        const handled = (await inst.#onMasterButtonClick?.(e, this)) ?? null;
+                        if (handled !== true) {
+                            const articleStepsId = inst.#articleStepsId;
+                            if (articleStepsId != null) {
+                                const current = inst.currentArticleStepIndex;
+                                if (current != NaN) {
+                                    const length = inst.stepPagesLength;
+                                    const next = current + 1;
+                                    const nextId = articleStepsId + "%" + next;
+                                    if (next < length) pageManager.bringPage(EstreUiPage.getPidArticle(nextId, inst.id, inst.component.id, inst.component.sectionBound), handled);
+                                }
                             }
                         }
-                    }
+                    });
 
                     return false;
                 });
@@ -7895,7 +7902,7 @@ class EstreVariableCalendar extends EstreCalendar {
     setDateIndic(dateSet) {
         const dateIndic = this.$scalers.filter(uis.date).find(c.c + "label");
         dateIndic.text(dateSet.date2d);
-        const divider = EsLocale.get("dateDevider", this.lang);
+        const divider = EsLocale.get("dateDivider", this.lang);
         const seq = [...EsLocale.get("dateSequence", this.lang)].join(divider);
         const prefix = seq.substring(0, seq.indexOf("d"));
         const suffix = seq.substring(seq.indexOf("d") + 1);

@@ -31,7 +31,7 @@ SOFTWARE.
 // Collections of bypass for process codes takes be inline,
 // and monkey patching like as modern languages.
 // 
-// v0.3 / release 2025.04.25
+// v0.3.1 / release 2025.06.27
 // 
 // Author: Estre Soliette
 // Established: 2025.01.05
@@ -403,12 +403,12 @@ const revert = (to, from, dataOnly = true, primitiveOnly = false, recusive = tru
 
 
 /** run handle */
-const postQueue = (process = it => it, ...args) => setTimeout(process, 0, ...args);
-const postDelayed = (process = it => it, delay = 100, ...args) => setTimeout(process, delay, ...args);
-const postPromise = (process = it => it, ...args) => new Promise((rs, rj) => process(rs, rj, ...args));
-const postBonded = (process = it => it, delay = 100, ...args) => new Promise((rs, rj) => setTimeout(process, delay, rs, rj, ...args));
-const postAsyncQueue = (process = it => it, ...args) => (async (...args) => await process(...args))(...args);
-const postFrameQueue = (process = it => it, ...args) => requestAnimationFrame(() => process(...args));
+const postQueue = (process = (...args) => args[0], ...args) => setTimeout(process, 0, ...args);
+const postDelayed = (process = (...args) => args[0], delay = 100, ...args) => setTimeout(process, delay, ...args);
+const postPromise = (process = (rs, rj, ...args) => rs(args[0]), ...args) => new Promise((rs, rj) => process(rs, rj, ...args));
+const postBonded = (process = (rs, rj, ...args) => rs(args[0]), delay = 100, ...args) => new Promise((rs, rj) => setTimeout(process, delay, rs, rj, ...args));
+const postAsyncQueue = (process = (...args) => args[0], ...args) => (async (...args) => await process(...args))(...args);
+const postFrameQueue = (process = (...args) => args[0], ...args) => requestAnimationFrame(() => process(...args));
 
 
 // Object function shortcut constants
