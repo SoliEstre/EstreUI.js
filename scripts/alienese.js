@@ -381,3 +381,16 @@ const l = cm;
 const s = " ";
 const i = "#";
 const d = ".";
+
+const cr = "\r";
+const lf = "\n";
+const crlf = cr + lf;
+const lfcr = lf + cr;
+const tab = "\t";
+
+const ecr = "\\r";
+const elf = "\\n";
+const ecrlf = ecr + elf;
+const elfcr = elf + ecr;
+const etab = "\\t";
+

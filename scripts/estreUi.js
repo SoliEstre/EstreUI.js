@@ -70,6 +70,21 @@ const uis = {
     unifiedScheduler: ".unified_scheduler",
     scheduleHolder: ".schedule_holder",
     scheduleItem: ".schedule_item",
+
+    // dedicated calendar
+    dedicatedCalendar: ".dedicated_calendar",
+    calendarBlock: ".calendar_block",
+    scheduleBlock: ".schedule_block",
+
+    // micro calendar
+    microCalendar: ".micro_calendar",
+    stretchHandle: ".stretch_handle",
+    handle: ".handle",
+
+    // minimal scheduler
+    minimalScheduler: ".minimal_scheduler",
+    minimalScheduleList: ".schedule_list",
+    schedule: ".schedule",
     
     // calendar common
     scaler: ".scaler",
@@ -115,6 +130,9 @@ const uis = {
     boundHost: ".bound_host",
 
 
+    // custom selector bar
+    customSelectorBar: ".custom_selector_bar",
+
     // month selector bar
     monthSelectorBar: ".month_selector_bar",
 
@@ -141,6 +159,10 @@ const uis = {
 
     // toaster slot
     toasterSlot: ".toaster_slot",
+
+
+    // exported content
+    exportedContent: ".exported_content",
 
 
     // quick transitions
@@ -243,10 +265,13 @@ const eds = {
     year: "data-year",
     month: "data-month",
     adjoin: "data-adjoin",
+    adjoinYear: "data-adjoin-year",
+    adjoinMonth: "data-adjoin-month",
     adjoinWeek: "data-adjoin-week",
     week: "data-week",
     day: "data-day",
     date: "data-date",
+    holiday: "data-holiday",
     dateY: "data-date-y",
     dateM: "data-date-m",
     dateD: "data-date-d",
@@ -271,6 +296,11 @@ const eds = {
     autoInit: "data-auto-init",
     placeholder: "data-placeholder",
     options: "data-options",
+
+    // message datas
+    messageOnNoSelection: "data-message-on-no-selection",
+    messageOnLoading: "data-message-on-loading",
+    messageOnNoData: "data-message-on-no-data",
 
     // body global switch
     onResizing: "data-on-resizing",
@@ -307,6 +337,9 @@ const eds = {
     focusMonth: "data-focus-m",
     focusWeek: "data-focus-w",
     focusDay: "data-focus-d",
+    boundYear: "data-bound-y",
+    boundMonth: "data-bound-m",
+    boundWeek: "data-bound-w",
     hideWeekage: "data-hide-weekage",
     hideWeekend: "data-hide-weekend",
 
@@ -352,6 +385,7 @@ const eds = {
 
     // for month selector bar
     dropdownOpen: "data-dropdown-open",
+    showFuture: "data-show-future",
 
 
     // for solid point
@@ -1138,8 +1172,8 @@ class EJS {
         if (key == null | key == "") return;
         const value = this._storage.getItem(this._getFullKey(key));
         return value == null ? def : equalCase(this._codeType, {
-            json: JSON.parse(value),
-            jcodd: Jcodd.parse(value),
+            json: _ => JSON.parse(value),
+            jcodd: _ => Jcodd.parse(value),
         });
     }
 
@@ -1148,8 +1182,8 @@ class EJS {
         let valueString
         try {
         valueString = equalCase(this._codeType, {
-            json: JSON.stringify(value),
-            jcodd: Jcodd.coddify(value),
+            json: _ => JSON.stringify(value),
+            jcodd: _ => Jcodd.coddify(value),
         });
         } catch (ex) {
             console.log(ex);
@@ -1172,8 +1206,8 @@ class EAJS extends EJS {
         if (key == null | key == "") return;
         const value = await this._storage.getItem(this._getFullKey(key));
         return value == null ? def : equalCase(this._codeType, {
-            json: JSON.parse(value),
-            jcodd: Jcodd.parse(value),
+            json: _ => JSON.parse(value),
+            jcodd: _ => Jcodd.parse(value),
         });
     }
 
@@ -1182,8 +1216,8 @@ class EAJS extends EJS {
         let valueString
         try {
         valueString = equalCase(this._codeType, {
-            json: JSON.stringify(value),
-            jcodd: Jcodd.coddify(value),
+            json: _ => JSON.stringify(value),
+            jcodd: _ => Jcodd.coddify(value),
         });
         } catch (ex) {
             console.log(ex);
@@ -1998,7 +2032,7 @@ class EstrePageHandle {
     }
 
     releaseHandles($host = this.$host) {
-        EstreHandle.releaseHandles($host, this);
+        if ($host != null) EstreHandle.releaseHandles($host, this);
     }
 
     initHandles($host = this.$host, replace = false) {
@@ -3611,8 +3645,8 @@ class EstreArticle extends EstrePageHandle {
     }
 
     unregisterHandle(specifier, handle) {
-        const index = this.handles[specifier].indexOf(handle);
-        this.handles[specifier].splice(index, 1);
+        const index = this.handles[specifier]?.indexOf(handle);
+        this.handles[specifier]?.splice(index, 1);
     }
 
 
@@ -3854,6 +3888,8 @@ class EstreAlertDialogPageHandler extends EstreDialogPageHandler {
             handle?.close();
             return false;
         });
+
+        this.$confirm.focus();
     }
 
     onFocus(handle) {
@@ -3899,6 +3935,8 @@ class EstreConfirmDialogPageHandler extends EstreDialogPageHandler {
             handle?.close();
             return false;
         });
+
+        this.$negative.focus();
     }
 
     onFocus(handle) {
@@ -3936,6 +3974,8 @@ class EstrePromptDialogPageHandler extends EstreDialogPageHandler {
             handle?.close();
             return false;
         });
+
+        this.$input.focus();
     }
 
     onFocus(handle) {
@@ -3963,6 +4003,8 @@ class EstreOptionDialogPageHandler extends EstreDialogPageHandler {
             handle?.close();
             return false;
         });
+
+        this.$optionItems[0]?.focus();
     }
 
     onFocus(handle) {
@@ -4064,6 +4106,8 @@ class EstreSelectionDialogPageHandler extends EstreDialogPageHandler {
 
         const min = this.intentData?.minSelection ?? 0;
         if (min > 0 && this.$selected.length < min) this.$confirm.prop(m.d, true);
+
+        this.$confirm.focus();
     }
 
     onFocus(handle) {
@@ -4781,7 +4825,7 @@ class EstreUiPage {
 
         if ($component == null) $component = $container.closest("section");
 
-            this.setComponentRefer($component);
+        this.setComponentRefer($component);
 
         this.#$container = $container;
 
@@ -4803,7 +4847,7 @@ class EstreUiPage {
 
         if ($container == null) $container = $article.closest("div.container");
 
-            this.setContainerRefer($container, $component);
+        this.setContainerRefer($container, $component);
 
         this.#$article = $article;
 
@@ -4845,7 +4889,7 @@ class EstreUiPage {
         const $element = this.$element;
         const element = $element[0];
         this.#raw = element.outerHTML;
-        this.#cold = element.coldify(true, true);
+        this.#cold = element.coldify(true, true, false, false);
         if (this.statement == "instant") {
             $element.remove();
             return null;
@@ -5344,6 +5388,7 @@ class EstreHandle {
     // constants
     static #handles = {
         get [uis.unifiedCalendar]() { return EstreUnifiedCalendarHandle; },
+        get [uis.dedicatedCalendar]() { return EstreDedicatedCalanderHandle; },
 
         get [uis.scalable]() { return EstreScalableHandle; },
         get [uis.collapsible]() { return EstreCollapsibleHandle; },
@@ -5358,10 +5403,13 @@ class EstreHandle {
 
         get [uis.toasterSlot]() { return EstreToasterSlotHandle; },
 
+        get [uis.customSelectorBar]() { return EstreCustomSelectorBarHandle; },
         get [uis.monthSelectorBar]() { return EstreMonthSelectorBarHandle; },
 
 
         get [uis.dateShower]() { return EstreDateShowerHandle; },
+
+        get [uis.exportedContent]() { return EstreExportedContentHandle; },
 
         get [uis.ezHidable]() { return EstreEzHidableHandle; },
         get [uis.fixedAccess]() { return EstreFixedAccessHandle; },
@@ -6909,15 +6957,27 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
     }
 
     buildDay(year, month, day, date) {
+        // dateInfo = { isHoliday: number, subjects: "something's day" }
+        const dateInfo = scheduleDataSet.dataHandler?.getLocalizedDateInfo?.(year, month - 1, date);
+
         const dy = doc.ce(div);
         dy.setAttribute(m.cls, "day");
         dy.setAttribute(eds.year, year);
         dy.setAttribute(eds.month, month);
         dy.setAttribute(eds.day, day);
         dy.setAttribute(eds.date, date);
+        if (dateInfo?.holidays != null && dateInfo.holidays > 0) {
+            dy.setAttribute(eds.holiday, dateInfo.holidays);
+        }
         const lb = doc.ce(lbl);
         lb.innerText = "" + date;
         dy.append(lb);
+        if (dateInfo?.subjects != null) {
+            const sj = doc.ce(sp);
+            sj.setAttribute(m.cls, "subjects");
+            sj.innerText = dateInfo.subjects;
+            dy.append(sj);
+        }
         const basic = doc.ce(ul);
         basic.setAttribute(m.cls, "scheduled");
         basic.setAttribute(eds.group, "basic");
@@ -8241,9 +8301,12 @@ class EstreUnifiedScheduler {
     }
 
     buildScheduleItem(info, dateSet) {
+        const dateInfo = scheduleDataSet.dataHandler?.getLocalizedDateInfo?.(dateSet.year, dateSet.month0, dateSet.date);
+        
         const item = doc.ce(li, "division_block schedule_item");
         item.setAttribute(eds.scheduleId, info.id);
         if (info.category != null) item.setAttribute(eds.category, info.category);
+        if (dateInfo?.holidays != null && dateInfo.holidays > 0) item.setAttribute(eds.holiday, dateInfo.holidays);
         const icon = doc.ce(div, "fit_width max_height event_type");
         var span = doc.ce(sp);
         icon.append(span);
@@ -8253,13 +8316,14 @@ class EstreUnifiedScheduler {
         const ruby = doc.ce(rb);
         ruby.append(doc.ce(sp, "month", dateSet.month));
         ruby.append(doc.ce(sp, "date", dateSet.date));
+        ruby.append(doc.ce(sp, "space", "&nbsp; "));
+        ruby.append(doc.ce(sp, "day", dateSet.dayText));
         const rubytext = doc.ce(rt, "week");
         //rubytext.append(doc.ce(sp, "year", info.ymw.year));
         rubytext.append(doc.ce(sp, "month", dateSet.ymw.month));
         rubytext.append(doc.ce(sp, "week", dateSet.ymw.week));
         ruby.append(rubytext);
         datetime.append(ruby);
-        datetime.append(doc.ce(sp, "day", dateSet.dayText));
         var span = doc.ce(sp, "timespan");
         if (info.timeset.isWhole) span.innerText = EsLocale.get("wholeDayShort", this.lang);
         else {
@@ -8748,6 +8812,745 @@ class ScheduleDataSet {
 }
 
 const scheduleDataSet = new ScheduleDataSet();
+
+
+
+
+class EstreDedicatedCalanderHandle extends EstreHandle {
+
+    // constants
+
+
+    // statics
+
+
+    // open property
+    $calendarBlock;
+    $scheduleBlock;
+    
+    // enclosed property
+
+    calendar;
+    scheduler;
+
+    // getter and setter
+    get lang() { return this.$bound.attr("lang") ?? EsLocale.currentLocale ?? "en"; }
+
+
+    constructor(element, host) {
+        super(element, host);
+    }
+
+    release() {
+        super.release();
+    }
+
+    init() {
+        super.init();
+
+        if (isNullOrEmpty(this.$bound.attr("lang"))) this.$bound.attr("lang", this.lang);
+
+        this.$calendarBlock = this.$bound.find(c.c + uis.calendarBlock);
+        this.$scheduleBlock = this.$bound.find(c.c + uis.scheduleBlock);
+
+        this.calendar = new EstreMicroCalendar(this.$calendarBlock.find(c.c + uis.microCalendar)[0], this.$calendarBlock[0], this);
+        this.calendar.init();
+        this.$scheduleBlock.find(c.c + uis.minimalScheduler)[0]?.let(it => {
+            this.scheduler = new EstreMinimalScheduler(it, this.$scheduleBlock[0], this.calendar, this);
+            this.scheduler.init();
+        });
+
+        return this;
+    }
+}
+
+class EstreMicroCalendar {
+
+    // constants
+
+
+    // statics
+
+
+    // open property
+    area;
+    $area;
+
+    bound;
+    $bound;
+    data;
+
+    $structure;
+    structure;
+
+    $stretchHandle;
+
+    // enclosed property
+    #dediCal;
+
+    #stretchSwipeHandler;
+
+    #selectedYear;
+    #selectedMonth;
+    #selectedWeek;
+    #selectedDay;
+
+    #showEachDayCallback;
+    #selectionChangedCallback;
+    #selectedDayByUserCallback;
+    #collapsedChangedCallback;
+
+    #isCollapsed;
+
+    // getter and setter
+    get focusedYear() { return this.$structure.attr(eds.focusYear)?.let(it => parseInt(it).let(it => isNaN(it) ? null : it)) }
+    get focusedMonth() { return this.$structure.attr(eds.focusMonth)?.let(it => parseInt(it).let(it => isNaN(it) ? null : it)) }
+    get focusedWeek() { return this.$structure.attr(eds.focusWeek)?.let(it => parseInt(it).let(it => isNaN(it) ? null : it)) }
+    get focusedDay() { return this.$structure.attr(eds.focusDay)?.let(it => parseInt(it).let(it => isNaN(it) ? null : it)) }
+
+    get dateFocused() {
+        const year = this.focusedYear;
+        const month = this.focusedMonth;
+        const date = this.focusedDay;
+
+        if (year == null || month == null || date == null) return null;
+
+        const month0 = month - 1;
+        return new Date(year, month0, date);
+    }
+    get weekDayFocused() { return this.dateFocused?.getDay(); }
+
+    get boundYear() { return this.$structure.attr(eds.boundYear)?.let(it => parseInt(it).let(it => isNaN(it) ? null : it)) }
+    get boundMonth() { return this.$structure.attr(eds.boundMonth)?.let(it => parseInt(it).let(it => isNaN(it) ? null : it)) }
+    get boundWeek() { return this.$structure.attr(eds.boundWeek)?.let(it => parseInt(it).let(it => isNaN(it) ? null : it)) }
+
+
+    get isCollapsed() { return this.$bound.attr(eds.collapsed) == t1; }
+
+
+    constructor(element, area, dediCal) {
+        this.#dediCal = dediCal;
+
+        this.area = area;
+        this.$area = $(area);
+
+        this.bound = element;
+        this.$bound = $(element);
+
+        this.$structure = this.$bound.find(c.c + uis.calendarStructure);
+
+        this.$stretchHandle = this.$bound.find(c.c + uis.stretchHandle + c.c + uis.handle);
+
+    }
+
+    init() {
+        this.setStretchSwipeHandler();
+
+        const today = this.initStructure();
+
+        this.setSelectedDay(today.year, today.month, today.date);
+
+        return this;
+    }
+
+    release(remove) {
+        super.remove(remove);
+
+        this.structure?.release(remove);
+    }
+
+    setStretchSwipeHandler() {
+        this.#isCollapsed = this.isCollapsed;
+
+        if (this.$stretchHandle.length == 0) return;
+
+        this.releaseStretchSwipeHandler();
+
+        const stratchThreshold = 40;
+        this.#stretchSwipeHandler = new EstreSwipeHandler(this.$stretchHandle).setStopPropagation().setPreventDefault().setPreventAll().unuseX().setResponseBound(this.$bound).setThresholdY(8).setOnUp((grabX, grabY, handled, canceled, directed) => {
+            if (handled) {
+                let collapsed;
+                if (this.#isCollapsed) {
+                    collapsed = grabY < stratchThreshold;
+                } else {
+                    collapsed = grabY <= -stratchThreshold;
+                }
+                if (collapsed != this.isCollapsed) {
+                    this.$bound.attr(eds.collapsed, collapsed ? t1 : "");
+                }
+                if (collapsed != this.#isCollapsed) {
+                    this.#isCollapsed = collapsed;
+                    this.#collapsedChangedCallback?.(collapsed, this);
+                }
+            }
+        }).setOnMove((grabX, grabY, handled, dropped, directed) => {
+            if (handled) {
+                let collapsed;
+                if (this.#isCollapsed) {
+                    collapsed = grabY < stratchThreshold;
+                } else {
+                    collapsed = grabY <= -stratchThreshold;
+                }
+                if (collapsed != this.isCollapsed) {
+                    this.$bound.attr(eds.collapsed, collapsed ? t1 : "");
+                }
+            }
+        });
+    }
+
+    releaseStretchSwipeHandler() {
+        if (this.#stretchSwipeHandler != null) {
+            this.#stretchSwipeHandler.release();
+            this.#stretchSwipeHandler = null;
+        }
+    }
+
+    initStructure(type = this.$structure.attr(eds.structureType)) {
+        this.structure = matchCase(type, {
+            "weekfloor": _ => new EstreWeekFloorStructure(this.$structure, this),
+            [def]: _ => {
+                this.$structure.attr(eds.structureType, "weekfloor");
+                return new EstreWeekFloorStructure(this.$structure, this)
+            },
+        });
+
+        return this.structure.init();
+    }
+
+    selectToday() {
+        const today = new Date();
+
+        this.setSelectedDay(today.getFullYear(), today.getMonth() + 1, today.getDate());
+    }
+
+    setSelectedYear(year) {
+        this.#selectedYear = year;
+
+        const month = this.#selectedMonth ?? 1;
+        const month0 = this.#selectedMonth - 1;
+
+        const dateSet = Ecal.getDateSet(new Date(year, month0, this.#selectedDay));
+        const lastDay = Ecal.getLastDay(year, month0);
+        if (dateSet.date > lastDay) dateSet = Ecal.getDateSet(new Date(year, month0, lastDay));
+
+        this.#selectedWeek = dateSet.week;
+
+        this.$structure.attr(eds.focusYear, year);
+        this.$structure.attr(eds.focusMonth, month);
+        this.$structure.attr(eds.focusWeek, dateSet.week);
+        this.$structure.attr(eds.focusDay, dateSet.date);
+
+        this.checkSetDayFocused(dateSet);
+    }
+
+    setSelectedMonth(year, month) {
+        this.#selectedYear = year;
+        this.#selectedMonth = month;
+
+        const month0 = month - 1;
+        const isWeekly = this.boundWeek != null;
+
+        const dateSet = Ecal.getDateSet(new Date(year, month0, this.#selectedDay));
+        const lastDay = Ecal.getLastDay(year, month0);
+        if (dateSet.date > lastDay) dateSet = Ecal.getDateSet(new Date(year, month, lastDay));
+
+        this.#selectedWeek = dateSet.week;
+
+        this.$structure.attr(eds.focusYear, year);
+        this.$structure.attr(eds.focusMonth, month);
+        this.$structure.attr(eds.focusWeek, dateSet.week);
+        this.$structure.attr(eds.focusDay, dateSet.date);
+
+        this.setBound(year, month, isWeekly ? dateSet.week : u);
+
+        this.checkSetDayFocused(dateSet);
+    }
+
+    setSelectedWeek(year, month, week) {
+        this.#selectedYear = year;
+
+        const month0 = month - 1;
+
+        const day = this.weekDayFocused ?? 0;
+        const justday = Ecal.getDateSundayOfWeek(year, month0, week);
+        if (day > 0) justday.setDate(justday.getDate() + day);
+        const dateSet = Ecal.getDateSet(justday);
+
+        this.#selectedMonth = dateSet.month;
+        this.#selectedWeek = dateSet.week;
+        this.#selectedDay = dateSet.date;
+
+        this.$structure.attr(eds.focusYear, dateSet.year);
+        this.$structure.attr(eds.focusMonth, dateSet.month);
+        this.$structure.attr(eds.focusWeek, dateSet.week);
+        this.$structure.attr(eds.focusDay, dateSet.date);
+
+        this.checkSetDayFocused(dateSet);
+    }
+
+    setSelectedDay(year, month, date) {
+        this.#selectedYear = year;
+        this.#selectedMonth = month;
+        this.#selectedDay = date;
+
+        const month0 = month - 1;
+
+        const dateSet = Ecal.getDateSet(new Date(year, month0, date));
+
+        this.#selectedWeek = dateSet.week;
+
+        this.$structure.attr(eds.focusYear, dateSet.year);
+        this.$structure.attr(eds.focusMonth, dateSet.month);
+        this.$structure.attr(eds.focusWeek, dateSet.week);
+        this.$structure.attr(eds.focusDay, dateSet.date);
+
+        this.checkSetDayFocused();
+    }
+    
+    checkSetDayFocused(dateSet = Ecal.getDateSet(this.dateFocused ?? new Date())) {
+        this.$structure.find(uis.day + aiv(eds.selected, t1)).removeAttr(eds.selected);
+
+        const isWeekly = this.boundWeek != null;
+
+        const findDay = () => this.$structure.find(uis.day + aiv(eds.year, dateSet.year) + aiv(eds.month, dateSet.month) + aiv(eds.date, dateSet.date));
+
+        const $day = findDay();
+        if ($day.length > 0) $day.attr(eds.selected, t1);
+        else {
+            if (isWeekly) {
+                const ymw = dateSet.ymw;
+                this.structure.setBound(ymw.year, ymw.month, ymw.week);
+            } else {
+                this.structure.setBound(dateSet.year, dateSet.month);
+            }
+
+            findDay().attr(eds.selected, t1);
+        }
+
+        this.#selectionChangedCallback?.(dateSet, isWeekly, this, this.structure);
+
+        this.#dediCal.scheduler?.setDateSelected(dateSet.year, dateSet.month, dateSet.date);
+    }
+
+    resetBound() {
+        this.structure.resetBound();
+        this.checkSetDayFocused();
+
+        return this;
+    }
+
+    setBound(year, month, week) {
+        if (ts(year) && year.includes("-")) {
+            const [y, m, w] = year.split("-");
+            year = parseInt(y).let(it => isNaN(it) ? null : it);
+            month = parseInt(m).let(it => isNaN(it) ? null : it);
+            week = w != null ? parseInt(w).let(it => isNaN(it) ? null : it) : null;
+        }
+
+        this.structure.setBound(year, month, week);
+    }
+
+    setBoundScale(isWeekly) {
+        if (isWeekly == null) isWeekly = this.boundWeek == null;
+
+        if (isWeekly) {
+            const dateSet = Ecal.getDateSet(this.dateFocused);
+            this.structure.setBound(dateSet.year, dateSet.month, dateSet.week);
+            this.checkSetDayFocused();
+
+            return true;
+        } else {
+            this.structure.setBound(this.boundYear, this.boundMonth);
+            this.checkSetDayFocused();
+
+            return false;
+        }
+    }
+
+    setOnShowEachDay(callback = ($day, year, month, date, calendar, structure) => {}) {
+        this.#showEachDayCallback = callback;
+
+        return this;
+    }
+
+    onShowEachDay(day) {
+        if (this.#showEachDayCallback == null) return;
+
+        const $day = $(day);
+
+        const year = $day.attr(eds.year)?.let(it => parseInt(it).let(it => isNaN(it) ? null : it));
+        const month = $day.attr(eds.month)?.let(it => parseInt(it).let(it => isNaN(it) ? null : it));
+        const date = $day.attr(eds.date)?.let(it => parseInt(it).let(it => isNaN(it) ? null : it));
+
+        if (year != null && month != null && date != null) {
+            this.#showEachDayCallback($day, year, month, date, this, this.structure);
+        }
+    }
+
+    requestCallShowDayCallbacks() {
+        this.structure.callShowDayCallbacks();
+    }
+
+    setOnSelectionChanged(callback = (dateSet, isWeekly, calendar, structure) => {}) {
+        this.#selectionChangedCallback = callback;
+
+        return this;
+    }
+
+    onDaySelected($day) {
+        const year = $day.attr(eds.year)?.let(it => parseInt(it).let(it => isNaN(it) ? null : it));
+        const month = $day.attr(eds.month)?.let(it => parseInt(it).let(it => isNaN(it) ? null : it));
+        const date = $day.attr(eds.date)?.let(it => parseInt(it).let(it => isNaN(it) ? null : it));
+
+        if (year != null && month != null && date != null) {
+            this.setSelectedDay(year, month, date);
+        }
+    }
+
+    setOnSelectedDayByUser(callback = async ($day, year, month, date, calendar, structure) => {}) {
+        this.#selectedDayByUserCallback = callback;
+
+        return this;
+    }
+
+    async onDaySelectedByUser(day) {
+        const $day = $(day);
+
+        const year = $day.attr(eds.year)?.let(it => parseInt(it).let(it => isNaN(it) ? null : it));
+        const month = $day.attr(eds.month)?.let(it => parseInt(it).let(it => isNaN(it) ? null : it));
+        const date = $day.attr(eds.date)?.let(it => parseInt(it).let(it => isNaN(it) ? null : it));
+
+        if (year != null && month != null && date != null) {
+            const isHandled = await this.#selectedDayByUserCallback?.($day, year, month, date, this, this.structure);
+            if (!isHandled) this.setSelectedDay(year, month, date);
+        }
+    }
+
+    selectPrevWeekDay() {
+        const year = this.focusedYear;
+        const month = this.focusedMonth;
+        const day = this.focusedDay;
+
+        if (year == null || month == null || day == null) return;
+
+        const month0 = month - 1;
+
+        const date = new Date(year, month0, day);
+        date.setDate(date.getDate() - 7);
+
+        this.setSelectedDay(date.getFullYear(), date.getMonth() + 1, date.getDate());
+    }
+
+    selectNextWeekDay() {
+        const year = this.focusedYear;
+        const month = this.focusedMonth;
+        const day = this.focusedDay;
+
+        if (year == null || month == null || day == null) return;
+
+        const month0 = month - 1;
+
+        const date = new Date(year, month0, day);
+        date.setDate(date.getDate() + 7);
+
+        this.setSelectedDay(date.getFullYear(), date.getMonth() + 1, date.getDate());
+    }
+
+    setOnCollapseChanged(callback = (collapsed, calendar) => {}) {
+        this.#collapsedChangedCallback = callback;
+
+        return this;
+    }
+
+    setCollapsed(collapsed) {
+        collapsed = !!collapsed;
+        this.$bound.attr(eds.collapsed, collapsed ? t1 : "");
+        this.#isCollapsed = collapsed;
+        this.#collapsedChangedCallback?.(collapsed, this);
+
+        return this;
+    }
+}
+
+class EstreWeekFloorStructure {
+    // constants
+
+
+    // statics
+
+
+    // open property
+    calendar;
+
+    $structure;
+
+    $weeks;
+
+    // enclosed property
+
+
+    // getter and setter
+
+    constructor($structure, calendar) {
+        this.$structure = $structure;
+        this.calendar = calendar;
+
+        this.$weeks = this.$structure.find(c.c + uis.weeks);
+    }
+
+    release(remove) {
+        this.calendar = null;
+
+        if (remove) this.$structure.remove();
+        else if (remove === false) this.$structure.empty();
+
+
+        this.$structure = null;
+    }
+
+    init() {
+        return this.resetBound();
+    }
+
+    resetBound() {
+        const now = new Date();
+        const year = this.$structure.attr(eds.boundYear)?.let(it => parseInt(it).let(it => isNaN(it) ? null : it)) ?? now.getFullYear();
+        const month = this.$structure.attr(eds.boundMonth)?.let(it => parseInt(it).let(it => isNaN(it) ? null : it)) ?? (now.getMonth() + 1);
+        const week = this.$structure.attr(eds.boundWeek)?.let(it => parseInt(it).let(it => isNaN(it) ? null : it));
+
+        return this.setBound(year, month, week);
+    }
+
+    setBound(year, month, week) {
+        this.$weeks.empty();
+
+        this.$structure.attr(eds.boundYear, year);
+        this.$structure.attr(eds.boundMonth, month);
+        this.$structure.attr(eds.boundWeek, week ?? "");
+
+        const month0 = month - 1;
+
+        if (week == null) {
+            const firstOfNextMonth = Ecal.getNextMonth(year, month);
+            const firstTimeOfNextMonth = firstOfNextMonth.getTime();
+            const bdw = Ecal.getBeginSundayAndWeek(year, month0);
+            const weekOrigin = bdw.week;
+            var week = weekOrigin;
+            var bds = Ecal.getDateSet(bdw.date);
+
+            do {
+                const ymw = bds.ymw;
+                const bdy = ymw.year;
+                const bdm = ymw.month0;
+                const bdw = ymw.week;
+
+                const weekBlock = this.buildWeek(bdy, bdm, bdw, year, month0);
+                this.$weeks.append(weekBlock);
+
+                week++;
+                bds = Ecal.getDateSetSundayOfWeek(year, month0, week);
+            } while (bds.time < firstTimeOfNextMonth);
+        } else {
+            const weekBlock = this.buildWeek(year, month0, week);
+            this.$weeks.append(weekBlock);
+        }
+
+        this.callShowDayCallbacks();
+
+        const inst = this;
+        this.$structure.find(uis.day).click(function (e) {
+            e.preventDefault();
+
+            inst.calendar.onDaySelectedByUser(this);
+
+            return false;
+        });
+
+        return this.releaseToday();
+    }
+
+    buildWeek(year, month0, week, boundYear = year, boundMonth0 = month0) {
+        var dateSet = Ecal.getDateSetSundayOfWeek(year, month0, week);
+        const lastDay = Ecal.getDateSet(new Date(dateSet.year, dateSet.month0, dateSet.date + 6));
+
+        const weekBlock = doc.ce(div, "week");
+        weekBlock.setAttribute(eds.year, dateSet.year);
+        weekBlock.setAttribute(eds.month, dateSet.month);
+        weekBlock.setAttribute(eds.week, dateSet.week);
+        const daysHolder = doc.ce(div, "days_holder");
+        const days = doc.ce(div, "days");
+
+        if (dateSet.year != lastDay.year) weekBlock.setAttribute(eds.boundYear, dateSet.year != boundYear ? dateSet.year : lastDay.year);
+        if (dateSet.month != lastDay.month) weekBlock.setAttribute(eds.adjoinMonth, dateSet.month0 != boundMonth0 ? dateSet.month : lastDay.month);
+        if (dateSet.week != lastDay.week) weekBlock.setAttribute(eds.adjoinWeek, dateSet.week != week ? dateSet.week : lastDay.week);
+
+        do {
+            days.append(this.buildDay(dateSet, year, month0, week));
+
+            dateSet = Ecal.getDateSet(new Date(dateSet.year, dateSet.month0, dateSet.date + 1));
+        } while (dateSet.day > 0);
+        
+        daysHolder.append(days);
+        weekBlock.append(daysHolder);
+
+        return weekBlock;
+    }
+
+    buildDay(dateSet, boundYear, boundMonth0, boundWeek) {
+        const dayBlock = doc.ce(div, "day");
+        dayBlock.setAttribute(eds.year, dateSet.year);
+        dayBlock.setAttribute(eds.month, dateSet.month);
+        dayBlock.setAttribute(eds.week, dateSet.week);
+        dayBlock.setAttribute(eds.date, dateSet.date);
+        dayBlock.setAttribute(eds.day, dateSet.day);
+
+        if (dateSet.year != boundYear) dayBlock.setAttribute(eds.adjoinYear, dateSet.year);
+        if (dateSet.month0 != boundMonth0) dayBlock.setAttribute(eds.adjoinMonth, dateSet.month);
+        if (dateSet.week != boundWeek) dayBlock.setAttribute(eds.adjoinWeek, dateSet.week);
+
+        const label = doc.ce(div, "label");
+        label.append(doc.ce(lbl, n, dateSet.date));
+        dayBlock.append(label);
+        const subject = doc.ce(div, "subject");
+        subject.append(doc.ce(sp));
+        dayBlock.append(subject);
+        const scheduled = doc.ce(div, "scheduled");
+        const list = doc.ce(ul);
+        scheduled.append(list);
+        dayBlock.append(scheduled);
+
+        return dayBlock;
+    }
+
+    callShowDayCallbacks() {
+        const days = this.$weeks.find(uis.day);
+        for (const day of days) this.calendar.onShowEachDay(day);
+    }
+
+    releaseToday(today = Ecal.getDateSet()) {
+        this.$structure.attr(eds.todayYear, today.year);
+        this.$structure.attr(eds.todayMonth, today.month);
+        this.$structure.attr(eds.todayWeek, today.week);
+        this.$structure.attr(eds.todayDay, today.date);
+
+        this.$weeks.find(uis.day + aiv(eds.today, t1)).removeAttr(eds.today);
+
+        const $day = this.$weeks.find(uis.day + aiv(eds.year, today.year) + aiv(eds.month, today.month) + aiv(eds.date, today.date));
+        $day.attr(eds.today, t1);
+
+        return today;
+    }
+}
+
+
+class EstreMinimalScheduler {
+    // constants
+
+
+    // statics
+    
+
+    // open property
+    dediCal;
+    calendar;
+
+    area
+    $area;
+
+    bound;
+    $bound;
+
+    $scheduleList;
+    scheduleList;
+
+    // enclosed property
+    #onShowSelectedDayCallback;
+
+
+    // getter and setter
+    get $scheduleItems() { return this.$scheduleList.find(c.c + uis.scheduleItem); }
+
+    constructor(scheduler, area, calendar, dediCal) {
+        this.bound = scheduler;
+        this.$bound = $(scheduler);
+        this.area = area;
+        this.$area = $(area);
+
+        this.dediCal = dediCal;
+        this.calendar = calendar;
+
+        this.$scheduleList = this.$bound.find(c.c + uis.minimalScheduleList);
+        this.scheduleList = this.$scheduleList[0];
+    }
+
+    release(remove) {
+
+        if (remove) this.$bound.remove();
+        else if (remove === false) this.$scheduleList.empty();
+
+        this.area = null;
+        this.$area = null;
+
+        this.bound = null;
+        this.$bound = null;
+
+        this.calendar = null;
+        this.dediCal = null;
+    }
+
+    init() {
+        const $placeholder = this.$scheduleList.find(c.c + uis.placeholder);
+        if (this.$scheduleList.attr(eds.frozenPlaceholder) == null) {
+            $placeholder.find(".message").html("|message|");
+            const solidPlaceholder = $placeholder.length > 0 ? $placeholder[0].stringified() : (new Doctre("div.placeholder", [["span.message", "|message|"]])).toString();
+            this.$scheduleList.attr(eds.frozenPlaceholder, solidPlaceholder);
+        }
+
+        const message = this.$scheduleList.attr(eds.messageOnNoSelection) ?? "Select a day to view schedule";
+        this.scheduleList.melt({ message }, "frozenPlaceholder");
+
+        return this;
+    }
+
+    setOnShowSelectedDay(callback = (year, month, date, scheduler, calendar) => {}) {
+        this.#onShowSelectedDayCallback = callback;
+
+        return this;
+    }
+
+    setDateSelected(year, month, date) {
+        const message = this.$scheduleList.attr(eds.messageOnLoading) ?? "Loading schedule...";
+        this.scheduleList.melt({ message }, "frozenPlaceholder");
+        
+
+        postAsyncQueue(async _ => {
+            const documentFragment = await this.#onShowSelectedDayCallback?.(year, month, date, this, this.calendar);
+            this.$scheduleList.empty();
+            if (documentFragment != null) this.$scheduleList.append(documentFragment);
+
+            if (this.$scheduleItems.length < 1) {
+                const message = this.$scheduleList.attr(eds.messageOnNoData) ?? "No schedule available for this day";
+                this.scheduleList.melt({ message }, "frozenPlaceholder");
+            }
+        });
+    }
+
+    buildScheduleItem(subject, time, origin, associated) {
+        const item = doc.ce(li, uis.scheduleItem);
+        const block = doc.ce(div, uis.schedule);
+        const subjectLine = doc.ce(div, "subject_line");
+        subjectLine.append(doc.ce(sp, "subject", subject));
+        subjectLine.append(doc.ce(sp, "origin", origin ?? ""));
+        block.append(subjectLine);
+        const timeLine = doc.ce(div, "time_line");
+        timeLine.append(doc.ce(sp, "time", time ?? ""));
+        timeLine.append(doc.ce(sp, "associated", associated ?? ""));
+        block.append(timeLine);
+        item.append(block);
+        return item;
+    }
+}
+
 
 
 /**
@@ -10028,6 +10831,186 @@ class EstreToasterSlotHandle extends EstreHandle {
 
 
 /**
+ * Estre custom selector bar handle
+ */
+class EstreCustomSelectorBarHandle extends EstreHandle {
+
+    // constants
+
+
+    // statics
+
+
+    // open property
+    get prev() { return this.#currentIndex - 1; }
+    get current() { return this.#currentIndex; }
+    get next() { return this.#currentIndex + 1; }
+    
+    get prevId() { return this.#currentIndex > 0 ? this.#selections[this.prev] : n; }
+    get currentId() { return this.#selections[this.current]; }
+    get nextId() { return this.#currentIndex < this.#selections.length - 1 ? this.#selections[this.next] : n; }
+
+    
+    // enclosed property
+    #selections = [];
+    #currentIndex;
+
+    #onBuildSelector = $selectorBtn => doc.ce(sp);
+    #onBuildSelectionsItem = (index, id, item, button) => doc.ce(sp, n, id);
+
+    #onSelected = (index, id, $selectorBtn, isUpdateOnly) => $selectorBtn.find(sp).html(id);
+
+
+    // getter and setter
+    $selectorBtn;
+
+    $prevBtn;
+    $nextBtn;
+
+    $selectionsList;
+
+
+    constructor(checkboxAlly, host) {
+        super(checkboxAlly, host);
+    }
+
+    release(remove) {
+        super.release(remove);
+    }
+
+    init() {
+        super.init();
+
+        this.$selectorBtn = this.$bound.find(btn + cls + "selector");
+
+        this.$prevBtn = this.$bound.find(btn + cls + "prev");
+        this.$nextBtn = this.$bound.find(btn + cls + "next");
+
+        this.$selectionsList = this.$bound.find(ul + cls + "selections");
+
+        this.setEvent();
+
+        return this;
+    }
+
+    setEvent() {
+        const inst = this;
+
+        this.$selectorBtn.click(function (e) {
+            e.preventDefault();
+
+            inst.toggleSelector();
+
+            return false;
+        });
+
+        this.$prevBtn.click(function (e) {
+            e.preventDefault();
+
+            inst.selectedIndex(inst.prev);
+
+            return false;
+        });
+        this.$nextBtn.click(function (e) {
+            e.preventDefault();
+
+            inst.selectedIndex(inst.next);
+
+            return false;
+        });
+    }
+
+    setOnBuildSelector(callback = $selectorBtn => doc.ce(sp)) {
+        this.#onBuildSelector = callback;
+
+        return this;
+    }
+
+    setOnBuildSelectionsItem(callback = (index, id, isCurrent, item, button) => doc.ce(sp, n, id)) {
+        this.#onBuildSelectionsItem = callback;
+
+        return this;
+    }
+
+    setOnSelected(callback = (index, id, $selectorBtn, isUpdateOnly) => $selectorBtn.find(sp).html(id)) {
+        this.#onSelected = callback;
+
+        return this;
+    }
+
+    initSelections(selections, initIndex = 0) {
+        this.#selections = selections;
+
+        this.#onBuildSelector?.let(it => {
+            this.$selectorBtn.empty();
+            this.$selectorBtn.append(it(this.$selectorBtn));
+        });
+
+        this.$selectionsList.empty();
+        
+        for (const [index, id] of selections.entire) this.$selectionsList.append(this.buildSelectionsItem(index, id, index == initIndex));
+
+        this.setEventSelections();
+
+        this.selectedIndex(initIndex);
+    }
+
+    buildSelectionsItem(index, id, isCurrent = false) {
+        const item = doc.ce(li);
+        item.dataset.index = index;
+        item.dataset.id = id;
+        const button = doc.ce(btn, "tp_tiled_btn");
+        button.dataset.index = index;
+        button.dataset.id = id;
+        button.append(this.#onBuildSelectionsItem(index, id, isCurrent, item, button));
+        item.append(button);
+        return item;
+    }
+
+    setEventSelections() {
+        const inst = this;
+
+        this.$selectionsList.find(li + c.c + btn).click(function (e) {
+            e.preventDefault();
+
+            inst.selectedIndex(this.dataset.index);
+
+            return false;
+        });
+    }
+
+    toggleSelector() {
+        this.$bound.attr(eds.dropdownOpen, this.$bound.attr(eds.dropdownOpen) == t1 ? "" : t1);
+    }
+
+    openSelector() {
+        this.$bound.attr(eds.dropdownOpen, t1);
+    }
+
+    closeSelector() {
+        this.$bound.attr(eds.dropdownOpen, "");
+    }
+
+    selected(id, isUpdateOnly = false) {
+        const index = this.#selections.indexOf(id);
+        if (index < 0) return;
+        this.selectedIndex(index, isUpdateOnly);
+    }
+
+    selectedIndex(index, isUpdateOnly = false) {
+        this.closeSelector();
+        const handled = this.#onSelected(index, this.#selections[index], this.$selectorBtn, isUpdateOnly);
+        if (!handled) {
+            this.#currentIndex = index;
+            this.$selectionsList.find(c.c + li + aiv(eds.selected, t1)).removeAttr(eds.selected);
+            this.$selectionsList.find(c.c + li + aiv(eds.index, index)).attr(eds.selected, t1);
+        }
+    }
+}
+
+
+
+/**
  * Estre month selector bar handle
  */
 class EstreMonthSelectorBarHandle extends EstreHandle {
@@ -10046,10 +11029,12 @@ class EstreMonthSelectorBarHandle extends EstreHandle {
     }); }
     get next() { return Ecal.getNextMonth(this.current); }
 
-    get prevMonth() { return Ecal.getDateSet(this.prev).let(it => it.year + "-" + v2d(it.month)); }
+    get prevMonth() { return Ecal.getDateSet(this.prev).let(it => it.year + "-" + it.month2d); }
     get currentMonth() { return this.$bound.attr(eds.current); }
     set currentMonth(value) { this.$bound.attr(eds.current, value); }
-    get nextMonth() { return Ecal.getDateSet(this.next).let(it => it.year + "-" + v2d(it.month)); }
+    get nextMonth() { return Ecal.getDateSet(this.next).let(it => it.year + "-" + it.month2d); }
+
+    get isShowFuture() { return this.$bound.attr(eds.showFuture) == t1; }
 
     monthesItemLimit = 12;
     forMonthesItemShow = (month) => month.replace("-", ".");
@@ -10128,7 +11113,7 @@ class EstreMonthSelectorBarHandle extends EstreHandle {
 
     initMonthes(initMonth) {
         if (initMonth != null) this.currentMonth = initMonth;
-        else if (isNullOrEmpty(this.currentMonth)) this.currentMonth = Ecal.getDateSet().let(it => it.year + "-" + v2d(it.month));
+        else if (isNullOrEmpty(this.currentMonth)) this.currentMonth = Ecal.getDateSet().let(it => it.year + "-" + it.month2d);
 
         this.$monthesList.empty();
         
@@ -10141,8 +11126,11 @@ class EstreMonthSelectorBarHandle extends EstreHandle {
         const todayOffset = Ecal.getMonthOffset(today);
         // const todayMonth = Ecal.getDateSet(today).let(it => it.year + "-" + v2d(it.month));
 
-        const prevLimit = Math.min(Math.max(todayOffset - currentOffset, 0), parseInt((this.monthesItemLimit - 1) / 2));
-        const nextLimit = this.monthesItemLimit - 1 - prevLimit;
+        const othersCount = this.monthesItemLimit - 1;
+        const halfCount = parseInt(othersCount / 2);
+
+        const prevLimit = this.isShowFuture ? halfCount : Math.min(Math.max(todayOffset - currentOffset, 0), halfCount);
+        const nextLimit = othersCount - prevLimit;
 
         let count = 0;
         this.$monthesList.append(this.buildMonthesItem(month, true));
@@ -10187,16 +11175,16 @@ class EstreMonthSelectorBarHandle extends EstreHandle {
         this.$bound.attr(eds.dropdownOpen, "");
     }
 
-    monthSelected(month) {
+    monthSelected(month, preventCallback = false) {
         if (month != null) this.currentMonth = month;
         else {
-            if (isNullOrEmpty(this.currentMonth)) this.currentMonth = Ecal.getDateSet().let(it => it.year + "-" + v2d(it.month));
+            if (isNullOrEmpty(this.currentMonth)) this.currentMonth = Ecal.getDateSet().let(it => it.year + "-" +it.month2d);
             month = this.currentMonth;
         }
 
         this.closeSelector();
         this.$selectorCurrent.html(this.forMonthesItemShow?.(month) ?? month);
-        this.onSelectedMonth?.(month);
+        if (!preventCallback) this.onSelectedMonth?.(month);
         this.initMonthes();
     }
 }
@@ -10335,6 +11323,56 @@ class EstreDateShowerHandle extends EstreHandle {
                 el.innerText = text;
             });
         }
+    }
+}
+
+
+// exported content
+class EstreExportedContentHandle extends EstreHandle {
+
+    // constants
+
+
+    // statics
+
+
+    // open property
+
+    
+    // enclosed property
+    #src;
+    #placeholder;
+
+
+    // getter and setter
+
+
+
+    constructor(bound, host) {
+        super(bound, host);
+    }
+
+
+    release() {
+        super.release();
+    }
+
+    init() {
+        super.init();
+
+        if (xu(this.#src)) this.#src = this.bound.dataset.src;
+        if (xu(this.#placeholder)) this.#placeholder = this.bound.dataset.placeholder?.let(it => it.length > 0 ? it : n) ?? "Please wait...";
+
+        this.loadContent();
+    }
+
+    loadContent() {
+        const src = this.#src;
+        const placeholder = this.#placeholder;
+        this.bound.innerHTML = placeholder;
+        if (nne(src)) fetch(src).then(response => response.text()).then(data => {
+            this.bound.innerHTML = data;
+        });
     }
 }
 

@@ -201,6 +201,7 @@ const m = {
     get tp() { return "type"; },
     get ro() { return "readonly"; },
     get st() { return "style"; },
+    get ph() { return "placeholder"; },
     get t() { return "title"; },
 };
 
@@ -1287,6 +1288,8 @@ const Ecal = {
         }
     },
 
+    /** 시간순 정렬 함수 */
+    byTime: (a, b) => a.time - b.time,
 
     eoo
 };
@@ -1439,7 +1442,7 @@ const Escd = {
 
     getCategoryEmoji(category) {
         return matchCase(category, {
-            "holyday": "🏠",
+            "holiday": "🏠",
             "vacation": "🏖️",
             "closed": "⛓️",
             "ceremony": "🎉",
