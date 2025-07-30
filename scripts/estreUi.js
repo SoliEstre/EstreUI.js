@@ -10881,12 +10881,12 @@ class EstreCustomSelectorBarHandle extends EstreHandle {
     init() {
         super.init();
 
-        this.$selectorBtn = this.$bound.find(btn + cls + "selector");
+        this.$selectorBtn = this.$bound.find(c.c + cls + "bar_side" + c.c + btn + cls + "selector");
 
-        this.$prevBtn = this.$bound.find(btn + cls + "prev");
-        this.$nextBtn = this.$bound.find(btn + cls + "next");
+        this.$prevBtn = this.$bound.find(c.c + cls + "bar_side" + c.c + btn + cls + "prev");
+        this.$nextBtn = this.$bound.find(c.c + cls + "bar_side" + c.c + btn + cls + "next");
 
-        this.$selectionsList = this.$bound.find(ul + cls + "selections");
+        this.$selectionsList = this.$bound.find(c.c + cls + "float_selections" + c.c + ul + cls + "selections");
 
         this.setEvent();
 
@@ -10938,7 +10938,7 @@ class EstreCustomSelectorBarHandle extends EstreHandle {
         return this;
     }
 
-    initSelections(selections, initIndex = 0) {
+    initSelections(selections, initIndex = 0, isUpdateOlny = false) {
         this.#selections = selections;
 
         this.#onBuildSelector?.let(it => {
@@ -10952,7 +10952,7 @@ class EstreCustomSelectorBarHandle extends EstreHandle {
 
         this.setEventSelections();
 
-        this.selectedIndex(initIndex);
+        this.selectedIndex(initIndex, isUpdateOlny);
     }
 
     buildSelectionsItem(index, id, isCurrent = false) {
@@ -11069,13 +11069,13 @@ class EstreMonthSelectorBarHandle extends EstreHandle {
     init() {
         super.init();
 
-        this.$selectorBtn = this.$bound.find(btn + cls + "selector");
+        this.$selectorBtn = this.$bound.find(c.c + cls + "bar_side" + c.c + btn + cls + "selector");
         this.$selectorCurrent = this.$selectorBtn.find(sp + cls + "current");
 
-        this.$prevBtn = this.$bound.find(btn + cls + "prev");
-        this.$nextBtn = this.$bound.find(btn + cls + "next");
+        this.$prevBtn = this.$bound.find(c.c + cls + "bar_side" + c.c + btn + cls + "prev");
+        this.$nextBtn = this.$bound.find(c.c + cls + "bar_side" + c.c + btn + cls + "next");
 
-        this.$monthesList = this.$bound.find(ul + cls + "monthes");
+        this.$monthesList = this.$bound.find(c.c + cls + "float_selections" + c.c + ul + cls + "monthes");
 
         this.setEvent();
 
