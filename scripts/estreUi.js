@@ -9226,6 +9226,36 @@ class EstreMicroCalendar {
         }
     }
 
+    selectPrevDay() {
+        const year = this.focusedYear;
+        const month = this.focusedMonth;
+        const day = this.focusedDay;
+
+        if (year == null || month == null || day == null) return;
+
+        const month0 = month - 1;
+
+        const date = new Date(year, month0, day);
+        date.setDate(date.getDate() - 1);
+
+        this.setSelectedDay(date.getFullYear(), date.getMonth() + 1, date.getDate());
+    }
+
+    selectNextDay() {
+        const year = this.focusedYear;
+        const month = this.focusedMonth;
+        const day = this.focusedDay;
+
+        if (year == null || month == null || day == null) return;
+
+        const month0 = month - 1;
+
+        const date = new Date(year, month0, day);
+        date.setDate(date.getDate() + 1);
+
+        this.setSelectedDay(date.getFullYear(), date.getMonth() + 1, date.getDate());
+    }
+
     selectPrevWeekDay() {
         const year = this.focusedYear;
         const month = this.focusedMonth;
