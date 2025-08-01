@@ -319,6 +319,7 @@ html {
     --color-boundary-bright: var(--color-white);                    --cbbr: var(--cwht);
 
     --color-boundary-o5: rgba(var(--cbdm) / 5%);
+    --color-boundary-o7: rgba(var(--cbdm) / 7%);
     --color-boundary-o10: rgba(var(--cbdm) / 10%);
     --color-boundary-o15: rgba(var(--cbdm) / 15%);
     --color-boundary-o20: rgba(var(--cbdm) / 20%);
@@ -339,6 +340,7 @@ html {
     --color-boundary-o95: rgba(var(--cbdm) / 95%);
 
     --color-boundary-foggy-o5: rgba(var(--cbbr) / 5%);
+    --color-boundary-foggy-o7: rgba(var(--cbbr) / 7%);
     --color-boundary-foggy-o10: rgba(var(--cbbr) / 10%);
     --color-boundary-foggy-o15: rgba(var(--cbbr) / 15%);
     --color-boundary-foggy-o20: rgba(var(--cbbr) / 20%);
