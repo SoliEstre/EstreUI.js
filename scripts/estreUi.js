@@ -130,6 +130,13 @@ const uis = {
     boundHost: ".bound_host",
 
 
+    // dynamic section block
+    dynamicSectionHost: ".dynamic_section_host",
+    dynamicSectionBlock: ".dynamic_section_block",
+    hostItem: ".host_item",
+    blockItem: ".block_item",
+
+
     // custom selector bar
     customSelectorBar: ".custom_selector_bar",
 
@@ -287,6 +294,7 @@ const eds = {
     transition: "data-transition",
     satisfy: "data-satisfy",
     show: "data-show",
+    showing: "data-showing",
     length: "data-length",
     title: "data-title",
     for: "data-for",
@@ -296,6 +304,9 @@ const eds = {
     autoInit: "data-auto-init",
     placeholder: "data-placeholder",
     options: "data-options",
+    code: "data-code",
+    intersectionRootMargin: "data-intersection-root-margin",
+    intersectionThreshold: "data-intersection-threshold",
 
     // message datas
     messageOnNoSelection: "data-message-on-no-selection",
@@ -3820,10 +3831,10 @@ class EstreDialogPageHandler extends EstrePageHandler {
             return false;
         });
         this.$dialog.click(function (e) {
-            e.preventDefault();
+            // e.preventDefault();
             e.stopPropagation();
             
-            return false;
+            // return false;
         });
         this.$dialog.keydown(function (e) {
             if (e.keyCode == 27) {
@@ -5395,6 +5406,8 @@ class EstreHandle {
         get [uis.toggleBlock]() { return EstreToggleBlockHandle; },
         get [uis.toggleTabBlock]() { return EstreToggleTabBlockHandle; },
         get [uis.tabBlock]() { return EstreTabBlockHandle; },
+        
+        get [uis.dynamicSectionBlock]() { return EstreDynamicSectionBlockHandle; },
 
         get [uis.numKeypad]() { return EstreNumKeypadHandle; },
 
@@ -8065,12 +8078,12 @@ class EstreVariableCalendar extends EstreCalendar {
         this.$structure.attr(eds.transition, Math.max(current - 1, 0));
     }
 
-    checkLoadSchedule() {
+    checkLoadSchedule(forceReload = false) {
         const focusedYear = this.yearIntFocused;
         const basicOrigin = this.basicOrigin;
         const dataOrigin = this.dataOrigin;
         const dateBeginEnd = Escd.getDateBeginEndFrom(focusedYear);
-        if (focusedYear != this.prevFocusedYear) {
+        if (forceReload || focusedYear != this.prevFocusedYear) {
             const tag = basicOrigin != null && basicOrigin != "" ? "|" + basicOrigin : "";
             const groups = ["basic" + tag, ...this.commonGroups];
             if (dataOrigin != "") groups.push("data|" + dataOrigin);
@@ -8108,10 +8121,10 @@ class EstreVariableCalendar extends EstreCalendar {
         }
     }
 
-    releaseCalendarChanges() {
+    releaseCalendarChanges(forceReload = false) {
         this.releaseToday();
 
-        this.checkLoadSchedule();
+        this.checkLoadSchedule(forceReload);
 
         this.pushUpdateFocused(true);
     }
@@ -8895,6 +8908,7 @@ class EstreMicroCalendar {
     #selectedWeek;
     #selectedDay;
 
+    #setBoundCallback;
     #showEachDayCallback;
     #selectionChangedCallback;
     #selectedDayByUserCallback;
@@ -9167,6 +9181,16 @@ class EstreMicroCalendar {
         }
     }
 
+    onSetBound(year, month, week) {
+        this.#setBoundCallback?.(year, month, week, this, this.structure);
+    }
+
+    setOnSetBound(callback = (year, month, week, calendar, structure) => {}) {
+        this.#setBoundCallback = callback;
+
+        return this;
+    }
+
     setOnShowEachDay(callback = ($day, year, month, date, calendar, structure) => {}) {
         this.#showEachDayCallback = callback;
 
@@ -9352,6 +9376,8 @@ class EstreWeekFloorStructure {
     }
 
     setBound(year, month, week) {
+        this.calendar.onSetBound(year, month, week);
+
         this.$weeks.empty();
 
         this.$structure.attr(eds.boundYear, year);
@@ -10520,6 +10546,81 @@ class EstreScopedTabBlock extends EstreTabBlockHandle {
         const $content = this.$contents.filter(obk + eds.tabId + equ + v4(id) + cbk);
         const scope = $content.attr(eds.scope);
         this.handler.notifyScopeChanged(scope);
+    }
+}
+
+
+
+/**
+ * Estre dynamic section block handle
+ */
+class EstreDynamicSectionBlockHandle extends EstreHandle {
+
+    // constants
+
+    // statics
+
+    // open property
+    $dynamicSectionHost;
+    $hostItems;
+
+    $blockItems;
+    
+    // enclosed property
+
+    // getter and setter
+
+
+    constructor(dynamicSectionBlock, host) {
+        super(dynamicSectionBlock, host);
+    }
+
+    release() {
+        super.release();
+    }
+
+    init() {
+        super.init();
+
+        this.$dynamicSectionHost = this.host.$host.find(uis.dynamicSectionHost);
+        this.$hostItems = this.$dynamicSectionHost.find(uis.hostItem);
+
+        this.$blockItems = this.$bound.find(uis.blockItem);
+
+        this.setEvent();
+
+        return this;
+    }
+
+    setEvent() {
+        const inst = this;
+
+        this.$hostItems.click(function (e) {
+            e.preventDefault();
+
+            const id = this.dataset.id;
+            inst.$blockItems.filter(aiv(eds.id, id))[0].scrollIntoView({ behavior: "smooth", block: "start" });
+
+            return false;
+        });
+
+        const rootMargin = this.$bound.attr(eds.intersectionRootMargin)?.ifEmpty(it => n) ?? "0px";
+        const threshold = this.$bound.attr(eds.intersectionThreshold)?.ifEmpty(it => n, it => parseFloat(it)) ?? 0.45;
+
+        const biio = new IntersectionObserver(entries => {
+            for (const entry of entries) {
+                const id = entry.target.dataset.id;
+                const isShowing = entry.isIntersecting ? t1 : "";
+                this.$hostItems.filter(aiv(eds.id, id)).attr(eds.showing, isShowing);
+                this.host.$host.attr(eds.showing + hp + id, isShowing);
+            }
+        }, {
+            root: this.bound,
+            rootMargin,
+            threshold
+        });
+
+        for (const item of this.$blockItems) biio.observe(item);
     }
 }
 
@@ -12350,6 +12451,7 @@ const estreUi = {
 
     //elements
     $fixedBottom: null,
+    $tabsbar: null,
     $rootbar: null,
     $rootTabs: null,
 
@@ -12427,6 +12529,7 @@ const estreUi = {
         this.$mainMenuBtnLottie = this.$mainMenuBtn.find("dotlottie-player");
 
         this.$fixedBottom = $("#fixedBottom");
+        this.$tabsbar = this.$fixedBottom.find(".tabsbar");
         this.$rootbar = this.$fixedBottom.find("nav#rootbar");
 
         
@@ -12644,7 +12747,7 @@ const estreUi = {
 
     //rootbar
     initRootbar: function() {
-        this.$rootTabs = this.$rootbar.find(c.c + btn);
+        this.$rootTabs = this.$tabsbar.find(c.c + btn);
         this.$rootTabs.attr(eds.active, "");
 
         var topId = null;

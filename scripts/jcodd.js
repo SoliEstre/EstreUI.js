@@ -30,7 +30,7 @@ SOFTWARE.
 //
 // The JSON based lite code format
 //
-// v0.8 / release 2025.02.17
+// v0.8.1 / release 2025.07.15
 //
 // Take to be liten from JSON code to smaller converted characters for like as BASE64.
 //
@@ -45,6 +45,28 @@ SOFTWARE.
 // 3. Omit "" (double quote) for variable name definition.
 
 class Jcodd {
+
+    /**
+     * Base64 encode with Node.js fallback
+     * 
+     * @param {string} str 
+     * 
+     * @returns {string} base64 encoded string
+     */
+    static base64Encode(str) {
+        return typeof btoa !== 'undefined' ? btoa(str) : Buffer.from(str, 'utf8').toString('base64');
+    }
+
+    /**
+     * Base64 decode with Node.js fallback
+     * 
+     * @param {string} str 
+     * 
+     * @returns {string} base64 decoded string
+     */
+    static base64Decode(str) {
+        return typeof atob !== 'undefined' ? atob(str) : Buffer.from(str, 'base64').toString('utf8');
+    }
 
     /**
      * Characterize JSON
@@ -187,7 +209,7 @@ class Jcodd {
     get obj() { return this.#obj; }
     get json() { return JSON.stringify(this.#obj); }
     get jcodd() { return Jcodd.coddify(this.#obj); }
-    get base64() { return btoa(this.jcodd); }
+    get base64() { return Jcodd.base64Encode(this.jcodd); }
     get code() { return this.jcodd; }
 
     /**
@@ -199,7 +221,7 @@ class Jcodd {
             any = Jcodd.parse(any);
         } catch (e) {
             try {
-                any = Jcodd.parse(atob(any));
+                any = Jcodd.parse(Jcodd.base64Decode(any));
             } catch (e) {
                 // do nothing
             }
