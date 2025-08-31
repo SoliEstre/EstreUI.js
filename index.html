@@ -119,37 +119,201 @@ releaseInsetForApp();
 // Service Worker
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./scripts/serviceWorker.js");
+        navigator.serviceWorker.register("./serviceWorker.js", {
+            // scope: "/", // When use service worker file out of location of index.html, have to set scope with HTTP Server response Header 'Service-Worker-Allowed: /'
+            updateViaCache: "none",
+
+            // vv PWA required set HTTP server response headers vv
+            // Cache-Control: no-cache
+            // Pragma: no-cache
+            // Expires: 0
+        }).then(registration => {
+            serviceWorkerHandler.registeration = registration;
+            console.log("Service Worker registered with scope:", registration.scope);
+
+            const serviceWorkerOnInstalling = (worker) => {
+                if (worker) {
+                    console.log("Service Worker is installing:", worker);
+                    serviceWorkerHandler.registerationOnInstalling(worker);
+                }
+            }
+
+            const serviceWorkerOnWaiting = (worker) => {
+                if (worker) {
+                    console.log("Service Worker is waiting:", worker);
+                    serviceWorkerHandler.registerationOnWaiting(worker);
+                }
+            }
+
+            const serviceWorkerOnActive = (worker, isNewer = false) => {
+                if (worker) {
+                    console.log("Service Worker is active:", worker);
+                    serviceWorkerHandler.registerationOnActivated(worker, isNewer);
+                }
+            }
+
+            serviceWorkerOnInstalling(registration.installing);
+            serviceWorkerOnWaiting(registration.waiting);
+
+            registration.addEventListener("statechange", () => {
+                const activated = registration.active;
+                const constoller = navigator.serviceWorker.controller;
+                if (activated) {
+                    console.log("Service Worker state changed to:", activated.state);
+                    serviceWorkerOnActive(registration.active, controller != null && activated != controller);
+                }
+            });
+
+            serviceWorkerOnActive(registration.active);
+
+            registration.addEventListener("updatefound", () => {
+                const newWorker = registration.installing;
+                console.log("New Service Worker found:", newWorker);
+                serviceWorkerOnInstalling(newWorker);
+
+                newWorker.addEventListener("statechange", () => {
+                    console.log("New Service Worker state changed to:", newWorker.state);
+                    switch (newWorker.state) {
+                        case "installed":
+                            console.log("New Service Worker installed and waiting to activate.");
+                            const controllerExist = navigator.serviceWorker.controller;
+                            const isWaiting = registration.waiting == newWorker;
+                            serviceWorkerHandler.registerationOnUpdated();
+                            if (isWaiting) {
+                                if (controllerExist) {
+                                    serviceWorkerOnWaiting(newWorker);
+                                } else {
+                                    // do nothing (first install)
+                                }
+                            }
+                            break;
+
+                        case "activated":
+                            serviceWorkerOnActive(newWorker, true);
+                            break;
+                    }
+
+                    if (newWorker == navigator.serviceWorker.controller) {
+                        console.log("New Service Worker is attached.");
+                    }
+                });
+            });
+        }).catch(error => {
+            console.error("Service Worker registration failed:", error);
+        });
     });
 }
 
 const serviceWorkerHandler = {
-    get worker() { return navigator.serviceWorker; },
-    get controller() { return this.worker?.controller; },
+    registeration: null,
+    installing: null,
+    waiting: null,
+    activated: null,
+    get service() { return navigator.serviceWorker; },
+    get controller() { return this.service?.controller; },
+    get worker() { return this.controller ?? this.activated ?? this.waiting ?? this.installing; },
 
-    postMessage(message, transfer) {
-        this.controller?.postMessage(message, transfer);
+    postMessage(worker, message, transfer) {
+        (worker ?? this.worker)?.postMessage(message, transfer);
     },
 
     requestSequence: 0,
     requestCallback: {},
     get issueRequestSequence() {
-        requestSequence++;
-        return requestSequence;
+        this.requestSequence++;
+        return this.requestSequence;
     },
 
+    onWaiting: null,
+    onUpdated: null,
+    onActivated: null,
+    onActivatedNewer: null,
+    onControllerChanged: null,
+
     init() {
-        if (this.worker != null) this.worker.onmessage = this.messageListener;
+        if (this.service != null) {
+            this.service.onmessage = this.messageListener;
+            this.service.oncontrollerchange = this.controllerChangeListener;
+        }
+    },
+
+    async update() {
+        if (this.registeration == null) return null;
+        try {
+            const reg = await this.registeration?.update();
+            const worker = reg.installing ?? reg.waiting;
+            if (worker == null) return false;
+            else return worker;
+        } catch (error) {
+            console.error(error);
+            return undefined;
+        }
+    },
+
+    setOnInstallingListener(listener) {
+        this.onInstalling = listener;
+    },
+
+    registerationOnInstalling(worker) {
+        this.installing = worker;
+        this.onInstalling?.(worker);
+    },
+
+    setOnWaitingListener(listener) {
+        this.onWaiting = listener;
+    },
+
+    registerationOnWaiting(worker) {
+        this.waiting = worker;
+        this.onWaiting?.(worker);
+    },
+
+    setOnUpdatedListener(listener) {
+        this.onUpdated = listener;
+    },
+
+    registerationOnUpdated() {
+        this.onUpdated?.();
+    },
+
+    setOnActivatedListener(listener) {
+        this.onActivated = listener;
+    },
+
+    setOnActivatedNewerListener(listener) {
+        this.onActivatedNewer = listener;
+    },
+
+    registerationOnActivated(worker, isNewer = false) {
+        this.activated = worker;
+        this.onActivated?.(worker);
+        if (isNewer) this.onActivatedNewer?.(worker);
+    },
+
+    setOnControllerChangeListener(listener) {
+        this.onControllerChanged = listener;
+    },
+
+    controllerOnChanged() {
+        this.onControllerChanged?.();
+    },
+
+    controllerChangeListener(event) {
+        console.log("Service Worker controller changed:", event, "\n", serviceWorkerHandler.service.controller);
+        serviceWorkerHandler.controllerOnChanged(event);        
     },
 
     messageListener(event) {
         const data = event.data;
         switch (data.type) {
             case "worked":
-                const callback = this.requestCallback[data.sequence];
-                if (callback != null) {
-                    callback(data.response);
-                    this.requestCallback[data.sequence] = null;
+                const sequence = data.request.sequence;
+                if (sequence != null) {
+                    const callback = serviceWorkerHandler.requestCallback[sequence];
+                    if (callback != null) {
+                        callback(data.response);
+                        serviceWorkerHandler.requestCallback[sequence] = null;
+                    }
                 }
                 break;
             
@@ -159,27 +323,55 @@ const serviceWorkerHandler = {
         }
     },
 
-    async sendRequest(type, content = {}, callback, reject) {
-        if (this.controller != null) {
+    async sendRequest(type, content = {}, onSuccess, onError, worker = this.worker) {
+        if (worker != null) {
             const sequence = this.issueRequestSequence;
-            this.requestCallback[sequence] = callback;
-            this.postMessage({ type, sequence, content });
-        } else reject?.("Service Worker is not exist.");
+            this.requestCallback[sequence] = onSuccess;
+            this.postMessage(worker, { type, sequence, content });
+        } else onError?.("Service Worker is not exist.");
     },
 
-    sendRequestForWait(type, content = {}) {
+    sendRequestForWait(type, content = {}, worker = this.worker) {
         return new Promise((resolve, reject) => {
-            this.sendRequest(type, content, resolve, reject);
+            this.sendRequest(type, content, resolve, reject, worker);
         });
     },
 
-    async clearCache() {
+    skipWaiting(worker = this.waiting) {
+        worker?.postMessage({ type: "SKIP_WAITING" });
+    },
+
+    clientsClaim(worker = this.activated) {
+        worker?.postMessage({ type: "CLIENTS_CLAIM" });
+    },
+
+    async clearCache(worker = this.worker) {
         try {
-            return await this.sendRequestForWait("clearCache");
+            return await this.sendRequestForWait("clearCache", {}, worker);
         } catch (error) {
             console.error(error);
         }
-    }
+    },
+
+    async getVersion(worker = this.worker) {
+        try {
+            return await this.sendRequestForWait("getVersion", {}, worker);
+        } catch (error) {
+            console.error(error);
+        }
+    },
+
+    getVersionWaiting() {
+        return this.getVersion(this.waiting);
+    },
+
+    async getApplicationCount(worker = this.controller) {
+        try {
+            return worker != null ? await this.sendRequestForWait("getApplicationCount", {}, worker) : 0;
+        } catch (error) {
+            console.error(error);
+        }
+    },
 };
 
 serviceWorkerHandler.init();
@@ -348,9 +540,9 @@ if (isStandalone) {
         </section>
     </main>
     <footer id="fixedBottom">
-        <nav id="customFixedSections">
+        <nav id="customFixedSections" class="tabsbar">
         </nav>
-        <nav id="rootbar">
+        <nav id="rootbar" class="tabsbar">
             <button class="tp_tiled_btn" data-tab-id="home" data-active="1" title="home">HOME</button>
             <div class="dummy_spacer fit_for_icon"><img src="./vectors/more_vertical_slim_icon.svg"></div>
             <button class="tp_tiled_btn fit_for_icon" data-tab-id="more" title="more activities"><img src="./vectors/more_vertical_slim_icon.svg"></button>
@@ -379,6 +571,10 @@ if (isStandalone) {
                     </div>
                 </article>
             </div>
+        </section>
+        <section id="customDialog" class="tpbg" data-static="1" data-on-top="">
+        </section>
+        <section id="customToast" class="tpbg" data-static="1" data-on-top="">
         </section>
         <section id="toastUpSlide" class="tpbg" data-static="1" data-on-top="">
             <div class="container blind" data-container-id="alert" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(var(--cbdm) / 50%);">

@@ -30,7 +30,7 @@ SOFTWARE.
 // 
 // Cold(array object) assigning of HTML Tree for make to JSON string.
 // 
-// v0.12 / release 2025.08.07
+// v0.14 / release 2025.08.29
 // 
 // cold = [] - Cold HTML child node list
 // cold[0] - Tag name, classes, id, name, type = "tag.class1.class2#id@name$type" : string
@@ -124,7 +124,10 @@ class Doctre {
         };
         if (style != null) {
             if (typeof style == "string") element.setAttribute("style", this.matchReplace(style, matchReplacer));
-            else for (const [key, value] of Object.entries(style)) element.style.setProperty(this.matchReplace(key), this.matchReplace(value));//Object.assign(element.style, style);//
+            else for (const [key, value] of Object.entries(style)) {
+                if (key.includes("-")) element.style.setProperty(this.matchReplace(key), this.matchReplace(value));
+                else Object.assign(element.style, style);
+            }
         }
         return element;
     }
@@ -164,49 +167,67 @@ class Doctre {
         return df;
     }
 
+    static get userAgent() { return navigator?.userAgent ?? ""; }
+    static get isRequiredEscape() {
+        const userAgent = this.userAgent;
+        return userAgent != "" && (userAgent.includes("iPad") || userAgent.includes("iPhone") || userAgent.includes("iPod") || (userAgent.includes("Macintosh") && !userAgent.includes("Chrome") && !userAgent.includes("Firefox") && !userAgent.includes("Edge") && !userAgent.includes("Opera")));
+    }
+    static crashBroker(jsonContent) {
+        if (this.isRequiredEscape) jsonContent = jsonContent.replace(/\r\n/gm, "\\r\\n").replace(/\n\r/gm, "\\n\\r").replace(/\r/gm, "\\r").replace(/\n/gm, "\\n").replace(/\t/g, "\\t");
+        return jsonContent;
+    }
+
     static matchReplace(frostOrString, matchReplacer = {}) {
         if (typeof frostOrString != "string") return this.matchReplaceObject(frostOrString, matchReplacer);
 
-        if (matchReplacer != null) for (const key in matchReplacer) {
-            let replacer = matchReplacer[key];
-            const regex = new RegExp("\\|" + key + "\\|", "g");
-            if (replacer == null) {
-                if (matchReplacer.dataPlaceholder == null) continue;
-                else replacer = matchReplacer.dataPlaceholder;
-            }
-            switch (typeof replacer) {
-                case "string":
-                    frostOrString = frostOrString.replace(regex, replacer);
-                    break;
-                case "function":
-                    frostOrString = frostOrString.replace(regex, replacer(key));
-                    break;
-                case "object":
-                    frostOrString = frostOrString.replace(regex, JSON.stringify(replacer));
-                    break;
-                default:
-                    frostOrString = frostOrString.replace(regex, "" + replacer);
-                    break;
-            }
-        }
-        if (matchReplacer.coverReplaceable && matchReplacer.dataPlaceholder != null) {
-            const replacer = matchReplacer.dataPlaceholder;
-            const regex = /\|([^\|]+)\|/g;
-            const matches = frostOrString.match(regex);
-            if (matches != null) for (const match of matches) {
+        if (matchReplacer != null) {
+            for (const key in matchReplacer) {
+                let replacer = matchReplacer[key];
+                const regex = new RegExp("\\|" + key + "\\|", "g");
+                if (replacer == null) {
+                    if (matchReplacer.dataPlaceholder == null) continue;
+                    else replacer = matchReplacer.dataPlaceholder;
+                }
+                let forReplaced;
                 switch (typeof replacer) {
                     case "string":
-                        frostOrString = frostOrString.replace(match, replacer);
+                        forReplaced = replacer;
                         break;
                     case "function":
-                        frostOrString = frostOrString.replace(match, replacer(match));
+                        forReplaced = replacer(key);
                         break;
                     case "object":
-                        frostOrString = frostOrString.replace(match, JSON.stringify(replacer));
+                        forReplaced = JSON.stringify(replacer);
                         break;
                     default:
-                        frostOrString = frostOrString.replace(match, "" + replacer);
+                        forReplaced = "" + replacer;
                         break;
+                }
+                frostOrString = frostOrString.replace(regex, this.crashBroker(forReplaced));
+            }
+            if (matchReplacer.coverReplaceable && matchReplacer.dataPlaceholder != null) {
+                const replacer = matchReplacer.dataPlaceholder;
+                const regex = /\|([^\|]+)\|/g;
+                const matches = frostOrString.match(regex);
+                if (matches != null) {
+                    for (const match of matches) {
+                        let forReplaced;
+                        switch (typeof replacer) {
+                            case "string":
+                                forReplaced = replacer;
+                                break;
+                            case "function":
+                                forReplaced = replacer(match);
+                                break;
+                            case "object":
+                                forReplaced = JSON.stringify(replacer);
+                                break;
+                            default:
+                                forReplaced = "" + replacer;
+                                break;
+                        }
+                        frostOrString = frostOrString.replace(match, this.crashBroker(forReplaced));
+                    }
                 }
             }
         }
@@ -220,12 +241,15 @@ class Doctre {
     }
 
     static parse(frost, matchReplacer = {}) {
+        frost = this.crashBroker(frost);
+        const trimmedFrost = frost.trim();
+        if (trimmedFrost.startsWith("[['") || trimmedFrost.startsWith("['")) frost = frost.replace(/\'/g, '"');
         const replaced = this.matchReplace(frost, matchReplacer);
         var parsed;
         try {
             parsed = JSON.parse(replaced);
         } catch (error) {
-            parsed = JSON.parse(replaced.replace(/\'/g, '"'));
+            console.error("Doctre.parse - Frozen JSON parse error: ", error);
         }
         return this.createFragment(parsed);
     }

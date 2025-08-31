@@ -31,7 +31,7 @@ SOFTWARE.
 // Collections of bypass for process codes takes be inline,
 // and monkey patching like as modern languages.
 // 
-// v0.3.1 / release 2025.06.27
+// v0.4.0 / release 2025.08.20
 // 
 // Author: Estre Soliette
 // Established: 2025.01.05
@@ -407,8 +407,11 @@ const postQueue = (process = (...args) => args[0], ...args) => setTimeout(proces
 const postDelayed = (process = (...args) => args[0], delay = 100, ...args) => setTimeout(process, delay, ...args);
 const postPromise = (process = (rs, rj, ...args) => rs(args[0]), ...args) => new Promise((rs, rj) => process(rs, rj, ...args));
 const postBonded = (process = (rs, rj, ...args) => rs(args[0]), delay = 100, ...args) => new Promise((rs, rj) => setTimeout(process, delay, rs, rj, ...args));
-const postAsyncQueue = (process = (...args) => args[0], ...args) => (async (...args) => await process(...args))(...args);
+const postPromiseQueue = (process = (rs, rj, ...args) => rs(args[0]), ...args) => new Promise((rs, rj) => setTimeout(process, 0, rs, rj, ...args));
+const postAsyncQueue = (process = async (...args) => args[0], ...args) => process(...args);
+const postAwaitQueue = async (process = async (...args) => args[0], ...args) => await process(...args);
 const postFrameQueue = (process = (...args) => args[0], ...args) => requestAnimationFrame(() => process(...args));
+const postFramePromise = (process = (rs, rj, ...args) => rs(args[0]), ...args) => new Promise((rs, rj) => requestAnimationFrame(() => process(rs, rj, ...args)));
 
 
 // Object function shortcut constants

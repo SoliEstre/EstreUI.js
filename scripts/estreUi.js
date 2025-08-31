@@ -397,6 +397,7 @@ const eds = {
     // for month selector bar
     dropdownOpen: "data-dropdown-open",
     showFuture: "data-show-future",
+    usePopupSelector: "data-use-popup-selector",
 
 
     // for solid point
@@ -410,7 +411,9 @@ const eds = {
     showPage: "data-show-page",
     closePage: "data-close-page",
     openAction: "data-open-action",
+    openData: "data-open-data",
     showAction: "data-show-action",
+    showData: "data-show-data",
 
 
     // for swipe handler
@@ -749,7 +752,7 @@ const wait = function (instanceOrigin) {
  */
 const stedy = function (delay = 600, instanceOrigin = "stedy" + Date.now()) {
     latestIO = instanceOrigin;
-    setTimeout(() => {
+    setTimeout(_ => {
         if (latestIO == instanceOrigin) wait(instanceOrigin);
     }, delay);
     return instanceOrigin;
@@ -815,7 +818,7 @@ class EstreNotationManager {
                 const it = new EstreNotationManager(message, showTime, onTakeInteraction, options, resolve);
                 this.#queue.push(it);
                 // console.log(this.#page + " posted: ", it);
-                setTimeout(() => this.postHandler(), 0);
+                postQueue(_ => this.postHandler());
             });
         }
     }
@@ -839,7 +842,7 @@ class EstreNotationManager {
             }
             this.postHandle = null;
             // console.log(this.#page + " checked out: ", intent);
-            setTimeout(() => { this.postHandler(); }, 0);
+            postQueue(_ => this.postHandler());
         }
         intent.resolver?.(intent);
     }
@@ -1456,6 +1459,9 @@ class EstrePageHandle {
     #isFocused = false;
     get isFocused() { return this.isShowing && this.#isFocused; }
 
+    #isClosing = false;
+    get isClosing() { return this.#isClosing; }
+
     #currentOnTop = null;
     get currentOnTop() { return this.#currentOnTop; };
     set currentOnTop(handle) {
@@ -1523,11 +1529,11 @@ class EstrePageHandle {
             this.onOpen();
             this.onShow();
             this.$host.attr(eds.onTop, t1 + "*");
-            setTimeout(() => {
+            setTimeout(async _ => {
                 const $host = this?.$host;
                 if ($host != null && $host.attr(eds.onTop) == t1 + "*") {
                     $host.attr(eds.onTop, t1);
-                    if (setFocus && this != null && this.hostType == "article") estreUi.focus(this);//this?.focus();
+                    if (setFocus && this != null && this.hostType == "article") await estreUi.focus(this);//this?.focus();
                 }
             }, 0);
             return true;
@@ -1546,7 +1552,7 @@ class EstrePageHandle {
         else if (this.#isOpened) {
             const onTop = this.currentOnTop;
             const onReload = this.handler?.onReload;
-            return (onTop != null && onTop.onReload()) || (onReload != null && ((handle) => {
+            return (onTop != null && onTop.onReload()) || (onReload != null && (handle => {
                 console.log("[performReload] " + this.sectionBound + " " + this.hostType + " " + EstreUiPage.from(this)?.pid, this.host);
                 return handle?.handler?.onReload(this);
             })(this));
@@ -1567,37 +1573,41 @@ class EstrePageHandle {
 
     blur() {
         if (this.isFocused) {
-            this.onBlur();
-            return true;
+            return this.onBlur();
         } else return false;
     }
 
     hide(fullyHide = true) {
         if (this.isShowing || !this.isFullyHided) {
-            return new Promise((resolve) => {
-                this.blur();
-                this.onHide(fullyHide);
-                if (fullyHide) {
-                    this.$host.attr(eds.onTop, t0);
-                    setTimeout(() => {
+            this.blur();
+            this.onHide(fullyHide);
+            if (fullyHide) {
+                this.$host.attr(eds.onTop, t0);
+                const delay = cvt.t2ms(this.$host.css(a.trdr));
+                return new Promise(async (resolve) => {
+                    setTimeout(_ =>{
                         const $host = this?.$host;
                         if ($host != null && $host.attr(eds.onTop) == t0) {
                             $host.attr(eds.onTop, "");
                             resolve(true);
                         } else resolve(false);
-                    }, cvt.t2ms(this.$host.css(a.trdr)));
-                } else {
-                    this.$host.attr(eds.onTop, t0 + "*");
-                    resolve(true);
-                }
-            });
+                    }, delay);
+                });
+            } else {
+                this.$host.attr(eds.onTop, t0 + "*");
+                return true;
+            }
         } else return false;
     }
 
-    async close(isRequest = false, isOnRelease = false) {
+    close(isRequest = false, isOnRelease = false) {
         if (this.isOpened) {
-            await this.hide();
-            return this.onClose(isOnRelease);
+            if (this.isOpened && (isOnRelease || !this.isStatic)) this.#isClosing = true;
+            const task = this.hide();
+            return postAsyncQueue(async _ => {
+                await task;
+                return await this.onClose(isOnRelease);
+            });
         } else return false;
     }
 
@@ -1660,42 +1670,42 @@ class EstrePageHandle {
         } else return false;
     }
 
-    onBlur() {
+    async onBlur() {
         if (this.isShowing) {
             console.log("[onBlur] " + this.sectionBound + " " + this.hostType + " " + EstreUiPage.from(this)?.pid);//, this.host);
-            if (this.intent?.onBlur != null) for (var item of this.intent.onBlur) if (item.from == this.hostType && !item.disabled) this.processAction(item);
-            if (this.handler?.onBlur != null) this.handler.onBlur(this);
+            if (this.intent?.onBlur != null) for (var item of this.intent.onBlur) if (item.from == this.hostType && !item.disabled) await this.processAction(item);
+            if (this.handler?.onBlur != null) await this.handler.onBlur(this);
             this.#isFocused = false;
             return true;
         } else return false;
     }
 
-    onHide(fullyHide) {
+    async onHide(fullyHide) {
         if (this.isShowing) {
             console.log("[onHide] " + this.sectionBound + " " + this.hostType + " " + EstreUiPage.from(this)?.pid, this.host);
-            if (this.intent?.onHide != null) for (var item of this.intent.onHide) if (item.from == this.hostType && !item.disabled) this.processAction(item);
-            if (this.handler?.onHide != null) this.handler.onHide(this, fullyHide);
+            if (this.intent?.onHide != null) for (var item of this.intent.onHide) if (item.from == this.hostType && !item.disabled) await this.processAction(item);
+            if (this.handler?.onHide != null) await this.handler.onHide(this, fullyHide);
             this.#isShowing = false;
             return true;
         } else return false;
     }
 
-    onClose(isOnRelease = false) {
+    async onClose(isOnRelease = false) {
         if (this.isOpened && (isOnRelease || !this.isStatic)) {
             console.log("[onClose] " + this.sectionBound + " " + this.hostType + " " + EstreUiPage.from(this)?.pid);//, this.host);
-            if (this.intent?.onClose != null) for (var item of this.intent.onClose) if (item.from == this.hostType && !item.disabled) this.processAction(item);
-            if (this.handler?.onClose != null) this.handler.onClose(this);
+            if (this.intent?.onClose != null) for (var item of this.intent.onClose) if (item.from == this.hostType && !item.disabled) await this.processAction(item);
+            if (this.handler?.onClose != null) await this.handler.onClose(this);
             this.#isOpened = false;
             return true;
         } else return false;
     }
 
-    onRelease(remove) {
-        if (this.isStatic) this.close(false, true);
+    async onRelease(remove) {
+        if (this.isStatic) await this.close(false, true);
         const removal = remove == null ? "leave" : (remove ? "remove" : "empty")
         console.log("[onRelease(" + removal + ")] " + this.sectionBound + " " + this.hostType + " " + EstreUiPage.from(this)?.pid);//, this.host);
-        if (this.handler?.onRelease != null) this.handler.onRelease(this, remove);
-        if (this.intent?.onRelease != null) for (var item of this.intent.onRelease) if (item.from == this.hostType && !item.disabled) this.processAction(item);
+        if (this.handler?.onRelease != null) await this.handler.onRelease(this, remove);
+        if (this.intent?.onRelease != null) for (var item of this.intent.onRelease) if (item.from == this.hostType && !item.disabled) await this.processAction(item);
     }
 
 
@@ -1706,7 +1716,7 @@ class EstrePageHandle {
                     if (data.host != null) {
                         const handle = this.getHost(data.host);
                         if (data.time != null && !isNaN(data.time)) {
-                            setTimeout(() => handle?.close(), parseInt(data.time));
+                            setTimeout(_ => handle?.close(), parseInt(data.time));
                         }
                     }
                     break;
@@ -2086,7 +2096,7 @@ class EstrePageHandle {
     setEventInternalLink(item) {
         const handle = this;
 
-        this.#internalLinkEvent ??= function(e) {
+        this.#internalLinkEvent ??= async function(e) {
             e.preventDefault();
 
             const $this = $(this);
@@ -2096,10 +2106,17 @@ class EstrePageHandle {
             const targetBound = targetSet[targetSet.length < 2 ? 0 : 1];
             const container = $this.attr(eds.openContainer);
             const id = $this.attr(eds.openId);
-            const action = $this.attr(eds.openAction);
+            const action = $this.attr(eds.openAction)?.let(it => isEmpty(it) ? n : it);
+            const data = $this.attr(eds.openData)?.let(it => isEmpty(it) ? n : it.let(_ => {
+                try {
+                    return Jcodd.parse(it);
+                } catch (exc) {
+                    return Jcodd.parse(it.replace(/'/g, '"'));
+                }
+            }));
 
-            const intent = action != null && action.length > 0 ? { action } : undefined;
-            let pushedIntent = typeof intent == UNDEFINED;
+            const intent = nn(action) ? (nn(data) ? { data, action } : { action }) : nn(data) ? { data } : u;
+            let pushedIntent = typeof intent == U;
 
             switch (targetBound) {
                 case "root":
@@ -2314,9 +2331,16 @@ class EstrePageHandle {
             const $this = $(this);
 
             const pid = $this.attr(eds.openPage);
-            const action = $this.attr(eds.openAction);
+            const action = $this.attr(eds.openAction)?.let(it => isEmpty(it) ? n : it);
+            const data = $this.attr(eds.openData)?.let(it => isEmpty(it) ? n : it.let(_ => {
+                try {
+                    return Jcodd.parse(it);
+                } catch (exc) {
+                    return Jcodd.parse(it.replace(/'/g, '"'));
+                }
+            }));
 
-            const intent = action != null && action.length > 0 ? { action } : undefined;
+            const intent = nn(action) ? (nn(data) ? { data, action } : { action }) : nn(data) ? { data } : u;
             let intentReady = typeof intent != UNDEFINED;
 
             if (intentReady) pageManager.bringPage(pid, intent);
@@ -2333,9 +2357,16 @@ class EstrePageHandle {
             const $this = $(this);
 
             const pid = $this.attr(eds.showPage);
-            const action = $this.attr(eds.showAction);
+            const action = $this.attr(eds.showAction)?.let(it => isEmpty(it) ? n : it);
+            const data = $this.attr(eds.showData)?.let(it => isEmpty(it) ? n : it.let(_ => {
+                try {
+                    return Jcodd.parse(it);
+                } catch (exc) {
+                    return Jcodd.parse(it.replace(/'/g, '"'));
+                }
+            }));
 
-            const intent = action != null && action.length > 0 ? { action } : undefined;
+            const intent = nn(action) ? (nn(data) ? { data, action } : { action }) : nn(data) ? { data } : u;
             let intentReady = typeof intent != UNDEFINED;
 
             if (intentReady) pageManager.showPage(pid, intent);
@@ -2408,7 +2439,7 @@ class EstrePageHostHandle extends EstrePageHandle {
 
     }
 
-    unregisterConatiner(pageHandle) {
+    unregisterSubPage(pageHandle) {
 
     }
 
@@ -2425,7 +2456,7 @@ class EstrePageHostHandle extends EstrePageHandle {
         return false;
     }
 
-    async closeSubPage(id) {
+    closeSubPage(id) {
 
     }
 
@@ -2521,7 +2552,7 @@ class EstreComponent extends EstrePageHostHandle {
             
         this.unregister();
 
-        super.release(remove);
+        return super.release(remove);
     }
 
     init(intent) {
@@ -2551,7 +2582,7 @@ class EstreComponent extends EstrePageHostHandle {
         return this.registerContainer(element, intent);
     }
 
-    unregisterConatiner(pageHandle) {
+    unregisterSubPage(pageHandle) {
         return this.unregisterConatiner(pageHandle);
     }
 
@@ -2604,12 +2635,12 @@ class EstreComponent extends EstrePageHostHandle {
         return this.bringContainer(id, intent);
     }
 
-    async closeSubPage(id) {
-        return await this.closeContainer(id);
+    closeSubPage(id) {
+        return this.closeContainer(id);
     }
 
     showContainer(id, intent) {
-        if (id != null) {
+        if (id != null && !this.isClosing) {
             const container = this.containers[id];
             if (container != null) {
                 const currentTopHandle = this.currentTop;
@@ -2645,6 +2676,7 @@ class EstreComponent extends EstrePageHostHandle {
     }
 
     openContainer(id, intent) {
+        if (this.isClosing) return false;
         const page = pageManager.getConatiner(id, this.id, this.sectionBound);
         if (page == null) return null;
         if (page.statement == "static") return null;
@@ -2654,26 +2686,30 @@ class EstreComponent extends EstrePageHostHandle {
         return this.registerContainer($container[0], intent);
     }
 
-    async closeContainer(id) {
+    closeContainer(id) {
         if (id != null) {
             const container = this.containers[id];
             if (container != null) {
                 const task = container.close(false);
-                setTimeout(() => {
+                if (!this.isClosing) postQueue(_ => {
+                    if (this.isClosing) return;
                     const $containers = this.$containers?.filter(naiv(eds.containerId, id));
                     if ($containers != null) {
                         if ($containers.length > 0) {
-                            if (this.prevSubPageId != null) {
-                                if (this.showContainer(this.prevSubPageId)) this.prevSubPageId = null;
+                            const prev = this.prevSubPageId;
+                            if (prev != null && id != prev && this.subPages[prev] != null) {
+                                if (this.showContainer(prev)) this.prevSubPageId = null;
                             } else $containers?.[$containers.length - 1]?.pageHandle?.show();
-                        } else setTimeout(() => {
-                            if (this.$containers.filter(naiv(eds.containerId, id)).length < 1) this?.close();
-                        }, 0);
+                        } else postQueue(_ => {
+                            if (!this.isClosing && this.$containers.filter(naiv(eds.containerId, id)).length < 1) this?.close();
+                        });
                     }
-                }, 0);
-                const result = await task;
-                if (!container.isStatic) this.unregisterConatiner(container);
-                return result;
+                });
+                return postAsyncQueue(async _ => {
+                    const result = await task;
+                    if (!container.isStatic) this.unregisterConatiner(container);
+                    return result;
+                });
             }
         }
         return null;
@@ -2686,8 +2722,8 @@ class EstreComponent extends EstrePageHostHandle {
         } else return this.showContainer(id, intent);
     }
 
-    async onCloseContainer() {
-        return await this.currentOnTop?.close();
+    onCloseContainer() {
+        return this.currentOnTop?.close();
     }
 
     show(isRequest = true, setFocus = true) {
@@ -2715,8 +2751,8 @@ class EstreComponent extends EstrePageHostHandle {
     //     } else false;
     // }
 
-    async back(isRequest = true) {
-        return await super.back(isRequest);// || (this.sectionBound == "main" && this.isShowing && this.id != "home" && estreUi.switchRootTab("home"));
+    back(isRequest = true) {
+        return super.back(isRequest);// || (this.sectionBound == "main" && this.isShowing && this.id != "home" && estreUi.switchRootTab("home"));
     }
 
     blur() {
@@ -2728,19 +2764,20 @@ class EstreComponent extends EstrePageHostHandle {
         if ($top != null && $top.length > 0) $targetContainer = $top;
         else if ($containers.length > 0) $targetContainer = $($containers[$containers.length-1]);
 
-        if ($targetContainer != null) {
+        if ($targetContainer != null) return postAsyncQueue(async _ => {
             var processed = false
-            for (var container of $targetContainer) processed |= container.pageHandle?.blur();
+            for (var container of $targetContainer) processed |= await container.pageHandle?.blur();
             return processed;
-        } else return false;
+        });
+        else return false;
     }
 
-    async close(isRequest = true) {
+    close(isRequest = true) {
         if (isRequest) {
             if (this.isModal) {
-                return this.onTop ? await estreUi.closeModalTab(this.id, this.$host) : false;
+                return this.onTop ? estreUi.closeModalTab(this.id, this.$host) : false;
             } else return false;
-        } else return await super.close(false);
+        } else return super.close(false);
     }
 
 
@@ -2757,21 +2794,25 @@ class EstreComponent extends EstrePageHostHandle {
         return processed;
     }
 
-    onHide() {
+    async onHide() {
         let $top = this.$containers.filter(asv(eds.onTop, t1));
         if ($top.length < 1) $top = this.$containers;
         const container = $top[$top.length - 1]?.pageHandle;
         if (container != null) {
-            container.onBlur();
-            container.onHide();
+            await container.onBlur();
+            await container.onHide();
         }
-        return super.onHide();
+        return await super.onHide();
     }
 
-    onClose() {
-        for (var container of this.containerList.reverse()) container.close();
+    async onClose() {
+        const closer = [];
 
-        return super.onClose();
+        for (var container of this.containerList.reverse()) closer.push(container.close());
+
+        await Promise.all(closer);
+
+        return await super.onClose();
     }
 }
 
@@ -2805,7 +2846,7 @@ class EstreMenuComponent extends EstreComponent {
     release(remove) {
 
 
-        super.release(remove);
+        return super.release(remove);
     }
 
     init(intent) {
@@ -2832,10 +2873,10 @@ class EstreMenuComponent extends EstreComponent {
         } else super.show(false, setFocus);
     }
 
-    async close(isRequest = true) {
+    close(isRequest = true) {
         if (isRequest) {
-            return await estreUi.closeMenuArea(this.id);
-        } else return await super.close(false);
+            return estreUi.closeMenuArea(this.id);
+        } else return super.close(false);
     }
 }
 
@@ -2869,7 +2910,7 @@ class EstreHeaderComponent extends EstreComponent {
     release(remove) {
 
 
-        super.release(remove);
+        return super.release(remove);
     }
 
     init(intent) {
@@ -2896,10 +2937,10 @@ class EstreHeaderComponent extends EstreComponent {
         } else super.show(false, setFocus);
     }
 
-    async close(isRequest = true) {
+    close(isRequest = true) {
         if (isRequest) {
-            return await estreUi.closeHeaderBar(this.id);
-        } else return await super.close(false);
+            return estreUi.closeHeaderBar(this.id);
+        } else return super.close(false);
     }
 }
 
@@ -2933,7 +2974,7 @@ class EstreInstantComponent extends EstreComponent {
     release(remove) {
 
 
-        super.release(remove);
+        return super.release(remove);
     }
 
     init(intent) {
@@ -2960,10 +3001,10 @@ class EstreInstantComponent extends EstreComponent {
         } else super.show(false, setFocus);
     }
 
-    async close(isRequest = true) {
+    close(isRequest = true) {
         if (isRequest) {
-            return await estreUi.closeInstantBlinded(this.id);
-        } else return await super.close(false);
+            return estreUi.closeInstantBlinded(this.id);
+        } else return super.close(false);
     }
 }
 
@@ -2997,7 +3038,7 @@ class EstreOverlayComponent extends EstreInstantComponent {
     release(remove) {
 
 
-        super.release(remove);
+        return super.release(remove);
     }
 
     init(intent) {
@@ -3024,10 +3065,10 @@ class EstreOverlayComponent extends EstreInstantComponent {
         } else super.show(false, setFocus);
     }
 
-    async close(isRequest = true) {
+    close(isRequest = true) {
         if (isRequest) {
-            return await estreUi.closeManagedOverlay(this.id);
-        } else return await super.close(false);
+            return estreUi.closeManagedOverlay(this.id);
+        } else return super.close(false);
     }
 }
 
@@ -3154,8 +3195,8 @@ class EstreContainer extends EstrePageHostHandle {
                 $masterButton.click(function (e) {
                     e.preventDefault();
 
-                    postAsyncQueue(async _ => {
-                        const handled = (await inst.#onMasterButtonClick?.(e, this)) ?? null;
+                    postAsyncQueue(_ => {
+                        const handled = (inst.#onMasterButtonClick?.(e, this)) ?? null;
                         if (handled !== true) {
                             const articleStepsId = inst.#articleStepsId;
                             if (articleStepsId != null) {
@@ -3176,7 +3217,7 @@ class EstreContainer extends EstrePageHostHandle {
 
             this.#$masterFloat.before(doc.ce(div, "master_float_pad"));
             this.#$masterFloatPad = this.$host.find(".master_float_pad");
-            setTimeout(() => this.#$masterFloatPad.css("height",  + this.#$masterFloat.height() + "px"), 0);
+            setTimeout(_ => this.#$masterFloatPad.css("height",  + this.#$masterFloat.height() + "px"), 0);
         }
     }
     
@@ -3244,7 +3285,7 @@ class EstreContainer extends EstrePageHostHandle {
         this.articleList.push(article);
         EstreUiPage.registerOrCommitFrom(article);
         article.init(intent);
-        //if (article.isOnTop) article.show(false, false);
+        //if (article.isOnTop) await article.show(false, false);
         return article;
     }
 
@@ -3364,17 +3405,18 @@ class EstreContainer extends EstrePageHostHandle {
         if ($top != null && $top.length > 0) $targetArticle = $top;
         else if ($articles.length > 0) $targetArticle = $($articles[$articles.length-1]);
 
-        if ($targetArticle != null) {
+        if ($targetArticle != null) return postAsyncQueue(async _ => {
             var processed = false;
-            for (var article of $targetArticle) processed |= article.pageHandle?.blur();
+            for (var article of $targetArticle) processed |= await article.pageHandle?.blur();
             return processed;
-        } return false;
+        });
+        return false;
     }
 
-    async close(isRequest = true) {
+    close(isRequest = true) {
         if (isRequest) {
-            return await this.component.closeContainer(this.id);
-        } else return await super.close(false);
+            return this.component.closeContainer(this.id) ?? super.close(false);
+        } else return super.close(false);
     }
 
     onShow() {
@@ -3394,30 +3436,33 @@ class EstreContainer extends EstrePageHostHandle {
         return processed;
     }
 
-    onHide() {
+    async onHide() {
         let $top = this.$articles.filter(asv(eds.onTop, t1));
         if ($top.length < 1) $top = this.$articles;
         const article = $top[$top.length - 1]?.pageHandle;
         if (article != null) {
-            article.onBlur();
-            article.onHide();
+            await article.onBlur();
+            await article.onHide();
         }
-        return super.onHide();
+        return await super.onHide();
     }
 
-    onClose() {
-        if (super.onClose()) { 
-            const stepped = [];
-            for (var id in this.articles) if (id.indexOf(this.#articleStepsId + "%") === 0) stepped.push(id);
-            if (stepped.length > 0) {
-                const sorted = stepped.sort();
-                for (var i=sorted.length-1; i>-1; i--) this.closeArticle(sorted[i]);
-            } else {
-                for (var article of this.articleList.reverse()) article.close();
-            }
+    async onClose() {
+        const stepped = [];
+        for (var id in this.articles) if (id.indexOf(this.#articleStepsId + "%") === 0) stepped.push(id);
 
-            return true;
-        } else return false;
+        const closer = [];
+
+        if (stepped.length > 0) {
+            const sorted = stepped.sort();
+            for (var i=sorted.length-1; i>-1; i--) closer.push(this.closeArticle(sorted[i]));
+        } else {
+            for (var article of this.articleList.reverse()) closer.push(article.close());
+        }
+
+        await Promise.all(closer);
+
+        return super.onClose();
     }
 
 
@@ -3434,12 +3479,12 @@ class EstreContainer extends EstrePageHostHandle {
         return this.bringArticle(id, intent);
     }
 
-    async closeSubPage(id) {
-        return await this.closeArticle(id);
+    closeSubPage(id) {
+        return this.closeArticle(id);
     }
 
     showArticle(id, intent) {
-        if (id != null) {
+        if (id != null && !this.isClosing) {
             const $target = this.$article[id];
             if ($target != null && $target.length > 0) {
                 const onlyOne = this.$articles.filter(ntc("dummy")).length === 1;
@@ -3462,22 +3507,22 @@ class EstreContainer extends EstrePageHostHandle {
                     const targetOnTop2 = isNext ? "+" : "-";
                     if ($currentTop.length > 0) {
                         $currentTop.attr(eds.onTop, currentOnTop1);
-                        setTimeout(() => {
+                        setTimeout(async _ => {
                             for (var currentTop of $currentTop) if (currentTop.dataset.onTop == currentOnTop1) {
-                                currentTop.pageHandle?.blur();
-                                currentTop.pageHandle?.onHide();
+                                await currentTop.pageHandle?.blur();
+                                await currentTop.pageHandle?.onHide();
                                 //currentTop.dataset.onTop = "";
                             }
                             $currentTop.attr(eds.onTop, null);
                         }, cvt.t2ms($currentTop.css(a.trdr)));
                     }
                     $target.attr(eds.onTop, targetOnTop1);
-                    setTimeout(() => {
+                    setTimeout(_ => {
                         if ($target?.attr(eds.onTop) == targetOnTop1) {
                             $target?.[0].pageHandle?.onOpen();
                             $target?.[0].pageHandle?.onShow();
                             $target?.attr(eds.onTop, targetOnTop2);
-                            setTimeout(() => {
+                            setTimeout(_ => {
                                 if ($target?.attr(eds.onTop) == targetOnTop2) {
                                     $target?.attr(eds.onTop, t1);
                                     $target?.[0].pageHandle?.focus();
@@ -3525,6 +3570,7 @@ class EstreContainer extends EstrePageHostHandle {
     }
 
     openArticle(id, intent) {
+        if (this.isClosing) return false;
         const page = pageManager.getArticle(id, this.id, this.component.id, this.component.sectionBound);
         if (page == null) return null;
         if (page.statement == "static") return null;
@@ -3555,28 +3601,30 @@ class EstreContainer extends EstrePageHostHandle {
         } else return this.showArticle(id, intent);
     }
 
-    async closeArticle(id) {
+    closeArticle(id) {
         if (id != null) {
             const article = this.articles[id];
             if (article != null) {
                 const task = article.close(false);
-                setTimeout(() => {
+                if (!this.isClosing) postQueue(_ => {
+                    if (this.isClosing) return;
                     const $articles = this.$articles?.filter(naiv(eds.articleId, id));
                     if ($articles != null) {
                         if ($articles.length > 0) {
-                            if (this.prevSubPageId != null) {
-                                if (this.showArticle(this.prevSubPageId)) this.prevSubPageId = null;
-                            } else {
-                                $articles?.[$articles.length - 1]?.pageHandle?.show();
-                            }
-                        } else setTimeout(() => {
-                            if (this.$articles.filter(naiv(eds.articleId, id)).length < 1) this?.close();
-                        }, 0);
+                            const prev = this.prevSubPageId;
+                            if (prev != null && id != prev && this.subPages[prev] != null) {
+                                if (this.showArticle(prev)) this.prevSubPageId = null;
+                            } else $articles?.[$articles.length - 1]?.pageHandle?.show();
+                        } else postQueue(_ => {
+                            if (!this.isClosing && this.$articles != n && this.$articles.filter(naiv(eds.articleId, id)).length < 1) this?.close();
+                        });
                     }
-                }, 0);
-                const result = await task;
-                if (!article.isStatic) this.unregisterArticle(article);
-                return result;
+                });
+                return postAsyncQueue(async _ => {
+                    const result = await task;
+                    if (!article.isStatic) this.unregisterArticle(article);
+                    return result;
+                });
             }
         }
         return null;
@@ -3632,7 +3680,7 @@ class EstreArticle extends EstrePageHandle {
     release(remove) {
         this.releaseHandles();
 
-        super.release(remove);
+        return super.release(remove);
     }
 
     init(intent) {
@@ -3667,10 +3715,10 @@ class EstreArticle extends EstrePageHandle {
         } else return super.show(false, setFocus);
     }
 
-    async close(isRequest = true) {
+    close(isRequest = true) {
         if (isRequest) {
-            return await this.container.closeArticle(this.id);
-        } else return await super.close(false);
+            return this.container.closeArticle(this.id) ?? super.close(false);
+        } else return super.close(false);
     }
 
 
@@ -3747,8 +3795,13 @@ class EstrePageHandler {
         if (!handle.isStatic) {
             const pid = EstreUiPage.from(handle).pid;
             const intent = handle.intent;
-            if (handle.close()) return pageManager.bringPage(pid, intent);
-            else {
+            if (handle.close()) {
+                postAsyncQueue(async _ => {
+                    await handle.close();
+                    return pageManager.bringPage(pid, intent);
+                });
+                return true;
+            } else {
                 handle.show();
                 return false;
             }
@@ -3760,15 +3813,15 @@ class EstrePageHandler {
             handle.sectionBound == "blind" || !handle.isStatic ? await handle.close() : false);
     }
 
-    onHide(handle, fullyHide) {
+    async onHide(handle, fullyHide) {
 
     }
 
-    onClose(handle) {
+    async onClose(handle) {
 
     }
 
-    onRelease(handle, remove) {
+    async onRelease(handle, remove) {
 
     }
 }
@@ -3780,7 +3833,7 @@ class EstreLottieAnimatedHandler extends EstrePageHandler {
     get lottie() { return this.$lottie?.[0]; }
     get player() { return this.lottie?.getLottie(); }
 
-    onBring(handle) {
+    async onBring(handle) {
         this.$container = handle.$host;
         this.$article = this.$container.find(ar + aiv(eds.articleId, "main"));
         this.$lottie = this.$article.find(dlp);
@@ -3805,6 +3858,8 @@ class EstreDialogPageHandler extends EstrePageHandler {
     $closer;
     $options;
     $actions;
+
+    handleSwipeHandler;
 
     onBring(handle) {
         this.$container = handle.$host;
@@ -3859,7 +3914,10 @@ class EstreDialogPageHandler extends EstrePageHandler {
 
             return false;
         });
-        //this.$handler; //<= 스와이프 핸들러 적용
+        if (this.$handle.length > 0) this.handleSwipeHandler = new EstreSwipeHandler(this.$handle).setStopPropagation().setPreventDefault().setPreventAll().unuseX().setThresholdY(1).setDropStrayed(false).setResponseBound(this.$dialog).setOnUp(function (grabX, grabY, handled, canceled, directed) {
+            const handledDirection = this.handledDirection;
+            if (handled && handledDirection == "down" && Math.abs(grabY) > 80) handle.close();
+        });
         this.$actions.find(inp + cor + btn).on("keydown", function (e) {
             if (e.keyCode == 27) {
                 e.preventDefault();
@@ -4465,7 +4523,7 @@ class EstreUiPage {
                 });
 
                 // console.log("showing: ", handle.intent);
-                setTimeout(() => handle.close(), handle.intent?.data?.showTime ?? 3000);
+                setTimeout(_ => handle.close(), handle.intent?.data?.showTime ?? 3000);
             }
 
             onClose(handle) {
@@ -5282,51 +5340,55 @@ class EstreUiPageManager {
         return targetProcessed[page.hostType];
     }
 
-    async closePage(pid, closeHost = false, instanceOrigin = null) {
-        if (pid.indexOf("!") > -1) pid = this.#managedPidMap[pid.replace(/^\!/, "")];
-        if (pid == null) return null;
-        if (pid.indexOf("*") > -1) pid = this.extPidMap[pid.replace(/^\*/, "")];
-        if (pid == null) return null;
-        if (pid.indexOf("$") < 0) pid = this.findPid(pid);
-        const page = this.get(pid);
-        if (page == null) return null;
-        const sections = page.sections;
-        if (sections == null) return null;
+    closePage(pid, closeHost = false, instanceOrigin = null) {
+        return postPromise(resolve => {
+            postQueue(async _ => {
+                if (pid.indexOf("!") > -1) pid = this.#managedPidMap[pid.replace(/^\!/, "")];
+                if (pid == null) resolve(null);
+                if (pid.indexOf("*") > -1) pid = this.extPidMap[pid.replace(/^\*/, "")];
+                if (pid == null) resolve(null);
+                if (pid.indexOf("$") < 0) pid = this.findPid(pid);
+                const page = this.get(pid);
+                if (page == null) resolve(null);
+                const sections = page.sections;
+                if (sections == null) resolve(null);
 
-        var component = sections[page.component];
-        if (component == null) return null;
-        var container = null;
-        var article = null;
-        var targetProcessed = { component: null, container: null, article: null };
-        if (page.container != null) {
-            container = component.containers[page.container];
-            if (container != null) {
-                if (page.article != null) {
-                    article = container.articles[page.article];
-                    if (article != null) {
-                        targetProcessed.article = await container.closeArticle(page.article);
+                var component = sections[page.component];
+                if (component == null) resolve(null);
+                var container = null;
+                var article = null;
+                var targetProcessed = { component: null, container: null, article: null };
+                if (page.container != null) {
+                    container = component.containers[page.container];
+                    if (container != null) {
+                        if (page.article != null) {
+                            article = container.articles[page.article];
+                            if (article != null) {
+                                targetProcessed.article = await container.closeArticle(page.article);
+                            }
+                        }
+                        if (page.isContainer || closeHost || (page.isArticle && page.articleIsStatic && container.isArticlesAllyStatic)) {
+                            targetProcessed.container = await component.closeContainer(page.container);
+                        }
                     }
                 }
-                if (page.isContainer || closeHost || (page.isArticle && page.articleIsStatic && container.isArticlesAllyStatic)) {
-                    targetProcessed.container = await component.closeContainer(page.container);
+                if (page.isComponent || closeHost || (!page.isComponent && page.containerIsStatic && component.isContainersAllyStatic)) {
+                    if (page.isOverlay) {
+                        targetProcessed.component = await estreUi.closeManagedOverlay(page.component);
+                    } else if (page.isMenu) {
+                        targetProcessed.component = await estreUi.closeMenuArea(page.component);
+                    } else if (page.isBlinded) {
+                        targetProcessed.component = await estreUi.closeInstantBlinded(page.component);
+                    } else if (component.isModal) {
+                        targetProcessed.component = await estreUi.closeModalTab(page.component, $(component));
+                    } else {
+                        targetProcessed.component = await estreUi.switchRootTab("home");
+                    }
                 }
-            }
-        }
-        if (page.isComponent || closeHost || (!page.isComponent && page.containerIsStatic && component.isContainersAllyStatic)) {
-            if (page.isOverlay) {
-                targetProcessed.component = await estreUi.closeManagedOverlay(page.component);
-            } else if (page.isMenu) {
-                targetProcessed.component = await estreUi.closeMenuArea(page.component);
-            } else if (page.isBlinded) {
-                targetProcessed.component = await estreUi.closeInstantBlinded(page.component);
-            } else if (component.isModal) {
-                targetProcessed.component = await estreUi.closeModalTab(page.component, $(component));
-            } else {
-                targetProcessed.component = estreUi.switchRootTab("home");
-            }
-        }
-        // console.log("targetProcessed: ", targetProcessed);
-        return targetProcessed[page.hostType];
+                // console.log("targetProcessed: ", targetProcessed);
+                resolve(targetProcessed[page.hostType]);
+            });
+        });
     }
 }
 
@@ -5653,7 +5715,7 @@ class EstreUnifiedCalendarHandle extends EstreHandle {
             for (const entry of entries) {
                 if (entry == this.bound) {
                     this.calendar.beginTransition();
-                    setTimeout(() => this.calendar.endTransition(), this.calendar.transitionTime);
+                    setTimeout(_ => this.calendar.endTransition(), this.calendar.transitionTime);
                 }
             }
         });
@@ -6528,7 +6590,7 @@ class EstreVoidCalendarStructure {
                         inst.calendar.setSelectedDay(dn.year, dn.month, dn.date);
                         break;
                 }
-                setTimeout(() => { inst.calendar.endTransition(); }, inst.calendar.transitionTime);
+                setTimeout(_ => inst.calendar.endTransition(), inst.calendar.transitionTime);
             }
         }).setOnMove(function(grabX, grabY, handled, dropped, directed) {
             //console.log("handled: " + handled + " / dropped: " + dropped + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
@@ -7133,7 +7195,7 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
     setEventMonth(month, count = 0) {
         const inst = this;
         if (!month.isAttached()) {
-            if (count < 3) setTimeout(() => { inst.setEventMonth(month, count+1); }, 0);
+            if (count < 3) setTimeout(_ => inst.setEventMonth(month, count+1), 0);
             return;
         }
 
@@ -7174,7 +7236,7 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
     setEventWeek(week, count = 0) {
         const inst = this;
         if (!week.isAttached()) {
-            if (count < 3) setTimeout(() => { inst.setEventWeek(week, count+1); }, 0);
+            if (count < 3) setTimeout(_ => inst.setEventWeek(week, count+1), 0);
             return;
         }
 
@@ -7232,7 +7294,7 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
     setEventDay(day, count = 0) {
         const inst = this;
         if (!day.isAttached()) {
-            if (count < 3) setTimeout(() => { inst.setEventDay(day, count+1); }, 0);
+            if (count < 3) setTimeout(_ => inst.setEventDay(day, count+1), 0);
             return;
         }
 
@@ -7683,9 +7745,9 @@ class EstreVariableCalendar extends EstreCalendar {
         const v = parseInt(tv);
         this.beginTransition();
         if (currentScale > 3 && v < 3) {
-            setTimeout(() => {
+            setTimeout(_ => {
                 inst.$bound.attr(eds.scale, tv + "");
-                setTimeout(() => {
+                setTimeout(_ => {
                     inst.checkRelaseUnusedCalendarStructure();
                     inst.endTransition();
                     inst.checkLoadSchedule();
@@ -7693,7 +7755,7 @@ class EstreVariableCalendar extends EstreCalendar {
             }, cvt.t2ms(this.unical.$calendarArea.css(a.trdr)));
         } else {
             this.$bound.attr(eds.scale, tv + "");
-            setTimeout(() => {
+            setTimeout(_ => {
                 inst.checkRelaseUnusedCalendarStructure();
                 inst.endTransition();
                 inst.checkLoadSchedule();
@@ -7748,7 +7810,7 @@ class EstreVariableCalendar extends EstreCalendar {
         this.$showToday.change(function(e) {
             inst.beginTransition();
             inst.$bound.attr(eds.showToday, this.checked ? t1 : "");
-            setTimeout(() => { inst.endTransition(); }, inst.transitionTime);
+            setTimeout(_ => inst.endTransition(), inst.transitionTime);
         });    
     }
 
@@ -7776,13 +7838,13 @@ class EstreVariableCalendar extends EstreCalendar {
             if (current == "") {
                 inst.beginTransition();
                 inst.$area.attr(eds.size, 0);
-                setTimeout(() => { inst.endTransition(); }, inst.transitionTime);
+                setTimeout(_ => inst.endTransition(), inst.transitionTime);
             } else {
                 current = parseInt(current);
                 if (current > 0) {
                     inst.beginTransition();
                     inst.$area.attr(eds.size, current - 1);
-                    setTimeout(() => { inst.endTransition(); }, inst.transitionTime);
+                    setTimeout(_ => inst.endTransition(), inst.transitionTime);
                 }
             }
         });
@@ -7832,7 +7894,7 @@ class EstreVariableCalendar extends EstreCalendar {
                     inst.$area.attr(eds.size, fallbackSize);
                 } else inst.$area.css("--height", height + "px");
             }
-            setTimeout(() => inst.endTransition(), inst.transitionTime);
+            setTimeout(_ => inst.endTransition(), inst.transitionTime);
             startHeight = null;
             fallbackSize = null;
         }).setOnMove(function(grabX, grabY, handled, dropped, directed) {
@@ -7875,7 +7937,7 @@ class EstreVariableCalendar extends EstreCalendar {
         this.$structure.attr(eds.focusYear, selected);
         this.beginTransition();
         this.checkSetDayFocused(toScaledBe);
-        setTimeout(() => this.endTransition(), this.transitionTime);
+        setTimeout(_ => this.endTransition(), this.transitionTime);
     }
     
     setSelectedMonth(year, month, toScaledBe) {
@@ -7885,7 +7947,7 @@ class EstreVariableCalendar extends EstreCalendar {
         this.$structure.attr(eds.focusMonth, month);
         this.beginTransition();
         this.checkSetDayFocused(toScaledBe);
-        setTimeout(() => this.endTransition(), this.transitionTime);
+        setTimeout(_ => this.endTransition(), this.transitionTime);
     }
     
     setSelectedWeek(year, month, week, adjoin, toScaledBe) {
@@ -7913,7 +7975,7 @@ class EstreVariableCalendar extends EstreCalendar {
         const onTransition = toScaledBe == null && (this.dateFocused.getMonth() != monthBefore || this.scaleInt > 3);
         if (onTransition) this.beginTransition();
         this.checkSetDayFocused(toScaledBe);
-        if (onTransition) setTimeout(() => this.endTransition(), this.transitionTime);
+        if (onTransition) setTimeout(_ => this.endTransition(), this.transitionTime);
     }
 
     setSelectedDay(year, month, date, toScaledBe) {
@@ -7934,7 +7996,7 @@ class EstreVariableCalendar extends EstreCalendar {
         const onTransition = toScaledBe == null && (fd.month0 != monthBefore || (currentScale == 5 && focusedWeek != weekBefore) || currentScale > 5);
         if (onTransition) this.beginTransition();
         this.checkSetDayFocused(toScaledBe);
-        if (onTransition) setTimeout(() => this.endTransition(), this.transitionTime);
+        if (onTransition) setTimeout(_ => this.endTransition(), this.transitionTime);
     }
 
     checkSetDayFocused(toScaledBe) {
@@ -7985,7 +8047,7 @@ class EstreVariableCalendar extends EstreCalendar {
 
     releaseDate(toScaledBe, fd = this.dateSetFocused) {
         const inst = this;
-        if (this.checkLoadCalendarStructure(toScaledBe)) setTimeout(() => {
+        if (this.checkLoadCalendarStructure(toScaledBe)) setTimeout(_ => {
             inst.structure.releaseDateSelected(fd);
             inst.releaseToday();
 
@@ -8144,7 +8206,7 @@ class EstreVariableCalendar extends EstreCalendar {
     notifyBoundChanged(bound, scope) {
         this.beginTransition();
         super.notifyBoundChanged(bound, scope);
-        setTimeout(() => { this.endTransition(); }, this.transitionTime);
+        setTimeout(_ => { this.endTransition(); }, this.transitionTime);
     }
     
 }
@@ -8508,7 +8570,7 @@ class ScheduleDataSet {
 
     issueRequest(delayed = false) {
         if (this.requestIssuer == null) {
-            this.requestIssuer = setTimeout(async () => await this.requestProcessor(), delayed ? 100 : 0);
+            this.requestIssuer = setTimeout(async _ => await this.requestProcessor(), delayed ? 100 : 0);
         }
     }
 
@@ -10037,11 +10099,11 @@ class EstreToggleTabBlockHandle extends EstreToggleBlockHandle {
             // console.log("handled: " + handled + " / canceled: " + canceled + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
             if (handled) {
                 const isNext = grabX < 0;
-                setTimeout(() => {
+                setTimeout(_ => {
                     if (isNext) inst.selectNextTab();
                     else inst.selectPrevTab();
                 }, 0);
-                return { delay: cvt.t2ms($feedbackTarget.filter(naiv(eds.slide, t1)).css(a.trdr)), callback: () => setTimeout(() => $feedbackTarget.filter(ax(eds.slide)).attr(eds.slide, null), 0) };
+                return { delay: cvt.t2ms($feedbackTarget.filter(naiv(eds.slide, t1)).css(a.trdr)), callback: () => setTimeout(_ => $feedbackTarget.filter(ax(eds.slide)).attr(eds.slide, null), 0) };
             } else $feedbackTarget.filter(ax(eds.slide)).attr(eds.slide, null);
         }).setOnMove(function(grabX, grabY, handled, dropped, directed) {
             // console.log("handled: " + handled + " / dropped: " + dropped + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
@@ -10244,11 +10306,11 @@ class EstreTabBlockHandle extends EstreHandle {
             // console.log("handled: " + handled + " / canceled: " + canceled + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
             if (handled) {
                 const isNext = grabX < 0;
-                setTimeout(() => {
+                setTimeout(_ => {
                     if (isNext) inst.selectNextTab();
                     else inst.selectPrevTab();
                 }, 0);
-                return { delay: cvt.t2ms($feedbackTarget.filter(naiv(eds.slide, t1)).css(a.trdr)), callback: () => setTimeout(() => $feedbackTarget.filter(ax(eds.slide)).attr(eds.slide, null), 0) };
+                return { delay: cvt.t2ms($feedbackTarget.filter(naiv(eds.slide, t1)).css(a.trdr)), callback: () => setTimeout(_ => $feedbackTarget.filter(ax(eds.slide)).attr(eds.slide, null), 0) };
             } else $feedbackTarget.filter(ax(eds.slide)).attr(eds.slide, null);
         }).setOnMove(function(grabX, grabY, handled, dropped, directed) {
             // console.log("handled: " + handled + " / dropped: " + dropped + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
@@ -10445,11 +10507,11 @@ class EstreScopedTabBlock extends EstreTabBlockHandle {
             // console.log("handled: " + handled + " / canceled: " + canceled + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
             if (handled) {
                 const isNext = grabX < 0;
-                setTimeout(() => {
+                setTimeout(_ => {
                     if (isNext) inst.selectNextTab();
                     else inst.selectPrevTab();
                 }, 0);
-                return { delay: cvt.t2ms($feedbackTarget.filter(naiv(eds.slide, t1)).css(a.trdr)), callback: () => setTimeout(() => $feedbackTarget.filter(ax(eds.slide)).attr(eds.slide, null), 0) };
+                return { delay: cvt.t2ms($feedbackTarget.filter(naiv(eds.slide, t1)).css(a.trdr)), callback: () => setTimeout(_ => $feedbackTarget.filter(ax(eds.slide)).attr(eds.slide, null), 0) };
             } else $feedbackTarget.filter(ax(eds.slide)).attr(eds.slide, null);
         }).setOnMove(function(grabX, grabY, handled, dropped, directed) {
             // console.log("handled: " + handled + " / dropped: " + dropped + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
@@ -10468,11 +10530,11 @@ class EstreScopedTabBlock extends EstreTabBlockHandle {
             const $boundHosts = inst.getCurrentContentScope().find(c.c + uis.boundHost);
             if (handled) {
                 const isNext = grabX < 0;
-                setTimeout(() => {
+                setTimeout(_ => {
                     if (isNext) inst.showPageNext();
                     else inst.showPagePrev();
                 }, 0);
-                return { delay: cvt.t2ms($boundHosts.filter(naiv(eds.slide, t1)).css(a.trdr)), callback: () => setTimeout(() => $boundHosts.filter(ax(eds.slide)).attr(eds.slide, null), 0) };
+                return { delay: cvt.t2ms($boundHosts.filter(naiv(eds.slide, t1)).css(a.trdr)), callback: () => setTimeout(_ => $boundHosts.filter(ax(eds.slide)).attr(eds.slide, null), 0) };
             } else $boundHosts.filter(ax(eds.slide)).attr(eds.slide, null);
         }).setOnMove(function(grabX, grabY, handled, dropped, directed) {
             // console.log("handled: " + handled + " / dropped: " + dropped + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
@@ -10973,14 +11035,12 @@ class EstreCustomSelectorBarHandle extends EstreHandle {
 
 
     // open property
-    get prev() { return this.#currentIndex - 1; }
-    get current() { return this.#currentIndex; }
-    get next() { return this.#currentIndex + 1; }
-    
-    get prevId() { return this.#currentIndex > 0 ? this.#selections[this.prev] : n; }
-    get currentId() { return this.#selections[this.current]; }
-    get nextId() { return this.#currentIndex < this.#selections.length - 1 ? this.#selections[this.next] : n; }
+    $selectorBtn;
 
+    $prevBtn;
+    $nextBtn;
+
+    $selectionsList;
     
     // enclosed property
     #selections = [];
@@ -10993,12 +11053,15 @@ class EstreCustomSelectorBarHandle extends EstreHandle {
 
 
     // getter and setter
-    $selectorBtn;
+    get prev() { return this.#currentIndex - 1; }
+    get current() { return this.#currentIndex; }
+    get next() { return this.#currentIndex + 1; }
+    
+    get prevId() { return this.#currentIndex > 0 ? this.#selections[this.prev] : n; }
+    get currentId() { return this.#selections[this.current]; }
+    get nextId() { return this.#currentIndex < this.#selections.length - 1 ? this.#selections[this.next] : n; }
 
-    $prevBtn;
-    $nextBtn;
-
-    $selectionsList;
+    get isUsePopupSelector() { return this.$bound.attr(eds.usePopupSelector) == t1; }
 
 
     constructor(checkboxAlly, host) {
@@ -11111,7 +11174,9 @@ class EstreCustomSelectorBarHandle extends EstreHandle {
     }
 
     toggleSelector() {
-        this.$bound.attr(eds.dropdownOpen, this.$bound.attr(eds.dropdownOpen) == t1 ? "" : t1);
+        if (this.isUsePopupSelector) {
+            // to do implement
+        } else this.$bound.attr(eds.dropdownOpen, this.$bound.attr(eds.dropdownOpen) == t1 ? "" : t1);
     }
 
     openSelector() {
@@ -11153,19 +11218,15 @@ class EstreMonthSelectorBarHandle extends EstreHandle {
 
 
     // open property
-    get prev() { return Ecal.getPrevMonth(this.current); }
-    get current() { return this.currentMonth.let(it => {
-        const [year, month] = it.split("-");
-        return new Date(parseInt(year), parseInt(month) - 1);
-    }); }
-    get next() { return Ecal.getNextMonth(this.current); }
+    $selectorInput;
 
-    get prevMonth() { return Ecal.getDateSet(this.prev).let(it => it.year + "-" + it.month2d); }
-    get currentMonth() { return this.$bound.attr(eds.current); }
-    set currentMonth(value) { this.$bound.attr(eds.current, value); }
-    get nextMonth() { return Ecal.getDateSet(this.next).let(it => it.year + "-" + it.month2d); }
+    $selectorBtn;
+    $selectorCurrent;
 
-    get isShowFuture() { return this.$bound.attr(eds.showFuture) == t1; }
+    $prevBtn;
+    $nextBtn;
+
+    $monthesList;
 
     monthesItemLimit = 12;
     forMonthesItemShow = (month) => month.replace("-", ".");
@@ -11180,13 +11241,20 @@ class EstreMonthSelectorBarHandle extends EstreHandle {
 
 
     // getter and setter
-    $selectorBtn;
-    $selectorCurrent;
+    get prev() { return Ecal.getPrevMonth(this.current); }
+    get current() { return this.currentMonth.let(it => {
+        const [year, month] = it.split("-");
+        return new Date(parseInt(year), parseInt(month) - 1);
+    }); }
+    get next() { return Ecal.getNextMonth(this.current); }
 
-    $prevBtn;
-    $nextBtn;
+    get prevMonth() { return Ecal.getDateSet(this.prev).let(it => it.year + "-" + it.month2d); }
+    get currentMonth() { return this.$bound.attr(eds.current); }
+    set currentMonth(value) { this.$bound.attr(eds.current, value); }
+    get nextMonth() { return Ecal.getDateSet(this.next).let(it => it.year + "-" + it.month2d); }
 
-    $monthesList;
+    get isShowFuture() { return this.$bound.attr(eds.showFuture) == t1; }
+    get isUsePopupSelector() { return this.$bound.attr(eds.usePopupSelector) == t1; }
 
 
     constructor(checkboxAlly, host) {
@@ -11200,6 +11268,8 @@ class EstreMonthSelectorBarHandle extends EstreHandle {
     init() {
         super.init();
 
+        this.$selectorInput = this.$bound.find(inp + aiv("type", "month"));
+
         this.$selectorBtn = this.$bound.find(c.c + cls + "bar_side" + c.c + btn + cls + "selector");
         this.$selectorCurrent = this.$selectorBtn.find(sp + cls + "current");
 
@@ -11210,13 +11280,19 @@ class EstreMonthSelectorBarHandle extends EstreHandle {
 
         this.setEvent();
 
-        if (this.$bound.attr(eds.autoInit) == t1) this.initMonthes();
+        if (this.$bound.attr(eds.autoInit) == t1) this.monthSelected();
 
         return this;
     }
 
     setEvent() {
         const inst = this;
+
+        this.$selectorInput.change(function (e) {
+            const value = this.value;
+            if (value == "") this.value = inst.currentMonth;
+            else inst.monthSelected(value);
+        });
 
         this.$selectorBtn.click(function (e) {
             e.preventDefault();
@@ -11295,7 +11371,10 @@ class EstreMonthSelectorBarHandle extends EstreHandle {
     }
 
     toggleSelector() {
-        this.$bound.attr(eds.dropdownOpen, this.$bound.attr(eds.dropdownOpen) == t1 ? "" : t1);
+        if (this.isUsePopupSelector && (isAndroid || isAppleMobile)) {
+            if (isAppleMobile) this.$selectorInput.focus();
+            if (isAndroid) this.$selectorInput.click();
+        } else this.$bound.attr(eds.dropdownOpen, this.$bound.attr(eds.dropdownOpen) == t1 ? "" : t1);
     }
 
     openSelector() {
@@ -11309,11 +11388,12 @@ class EstreMonthSelectorBarHandle extends EstreHandle {
     monthSelected(month, preventCallback = false) {
         if (month != null) this.currentMonth = month;
         else {
-            if (isNullOrEmpty(this.currentMonth)) this.currentMonth = Ecal.getDateSet().let(it => it.year + "-" +it.month2d);
+            if (isNullOrEmpty(this.currentMonth)) this.currentMonth = Ecal.getDateSet().let(it => it.year + hp +it.month2d);
             month = this.currentMonth;
         }
 
         this.closeSelector();
+        this.$selectorInput.val(month);
         this.$selectorCurrent.html(this.forMonthesItemShow?.(month) ?? month);
         if (!preventCallback) this.onSelectedMonth?.(month);
         this.initMonthes();
@@ -11549,7 +11629,7 @@ class EstreEzHidableHandle extends EstreHandle {
         this.bound.hide = function() {
             if (this.dataset.hide != null && this.dataset.hide != "0") {
                 this.dataset.hide = "0";
-                setTimeout(() => {
+                setTimeout(_ => {
                     if (this.dataset.hide == "") this.dataset.hide = "1";
                 }, cvt.t2ms($(this).css(a.trdr)));
             }
@@ -11558,7 +11638,7 @@ class EstreEzHidableHandle extends EstreHandle {
         this.bound.show = function() {
             const appear = () => {
                 this.dataset.hide = "";
-                setTimeout(() => {
+                setTimeout(_ => {
                     if (this.dataset.hide == "") delete this.dataset.hide;
                 }, cvt.t2ms($(this).css(a.trdr)));
             };
@@ -11566,7 +11646,7 @@ class EstreEzHidableHandle extends EstreHandle {
             if (this.dataset.hide == "0") appear();
             else if (this.dataset.hide == "1") {
                 this.dataset.hide = "0";
-                setTimeout(() => {
+                setTimeout(_ => {
                     if (this.dataset.hide == "0") appear();
                 }, 0);
             }
@@ -11788,7 +11868,7 @@ class EstreSwipeHandler {
     }
 
     #dropHandle() {
-        setTimeout(() => this.$wind.attr(eds.onSwipe, null), 0);
+        setTimeout(_ => this.$wind.attr(eds.onSwipe, null), 0);
         //this.#$outerBound.off(this.#upTriggers, null, this.#onClick);
         this.#$bound.off(this.#handles, null, this.#onEvent);
         this.$wind.off(this.#handles, null, this.#onEvent);
@@ -12155,7 +12235,7 @@ class EstreSwipeHandler {
                     else if (onClearBound.delay == null) {
                         this.#clearBound();
                         if (onClearBound.callback != null) onClearBound.callback();
-                    } else setTimeout(() => {
+                    } else setTimeout(_ => {
                         this.#clearBound();
                         if (onClearBound.callback != null) onClearBound.callback();
                     }, onClearBound.delay);
@@ -12169,7 +12249,7 @@ class EstreSwipeHandler {
                     return handled;
                 };
                 var handled = true;
-                if (canceled) setTimeout(() => { clear(); }, this.cancelDelay);
+                if (canceled) setTimeout(_ => { clear(); }, this.cancelDelay);
                 else handled = clear();
                 if (handled) {
                     if (this.preventUp) {
@@ -12305,7 +12385,7 @@ class EstreSwipeHandler {
                         this.#eventOrigin = null;
                     } else if (handled) {
                         if (this.isDebug) console.log("handled");
-                        if (this.#grabMarker == null) this.#grabMarker = setTimeout(() => {
+                        if (this.#grabMarker == null) this.#grabMarker = setTimeout(_ => {
                             if (this.handled && this.#$responseBound.attr(eds.onGrab) != t1) {
                                 this.#$responseBound.attr(eds.onGrab, t1);
                             }
@@ -12506,7 +12586,7 @@ const estreUi = {
     get stockScheduler() { return this.unifiedCalendar.scheduler; },
 
     //inits
-    init: function(setOnReady = true) {
+    init(setOnReady = true) {
 
         EstreHandle.commit();
         EstreUiPage.commit();
@@ -12567,7 +12647,7 @@ const estreUi = {
         if (setOnReady) this.checkOnReady();
     },
 
-    setReload: function () {
+    setReload() {
         const inst = this;
         $(window).on("keydown", function (e) {
             if ((e.which || e.keyCode) == 116) {
@@ -12580,7 +12660,7 @@ const estreUi = {
         });
     },
 
-    setBackNavigation: function () {
+    setBackNavigation() {
         const inst = this;
         window.addEventListener("popstate", async function (e) {
             const state = e.state;
@@ -12668,7 +12748,7 @@ const estreUi = {
 
 
     //mainMenu
-    setMenuSwipeHandler: function () {
+    setMenuSwipeHandler() {
         if (this.$mainMenu.length > 0) {
             this.releaseMenuSwipeHandler();
             const ui = this;
@@ -12676,7 +12756,7 @@ const estreUi = {
                 //console.log("grabX: " + grabX + ", grabY: " + grabY + ", lastX: " + this.lastX + ", startX: " + this.startX);
                 if (handled) {
                     const isOpen = ui.$mainMenu.hasClass("right") ? grabX < 0 : grabX > 0;
-                    setTimeout(() => {
+                    setTimeout(_ => {
                         if (isOpen) ui.openMainMenu();
                         else ui.closeMainMenu();
                     }, 0);
@@ -12685,24 +12765,24 @@ const estreUi = {
         }
     },
 
-    releaseMenuSwipeHandler: function() {
+    releaseMenuSwipeHandler() {
         if (this.menuSwipeHandler != null) this.menuSwipeHandler.release();
     },
 
-    mainMenuBtnOnClick: function(e) {
+    mainMenuBtnOnClick(e) {
         estreUi.toggleMainMenuButton();
     },
 
-    mainMenuGrabAreaOnclick: function(e) {
+    mainMenuGrabAreaOnclick(e) {
         estreUi.closeMainMenu();
     },
 
-    toggleMainMenuButton: function() {
+    toggleMainMenuButton() {
         if (this.isOpenMainMenu) return this.closeMainMenu();
         else return this.openMainMenu();
     },
 
-    openMainMenu: function() {
+    openMainMenu() {
         if (!this.isOpenMainMenu) {
             this.$mainMenu.attr(eds.opened, t1);
             const $top = this.$menuSections.filter(asv(eds.onTop, t1));
@@ -12723,7 +12803,7 @@ const estreUi = {
         } else return false;
     },
 
-    closeMainMenu: function() {
+    closeMainMenu() {
         if (this.isOpenMainMenu) {
             this.$mainMenu.attr(eds.opened, "");
             // const $top = this.$menuSections.filter(asv(eds.onTop, t1));
@@ -12740,13 +12820,13 @@ const estreUi = {
         } else return false;
     },
 
-    getMainMenuLottie: function() {
+    getMainMenuLottie() {
         return this.$mainMenuBtnLottie[0]?.getLottie?.();
     },
 
 
     //rootbar
-    initRootbar: function() {
+    initRootbar() {
         this.$rootTabs = this.$tabsbar.find(c.c + btn);
         this.$rootTabs.attr(eds.active, "");
 
@@ -12772,7 +12852,7 @@ const estreUi = {
     },
 
 // === Currently not using
-    renderRootBar: function(esd) {
+    renderRootBar(esd) {
         this.$rootTabs.empty();
         this.$mainArea.empty();
         var topId = null;
@@ -12790,7 +12870,7 @@ const estreUi = {
         this.$rootTabs.filter(ax(eds.tabId)).click(this.rootTabOnClick);
     },
 
-    buildRootTabItem: function(esm) {
+    buildRootTabItem(esm) {
         const element = doc.ce(btn);
         element.setAttribute(m.cls, "tp_tiled_btn");
         element.setAttribute("title", esm.desc);
@@ -12799,7 +12879,7 @@ const estreUi = {
         return element;
     },
 
-    buildMainSection: function(esm) {
+    buildMainSection(esm) {
         const element = doc.ce(se);
         element.setAttribute(m.cls, "vfv_scroll");
         element.setAttribute("id", esm.id);
@@ -12807,7 +12887,7 @@ const estreUi = {
         return element;
     },
 
-    fetchContent: function(esm, target) {
+    fetchContent(esm, target) {
         fetch("." + esm.direct + estreStruct.structureSuffix)
             .then((response) => {
                 if (response.ok) return response.json();
@@ -12821,7 +12901,7 @@ const estreUi = {
 
     },
 
-    renderContentArea: function(ecm) {
+    renderContentArea(ecm) {
         const set = [];
         const article = doc.ce(ar);
         if (ecm.content.display == "constraint") article.setAttribute(m.cls, "constraint");
@@ -12835,7 +12915,7 @@ const estreUi = {
     },
 // ===========================
 
-    showExactAppbar: function(component, container, article) {
+    showExactAppbar(component, container, article) {
         const appbar = this.appbar;
         if (appbar == null) return;
         const currentExactComponent = this.isOpenMainMenu ? this.menuCurrentOnTop : this.mainCurrentOnTop;
@@ -12870,30 +12950,30 @@ const estreUi = {
         return success;
     },
 
-    setAppbarPageTitle: function(text) {
+    setAppbarPageTitle(text) {
         this.appbar?.handler?.setPageTitle(text);
     },
 
-    releaseAppbarPageTitle: function() {
+    releaseAppbarPageTitle() {
         this.setAppbarPageTitle(this.isOpenMainMenu ? this.menuCurrentOnTop?.title ?? "" : this.mainCurrentOnTop?.title ?? "");
     },
 
-    setAppbarRightToolSet: function(frostOrCold, matchReplacer, dataName = "frozen") {
+    setAppbarRightToolSet(frostOrCold, matchReplacer, dataName = "frozen") {
         if (typeFunction(frostOrCold)) return frostOrCold(feed => this.appbar?.handler?.setAppbarRightToolSet(feed, matchReplacer, dataName));
         else return $(this.appbar?.handler?.setAppbarRightToolSet(frostOrCold, matchReplacer, dataName));
     },
 
-    releaseAppbarRightToolSet: function() {
+    releaseAppbarRightToolSet() {
         const appbarFeed = this.isOpenMainMenu ? this.menuCurrentOnTop?.appbarRightFeed : this.mainCurrentOnTop?.appbarRightFeed;
         return this.setAppbarRightToolSet(appbarFeed);
     },
 
-    rootTabOnClick: function(e) {
+    rootTabOnClick(e) {
         const target = this.tagName == BTN ? this : (e.target.tagName == BTN ? e.target : e.target.parentElement);
         estreUi.switchRootTab(target);
     },
 
-    switchRootTab: function($target, intent) {
+    switchRootTab($target, intent) {
         switch (typeof $target) {
             case "number":
                 if ($target < this.$rootTabs.length) return this.switchRootTab(this.$rootTabs[$target], intent);
@@ -12973,7 +13053,7 @@ const estreUi = {
         } else return false;
     },
 
-    openInstantBlinded: function(id, intent) {
+    openInstantBlinded(id, intent) {
         const page = pageManager.getComponent(id);
         if (page == null) return null;
         if (page.statement == "static") return null;
@@ -12985,8 +13065,11 @@ const estreUi = {
         return component;
     },
 
-    showInstantBlinded: function(id, intent) {
+    showInstantBlinded(id, intent) {
         const $targetSection = this.$blindSections.filter(eid + id);
+
+        if ($targetSection.length < 1) return false;
+
         const isModal = $targetSection.hasClass("modal");
 
         var unhandled = false;
@@ -13013,6 +13096,7 @@ const estreUi = {
         }
 
         const targetComponent = this.blindSections[id];
+        if (targetComponent == null) return false;
         targetComponent.pushIntent(intent);
         if (targetComponent.isOnTop) {
             unhandled = true;
@@ -13024,7 +13108,7 @@ const estreUi = {
         return !unhandled;
     },
 
-    closeInstantBlinded: async function(id) {
+    async closeInstantBlinded(id) {
         const component = this.blindSections[id];
         if (component == null) return null;
         const $targetSection = component.$host;
@@ -13033,27 +13117,27 @@ const estreUi = {
         if (isModal) {
             if (component.isOnTop) {
                 const closed = await this.closeModalSection(id, this.$blindSections, $targetSection);
-                if (!component.isStatic) this.releaseInstantContent(component);
+                if (!component.isStatic) await this.releaseInstantContent(component);
                 return closed;
             } else return null;
         } else {
             if (!component.$host.hasClass("home")) {
                 const closed = await component.close(false);
-                setTimeout(() => {
+                setTimeout(async _ => {
                     const $components = this.$blindSections.filter(naiv(m.id, id));
                     if ($components.length > 0) {
                         const prevComponent = this.prevBlindedId?.let(it => this.blindSections[it]);
-                        if (prevComponent != null) prevComponent.show();
-                        else $components[$components.length - 1]?.pageHandle?.show();
+                        if (prevComponent != null) await prevComponent.show();
+                        else await $components[$components.length - 1]?.pageHandle?.show();
                     }
                 }, 0);
-                if (!component.isStatic) this.releaseInstantContent(component);
+                if (!component.isStatic) await this.releaseInstantContent(component);
                 return closed;
             } else return false;
         }
     },
 
-    openMenuArea: function(id, intent) {
+    openMenuArea(id, intent) {
         const page = pageManager.getComponent(id);
         if (page == null) return null;
         if (page.statement == "static") return null;
@@ -13065,8 +13149,11 @@ const estreUi = {
         return component;
     },
 
-    showMenuArea: function(id, intent) {
+    showMenuArea(id, intent) {
         const $targetSection = this.$menuSections.filter(eid + id);
+
+        if ($targetSection.length < 1) return false;
+        
         const isModal = $targetSection.hasClass("modal");
 
         var unhandled = false;
@@ -13083,6 +13170,7 @@ const estreUi = {
         }
 
         const targetComponent = this.menuSections[id];
+        if (targetComponent == null) return false;
         targetComponent.pushIntent(intent);
         if (targetComponent.isOnTop) {
             unhandled = true;
@@ -13096,7 +13184,7 @@ const estreUi = {
         return !unhandled;
     },
 
-    closeMenuArea: async function(id) {
+    async closeMenuArea(id) {
         const component = this.menuSections[id];
         if (component == null) return null;
         const $targetSection = component.$host;
@@ -13105,17 +13193,17 @@ const estreUi = {
         if (isModal) {
             if (component.isOnTop) {
                 const closed = await this.closeModalSection(id, this.$menuSections, $targetSection);
-                if (!component.isStatic) this.releaseInstantContent(component);
+                if (!component.isStatic) await this.releaseInstantContent(component);
                 return closed;
             } else return null;
         } else {
             const closed = await component.close(false);
-            if (!component.isStatic) this.releaseInstantContent(component);
+            if (!component.isStatic) await this.releaseInstantContent(component);
             return closed;
         }
     },
 
-    openHeaderBar: function(id, intent) {
+    openHeaderBar(id, intent) {
         const page = pageManager.getComponent(id);
         if (page == null) return null;
         if (page.statement == "static") return null;
@@ -13127,8 +13215,11 @@ const estreUi = {
         return component;
     },
 
-    showHeaderBar: function(id, intent) {
+    showHeaderBar(id, intent) {
         const $targetSection = this.$headerSections.filter(eid + id);
+
+        if ($targetSection.length < 1) return false;
+
         const isModal = $targetSection.hasClass("modal");
 
         var unhandled = false;
@@ -13145,6 +13236,7 @@ const estreUi = {
         }
 
         const targetComponent = this.headerSections[id];
+        if (targetComponent == null) return false;
         targetComponent.pushIntent(intent);
         if (targetComponent.isOnTop) {
             unhandled = true;
@@ -13156,7 +13248,7 @@ const estreUi = {
         return !unhandled;
     },
 
-    closeHeaderBar: async function(id) {
+    async closeHeaderBar(id) {
         const component = this.headerSections[id];
         if (component == null) return null;
         const $targetSection = component.$host;
@@ -13165,17 +13257,17 @@ const estreUi = {
         if (isModal) {
             if (component.isOnTop) {
                 const closed = await this.closeModalSection(id, this.$headerSections, $targetSection);
-                if (!component.isStatic) this.releaseInstantContent(component);
+                if (!component.isStatic) await this.releaseInstantContent(component);
                 return closed;
             } else return null;
         } else {
             const closed = await component.close(false);
-            if (!component.isStatic) this.releaseInstantContent(component);
+            if (!component.isStatic) await this.releaseInstantContent(component);
             return closed;
         }
     },
 
-    openManagedOverlay: function(id, intent) {
+    openManagedOverlay(id, intent) {
         const page = pageManager.getComponent(id, "overlay");
         if (page == null) return null;
         if (page.statement == "static") return null;
@@ -13187,8 +13279,11 @@ const estreUi = {
         return component;
     },
 
-    showManagedOverlay: function(id, intent) {
+    showManagedOverlay(id, intent) {
         const $targetSection = this.$overlaySections.filter(eid + id);
+
+        if ($targetSection.length < 1) return false;
+
         const isModal = $targetSection.hasClass("modal");
 
         var unhandled = false;
@@ -13205,6 +13300,7 @@ const estreUi = {
         }
 
         const targetComponent = this.overlaySections[id];
+        if (targetComponent == null) return false;
         targetComponent.pushIntent(intent);
         if (targetComponent.isOnTop) {
             unhandled = true;
@@ -13216,7 +13312,7 @@ const estreUi = {
         return !unhandled;
     },
 
-    closeManagedOverlay: async function(id) {
+    async closeManagedOverlay(id) {
         const component = this.overlaySections[id];
         if (component == null) return null;
         const $targetSection = component.$host;
@@ -13225,17 +13321,17 @@ const estreUi = {
         if (isModal) {
             if (component.isOnTop) {
                 const closed = await this.closeModalSection(id, this.$overlaySections, $targetSection);
-                if (!component.isStatic) this.releaseInstantContent(component);
+                if (!component.isStatic) await this.releaseInstantContent(component);
                 return closed;
             } else return null;
         } else {
             const closed = await component.close(false);
-            if (!component.isStatic) this.releaseInstantContent(component);
+            if (!component.isStatic) await this.releaseInstantContent(component);
             return closed;
         }
     },
 
-    openModalTab: function(id, $targetSection, intent = null, $sectionSet = this.$mainSections) {
+    openModalTab(id, $targetSection, intent = null, $sectionSet = this.$mainSections) {
         var $target = this.$fixedBottom.find(btn + aiv(eds.tabId, id));
         if ($target.length < 1) $target = this.$sessionGroupHolder.find(btn + aiv(eds.contained, "root") + aiv(eds.containerId, id));
 
@@ -13244,7 +13340,7 @@ const estreUi = {
         return this.openModalSection(id, $sectionSet, $targetSection, intent);
     },
 
-    openModalSection: function(id, $sectionSet = this.$mainSections, $targetSection, intent = null) {
+    openModalSection(id, $sectionSet = this.$mainSections, $targetSection, intent = null) {
         var $target = this.$fixedBottom.find(btn + aiv(eds.tabId, id));
         if ($target.length < 1) $target = this.$sessionGroupHolder.find(btn + aiv(eds.contained, "root") + aiv(eds.containerId, id));
 
@@ -13280,16 +13376,16 @@ const estreUi = {
         return $targetSection[0]?.pageHandle?.show(false);
     },
 
-    closeModalTab: async function(id, $targetSection, $sectionSet = this.$mainSections) {
+    closeModalTab(id, $targetSection, $sectionSet = this.$mainSections) {
         var $target = this.$fixedBottom.find(btn + aiv(eds.tabId, id));
         if ($target.length < 1) $target = this.$sessionGroupHolder.find(btn + aiv(eds.contained, "root") + aiv(eds.containerId, id));
 
         $target.attr(eds.active, "");
 
-        return await this.closeModalSection(id, $sectionSet, $targetSection);
+        return this.closeModalSection(id, $sectionSet, $targetSection);
     },
 
-    closeModalSection: async function(id, $sectionSet = this.$mainSections, $targetSection) {
+    closeModalSection(id, $sectionSet = this.$mainSections, $targetSection) {
         if ($targetSection == null) $targetSection = $sectionSet.filter(eid + id);
 
         // if ($sectionSet == this.$mainSections) this.prevRootTabId = $targetSection.attr("id");
@@ -13297,10 +13393,10 @@ const estreUi = {
         $targetSection.off("click");
         $targetSection.find(c.c + div + uis.container).off("click");
         
-        return await $targetSection[0]?.pageHandle?.close(false);
+        return $targetSection[0]?.pageHandle?.close(false);
     },
 
-    initOverlayContents: function() {
+    initOverlayContents() {
         const $oss = this.$overlaySections;
 
         for (var i=0; i<$oss.length; i++) this.initOverlayContent($oss[i], null, true);
@@ -13330,7 +13426,7 @@ const estreUi = {
         return component;
     },
 
-    initInstantContents: function() {
+    initInstantContents() {
         const $bss = this.$blindSections;
 
         for (var i=0; i<$bss.length; i++) this.initInstantContent($bss[i], null, true);
@@ -13364,7 +13460,7 @@ const estreUi = {
         return component;
     },
 
-    initStaticContents: function() {
+    initStaticContents() {
         const $mss = this.$mainSections;
 
         for (var i=0; i<$mss.length; i++) this.initStaticContent($mss[i], null, true);
@@ -13402,7 +13498,7 @@ const estreUi = {
         return component;
     },
 
-    initStaticMenus: function() {
+    initStaticMenus() {
         const $mss = this.$menuSections;
 
         for (var i=0; i<$mss.length; i++) this.initStaticMenu($mss[i], null, true);
@@ -13436,7 +13532,7 @@ const estreUi = {
         return component;
     },
 
-    initHeaderBars: function() {
+    initHeaderBars() {
         const $hss = this.$headerSections;
 
         for (var i=0; i<$hss.length; i++) this.initHeaderBar($hss[i], null, true);
@@ -13471,7 +13567,7 @@ const estreUi = {
         return component;
     },
 
-    initSessionManager: function() {
+   initSessionManager() {
         this.$more = this.$mainSections.filter("#more");
         this.$sessionManager = this.$more.find(".session_manager");
         this.$sessionGroupHolder = this.$more.find(".session_group_holder");
@@ -13484,7 +13580,7 @@ const estreUi = {
         this.initSessionList(this.$openedPageList);  
     },
 
-    initSessionList: function($listHolder) {
+    initSessionList($listHolder) {
         const $list = $listHolder.find(uis.pageShortCut);
         for (var item of $list) {
             this.setEventSessionItem($(item));
@@ -13542,18 +13638,18 @@ const estreUi = {
         return this.onReload();
     },
 
-    async back() {
-        return await this.onBack();
+    back() {
+        return this.onBack();
     },
 
-    async closeContainer() {
-        return await this.onCloseContainer();
+    closeContainer() {
+        return this.onCloseContainer();
     },
 
     
-    onReload() {
-        return this.isOpenMainMenu ? this.onReloadMenu() : false ||
-            this.onReloadBlinded() || this.onReloadMain();
+    async onReload() {
+        return this.isOpenMainMenu ? await this.onReloadMenu() : false ||
+            await this.onReloadBlinded() || await this.onReloadMain();
     },
 
     async onBack() {
@@ -13590,15 +13686,15 @@ const estreUi = {
     },
 
 
-    async onBackOverlay() {
+    onBackOverlay() {
         if (this.$overlaySections.filter(asv(eds.onTop, t1)).length > 0) {
-            return await this.overlayCurrentOnTop?.onBack() ?? false;
+            return this.overlayCurrentOnTop?.onBack() ?? false;
         } else return false;
     },
 
-    async onBackMenu() {
+    onBackMenu() {
         const currentOnTop = this.menuCurrentOnTop ?? this.menuArea;
-        return await currentOnTop?.onBack() ?? false;
+        return currentOnTop?.onBack() ?? false;
     },
 
     async onBackBlinded() {
@@ -13606,7 +13702,7 @@ const estreUi = {
         let processed = false;
         if (currentOnTop != null) processed = await currentOnTop.onBack();
         if (!processed && this.prevBlindedId != null) {
-            processed = this.showInstantBlinded(this.prevBlindedId);
+            processed = await this.showInstantBlinded(this.prevBlindedId);
             if (processed) this.prevBlindedId = null;
         }
         return processed;
@@ -13616,22 +13712,22 @@ const estreUi = {
         const currentOnTop = this.mainCurrentOnTop;
         let processed = false;
         if (currentOnTop != null) processed = await currentOnTop.onBack();
-        if (!processed && !currentOnTop.isHome) processed = this.switchRootTabPrev();
+        if (!processed && !currentOnTop.isHome) processed = await this.switchRootTabPrev();
         return processed;
     },
 
 
-    onFocus() {
+    async onFocus() {
         // <= to do implement
         // this.focus();
     },
     
-    onBlur() {
+    async onBlur() {
         // <= to do implement
     },
 
 
-    async onReady() {
+    onReady() {
         this.initialHistoryOffset = history.length;
         // note("[" + history.length + "] initial - null / null");
         this.euiState = "initializing";
@@ -13655,12 +13751,12 @@ const estreUi = {
 
     setUiOnReady() {
         doc.$b.attr(eds.onReady, t0);
-        setTimeout(() => doc.$b.attr(eds.onReady, t1), cvt.t2ms($("main#splashRoot").css(a.trdr)));
+        setTimeout(_ => doc.$b.attr(eds.onReady, t1), cvt.t2ms($("main#splashRoot").css(a.trdr)));
     },
 
     unsetUiOnReady() {
         doc.$b.attr(eds.onReady, t0);
-        setTimeout(() => doc.$b.attr(eds.onReady, ""), cvt.t2ms($("main#splashRoot").css(a.trdr)));
+        setTimeout(_ => doc.$b.attr(eds.onReady, ""), cvt.t2ms($("main#splashRoot").css(a.trdr)));
     },
 
     eoo: eoo
