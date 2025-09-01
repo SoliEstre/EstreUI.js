@@ -118,6 +118,27 @@ releaseInsetForApp();
 
 // Service Worker
 if ("serviceWorker" in navigator) {
+    const serviceWorkerOnInstalling = (worker) => {
+        if (worker) {
+            console.log("Service Worker is installing:", worker);
+            serviceWorkerHandler.registerationOnInstalling(worker);
+        }
+    }
+
+    const serviceWorkerOnWaiting = (worker) => {
+        if (worker) {
+            console.log("Service Worker is waiting:", worker);
+            serviceWorkerHandler.registerationOnWaiting(worker);
+        }
+    }
+
+    const serviceWorkerOnActive = (worker, isNewer = false) => {
+        if (worker) {
+            console.log("Service Worker is active:", worker);
+            serviceWorkerHandler.registerationOnActivated(worker, isNewer);
+        }
+    }
+
     window.addEventListener("load", () => {
         navigator.serviceWorker.register("./serviceWorker.js", {
             // scope: "/", // When use service worker file out of location of index.html, have to set scope with HTTP Server response Header 'Service-Worker-Allowed: /'
@@ -130,27 +151,6 @@ if ("serviceWorker" in navigator) {
         }).then(registration => {
             serviceWorkerHandler.registeration = registration;
             console.log("Service Worker registered with scope:", registration.scope);
-
-            const serviceWorkerOnInstalling = (worker) => {
-                if (worker) {
-                    console.log("Service Worker is installing:", worker);
-                    serviceWorkerHandler.registerationOnInstalling(worker);
-                }
-            }
-
-            const serviceWorkerOnWaiting = (worker) => {
-                if (worker) {
-                    console.log("Service Worker is waiting:", worker);
-                    serviceWorkerHandler.registerationOnWaiting(worker);
-                }
-            }
-
-            const serviceWorkerOnActive = (worker, isNewer = false) => {
-                if (worker) {
-                    console.log("Service Worker is active:", worker);
-                    serviceWorkerHandler.registerationOnActivated(worker, isNewer);
-                }
-            }
 
             serviceWorkerOnInstalling(registration.installing);
             serviceWorkerOnWaiting(registration.waiting);
