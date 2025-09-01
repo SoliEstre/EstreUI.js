@@ -1,4 +1,4 @@
-const INSTALLATION_VERSION_NAME = "1.0.0-r20250831";
+const INSTALLATION_VERSION_NAME = "0.8.0-r20250901";
 // ^^ Use for check new update "Native application(webview) version - PWA release version"
  
 const INSTALLATION_FILE_LIST = [
