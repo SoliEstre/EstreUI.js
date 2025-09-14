@@ -165,6 +165,7 @@ if ("serviceWorker" in navigator) {
             });
 
             serviceWorkerOnActive(registration.active);
+            serviceWorkerHandler.isInitialSetup = registration.active == null;
 
             registration.addEventListener("updatefound", () => {
                 const newWorker = registration.installing;
@@ -209,6 +210,8 @@ const serviceWorkerHandler = {
     installing: null,
     waiting: null,
     activated: null,
+    isInitialSetup: null,
+
     get service() { return navigator.serviceWorker; },
     get controller() { return this.service?.controller; },
     get worker() { return this.controller ?? this.activated ?? this.waiting ?? this.installing; },
@@ -294,8 +297,9 @@ const serviceWorkerHandler = {
         this.onControllerChanged = listener;
     },
 
-    controllerOnChanged() {
-        this.onControllerChanged?.();
+    controllerOnChanged(event) {
+        this.onControllerChanged?.(event);
+        if (this.isInitialSetup) this.isInitialSetup = false;
     },
 
     controllerChangeListener(event) {

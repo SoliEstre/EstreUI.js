@@ -110,6 +110,7 @@ class AppActionManager {
         swHandler.setOnInstallingListener(worker => this.onInstallingNewServiceWorker(worker));
         swHandler.setOnWaitingListener(worker => this.onWaitingNewServiceWorker(worker));
         swHandler.setOnActivatedNewerListener(worker => this.onActivatedNewServiceWorker(worker));
+        swHandler.setOnControllerChangeListener(event => this.onControllerChangedToNewServiceWorker(event));
     }
 
     async onReadyEstreUi() {
@@ -168,20 +169,25 @@ class AppActionManager {
     async onInstallingNewServiceWorker(worker) {
         if (this.#swUpdateBeforeAsk) {
             // vv Method 1: Install new service worker immediately and prompt user to restart app when activated new service worker
-            this.controller?.let(it => this.clearCache(it));
-            note("Now installing new version of app...");
+            if (!swHandler.isInitialSetup) {
+                this.controller?.let(it => this.clearCache(it));
+                note("Now installing new version of app...");
+            }
         }
     }
 
-    onWaitingNewServiceWorker(worker) {
+    async onWaitingNewServiceWorker(worker) {
         const swHandler = this.swHandler;
 
         if (this.#swUpdateBeforeAsk) {
             // vv Method 1: Install new service worker immediately and prompt user to restart app when activated new service worker
-            swHandler.skipWaiting(worker);
+            if (!swHandler.isInitialSetup) {
+                swHandler.skipWaiting(worker);
+            }
         } else {
             // vv Method 2: Wait activate until user accepts to install new service worker and apply immediately when activated new service worker
-            estreToastConfirm({
+            const isNewNative = await this.checkPostNewNativeAppVersion(worker);
+            if (!isNewNative && !swHandler.isInitialSetup) estreToastConfirm({
                 title: "New version of app is available",
                 message: "A new version of the app is available<br />Would you like to update to the new version now?<br /><span class=\"font_sr12\">* The new version will be automatically applied when the app is restarted after closing<br />** Some functions may not work properly if the new version is not applied</span>",
                 positive: "Update now",
@@ -200,7 +206,7 @@ class AppActionManager {
         if (this.#swUpdateBeforeAsk) {
             // vv Method 1: Install new service worker immediately and prompt user to restart app when activated new service worker
             const isNewNative = await this.checkPostNewNativeAppVersion(worker);
-            if (!isNewNative) estreToastConfirm({
+            if (!isNewNative && !swHandler.isInitialSetup) estreToastConfirm({
                 title: "Request to restart app",
                 message: "A new version of the app is ready<br />To apply it, the app needs to be restarted<br />Would you like to restart now?<br /><span class=\"font_sr12\">* The new version will be automatically applied when the app is restarted after closing<br />** Some functions may not work properly if the new version is not applied<br />When new version is installed to be reloaded every app window</span>",
                 positive: "Apply now",
@@ -212,8 +218,10 @@ class AppActionManager {
             });
         } else {
             // vv Method 2: Wait activate until user accepts to install new service worker and apply immediately when activated new service worker
-            swHandler.clientsClaim(worker);
-            location.reload();
+            if (!swHandler.isInitialSetup) {
+                swHandler.clientsClaim(worker);
+                location.reload();
+            }
         }
     }
 
@@ -230,6 +238,13 @@ class AppActionManager {
                 }, 1000);
             },
         });
+    }
+
+    async onControllerChangedToNewServiceWorker(event) {
+        const swHandler = this.swHandler;
+        const version = await swHandler.getVersion();
+        console.log("New service worker controller is ready: v" + version);
+        this.setServiceWorkerControllerEvents();
     }
 
     setServiceWorkerControllerEvents() {

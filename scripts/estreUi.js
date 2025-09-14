@@ -732,14 +732,15 @@ prompt = (title,
 
 // Infinite loop and prograss meter
 let latestIO = null;
+let backHolds = 0;
 
 /**
  * Show infinite loop wait indicator
  * 
  * @param {instanceOrigin: string} / instance access origin code
  */
-const wait = function (instanceOrigin) {
-    const io = pageManager.bringPage("!onRunning", undefined, instanceOrigin) ? instanceOrigin : undefined;
+const wait = function (options, instanceOrigin) {
+    const io = pageManager.bringPage("!onRunning", { data: options }, instanceOrigin) ? instanceOrigin : undefined;
     latestIO = io;
     return io;
 }
@@ -750,12 +751,20 @@ const wait = function (instanceOrigin) {
  * @param {delay: Number} / wait go() before bring wait indicator (ms, default is 600)
  * @param {instanceOrigin: string} / instance access origin code (default is to be auto generated)
  */
-const stedy = function (delay = 600, instanceOrigin = "stedy" + Date.now()) {
+const stedy = function (options, delay = 600, instanceOrigin = "stedy" + Date.now()) {
     latestIO = instanceOrigin;
     setTimeout(_ => {
-        if (latestIO == instanceOrigin) wait(instanceOrigin);
+        if (latestIO == instanceOrigin) wait(options, instanceOrigin);
     }, delay);
     return instanceOrigin;
+}
+
+const onBackWhile = function (handle) {
+    if (handle != n || latestIO != n) {
+        backHolds++;
+        return t;
+    }
+    return f;
 }
 
 /**
@@ -767,6 +776,14 @@ const go = function (instanceOrigin) {
     if (instanceOrigin != null && latestIO != instanceOrigin) return
     const aio = pageManager.closePage("!onRunning", false, instanceOrigin);
     latestIO = null;
+    if (backHolds > 0) postAsyncQueue(async _ => {
+        const holds = backHolds;
+        backHolds = 0;
+        await aio;
+        console.log("Release holded back requests");
+        // for (let i=0; i<holds; i++) await estreUi.onBack();
+        await estreUi.onBack();
+    })
     return aio;
 }
 
@@ -4248,6 +4265,22 @@ class EstreUiPage {
                 this.$pageTitle.html(title);
             }
 
+            setAppbarLeftToolSet(frostOrCold, matchReplacer, dataName = "frozen") {
+                const exactContainer = this.handle.currentOnTop;
+                const $exactArticle = exactContainer?.$article?.["left"];
+                const $exactToolSet = $exactArticle?.find(nv + cls + "tool_set");
+                if ($exactToolSet != null) {
+                    const nodes = [];
+                    if (isNotNully(frostOrCold)) {
+                        for (const toolset of $exactToolSet) toolset.alone(frostOrCold, matchReplacer)?.let(it => nodes.push(...it));
+                    } else {
+                        for (const toolset of $exactToolSet) toolset.melt(matchReplacer, dataName)?.let(it => nodes.push(...it));
+                    }
+                    this.handle.applyActiveStructAfterBind($exactToolSet);
+                    return nodes;
+                } return null;
+            }
+
             setAppbarRightToolSet(frostOrCold, matchReplacer, dataName = "frozen") {
                 const exactContainer = this.handle.currentOnTop;
                 const $exactArticle = exactContainer?.$article?.["right"];
@@ -4399,10 +4432,26 @@ class EstreUiPage {
 
         },
 
-        "$i&o=toastUpSlide#onRunning^": class extends EstreLottieAnimatedHandler {
+        "$i&o=interaction#onRunning^": class extends EstreLottieAnimatedHandler {
+            isTriggeredCancellation = f;
 
+            onBack(handle) {
+                const cancellationExceeds = this.intentData?.cancellationExceeds ?? 3;
+                if (this.isTriggeredCancellation || this.intentData?.blockBack) {
+                    return true;
+                } else if (backHolds < cancellationExceeds - 1) {
+                    return onBackWhile(handle);
+                } else if (backHolds == cancellationExceeds - 1) {
+                    const instanceOrigin = latestIO;
+                    backHolds = 0;
+                    this.isTriggeredCancellation = t;
+                    this.intentData?.callbackCancellation?.();
+                    postQueue(_ => go(instanceOrigin));
+                    return handle.close();
+                }
+            }
         },
-        "$i&o=toastUpSlide#onProgress^": class extends EstreLottieAnimatedHandler {
+        "$i&o=interaction#onProgress^": class extends EstreLottieAnimatedHandler {
             get perfectValue()      { return 1000; }    // 100% value
             get zeroPosition()      { return 15; }      // 0% frame
             get halfPosition()      { return 75; }      // 50% frame
@@ -12458,6 +12507,424 @@ class EstreSwipeHandler {
 
 
 
+class EstreDraggableHandler {
+
+    // enclosed property
+    #isEnabledTouch = f;
+
+    // open property
+    $bound;
+
+    draggableAxis = "vertical"; // "both", "horizontal", "vertical"
+    // currently supports only vertical
+
+    useTouchSupport = n; // null is auto
+
+
+    // getter and setter
+    get isTouchSupported() { return "ontouchstart" in window ||
+        navigator.maxTouchPoints > 0 ||
+        navigator.msMaxTouchPoints > 0 ||
+        window.DocumentTouch && document instanceof DocumentTouch; }
+
+
+    // instant methods
+    startTouch = _ => {};
+    getDragDistance = _ => {};
+    shouldMoveDraggingItem = _ => {};
+    performDragMove = _ => {};
+    startDragging = _ => {};
+    endDragging = _ => {};
+    clearGhost = _ => {};
+
+
+    constructor($bound, axis = "vertical", useTouchSupport = n) {
+        this.useTouchSupport = useTouchSupport;
+        if (useTouchSupport || (useTouchSupport == n && this.isTouchSupported && !isAndroid)) this.#isEnabledTouch = t;
+        this.draggableAxis = axis;
+        this.$bound = $bound;
+        for (const bound of $bound) bound.draggableHandler = this;
+        this.init();
+    }
+
+    release() {
+        $(document).off('touchstart.dragHandler');
+        this.endDragging();
+        for (const bound of this.$bound) delete bound.draggableHandler;
+
+        if (this.$blockingBound != null && this.eventBlocker != null) {
+            this.$blockingBound.off("click touchstart touchmove touchend touchcancel", this.eventBlocker);
+            this.$blockingBound = null;
+            this.eventBlocker = null;
+        }
+    }
+
+    init() {
+        const handler = this;
+
+        const $draggables = this.$bound.find(aiv("draggable", "true"));
+        const $containers = this.$bound.find(aiv("droppable", "true"));
+
+        // Remove existing events
+        $draggables.off("dragstart dragend touchstart touchmove touchend");
+        $containers.off("dragover dragleave drop touchmove touchend");
+        
+        let draggingItem = n;
+        let isDragging = false;
+        let touchData = { 
+            startX: 0, 
+            startY: 0, 
+            currentX: 0, 
+            currentY: 0,
+            startTime: 0,
+            moved: false,
+            dragThreshold: 10 // Drag start threshold in pixels
+        };
+        let ghostElement = null;
+        let dragStartTimeout = null;
+        let lastDragPosition = { container: null, afterElement: null, timestamp: 0 };
+        let dragMoveThrottle = null;
+
+        // Helper function for touch start
+        this.startTouch = (element, touch) => {
+            touchData.startX = touch.clientX;
+            touchData.startY = touch.clientY;
+            touchData.currentX = touch.clientX;
+            touchData.currentY = touch.clientY;
+            touchData.startTime = Date.now();
+            touchData.moved = false;
+            draggingItem = element;
+            this.clearGhost();
+        };
+
+        // Calculate drag distance
+        this.getDragDistance = () => {
+            const deltaX = touchData.currentX - touchData.startX;
+            const deltaY = touchData.currentY - touchData.startY;
+            return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        };
+
+        // Check if element position needs to be changed
+        this.shouldMoveDraggingItem = (targetContainer, afterElement) => {
+            const currentParent = draggingItem.parentNode;
+            const currentNext = draggingItem.nextSibling;
+            
+            // Different container - always move
+            if (currentParent !== targetContainer) {
+                return true;
+            }
+            
+            // Same container - check if position actually changes
+            if (afterElement === null) {
+                // Moving to end - only move if not already at end
+                return currentNext !== null;
+            } else {
+                // Moving before specific element - only move if not already before it
+                return currentNext !== afterElement;
+            }
+        };
+
+        // Perform DOM move with throttling to prevent excessive operations
+        this.performDragMove = (targetContainer, afterElement) => {
+            const now = Date.now();
+            
+            // Check if this is the same position as last move (within 50ms)
+            if (lastDragPosition.container === targetContainer && 
+                lastDragPosition.afterElement === afterElement && 
+                (now - lastDragPosition.timestamp) < 50) {
+                return;
+            }
+            
+            // Check if actual move is needed
+            if (!this.shouldMoveDraggingItem(targetContainer, afterElement)) {
+                return;
+            }
+            
+            // Clear any pending throttled move
+            if (dragMoveThrottle) {
+                clearTimeout(dragMoveThrottle);
+                dragMoveThrottle = null;
+            }
+            
+            // Throttle the move operation
+            dragMoveThrottle = setTimeout(() => {
+                if (draggingItem && targetContainer) {
+                    try {
+                        if (afterElement === null) {
+                            targetContainer.appendChild(draggingItem);
+                        } else {
+                            targetContainer.insertBefore(draggingItem, afterElement);
+                        }
+                        
+                        // Update last position
+                        lastDragPosition = {
+                            container: targetContainer,
+                            afterElement: afterElement,
+                            timestamp: Date.now()
+                        };
+                    } catch (error) {
+                        console.warn('Drag move operation failed:', error);
+                    }
+                }
+                dragMoveThrottle = null;
+            }, 16); // ~60fps throttling
+        };
+
+        // Handle drag start
+        this.startDragging = (element) => {
+            if (isDragging) return;
+            
+            isDragging = true;
+            element.dataset.dragging = t1;
+            
+            // Create ghost element for visual feedback
+            ghostElement = element.cloneNode(true);
+            ghostElement.classList.add('ghost-element');
+            ghostElement.style.cssText = `
+                position: fixed !important;
+                z-index: 9999 !important;
+                left: ${touchData.currentX - 200}px !important;
+                top: ${touchData.currentY - 25}px !important;
+                border-radius: 8px !important;
+                box-shadow: 0 8px 16px var(--color-boundary-o20) !important;
+                opacity: 0.8 !important;
+                pointer-events: none !important;
+                transform: rotate(5deg) scale(1.05) !important;
+                transition-duration: 0s;
+            `;
+            document.body.appendChild(ghostElement);
+        };
+
+        // Handle drag end
+        this.endDragging = () => {
+            // Clear drag timeout
+            if (dragStartTimeout) {
+                clearTimeout(dragStartTimeout);
+                dragStartTimeout = null;
+            }
+            
+            // Clear drag move timeout
+            if (dragMoveThrottle) {
+                clearTimeout(dragMoveThrottle);
+                dragMoveThrottle = null;
+            }
+            
+            // Remove ghost element
+            this.clearGhost();
+            
+            // Remove all highlights
+            setTimeout(_ => {
+                $containers.removeAttr("data-highlight");
+            }, 200);
+            
+            if (!isDragging) return;
+            
+            isDragging = false;
+            
+            // Remove drag state
+            if (draggingItem) {
+                draggingItem.dataset.dragging = n;
+                draggingItem = n;
+            }
+            
+            // Reset position tracking
+            lastDragPosition = { container: null, afterElement: null, timestamp: 0 };
+        };
+
+        this.clearGhost = () => {
+            if (ghostElement && ghostElement.parentNode) {
+                ghostElement.parentNode.removeChild(ghostElement);
+                ghostElement = null;
+            }
+            $(doc.b).find(c.c + cls + "ghost-element").remove();
+        };
+
+        // Touch start event
+        if (this.#isEnabledTouch) $draggables.on({
+            "touchstart": function (e) {
+                const touch = e.originalEvent.touches[0];
+                handler.startTouch(this, touch);
+                
+                // Set delayed timeout for drag start
+                dragStartTimeout = setTimeout(() => {
+                    if (draggingItem === this && !isDragging && !touchData.moved) {
+                        handler.startDragging(this);
+                    }
+                }, 150); // Start drag mode after 150ms hold
+            },
+
+            // Touch move event
+            "touchmove": function (e) {
+                const touch = e.originalEvent.touches[0];
+                touchData.currentX = touch.clientX;
+                touchData.currentY = touch.clientY;
+                
+                // Detect movement
+                if (!touchData.moved) {
+                    const distance = handler.getDragDistance();
+                    if (distance > touchData.dragThreshold) {
+                        if (isDragging) {
+                            touchData.moved = true;
+                        } else {
+                            handler.endDragging();
+                        }
+                    }
+                }
+                
+                // Do not process if not dragging
+                if (!isDragging) return;
+                
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Update ghost element position
+                if (ghostElement) {
+                    ghostElement.style.left = (touchData.currentX - 200) + 'px';
+                    ghostElement.style.top = (touchData.currentY - 25) + 'px';
+                }
+                
+                // Find drop target from touch position
+                const elementBelow = document.elementFromPoint(touchData.currentX, touchData.currentY);
+                const container = elementBelow?.closest(aiv("droppable", "true"));
+                
+                if (container) {
+                    // Remove highlights from all containers
+                    $containers.removeAttr("data-highlight");
+                    
+                    // Apply highlight to current container
+                    container.dataset.highlight = t1;
+                    
+                    // Use improved drag move logic
+                    const afterElement = handler.getDragAfterElement(container, touchData.currentY);
+                    handler.performDragMove(container, afterElement);
+                } else {
+                    // Remove highlight when outside containers
+                    $containers.removeAttr("data-highlight");
+                }
+            },
+
+            // Touch end event
+            "touchend": function (e) {
+                // Treat as click if touch is short and movement is minimal
+                const touchDuration = Date.now() - touchData.startTime;
+                const dragDistance = handler.getDragDistance();
+                
+                if (!isDragging && touchDuration < 200 && dragDistance < touchData.dragThreshold) {
+                    // Handle as regular click - allow default behavior
+                    handler.endDragging();
+                    return;
+                }
+                
+                e.preventDefault();
+                e.stopPropagation();
+                
+                handler.endDragging();
+            },
+
+            // Touch cancel event
+            "touchcancel": function (e) {
+                handler.endDragging();
+            },
+        });
+
+         // Desktop drag events
+        $draggables.on({
+            "dragstart": function (e) {
+                draggingItem = this;
+                isDragging = true;
+                postQueue(_ => { this.dataset.dragging = t1; });
+                const event = e.originalEvent;
+                event.dataTransfer.effectAllowed = "move";
+                event.dataTransfer.setDragImage(this, e.offsetX, e.offsetY);
+            },
+
+            "dragend": function (e) {
+                draggingItem = n;
+                isDragging = false;
+                this.dataset.dragging = n;
+                $containers.removeAttr("data-highlight");
+            },
+        });
+
+       // Desktop container events
+        $containers.on({
+            "dragover": function (e) {
+                e.preventDefault();
+
+                $containers.removeAttr("data-highlight");
+                this.dataset.highlight = t1;
+                const event = e.originalEvent;
+                event.dataTransfer.dropEffect = "move";
+                
+                // Use improved drag move logic
+                const afterElement = handler.getDragAfterElement(this, e.clientY);
+                if (handler.#isEnabledTouch) handler.performDragMove(this, afterElement);
+                else if (afterElement === null) this.appendChild(draggingItem);
+                else this.insertBefore(draggingItem, afterElement);
+
+                return false;
+            },
+
+            "dragleave": function (e) {
+                // Prevent dragleave from being triggered incorrectly by child elements
+                const rect = this.getBoundingClientRect();
+                const isOutside = e.clientX < rect.left || e.clientX > rect.right || 
+                                e.clientY < rect.top || e.clientY > rect.bottom;
+                
+                if (isOutside) {
+                    delete this.dataset.highlight;
+                }
+            },
+
+            "drop": function (e) {
+                e.preventDefault();
+                
+                delete this.dataset.highlight;
+
+                return false;
+            },
+        });
+
+        // Global touch event to handle drag end during scroll
+        $(document).on('touchstart.dragHandler', function(e) {
+            if (isDragging && !$(e.target).closest(aiv("draggable", "true")).length) {
+                handler.endDragging();
+            }
+        });
+    }
+
+    getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll(li + aiv("draggable", "true") + naiv("data-dragging", t1))];
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            if (offset < 0 && offset > closest.offset) return { offset: offset, element: child };
+            else return closest;
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    blockEventLeaks($closestBound = this.$bound) {
+        if (this.$blockingBound != null && this.eventBlocker != null) {
+            this.$blockingBound.off("click touchstart touchmove touchend touchcancel", this.eventBlocker);
+        }
+
+        this.eventBlocker = function (e) {
+            // e.preventDefault();
+            e.stopPropagation();
+
+            // return false;
+        }
+
+        this.$blockingBound = $closestBound;
+
+        $closestBound.on("click touchstart touchmove touchend touchcancel", this.eventBlocker);
+
+        return this;
+    }
+}
+
+
+
 const estreStruct = {
     structureSuffix: ".json",
 }
@@ -12945,6 +13412,7 @@ const estreUi = {
         if (!success && isRootContainer) success = appbar.showContainer("root");
         if (!success && (!isHomeComponent || !isRootContainer)) success = appbar.showContainer("sub");
         estreUi.releaseAppbarPageTitle();
+        estreUi.releaseAppbarLeftToolSet();
         estreUi.releaseAppbarRightToolSet();
 
         return success;
@@ -12956,6 +13424,16 @@ const estreUi = {
 
     releaseAppbarPageTitle() {
         this.setAppbarPageTitle(this.isOpenMainMenu ? this.menuCurrentOnTop?.title ?? "" : this.mainCurrentOnTop?.title ?? "");
+    },
+
+    setAppbarLeftToolSet(frostOrCold, matchReplacer, dataName = "frozen") {
+        if (typeFunction(frostOrCold)) return frostOrCold(feed => this.appbar?.handler?.setAppbarLeftToolSet(feed, matchReplacer, dataName));
+        else return $(this.appbar?.handler?.setAppbarLeftToolSet(frostOrCold, matchReplacer, dataName));
+    },
+
+    releaseAppbarLeftToolSet() {
+        const appbarFeed = this.isOpenMainMenu ? this.menuCurrentOnTop?.appbarLeftFeed : this.mainCurrentOnTop?.appbarLeftFeed;
+        return this.setAppbarLeftToolSet(appbarFeed);
     },
 
     setAppbarRightToolSet(frostOrCold, matchReplacer, dataName = "frozen") {
@@ -13653,7 +14131,7 @@ const estreUi = {
     },
 
     async onBack() {
-        return await this.onBackOverlay() ||
+        return await this.onBackOverlay() || onBackWhile() ||
             this.isOpenMainMenu ? await this.onBackMenu() || await this.closeMainMenu() : false ||
             await this.onBackBlinded() || await this.onBackMain();
     },

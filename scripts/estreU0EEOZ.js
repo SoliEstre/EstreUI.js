@@ -384,6 +384,8 @@ const nti = val => nto + eid + val + cps;
 const nai = attr => nao + attr + equ;
 /** nav(val) = "val"] */
 const nav = val => dq + val + clv;
+/** nax(attr) = :not([attr]) */
+const nax = attr => nao + attr + cao;
 /** naiv(attr, val, append = "") = :not([attr="val"]append) */
 const naiv = (attr, val, append = "") => nai(attr) + nav(val) + append + cps;
 
@@ -734,7 +736,8 @@ class LocalStyle {
             }
             localPrefix += specifier;
         }
-        const localizedStyles = styles.replace(/^([\t\s]*)##/gm, "$1" + localPrefix);
+        // const localizedStyles = styles.replace(/^([\t\s]*)##/gm, "$1" + localPrefix);
+        const localizedStyles = styles.replace(/([^#])##([^#])/g, "$1" + localPrefix + "$2").replace(/^##([^#])/gm, localPrefix + "$1");
 
         const styleSheet = doc.ce("style");
         if (elem == null) location.append(styleSheet);
