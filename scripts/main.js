@@ -167,6 +167,8 @@ class AppActionManager {
     }
 
     async onInstallingNewServiceWorker(worker) {
+        const swHandler = this.swHandler;
+
         if (this.#swUpdateBeforeAsk) {
             // vv Method 1: Install new service worker immediately and prompt user to restart app when activated new service worker
             if (!swHandler.isInitialSetup) {
