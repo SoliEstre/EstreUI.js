@@ -1,5 +1,5 @@
 {
-    "id": "/",
+    "id": "./",
     "name": "App title",
     "short_name": "App name",
     "description": "App description",
@@ -25,7 +25,7 @@
     "orientation": "natural",
     "scope": ".",
     "serviceworker": {
-        "scope": "/",
+        "scope": "./",
         "src": "./serviceWorker.js",
         "updateViaCache": false
     }
