@@ -1,4 +1,4 @@
-const INSTALLATION_VERSION_NAME = "0.9.0-r20251101";
+const INSTALLATION_VERSION_NAME = "0.9.0-r20251101a";
 // ^^ Use for check new update "Native application(webview) version(or Android/iOS version combo) - PWA release version"
 // ex) "1.0.1/1.0.0-r20251101k"
  
@@ -105,7 +105,7 @@ const EMPTY_RESPONSE = new Response(null, {
 });
 
 self.isLog = true;
-self.isDebug = self.location.host.replace(HOST, "").length > 0;
+self.isDebug = false;
 self.isVerbose = false;
 Object.defineProperty(self, "isLogging", {
     "get": function () { return this.isLog || this.isDebug; },
