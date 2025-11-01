@@ -30,7 +30,7 @@ SOFTWARE.
 // 
 // Cold(array object) assigning of HTML Tree for make to JSON string.
 // 
-// v0.14 / release 2025.08.29
+// v0.15 / release 2025.10.17
 // 
 // cold = [] - Cold HTML child node list
 // cold[0] - Tag name, classes, id, name, type = "tag.class1.class2#id@name$type" : string
@@ -153,7 +153,8 @@ class Doctre {
             case "string": 
                 const tmp = this.createElement();
                 tmp.innerHTML = this.matchReplace(val, matchReplacer);
-                for (const node of tmp.content.childNodes) df.appendChild(node);
+                const childNodes = tmp.content.childNodes;
+                while (childNodes.length > 0) df.appendChild(childNodes[0]);
                 break;
 
             case "object":
@@ -245,11 +246,15 @@ class Doctre {
         const trimmedFrost = frost.trim();
         if (trimmedFrost.startsWith("[['") || trimmedFrost.startsWith("['")) frost = frost.replace(/\'/g, '"');
         const replaced = this.matchReplace(frost, matchReplacer);
-        var parsed;
+        let parsed;
         try {
             parsed = JSON.parse(replaced);
         } catch (error) {
-            console.error("Doctre.parse - Frozen JSON parse error: ", error);
+            try {
+                parsed = this.matchReplaceObject(JSON.parse(frost), matchReplacer);
+            } catch (error) {
+                console.error("Doctre.parse - Frozen JSON parse error: ", error);
+            }
         }
         return this.createFragment(parsed);
     }

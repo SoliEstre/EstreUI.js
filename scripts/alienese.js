@@ -32,7 +32,7 @@ SOFTWARE.
 // This patch aims to create smaller (quicker) and more concise (lighter) JavaScript code.
 // It makes the code more implicit and serves as an alternative to obfuscation.
 // 
-// v0.4.0 / release 2025.08.20
+// v0.4.1 / release 2025.09.24
 // 
 // * Must be loaded modernism.js before this script.
 // 
@@ -340,6 +340,12 @@ const rigm = regex => new RegExp(regex, "igm");
 
 
 // common extra characters constants
+const lr = "(";
+const rr = ")";
+const lc = "{";
+const rc = "}";
+const ls = "[";
+const rs = "]";
 const lt = "<";
 const gt = ">";
 const ab = lt + gt;

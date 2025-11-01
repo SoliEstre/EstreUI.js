@@ -1,4 +1,5 @@
 {
+    "id": "/",
     "name": "App title",
     "short_name": "App name",
     "description": "App description",
@@ -16,11 +17,16 @@
             "purpose": "maskable"
         }
     ],
-    "start_url": ".",
+    "start_url": "./serviceLoader.html",
     "theme_color": "#222222",
     "background_color": "#FFFFFF",
     "display_override": ["minimal-ui", "standalone"],
     "display": "window-controls-overlay",
-    "orientation": "any",
-    "scope": "."
+    "orientation": "natural",
+    "scope": ".",
+    "serviceworker": {
+        "scope": "/",
+        "src": "./serviceWorker.js",
+        "updateViaCache": false
+    }
 }

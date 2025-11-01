@@ -16,6 +16,10 @@ Doctre?.patch?.();
 const doc = {
     get b() { return document.body; },
     get $b() { return $(this.b); },
+    get e() { return document.documentElement; },
+    get $e() { return $(this.e); },
+    get h() { return document.head; },
+    get $h() { return $(this.h); },
 
     ce: (tagName, classIdName, contentData, style, attrs = {}, datas = {}) => Doctre.createElement(tagName, classIdName, contentData, style, attrs, datas),
     cte: (innerHtml) => {
@@ -60,6 +64,9 @@ if (typeof $ == UNDEFINED) $ = jQuery;
 
 
 // Tag alias constants
+const m1 = "meta";
+const lk = "link";
+const lz = "lazy";
 const bd = "body";
 const div = "div";
 const nv = "nav";
@@ -96,8 +103,12 @@ const sel = "select";
 const opt = "option";
 const lp = "lottie-player";
 const dlp = "dotlottie-player";
+const dll = "dotlottie-loader";
 
 // Tag alias constants (Upper case) - for compare
+const M1 = "META";
+const LK = "LINK";
+const LZ = "LAZY";
 const BD = "BODY";
 const DIV = "DIV";
 const NV = "NAV";
@@ -268,12 +279,12 @@ const st = cf;
 const ed = ds;
 const equ = eq;
 
-const ops = "(";
-const cps = ")";
-const obk = "[";
-const cbk = "]";
-const obc = "{";
-const cbc = "}";
+const ops = lr;
+const cps = rr;
+const obk = ls;
+const cbk = rs;
+const obc = lc;
+const cbc = rc;
 
 
 // CSS puesedo selector constant
@@ -655,18 +666,73 @@ class EUX {
     }
 
 
-    static setOnImagesFullyLoaded(callback = () => {}, debug = false) {
-        Promise.all(Array.from(document.images).map(img => {
+    static async setOnImagesFullyLoaded(callback = () => {}, debug = globalThis?.isDebug ?? false) {
+        await Promise.all(Array.from(document.images).map(img => {
             if (img.complete)
                 return Promise.resolve(img.naturalHeight !== 0);
             return new Promise(resolve => {
-                img.addEventListener('load', () => resolve(true));
-                img.addEventListener('error', () => resolve(false));
+                let clear;
+                const onLoad = e => {
+                    clear(e.target);
+                    resolve(true);
+                }
+                const onError = e => {
+                    clear(e.target);
+                    resolve(false);
+                }
+                clear = elem => {
+                    elem.removeEventListener('load', onLoad);
+                    elem.removeEventListener('error', onError);
+                }
+                
+                img.addEventListener('load', onLoad);
+                img.addEventListener('error', onError);
             });
         })).then(results => {
             if (debug) {
                 if (results.every(res => res)) console.log('all images loaded successfully');
                 else console.log('some images failed to load, all finished loading');
+            }
+
+            callback();
+        });
+    }
+
+
+    static async setOnLinksFullyLoaded(callback = () => {}, debug = globalThis?.isDebug ?? false) {
+        const links = Array.from(document.querySelectorAll('link[rel="stylesheet"], link[rel="preload"]'));
+        
+        await Promise.all(links.map(link => {
+            // 이미 로드된 경우 체크
+            if (link.sheet || link.readyState === 'complete') {
+                return Promise.resolve(true);
+            }
+            
+            return new Promise(resolve => {
+                let clear;
+                const onLoad = e => {
+                    clear(e.target);
+                    resolve(true);
+                }
+                const onError = e => {
+                    clear(e.target);
+                    resolve(false);
+                }
+                clear = elem => {
+                    elem.removeEventListener('load', onLoad);
+                    elem.removeEventListener('error', onError);
+                }
+
+                link.addEventListener('load', onLoad);
+                link.addEventListener('error', onError);
+                
+                // 타임아웃 설정 (10초)
+                setTimeout(onError, 10000, { target: link });
+            });
+        })).then(results => {
+            if (debug) {
+                if (results.every(res => res)) console.log('all links loaded successfully');
+                else console.log('some links failed to load, all finished loading');
             }
 
             callback();
@@ -809,6 +875,11 @@ class EsLocale {
 
             "today": "Today",
 
+            "am": "morning",
+            "pm": "afternoon",
+            "amShort": "AM",
+            "pmShort": "PM",
+
             "dateDataDivider": "-",
             "timeDataDivider": ":",
             "dateDivider": "/",
@@ -876,6 +947,11 @@ class EsLocale {
             "hourly": "시간별",
 
             "today": "오늘",
+
+            "am": "오전",
+            "pm": "오후",
+            "amShort": "오전",
+            "pmShort": "오후",
 
             "dateDataDivider": "-",
             "timeDataDivider": ":",
@@ -1261,6 +1337,9 @@ const Ecal = {
         const timeArray = this.getTimeArray(date);
         const timeString = timeArray.join(cl);
         const dateTimeString = [this.getDateString(date), timeString].join(s);
+        const hours = date.getHours();
+        const hours12 = (hours % 12).let(it => it == 0 ? 12 : it);
+        const isPM = hours >= 12;
         return {
             ymw: this.getYearMonthWeek(date),
             year: date.getFullYear(),
@@ -1286,6 +1365,16 @@ const Ecal = {
             time: date.getTime(),
             timeArray,
             timeString,
+            isPM,
+            noon: isPM ? EsLocale.get("pm", lang) : EsLocale.get("am", lang),
+            noonShort: isPM ? EsLocale.get("pmShort", lang) : EsLocale.get("amShort", lang),
+            hours,
+            hours2d: v2d(hours),
+            hours12,
+            minutes: date.getMinutes(),
+            minutes2d: v2d(date.getMinutes()),
+            seconds: date.getSeconds(),
+            seconds2d: v2d(date.getSeconds()),
             dateTimeString,
             dateOrigin: new Date(date),
         }

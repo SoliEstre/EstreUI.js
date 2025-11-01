@@ -28,7 +28,22 @@ const isAppleMobile = isIPhone || isIPad || isIPod;
 const isAndroid = navigator.userAgent.includes("Android");
 const isAndroidMobile = isAndroid && isMobile;
 const isSamsungBrowser = navigator.userAgent.includes("SamsungBrowser");
+const isSamsungMobile = isSamsungBrowser && isMobile;
 
+
+window.isLog = true;
+window.isDebug = location.host.replace("class.mangoedu.co.kr", "").length > 0;
+window.isVerbose = false;
+Object.defineProperty(window, "isLogging", {
+    "get": function () { return this.isLog || this.isDebug; },
+    configurable: true,
+    enumerable: false,
+});
+Object.defineProperty(window, "isVerbosely", {
+    "get": function () { return this.isDebug && this.isVerbose; },
+    configurable: true,
+    enumerable: false,
+});
 
 // Update viewport-fit for PWA
 const updateInsets = function (e) {
@@ -117,104 +132,18 @@ releaseInsetForApp();
 
 
 // Service Worker
-if ("serviceWorker" in navigator) {
-    const serviceWorkerOnInstalling = (worker) => {
-        if (worker) {
-            console.log("Service Worker is installing:", worker);
-            serviceWorkerHandler.registerationOnInstalling(worker);
-        }
-    }
-
-    const serviceWorkerOnWaiting = (worker) => {
-        if (worker) {
-            console.log("Service Worker is waiting:", worker);
-            serviceWorkerHandler.registerationOnWaiting(worker);
-        }
-    }
-
-    const serviceWorkerOnActive = (worker, isNewer = false) => {
-        if (worker) {
-            console.log("Service Worker is active:", worker);
-            serviceWorkerHandler.registerationOnActivated(worker, isNewer);
-        }
-    }
-
-    window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./serviceWorker.js", {
-            // scope: "/", // When use service worker file out of location of index.html, have to set scope with HTTP Server response Header 'Service-Worker-Allowed: /'
-            updateViaCache: "none",
-
-            // vv PWA required set HTTP server response headers vv
-            // Cache-Control: no-cache
-            // Pragma: no-cache
-            // Expires: 0
-        }).then(registration => {
-            serviceWorkerHandler.registeration = registration;
-            console.log("Service Worker registered with scope:", registration.scope);
-
-            serviceWorkerOnInstalling(registration.installing);
-            serviceWorkerOnWaiting(registration.waiting);
-
-            registration.addEventListener("statechange", () => {
-                const activated = registration.active;
-                const constoller = navigator.serviceWorker.controller;
-                if (activated) {
-                    console.log("Service Worker state changed to:", activated.state);
-                    serviceWorkerOnActive(registration.active, controller != null && activated != controller);
-                }
-            });
-
-            serviceWorkerOnActive(registration.active);
-            serviceWorkerHandler.isInitialSetup = registration.active == null;
-
-            registration.addEventListener("updatefound", () => {
-                const newWorker = registration.installing;
-                console.log("New Service Worker found:", newWorker);
-                serviceWorkerOnInstalling(newWorker);
-
-                newWorker.addEventListener("statechange", () => {
-                    console.log("New Service Worker state changed to:", newWorker.state);
-                    switch (newWorker.state) {
-                        case "installed":
-                            console.log("New Service Worker installed and waiting to activate.");
-                            const controllerExist = navigator.serviceWorker.controller;
-                            const isWaiting = registration.waiting == newWorker;
-                            serviceWorkerHandler.registerationOnUpdated();
-                            if (isWaiting) {
-                                if (controllerExist) {
-                                    serviceWorkerOnWaiting(newWorker);
-                                } else {
-                                    // do nothing (first install)
-                                }
-                            }
-                            break;
-
-                        case "activated":
-                            serviceWorkerOnActive(newWorker, true);
-                            break;
-                    }
-
-                    if (newWorker == navigator.serviceWorker.controller) {
-                        console.log("New Service Worker is attached.");
-                    }
-                });
-            });
-        }).catch(error => {
-            console.error("Service Worker registration failed:", error);
-        });
-    });
-}
 
 const serviceWorkerHandler = {
     registeration: null,
     installing: null,
     waiting: null,
+    activating: null,
     activated: null,
     isInitialSetup: null,
 
     get service() { return navigator.serviceWorker; },
     get controller() { return this.service?.controller; },
-    get worker() { return this.controller ?? this.activated ?? this.waiting ?? this.installing; },
+    get worker() { return this.controller ?? this.activated ?? this.activating ?? this.waiting ?? this.installing; },
 
     postMessage(worker, message, transfer) {
         (worker ?? this.worker)?.postMessage(message, transfer);
@@ -229,9 +158,11 @@ const serviceWorkerHandler = {
 
     onWaiting: null,
     onUpdated: null,
+    onActivating: null,
+    onActivatingNewer: null,
+    onControllerChanged: null,
     onActivated: null,
     onActivatedNewer: null,
-    onControllerChanged: null,
 
     init() {
         if (this.service != null) {
@@ -279,6 +210,20 @@ const serviceWorkerHandler = {
         this.onUpdated?.();
     },
 
+    setOnActivatingListener(listener) {
+        this.onActivating = listener;
+    },
+
+    setOnActivatingNewerListener(listener) {
+        this.onActivatingNewer = listener;
+    },
+
+    registerationOnActivating(worker, isNewer = false) {
+        this.activating = worker;
+        this.onActivating?.(worker);
+        if (isNewer) this.onActivatingNewer?.(worker);
+    },
+
     setOnActivatedListener(listener) {
         this.onActivated = listener;
     },
@@ -303,7 +248,8 @@ const serviceWorkerHandler = {
     },
 
     controllerChangeListener(event) {
-        console.log("Service Worker controller changed:", event, "\n", serviceWorkerHandler.service.controller);
+        if (isVerbosely) console.log("Service Worker controller changed:", event, "\n", serviceWorkerHandler.service.controller);
+        else if (isLogging) console.log("Service Worker controller changed:", event.scriptURL);
         serviceWorkerHandler.controllerOnChanged(event);        
     },
 
@@ -322,7 +268,8 @@ const serviceWorkerHandler = {
                 break;
             
             default:
-                console.log("Unknown message type '" + event.data.type + "'", event);
+                if (isVerbosely) console.log("Received message with unknown type '" + event.data.type + "'", event);
+                else if (isLogging) console.log("Received message with unknown type '" + event.data.type + "'");
                 break;
         }
     },
@@ -357,6 +304,38 @@ const serviceWorkerHandler = {
         }
     },
 
+    async clearCommonCache(worker = this.worker) {
+        try {
+            return await this.sendRequestForWait("clearCommonCache", {}, worker);
+        } catch (error) {
+            console.error(error);
+        }
+    },
+
+    async clearStaticCache(worker = this.worker) {
+        try {
+            return await this.sendRequestForWait("clearStaticCache", {}, worker);
+        } catch (error) {
+            console.error(error);
+        }
+    },
+
+    async clearStonyCache(worker = this.worker) {
+        try {
+            return await this.sendRequestForWait("clearStonyCache", {}, worker);
+        } catch (error) {
+            console.error(error);
+        }
+    },
+
+    async clearAllCaches(worker = this.worker) {
+        try {
+            return await this.sendRequestForWait("clearAllCaches", {}, worker);
+        } catch (error) {
+            console.error(error);
+        }
+    },
+
     async getVersion(worker = this.worker) {
         try {
             return await this.sendRequestForWait("getVersion", {}, worker);
@@ -379,6 +358,110 @@ const serviceWorkerHandler = {
 };
 
 serviceWorkerHandler.init();
+
+if ("serviceWorker" in navigator) {
+    const serviceWorkerOnInstalling = (worker) => {
+        if (worker) {
+            if (isLogging) console.log("Service Worker is installing:", worker.scriptURL);
+            else if (isVerbosely) console.log("Service Worker is installing:", worker);
+            serviceWorkerHandler.registerationOnInstalling(worker);
+        }
+    };
+
+    const serviceWorkerOnWaiting = (worker) => {
+        if (worker) {
+            if (isLogging) console.log("Service Worker is waiting:", worker.scriptURL);
+            else if (isVerbosely) console.log("Service Worker is waiting:", worker);
+            serviceWorkerHandler.registerationOnWaiting(worker);
+        }
+    };
+
+    const serviceWorkerOnActivating = (worker, isNewer = false) => {
+        if (worker) {
+            if (isLogging) console.log("Service Worker is activating:", worker.scriptURL);
+            else if (isVerbosely) console.log("Service Worker is activating:", worker);
+            serviceWorkerHandler.registerationOnActivating(worker, isNewer);
+        }
+    };
+
+    const serviceWorkerOnActive = (worker, isNewer = false) => {
+        if (worker) {
+            if (isLogging) console.log("Service Worker is active:", worker.scriptURL);
+            else if (isVerbosely) console.log("Service Worker is active:", worker);
+            serviceWorkerHandler.registerationOnActivated(worker, isNewer);
+        }
+    };
+
+    // window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./serviceWorker.js", {
+            // scope: "/", // When use service worker file out of location of index.html, have to set scope with HTTP Server response Header 'Service-Worker-Allowed: /'
+            updateViaCache: "none",
+
+            // vv PWA required set HTTP server response headers vv
+            // Cache-Control: no-cache
+            // Pragma: no-cache
+            // Expires: 0
+        }).then(registration => {
+            serviceWorkerHandler.registeration = registration;
+            if (isLogging) console.log("Service Worker registered with scope:", registration.scope);
+
+            serviceWorkerOnInstalling(registration.installing);
+            serviceWorkerOnWaiting(registration.waiting);
+
+            registration.addEventListener("statechange", () => {
+                const activated = registration.active;
+                const constoller = navigator.serviceWorker.controller;
+                if (activated) {
+                    if (isLogging) console.log("Service Worker state changed to:", activated.state);
+                    serviceWorkerOnActive(registration.active, controller != null && activated != controller);
+                }
+            });
+
+            serviceWorkerOnActive(registration.active);
+            serviceWorkerHandler.isInitialSetup = registration.active == null;
+
+            registration.addEventListener("updatefound", () => {
+                const newWorker = registration.installing;
+                if (isLogging) console.log("New Service Worker found:", newWorker.scriptURL);
+                else if (isVerbosely) console.log("New Service Worker found:", newWorker);
+                serviceWorkerOnInstalling(newWorker);
+
+                newWorker.addEventListener("statechange", () => {
+                    if (isLogging) console.log("New Service Worker state changed to:", newWorker.state);
+                    switch (newWorker.state) {
+                        case "installed":
+                            if (isLogging) console.log("New Service Worker installed and waiting to activate.");
+                            const controllerExist = navigator.serviceWorker.controller;
+                            const isWaiting = registration.waiting == newWorker;
+                            serviceWorkerHandler.registerationOnUpdated();
+                            if (isWaiting) {
+                                if (controllerExist) {
+                                    serviceWorkerOnWaiting(newWorker);
+                                } else {
+                                    // do nothing (first install)
+                                }
+                            }
+                            break;
+
+                        case "activating":
+                            serviceWorkerOnActivating(newWorker, true);
+                            break;
+
+                        case "activated":
+                            serviceWorkerOnActive(newWorker, true);
+                            break;
+                    }
+
+                    if (newWorker == navigator.serviceWorker.controller) {
+                        if (isLogging) console.log("New Service Worker is attached.");
+                    }
+                });
+            });
+        }).catch(error => {
+            console.error("Service Worker registration failed:", error);
+        });
+    // });
+}
     </script>
 
 	<link rel="apple-touch-startup-image" href="./images/app_icon_512x512.png">
@@ -394,36 +477,30 @@ serviceWorkerHandler.init();
     <link rel="icon" type="image/svg+xml" href="./vectors/app_icon.svg" />
     <link rel="manifest" href="./webmanifest.json">
 
-    <link rel="stylesheet" type="text/css" href="./styles/estreUi.css">
+    <link rel="stylesheet" type="text/css" href="./styles/estreUiInitialize.css" />
+    <meta link="lazy" rel="stylesheet" type="text/css" href="./styles/estreUiRoot.css" />
+    <meta link="lazy" rel="stylesheet" type="text/css" href="./styles/estreUiCore.css" />
+    <meta link="lazy" rel="stylesheet" type="text/css" href="./styles/estreUiCore2.css" />
+    <meta link="lazy" rel="stylesheet" type="text/css" href="./styles/estreUiAliases.css" />
+    <meta link="lazy" rel="stylesheet" type="text/css" href="./styles/estreUi.css" />
+    <meta link="lazy" rel="stylesheet" type="text/css" href="./styles/estreUiHandles.css" />
+    <meta link="lazy" rel="stylesheet" type="text/css" href="./styles/estreUiHandleUnical.css" />
+
+    <!-- Use <meta link="lazy" /> for stylesheet(especially including font links, and except styles only show splash screen) when stylesheet volumes are large to failure load on actual iPhone -->
     <link rel="stylesheet" type="text/css" href="./styles/main.css">
 
     <style>
 /* in html styles */
     </style>
-    <script>
-
-if (isStandalone) {
-    // is PWA
-
-} else {
-    // isn't PWA
-    updateInsets({ type: "init"});
-    // setTimeout(() => updateInsets(), 3000);
-    window.addEventListener("load", updateInsets);
-    window.addEventListener('resize', updateInsets);
-    window.addEventListener('orientationchange', updateInsets);
-    document.addEventListener('scrollend', updateInsets);
-}
-    </script>
-    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
-    <script type="text/javascript" src="./scripts/jcodd.js"></script>
-    <script type="text/javascript" src="./scripts/doctre.js"></script>
-    <script type="text/javascript" src="./scripts/modernism.js"></script>
-    <script type="text/javascript" src="./scripts/alienese.js"></script>
-    <script type="text/javascript" src="./scripts/estreU0EEOZ.js"></script>
-    <script type="text/javascript" src="./scripts/estreUi.js"></script>
-    <script type="text/javascript" src="./scripts/main.js"></script>
+    <script defer src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script defer src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
+    <script defer type="text/javascript" src="./scripts/jcodd.js"></script>
+    <script defer type="text/javascript" src="./scripts/doctre.js"></script>
+    <script defer type="text/javascript" src="./scripts/modernism.js"></script>
+    <script defer type="text/javascript" src="./scripts/alienese.js"></script>
+    <script defer type="text/javascript" src="./scripts/estreU0EEOZ.js"></script>
+    <script defer type="text/javascript" src="./scripts/estreUi.js"></script>
+    <script defer type="text/javascript" src="./scripts/main.js"></script>
     <script>
 // in html scripts
     </script>
@@ -433,353 +510,33 @@ if (isStandalone) {
         <section id="splash" data-on-top="0">
             <div class="container" data-container-id="root">
                 <article class="constraint" data-article-id="main">
-                    <div class="float_center" style="--width: min(50vw, 240px);" ondblclick="location.reload(); ">
+                    <div class="float_center" style="--width: min(50vw, 240px); " ondblclick="location.href = './serviceLoader.html'; ">
                         <img src="./images/app_icon_512x512.png" style="width: var(--width); " />
                     </div>
                 </article>
             </div>
         </section>
     </main>
-    <script>$('head > link[href*="estreUi.css"]').on("load", e => setTimeout(() => $("#splashRoot").css("z-index", null)), 0); </script>
 
-    <header id="fixedTop" data-hide="">
-        <section id="appbar" data-static="1" data-on-top="1">
-            <div class="container" data-container-id="home" data-static="1" data-on-top="1">
-                <article class="appbarLeft" data-article-id="left" data-static="1" data-on-top="1">
-                    <nav class="tool_set" data-on-bound="root">
-                    </nav>
-                </article>
-                <article class="appbarCenter" data-article-id="center" data-static="1">
-                    <button id="appTitleBtn" class="tp_tiled_btn" title="go to main">
-                        <span style="font-size: 32px; font-weight: 600; ">App title</span>
-                    </button>
-                    <nav class="tool_set" data-on-bound="root">
-                    </nav>
-                </article>
-                <article class="appbarRight" data-article-id="right" data-static="1">
-                    <button id="mainMenuBtn" class="tp_tiled_btn closer" title="toggle menu">
-                        <dotlottie-player src="./lotties/menu_and_close_btn.json" background="transparent" speed="1" direction="1" mode="normal"></dotlottie-player>
-                    </button>
-                    <nav class="tool_set" data-on-bound="root">
-                    </nav>
-                </article>
-            </div>
-            <div class="container" data-container-id="root" data-static="1">
-                <article class="appbarLeft" data-article-id="left" data-static="1" data-on-top="1">
-                    <button class="back_navigation tp_tiled_btn" title="return to back" style="margin-left: 2px; "></button>
-                    <label class="page_title_holder" style="margin-left: 6px; "><span id="pageTitle">main</span></label>
-                    <nav class="tool_set" data-on-bound="root">
-                    </nav>
-                </article>
-                <article class="appbarCenter" data-article-id="center" data-static="1">
-                    <nav class="tool_set" data-on-bound="!home">
-                    </nav>
-                    <nav class="tool_set" data-on-bound="root">
-                    </nav>
-                </article>
-                <article class="appbarRight" data-article-id="right" data-static="1">
-                    <button id="mainMenuBtn" class="tp_tiled_btn closer" title="toggle menu">
-                        <dotlottie-player src="./lotties/menu_and_close_btn.json" background="transparent" speed="1" direction="1" mode="normal"></dotlottie-player>
-                    </button>
-                    <nav class="tool_set" data-on-bound="root">
-                    </nav>
-                </article>
-            </div>
-            <div class="container" data-container-id="sub" data-static="1">
-                <article class="appbarLeft" data-article-id="left" data-static="1">
-                    <button class="back_navigation tp_tiled_btn" title="return to back" style="margin-left: 2px; "></button>
-                    <label class="page_title_holder" style="margin-left: 6px; "><span id="pageTitle">main</span></label>
-                    <nav class="tool_set" data-on-bound="sub">
-                    </nav>
-                </article>
-                <article class="appbarCenter" data-article-id="center" data-static="1">
-                    <nav class="tool_set" data-on-bound="sub">
-                    </nav>
-                </article>
-                <article class="appbarRight" data-article-id="right" data-static="1">
-                    <button id="mainMenuBtn" class="tp_tiled_btn closer" title="toggle menu">
-                        <dotlottie-player src="./lotties/menu_and_close_btn.json" background="transparent" speed="1" direction="1" mode="normal"></dotlottie-player>
-                    </button>
-                    <nav class="tool_set" data-on-bound="sub">
-                    </nav>
-                </article>
-            </div>
-        </section>
+    <header id="fixedTop" data-exported="1" data-hide="">
     </header>
-    <nav id="mainMenu" class="right" data-opened="">
-        <section id="menuArea" class="vfv_scroll" data-static="1">
-            <div class="container" data-container-id="root" data-static="1">
-                <article class="rootMenu" data-article-id="main" data-static="1">
-                </article>
-            </div>
-        </section>
-        <section id="grabArea" data-static="1"><div class="pad"></div></section>
+    <nav id="mainMenu" class="right" data-exported="1" data-opened="">
     </nav>
 
-    <div id="ptr"><div><dotlottie-player src="./lotties/ptr_indic.json" background="transparent" speed="1" direction="1" mode="normal"></dotlottie-player></div></div>
-    <main id="staticDoc">
-        <!-- Main tabs content - must be match id of button on fixedBottom navs -->
-        <section id="home" class="root_tab_content" data-static="1" data-on-top="1">
-            <div class="container vfv_scroll" data-container-id="root" data-static="1" data-title="Home">
-                <article id="app" class="constraint" data-article-id="main" data-static="1" data-title="Home">
-                </article>
-            </div>
-        </section>
-        <!-- For access to additional root component(out of tabs) -->
-        <section id="more" class="modal fit bottom right stickyRootbar" data-static="1">
-            <div class="container vfv_scroll" data-container-id="root" data-static="1">
-                <article class="session_manager session_group_holder" data-article-id="main" data-static="1" style="text-align: left; ">
-                    <div class="linear_block hide_block_when_empty_list sessions_holder fixed_pages">
-                        <label>Fixed activities</label>
-                        <div class="line_block on_empty">No any activities</div>
-                        <ul class="session_list"></ul>
-                    </div>
-                    <div class="linear_block hide_block_when_empty_list sessions_holder opened_pages">
-                        <label>Instant activities</label>
-                        <div class="line_block on_empty">No any activities</div>
-                        <ul class="session_list" description="Don't insert anything. has to be managed automatically."></ul>
-                    </div>
-                </article>
-            </div>
-        </section>
+    <div id="ptr"><div>
+        <!-- Commented out. This is not implemented currently. <dotlottie-player src="./lotties/ptr_indic.json" background="transparent" speed="1" direction="1" mode="normal"></dotlottie-player> -->
+    </div></div>
+    <main id="staticDoc" data-exported="1">
     </main>
-    <footer id="fixedBottom">
-        <nav id="customFixedSections" class="tabsbar">
-        </nav>
-        <nav id="rootbar" class="tabsbar">
-            <button class="tp_tiled_btn" data-tab-id="home" data-active="1" title="home">HOME</button>
-            <div class="dummy_spacer fit_for_icon"><img src="./vectors/more_vertical_slim_icon.svg"></div>
-            <button class="tp_tiled_btn fit_for_icon" data-tab-id="more" title="more activities"><img src="./vectors/more_vertical_slim_icon.svg"></button>
-        </nav>
+    <footer id="fixedBottom" data-exported="1">
         <nav id="instantSections" description="Don't insert anything. has to be managed automatically.">
         </nav>
     </footer>
 
-    <main id="instantDoc">
+    <main id="instantDoc" data-exported="1">
     </main>
     
-    <nav id="managedOverlay">
-        <section id="functional" class="tpbg" data-static="1" data-on-top="">
-            <div class="container blind" data-container-id="popupBrowser" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(var(--cbdm) / 50%);">
-                <article class="constraint" data-article-id="main" data-static="1" style="background-color: var(--color-boundary-bright); ">
-                    <div class="webview">
-                        <div class="browser_area"></div>
-                        <div class="line_block navigation_area">
-                            <button class="tp_tiled_btn back" style="background-image: var(--svg-back-arrow); "></button>
-                            <button class="tp_tiled_btn forward" style="background-image: var(--svg-forward-arrow); "></button>
-                            <button class="tp_tiled_btn home" style="background-image: var(--svg-home); "></button>
-                            <div class="line_block titleArea"><span class="blocked pageTitle" style="flex-grow: 1; font-weight: 700; "></span></div>
-                            <button class="tp_tiled_btn refresh" style="background-image: var(--svg-reload); "></button>
-                            <button class="tp_tiled_btn close" style="background-image: var(--svg-close); "></button>
-                        </div>
-                    </div>
-                </article>
-            </div>
-        </section>
-        <section id="customDialog" class="tpbg" data-static="1" data-on-top="">
-        </section>
-        <section id="customToast" class="tpbg" data-static="1" data-on-top="">
-        </section>
-        <section id="toastUpSlide" class="tpbg" data-static="1" data-on-top="">
-            <div class="container blind" data-container-id="alert" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(var(--cbdm) / 50%);">
-                <article class="fwvs popup_interface" data-article-id="main" data-static="1" style="background-color: rgb(var(--cbbr) / 25%);">
-                    <div class="fixed_bottom dialog">
-                        <div class="handle"></div>
-                        <div class="title">
-                            <button class="back"></button>
-                            <span data-bind="title"></span>
-                            <button class="close"></button>
-                        </div>
-                        <div class="message"><span data-bind="message"></span></div>
-                        <div class="actions"><button class="confirm"><span data-bind="ok">확인</span></button></div>
-                    </div>
-                </article>
-            </div>
-            <div class="container blind" data-container-id="confirm" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(var(--cbdm) / 50%);">
-                <article class="fwvs popup_interface" data-article-id="main" data-static="1" style="background-color: rgb(var(--cbbr) / 25%);">
-                    <div class="fixed_bottom dialog">
-                        <div class="handle"></div>
-                        <div class="title">
-                            <button class="back"></button>
-                            <span data-bind="title"></span>
-                            <button class="close"></button>
-                        </div>
-                        <div class="message"><span data-bind="message"></span></div>
-                        <div class="actions reverse">
-                            <button class="positive"><span data-bind="positive">예</span></button>
-                            <button class="negative"><span data-bind="negative">아니오</span></button>
-                            <button class="neutral"><span data-bind="neutral">나중에</span></button>
-                        </div>
-                    </div>
-                </article>
-            </div>
-            <div class="container blind" data-container-id="prompt" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(var(--cbdm) / 50%);">
-                <article class="fwvs popup_interface" data-article-id="main" data-static="1" style="background-color: rgb(var(--cbbr) / 25%);">
-                    <div class="fixed_bottom dialog">
-                        <div class="handle"></div>
-                        <div class="title">
-                            <button class="back"></button>
-                            <span data-bind="title"></span>
-                            <button class="close"></button>
-                        </div>
-                        <div class="message"><span data-bind="message"></span></div>
-                        <div class="actions vertical">
-                            <input data-bind-attr="type@type placeholder@placeholder value@value" />
-                            <div>
-                                <button class="confirm"><span data-bind="confirm">확인</span></button>
-                            </div>
-                        </div>
-                    </div>
-                </article>
-            </div>
-            <div class="container blind" data-container-id="option" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(var(--cbdm) / 50%);">
-                <article class="fwvs popup_interface" data-article-id="main" data-static="1" style="background-color: rgb(var(--cbbr) / 25%);">
-                    <div class="fixed_bottom dialog">
-                        <div class="handle"></div>
-                        <div class="title">
-                            <button class="back"></button>
-                            <span data-bind="title"></span>
-                            <button class="close"></button>
-                        </div>
-                        <div class="message"><span data-bind="message"></span></div>
-                        <div class="vertical options" data-bind-array="options">
-                            <button class="tp_tiled_btn option text_darker font_16" data-bind-array-index-attr="data-index"><span data-bind-array-item>option A</span></button>
-                        </div>
-                        <div class="actions vertical">
-                        </div>
-                    </div>
-                </article>
-            </div>
-            <div class="container blind" data-container-id="selection" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(var(--cbdm) / 50%);">
-                <article class="fwvs popup_interface" data-article-id="main" data-static="1" style="background-color: rgb(var(--cbbr) / 25%);">
-                    <div class="fixed_bottom dialog">
-                        <div class="handle"></div>
-                        <div class="title">
-                            <button class="back"></button>
-                            <span data-bind="title"></span>
-                            <button class="close"></button>
-                        </div>
-                        <div class="message"><span data-bind="message"></span></div>
-                        <div class="options" data-bind-array="options">
-                            <button class="tp_tiled_btn no_pad option text_darker font_16" data-bind-array-index-attr="data-index">
-                                <div class="line_block">
-                                    <label data-bind-array-index-attr="for^option#">
-                                        <span data-bind-array-item>option A</span>
-                                    </label>
-                                    <input type="checkbox" data-bind-array-index-attr="id^option# data-index" data-bind-array-item-value />
-                                </div>
-                            </button>
-                        </div>
-                        <div class="actions vertical">
-                            <div>
-                                <button class="another"><span data-bind="another">나중에</span></button>
-                                <button class="confirm"><span data-bind="confirm">확인</span></button>
-                            </div>
-                        </div>
-                    </div>
-                </article>
-            </div>
-        </section>
-        <section id="interaction" class="tpbg" data-static="1" data-on-top="">
-            <div class="container blind" data-container-id="onRunning" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(0 0 0 / 50%);">
-                <article class="constraint" data-article-id="main" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
-                    <div class="float_center">
-                        <dotlottie-player src="./lotties/loading_circle.json" background="transparent" speed="1.5" style="width: 150px; height: 150px; " loop autoplay></dotlottie-player>
-                    </div>
-                </article>
-            </div>
-            <div class="container blind" data-container-id="onProgress" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(0 0 0 / 50%);">
-                <article class="constraint" data-article-id="main" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
-                    <div class="float_center">
-                        <dotlottie-player src="./lotties/progress_bar.json" background="transparent" speed="1" style="width: 144px; height: 108px; filter: drop-shadow(0 0 2px #DDDA); "></dotlottie-player>
-                    </div>
-                </article>
-            </div>
-            <div class="container blind" data-container-id="alert" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(0 0 0 / 50%);">
-                <article class="constraint popup_interface" data-article-id="main" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
-                    <div class="fixed_center dialog">
-                        <div class="title">
-                            <button class="back"></button>
-                            <span data-bind="title"></span>
-                            <button class="close"></button>
-                        </div>
-                        <div class="message"><span data-bind="message"></span></div>
-                        <div class="actions"><button class="confirm"><span data-bind="ok">확인</span></button></div>
-                    </div>
-                </article>
-            </div>
-            <div class="container blind" data-container-id="confirm" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(0 0 0 / 50%);">
-                <article class="constraint popup_interface" data-article-id="main" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
-                    <div class="fixed_center dialog">
-                        <div class="title">
-                            <button class="back"></button>
-                            <span data-bind="title"></span>
-                            <button class="close"></button>
-                        </div>
-                        <div class="message"><span data-bind="message"></span></div>
-                        <div class="actions">
-                            <span class="right">
-                                <button class="positive"><span data-bind="positive">예</span></button>
-                                <button class="negative"><span data-bind="negative">아니오</span></button>
-                            </span>
-                            <span class="left">
-                                <button class="neutral"><span data-bind="neutral">나중에</span></button>
-                            </span>
-                        </div>
-                    </div>
-                </article>
-            </div>
-            <div class="container blind" data-container-id="prompt" data-static="" data-on-top="1" data-multi-instance="1" data-instance-origin="" style="background-color: rgb(0 0 0 / 50%);">
-                <article class="constraint popup_interface" data-article-id="main" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
-                    <div class="fixed_center dialog">
-                        <div class="title">
-                            <button class="back"></button>
-                            <span data-bind="title"></span>
-                            <button class="close"></button>
-                        </div>
-                        <div class="message"><span data-bind="message"></span></div>
-                        <div class="actions">
-                            <input data-bind-attr="type@type placeholder@placeholder value@value" />
-                            <button class="confirm"><span data-bind="confirm">확인</span></button>
-                        </div>
-                    </div>
-                </article>
-            </div>
-        </section>
-        <section id="operation" class="tpbg" data-static="1" data-on-top="" style="display: none; note: 'currently not implemented'; ">
-            <div class="container top slider blind" data-container-id="root" data-static="1" data-on-top="" style="background-color: rgb(0 0 0 / 50%);">
-                <article class="constraint" data-article-id="timeline" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
-    
-                </article>
-                <article class="constraint" data-article-id="quickPanel" data-static="1" style="background-color: rgb(255 255 255 / 25%);">
-    
-                </article>
-            </div>
-        </section>
-        <section id="notification" class="tpbg" data-static="1" data-on-top="">
-            <div class="container top" data-container-id="noti" data-static="1" data-on-top="1">
-                <article class="" data-article-id="noti" data-static="" data-multi-instance="1" data-instance-origin="">
-                    <div class="h_icon_set post_block" data-bind-attr="interactive@data-interactive" data-bind-style="bgColor@--bg-color">
-                        <div class="icon_place"><img data-bind-attr="iconSrc@src" /></div>
-                        <div class="content_place">
-                            <div class="title_line"><span data-bind="contentTitle"></span></div>
-                            <div class="h_icon_Set content_area">
-                                <div class="content_place" data-bind="content" data-bind-style="textColor@--color textSize@--size textWeight@--weight"></div>
-                                <div class="icon_place"><img data-bind-attr="subIconSrc@src" /></div>
-                            </div>
-                        </div>
-                    </div>
-                </article>
-            </div>
-            <div class="container bottom" data-container-id="note" data-static="1" data-on-top="1">
-                <article class="" data-article-id="note" data-static="" data-multi-instance="1" data-instance-origin="">
-                    <div class="h_icon_set post_block" data-bind-attr="interactive@data-interactive" data-bind-style="bgColor@--bg-color">
-                        <div class="icon_place"><img data-bind-attr="iconSrc@src" /></div>
-                        <div class="content_place"><span data-bind="content" data-bind-style="textColor@--color textSize@--size textWeight@--weight"></span></div>
-                    </div>
-                </article>
-            </div>
-        </section>
+    <nav id="managedOverlay" data-exported="1">
     </nav>
     <section id="handlePrototypes" style="display: none; ">
         <!-- Estre UI stock handle prototype assigned area -->
@@ -926,15 +683,39 @@ if (isStandalone) {
                     </div>
                 </div> -->
             </template>
+            <template data-handle="monthSelectorBar" class="month_selector_bar" data-current="" data-dropdown-open="" data-auto-init="1" data-blind-float-bg="1" data-use-popup-selector="">
+                <input type="month" class="monthSelectorInput" />
+                <div class="bar_side left_side">
+                    <button class="tp_tiled_btn selector text_darker font_18 font_semi_bold"><span class="current">2025.01</span></button>
+                </div>
+                <div class="bar_side right_side">
+                    <button class="tp_tiled_btn prev text_gray font_16 font_regular"><span>Prev</span></button>
+                    <button class="tp_tiled_btn next text_gray font_16 font_regular"><span>Next</span></button>
+                </div>
+                <div class="float_selections float_bottom">
+                    <ul class="monthes">
+                    </ul>
+                </div>
+            </template>
+            <template data-handle="variableTabBlock" class="variable_tab_block">
+                <div class="tab_list_block line_block from_start thin_divider font_sr16" style="margin-top: 4px; ">
+                    <button class="tp_tiled_btn board_item font_sr16 font_light" data-tab-id="|tabId|"><span class="block inline inset_on_padding">|tabName|</span></button>
+                </div>
+                <div class="tab_content_blocks">
+                    <div class="lines_block" data-tab-id="">
+                    </div>
+                </div>
+            </template>
         </article>
         <!-- end of stock prototypes -->
 
         <!-- Custom handle prototype assigning area -->
         <!-- Note: Can be overrided stock prototypes by same handle named template -->
         <article class="custom">
+            <!-- ^^ overrides stock / assigning custom vv -->
         </article>
         <!-- end of custom prototypes -->
     </section>
 </body>
-<script>doc.ebi("splash").dataset.onTop = t1; //trigger for fade in splash</script>
+<script>document.getElementById("splash").dataset.onTop = "1"; //trigger for fade in splash</script>
 </html>

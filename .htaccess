@@ -1,0 +1,24 @@
+# Header configuration to prevent PWA caching
+<IfModule mod_headers.c>
+    # Set cache prevention headers for all files
+    Header always set Cache-Control "no-cache, no-store, must-revalidate, max-age=0"
+    Header always set Pragma "no-cache"
+    Header always set Expires "Thu, 01 Jan 1970 00:00:00 GMT"
+</IfModule>
+
+# Stronger cache prevention settings for specific file types
+<FilesMatch "\.(html|htm|js|mjs|css|json|svg|png|jpg|jpeg|gif|ico|woff|woff2|ttf|otf)$">
+    <IfModule mod_headers.c>
+        Header always set Cache-Control "no-cache, no-store, must-revalidate, max-age=0, s-maxage=0"
+        Header always set Pragma "no-cache"
+        Header always set Expires "Thu, 01 Jan 1970 00:00:00 GMT"
+    </IfModule>
+</FilesMatch>
+
+# Special configuration for Service Worker file
+<Files "serviceWorker.js">
+    <IfModule mod_headers.c>
+        Header always set Cache-Control "no-cache, no-store, must-revalidate, max-age=0"
+        Header always set Service-Worker-Allowed "/"
+    </IfModule>
+</Files>
