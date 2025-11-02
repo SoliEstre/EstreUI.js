@@ -14676,7 +14676,7 @@ const estreUi = {
     },
 
 
-    checkOnReady() {
+    checkOnReady(awaitAsyncTasks = t) {
         // lazy load of links
         const head = doc.h;
         const lazyLinks = head.querySelectorAll(m1 + aiv(lk, lz));
@@ -14706,10 +14706,13 @@ const estreUi = {
             
             setTimeout(() => $("main#splashRoot").css("z-index", null), 0);
 
-            EUX.setOnImagesFullyLoaded(_ => {
+            const setToReady = _ => setTimeout(_ => this.onReady(), 500);
+
+            if (!awaitAsyncTasks) setToReady();
+            else EUX.setOnImagesFullyLoaded(_ => {
                 const callback = _ => {
                     EstreAsyncManager.removeOnFinishedCurrentWorks(callback);
-                    setTimeout(_ => this.onReady(), 500);
+                    setToReady();
                 };
                 
                 EstreAsyncManager.setOnFinishedCurrentWorks(callback);
