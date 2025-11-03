@@ -666,7 +666,7 @@ class EUX {
     }
 
 
-    static async setOnImagesFullyLoaded(callback = () => {}, debug = globalThis?.isDebug ?? false) {
+    static async setOnImagesFullyLoaded(callback = () => {}, timeout = 10000, debug = globalThis?.isDebug ?? false) {
         await Promise.all(Array.from(document.images).map(img => {
             if (img.complete)
                 return Promise.resolve(img.naturalHeight !== 0);
@@ -680,13 +680,20 @@ class EUX {
                     clear(e.target);
                     resolve(false);
                 }
+                const onTimeout = e => {
+                    clear(e.target);
+                    console.log('image load timeout:', e.target.src);
+                    resolve(false);
+                }
                 clear = elem => {
                     elem.removeEventListener('load', onLoad);
                     elem.removeEventListener('error', onError);
                 }
-                
+
                 img.addEventListener('load', onLoad);
                 img.addEventListener('error', onError);
+                // Set timeout (10 seconds)
+                setTimeout(onTimeout, timeout, { target: img });
             });
         })).then(results => {
             if (debug) {
@@ -699,11 +706,11 @@ class EUX {
     }
 
 
-    static async setOnLinksFullyLoaded(callback = () => {}, debug = globalThis?.isDebug ?? false) {
-        const links = Array.from(document.querySelectorAll('link[rel="stylesheet"], link[rel="preload"]'));
+    static async setOnLinksFullyLoaded(callback = () => {}, timeout = 10000, linkQuery = 'link[rel="stylesheet"]', debug = globalThis?.isDebug ?? false) {
+        const links = Array.from(document.querySelectorAll(linkQuery));
         
         await Promise.all(links.map(link => {
-            // 이미 로드된 경우 체크
+            // Check if the stylesheet is already loaded
             if (link.sheet || link.readyState === 'complete') {
                 return Promise.resolve(true);
             }
@@ -718,6 +725,11 @@ class EUX {
                     clear(e.target);
                     resolve(false);
                 }
+                const onTimeout = e => {
+                    clear(e.target);
+                    console.log('link load timeout:', e.target.href);
+                    resolve(false);
+                }
                 clear = elem => {
                     elem.removeEventListener('load', onLoad);
                     elem.removeEventListener('error', onError);
@@ -726,8 +738,8 @@ class EUX {
                 link.addEventListener('load', onLoad);
                 link.addEventListener('error', onError);
                 
-                // 타임아웃 설정 (10초)
-                setTimeout(onError, 10000, { target: link });
+                // Set timeout (10 seconds)
+                setTimeout(onTimeout, timeout, { target: link });
             });
         })).then(results => {
             if (debug) {

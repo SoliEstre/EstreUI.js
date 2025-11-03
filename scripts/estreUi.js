@@ -768,6 +768,7 @@ prompt = (title,
 
 
 // Infinite loop and prograss meter
+const waitings = new Set();
 let latestIO = null;
 let backHolds = 0;
 
@@ -776,10 +777,11 @@ let backHolds = 0;
  * 
  * @param {instanceOrigin: string} / instance access origin code
  */
-const wait = function (options, instanceOrigin) {
-    const io = pageManager.bringPage("!onRunning", { data: options }, instanceOrigin) ? instanceOrigin : undefined;
-    latestIO = io;
-    return io;
+const wait = function (options, instanceOrigin = "wait_" + Date.now()) {
+    if (instanceOrigin != n) waitings.add(instanceOrigin);
+    latestIO = instanceOrigin;
+    pageManager.bringPage("!onRunning", { data: options }, instanceOrigin);
+    return instanceOrigin;
 }
 
 /**
@@ -788,7 +790,8 @@ const wait = function (options, instanceOrigin) {
  * @param {delay: Number} / wait go() before bring wait indicator (ms, default is 600)
  * @param {instanceOrigin: string} / instance access origin code (default is to be auto generated)
  */
-const stedy = function (options, delay = 600, instanceOrigin = "stedy" + Date.now()) {
+const stedy = function (options, delay = 600, instanceOrigin = "stedy_" + Date.now()) {
+    if (instanceOrigin != n) waitings.add(instanceOrigin);
     latestIO = instanceOrigin;
     setTimeout(_ => {
         if (latestIO == instanceOrigin) wait(options, instanceOrigin);
@@ -810,9 +813,13 @@ const onBackWhile = function (handle) {
  * @param {instanceOrigin} / instance access origin code
  */
 const go = function (instanceOrigin) {
-    if (instanceOrigin != null && latestIO != instanceOrigin) return
-    const aio = pageManager.closePage("!onRunning", false, instanceOrigin);
-    latestIO = null;
+    if (instanceOrigin != n) {
+        if (waitings.has(instanceOrigin) == f) return;
+        waitings.delete(instanceOrigin);
+        if (latestIO != instanceOrigin && waitings.size > 0) return;
+    }
+    const aio = pageManager.closePage("!onRunning", f, instanceOrigin);
+    latestIO = n;
     if (backHolds > 0) postAsyncQueue(async _ => {
         const holds = backHolds;
         backHolds = 0;
@@ -14676,7 +14683,7 @@ const estreUi = {
     },
 
 
-    checkOnReady(awaitAsyncTasks = t) {
+    async checkOnReady(awaitAsyncTasks = t, transitionDelay = 500, linkTimeout = 8000, imageTimeout = 3000) {
         // lazy load of links
         const head = doc.h;
         const lazyLinks = head.querySelectorAll(m1 + aiv(lk, lz));
@@ -14690,7 +14697,10 @@ const estreUi = {
             lazy.remove();
         }
 
-        EUX.setOnLinksFullyLoaded(_ => {
+
+        const waiters = [];
+
+        waiters.push(EUX.setOnLinksFullyLoaded(_ => {
             if (isStandalone) {
                 // is PWA
 
@@ -14705,19 +14715,26 @@ const estreUi = {
             }
             
             setTimeout(() => $("main#splashRoot").css("z-index", null), 0);
+        }, linkTimeout));
 
-            const setToReady = _ => setTimeout(_ => this.onReady(), 500);
+        waiters.push(EUX.setOnImagesFullyLoaded(_ => {
+            // do nothing
+        }, imageTimeout));
 
-            if (!awaitAsyncTasks) setToReady();
-            else EUX.setOnImagesFullyLoaded(_ => {
-                const callback = _ => {
-                    EstreAsyncManager.removeOnFinishedCurrentWorks(callback);
-                    setToReady();
-                };
-                
-                EstreAsyncManager.setOnFinishedCurrentWorks(callback);
-            });
-        });
+
+        if (awaitAsyncTasks) waiters.push(postPromise(resolve => {
+            const callback = _ => {
+                EstreAsyncManager.removeOnFinishedCurrentWorks(callback);
+                resolve();
+            };
+
+            EstreAsyncManager.setOnFinishedCurrentWorks(callback);
+        }));
+
+
+        await Promise.all(waiters);
+
+        setTimeout(_ => this.onReady(), transitionDelay);
     },
 
     setUiOnReady() {

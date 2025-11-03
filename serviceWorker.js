@@ -1,4 +1,4 @@
-const INSTALLATION_VERSION_NAME = "0.9.0-r20251101b";
+const INSTALLATION_VERSION_NAME = "0.9.1-r20251103";
 // ^^ Use for check new update "Native application(webview) version(or Android/iOS version combo) - PWA release version"
 // ex) "1.0.1/1.0.0-r20251101k"
  
@@ -20,7 +20,7 @@ const INSTALLATION_FILE_LIST = [
 
 
 // Common files cache - Be changes some time but, well not changed very often
-const CACHE_NAME_COMMON_FILES = "common-files-cache-v1-20251102";
+const CACHE_NAME_COMMON_FILES = "common-files-cache-v1-20251103";
 
 const COMMON_FILES_TO_CACHE = [
     "./",
@@ -89,6 +89,7 @@ const STATIC_FILES_TO_CACHE = [
 const CACHE_NAME_STONY_FILES = "stony-files-cache-v1-20251101b";
 
 const STONY_FILES_TO_CACHE = [
+
 ];
 
 
@@ -176,7 +177,8 @@ self.addEventListener("fetch", (event) => {
     const urlString = event.request.url;
     const url = new URL(urlString);
     const pathname = url.pathname;
-    if (CHECK_ALWAYS_NEWER_FILE_LIST.find(it => pathname.endsWith(it))) {
+    const fullpath = url.origin + pathname;
+    if (CHECK_ALWAYS_NEWER_FILE_LIST.find(it => fullpath == it.replace(/^\.\//, scope))) {
         event.respondWith(
             fetch(event.request).catch(async (error) => {
                 if (self.isLogging) console.log("Service Worker - Return cached file by error on fetch: ", event.request.url);
@@ -184,7 +186,7 @@ self.addEventListener("fetch", (event) => {
             })
         );
     } else if (pathname.includes("/|") || pathname.includes("/%7C")) event.respondWith(EMPTY_RESPONSE);
-    else if (COMMON_FILES_TO_CACHE.find(it => urlString == it.replace(/^\.\//, scope)) || INSTALLATION_FILE_LIST.find(it => urlString == it.replace(/^\.\//, scope)) || STATIC_FILES_TO_CACHE.find(it => urlString == it.replace(/^\.\//, scope)) || STONY_FILES_TO_CACHE.find(it => urlString == it.replace(/^\.\//, scope))) {
+    else if (COMMON_FILES_TO_CACHE.find(it => fullpath == it.replace(/^\.\//, scope)) || INSTALLATION_FILE_LIST.find(it => fullpath == it.replace(/^\.\//, scope)) || STATIC_FILES_TO_CACHE.find(it => fullpath == it.replace(/^\.\//, scope)) || STONY_FILES_TO_CACHE.find(it => fullpath == it.replace(/^\.\//, scope))) {
         event.respondWith((async () => {
             // if (self.isLogging) console.log("Service Worker - Fetch intercepted for: ", urlString);
             // Try to get the response from a cache.

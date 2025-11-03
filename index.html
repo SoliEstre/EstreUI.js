@@ -463,7 +463,11 @@ if ("serviceWorker" in navigator) {
     // });
 }
     </script>
+    <!-- Preload initializing stylesheets -->
+    <link rel="preload" as="style" type="text/css" href="./styles/estreUiInitialize.css" />
 
+
+    <!-- Begin links -->
 	<link rel="apple-touch-startup-image" href="./images/app_icon_512x512.png">
 	<link rel="apple-touch-icon" href="./images/app_icon_144x144.png">
 	<link rel="apple-touch-icon" sizes="152x152" href="./images/app_icon_152x152.png">
@@ -504,6 +508,24 @@ if ("serviceWorker" in navigator) {
     <script>
 // in html scripts
     </script>
+
+    <!-- Preload exported sections - If not use section exports, must be commented out -->
+    <link rel="preload" as="fetch" type="text/html" href="./fixedTop.html" crossOrigin="anonymous" />
+    <link rel="preload" as="fetch" type="text/html" href="./fixedBottom.html" crossOrigin="anonymous" />
+    <link rel="preload" as="fetch" type="text/html" href="./managedOverlay.html" crossOrigin="anonymous" />
+    <link rel="preload" as="fetch" type="text/html" href="./staticDoc.html" crossOrigin="anonymous" />
+    <link rel="preload" as="fetch" type="text/html" href="./instantDoc.html" crossOrigin="anonymous" />
+    <link rel="preload" as="fetch" type="text/html" href="./mainMenu.html" crossOrigin="anonymous" />
+
+
+    <!-- Preload stylesheet be loaded lazy -->
+    <link rel="preload" as="style" type="text/css" href="./styles/estreUiRoot.css" />
+    <link rel="preload" as="style" type="text/css" href="./styles/estreUiCore.css" />
+    <link rel="preload" as="style" type="text/css" href="./styles/estreUiCore2.css" />
+    <link rel="preload" as="style" type="text/css" href="./styles/estreUiAliases.css" />
+    <link rel="preload" as="style" type="text/css" href="./styles/estreUi.css" />
+    <link rel="preload" as="style" type="text/css" href="./styles/estreUiHandles.css" />
+    <link rel="preload" as="style" type="text/css" href="./styles/estreUiHandleUnical.css" />
 </head>
 <body class="vfv_scroll">
     <main id="splashRoot" style="z-index: 500; ">
