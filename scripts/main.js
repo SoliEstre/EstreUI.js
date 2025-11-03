@@ -412,7 +412,7 @@ $(document).ready((e) => setTimeout(_ => {
         if (!handled) {
             appPageManager.bringPage("home");
 
-            postQueue(estreUi.checkOnReady());
+            postQueue(_ => estreUi.checkOnReady());
         }
     });
 }, 1));
