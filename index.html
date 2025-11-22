@@ -32,7 +32,7 @@ const isSamsungMobile = isSamsungBrowser && isMobile;
 
 
 window.isLog = true;
-window.isDebug = location.host.replace("class.mangoedu.co.kr", "").length > 0;
+window.isDebug = true;
 window.isVerbose = false;
 Object.defineProperty(window, "isLogging", {
     "get": function () { return this.isLog || this.isDebug; },
