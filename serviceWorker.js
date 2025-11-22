@@ -20,7 +20,7 @@ const INSTALLATION_FILE_LIST = [
 
 
 // Common files cache - Be changes some time but, well not changed very often
-const CACHE_NAME_COMMON_FILES = "common-files-cache-v1-20251122";
+const CACHE_NAME_COMMON_FILES = "common-files-cache-v1-20251122a";
 
 const COMMON_FILES_TO_CACHE = [
     "./",
@@ -40,6 +40,7 @@ const COMMON_FILES_TO_CACHE = [
 
 
     "./scripts/jcodd.js",
+    "./scripts/doctre.js",
     "./scripts/modernism.js",
     "./scripts/alienese.js",
     "./scripts/estreU0EEOZ.js",
