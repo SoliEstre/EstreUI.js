@@ -94,6 +94,7 @@ const rb = "ruby";
 const rp = "rp";
 const rt = "rt";
 const pg = "p";
+const anc = "a";
 const img = "img";
 const frm = "form";
 const btn = "button";
@@ -206,8 +207,10 @@ const m = {
     get d() { return "disabled"; },
     get dad() { return "disabled"; },
     get f() { return "for"; },
+    get for() { return "for"; },
     get i() { return "id"; },
     get id() { return "id"; },
+    get n() { return "name"; },
     get name() { return "name"; },
     get tp() { return "type"; },
     get ro() { return "readonly"; },
@@ -255,6 +258,43 @@ const tv = {
 };
 const ipt = typeText => inp + (isNully(typeText) ? ax(tp) : aiv(tp, typeText));
 const itc = typeCase => ipt(tv[typeCase]);
+
+
+// Tag text alias constants
+const g = {
+    attr(attrs) { return attrs?.entire.map(([k, v]) => k + (v?.let(it => eq + dq + it.replace(/"/g, '\"') + dq) ?? "")).join(s) ?? ""; },
+
+    solo(tagName, attrs) { return lt + tagName + s + this.attr(attrs) + ss + gt; },
+    pair(tagName, content = "", attrs) { return lt + tagName + s + this.attr(attrs) + gt + content + lt + ss + tagName + gt; },
+
+
+    get br() { return this.solo(br); },
+    get hr() { return this.solo(hr); },
+
+
+    brr(attrs) { return this.solo(br, attrs); },
+    hrr(attrs) { return this.solo(hr, attrs); },
+
+    img(attrs) { return this.solo(img, attrs); },
+    btn(attrs) { return this.solo(btn, attrs); },
+    inp(attrs) { return this.solo(inp, attrs); },
+
+
+    div(content = "", attrs) { return this.pair(div, content, attrs); },
+    sp(content = "", attrs) { return this.pair(sp, content, attrs); },
+    p(content = "", attrs) { return this.pair(pg, content, attrs); },
+    lbl(content = "", attrs) { return this.pair(lbl, content, attrs); },
+    a(content = "", attrs) { return this.pair(anc, content, attrs); },
+
+    ta(content = "", attrs) { return this.pair(ta, content, attrs); },
+
+    h1(content = "", attrs) { return this.pair(h1, content, attrs); },
+    h2(content = "", attrs) { return this.pair(h2, content, attrs); },
+    h3(content = "", attrs) { return this.pair(h3, content, attrs); },
+    h4(content = "", attrs) { return this.pair(h4, content, attrs); },
+    h5(content = "", attrs) { return this.pair(h5, content, attrs); },
+
+}
 
 
 // CSS combinator constants

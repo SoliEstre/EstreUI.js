@@ -1540,6 +1540,14 @@ class EstrePageHandle {
         this.#currentOnTop = handle;
     }
 
+    #intentProxy;
+    #intentDataProxy;
+    #intentDataBindProxy = {};
+    #revokeIntentProxy;
+    #revokeIntentDataProxy;
+    #revokeIntentDataBindProxy = {};
+
+    #isProcessing = f;
 
     constructor(host) {
         this.host = host;
@@ -1556,14 +1564,22 @@ class EstrePageHandle {
     }
 
     release(remove) {
-        this.onRelease(remove);
+        this.onRelease(remove).then(_ => {
+            for (const revoke of this.#revokeIntentDataBindProxy.looks) try {
+                revoke?.();
+            } catch (ex) {}
+            this.#revokeIntentDataProxy?.();
+            this.#revokeIntentProxy?.();
+        });
 
-        if (this.host != null) this.host.pageHandle = null;
+        if (this.host != null) delete this.host.pageHandle;
 
         if (remove === true) this.$host?.remove();
-        else if (remove === false) this.$host?.empty();
-        this.host = null;
-        this.$host = null;
+        else {
+            if (remove === false) this.$host?.empty();
+            this.host = n;
+            this.$host = n;
+        }
     }
 
     init(page, intent) {
@@ -1583,18 +1599,121 @@ class EstrePageHandle {
         if (this.#handler == null) this.#handler = handler;
     }
 
+    takeOnPageIntent(intent = {}) {
+        this.#revokeIntentProxy?.();
+        if (nn(intent?.data) && !intent.data.isProxy) intent.data = this.takeOnPageData(intent.data);
+        const { proxy, revoke } = nn(intent) ? Proxy.revocable(intent, {
+            get: (target, prop) => prop == "isProxy" ? t : target[prop],
+            set: (target, prop, value) => {
+                if (prop == "data") {
+                    target.data = this.takeOnPageData(value);
+                    if (!this.#isProcessing) this.applyActiveStruct();
+                } else target[prop] = value;
+                return t;
+            },
+            deleteProperty: (target, prop) => {
+                if (prop == "data") {
+                    this.takeOnPageData(u);
+                    delete target.data;
+                } else delete target[prop];
+                if (!this.#isProcessing) this.applyActiveStruct();
+                return t;
+            },
+        }) : { proxy: u, revoke: u };
+        this.#intentProxy = proxy;
+        this.#revokeIntentProxy = revoke;
+        return proxy ?? intent;
+    }
+
+    takeOnPageData(data = {}) {
+        this.#revokeIntentDataProxy?.();
+        const isObject = nn(data) && tj(data);
+        if (isObject) for (const key in data) if (!data[key]?.isProxy) data[key] = this.takeOnPageBind(key, data[key]);
+        const { proxy, revoke } = isObject ? Proxy.revocable(data, {
+            get: (target, prop) => prop == "isProxy" ? t : target[prop],
+            set: (target, prop, value) => {
+                target[prop] = this.takeOnPageBind(prop, value);
+                if (!this.#isProcessing) this.applyActiveStruct();
+                return t;
+            },
+            deleteProperty: (target, prop) => {
+                this.takeOnPageBind(prop, u);
+                delete target[prop];
+                if (!this.#isProcessing) this.applyActiveStruct();
+                return t;
+            },
+        }) : { proxy: u, revoke: u };
+        this.#intentDataProxy = proxy;
+        this.#revokeIntentDataProxy = revoke;
+        return proxy ?? data;
+    }
+
+    takeOnPageBind(pr, bind) {
+        this.#revokeIntentDataBindProxy[pr]?.();
+        if (nn(bind) && tj(bind)) {
+            const { proxy, revoke } = Proxy.revocable(bind, {
+                get: (target, prop) => prop == "isProxy" ? t : target[prop],
+                set: (target, prop, value) => {
+                    target[prop] = value;
+                    if (!this.#isProcessing) this.applyActiveStruct();
+                    return t;
+                },
+                deleteProperty: (target, prop) => {
+                    delete target[prop];
+                    if (!this.#isProcessing) this.applyActiveStruct();
+                    return t;
+                },
+            });
+            this.#intentDataBindProxy[pr] = proxy;
+            this.#revokeIntentDataBindProxy[pr] = revoke;
+            return proxy;
+        } else {
+            delete this.#intentDataBindProxy[pr];
+            delete this.#revokeIntentDataBindProxy[pr];
+            return bind;
+        }
+    }
+
+    apply(process = (data, intent) => {}, $bound = this.$host) {
+        const isAlreadyProcessing = this.#isProcessing;
+        if (!isAlreadyProcessing) this.#isProcessing = t;
+        this.placeIntentData();
+        process(this.intent.data, this.intent);
+        if (!isAlreadyProcessing) this.#isProcessing = f;
+        return this.applyActiveStruct($bound);
+    }
+
+    async applyAsync(process = async (data, intent) => {}, $bound = this.$host) {
+        const isAlreadyProcessing = this.#isProcessing;
+        if (!isAlreadyProcessing) this.#isProcessing = t;
+        this.placeIntentData();
+        await process(this.intent.data, this.intent);
+        if (!isAlreadyProcessing) this.#isProcessing = f;
+        return await this.applyActiveStruct($bound);
+    }
+
     placeIntent(intent = {}) {
-        this.#intent ??= intent;
+        return this.#intent ??= this.takeOnPageIntent(intent);
+    }
+    
+    placeIntentData(data = {}) {
+        this.placeIntent();
+        return this.#intent.data ??= data;
     }
     
     pushIntent(intent, onInit = false) {
-        if (intent != null) {
-            if (intent === false) this.#intent = null;
-            else if (this.intent == null) this.#intent = intent;
-            else for (var key in intent) this.intent[key] = intent[key];
-            if (window.isVerbosely) console.log("pushed intent on " + this.hostType + " " + EstreUiPage.from(this).pid + "\n", this.intent);
-            else if (window.isDebug) console.log("pushed intent on " + this.hostType + " " + EstreUiPage.from(this).pid + "\n");
-            this.onIntentUpdated(this, intent);
+        if (intent != n) {
+            const push = _ => {
+                if (intent === f) this.#intent = this.takeOnPageIntent(n);
+                else if (this.intent == n) this.#intent = this.takeOnPageIntent(intent);
+                else for (const key in intent) this.intent[key] = intent[key];
+
+                if (window.isVerbosely) console.log("pushed intent on " + this.hostType + " " + EstreUiPage.from(this).pid + "\n", this.intent);
+                else if (window.isDebug) console.log("pushed intent on " + this.hostType + " " + EstreUiPage.from(this).pid + "\n");
+                this.onIntentUpdated(this, intent);
+            };
+            if (this.#isOpened) this.apply(push);
+            else push();
             return true;
         } else false;
     }
@@ -1844,6 +1963,8 @@ class EstrePageHandle {
     applyActiveStruct($host = this.$host, replaceHandles = false) {
         this.initContentBrokers($host);
         this.initLiveElement($host, replaceHandles);
+
+        return this.handler.onApplied?.(this, this.intent?.data, this.intent, $host, replaceHandles);
     }
 
     applyActiveStructLocalBind($host = this.$host) {
@@ -3486,9 +3607,11 @@ class EstreContainer extends EstrePageHostHandle {
             }
         }
 
-        if (this.#$stepNavTitleName != null) {
-            if ($currentArticle.length > 0) this.#$stepNavTitleName.text($currentArticle.attr(eds.title));
-        }
+        if ($currentArticle.length > 0) this.setCurrentStepName($currentArticle.attr(eds.title));
+    }
+
+    setCurrentStepName(title) {
+        if (this.#$stepNavTitleName != null) this.#$stepNavTitleName.text(title);
     }
 
     focusMasterButton() {
@@ -4087,6 +4210,19 @@ class EstreDialogPageHandler extends EstrePageHandler {
                 return false;
             }
         });
+
+        
+        const data = this.intentData;
+        if (data?.containerBlindColor != n) this.$container.css("background-color", data.containerBlindColor);
+        if (data?.articleBlindColor != n) this.$article.css("background-color", data.articleBlindColor);
+        if (data?.bgColor != n) this.$dialog.css("background-color", data.bgColor);
+    }
+
+    onIntentUpdated(handle, intent) {
+        const data = intent?.data;
+        if (data?.containerBlindColor != n) this.$container.css("background-color", data.containerBlindColor);
+        if (data?.articleBlindColor != n) this.$article.css("background-color", data.articleBlindColor);
+        if (data?.bgColor != n) this.$dialog.css("background-color", data.bgColor);
     }
 
     async onBack(handle) {

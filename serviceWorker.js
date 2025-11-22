@@ -1,4 +1,4 @@
-const INSTALLATION_VERSION_NAME = "0.9.1-r20251103a";
+const INSTALLATION_VERSION_NAME = "1.0.0.RC1-r20251122";
 // ^^ Use for check new update "Native application(webview) version(or Android/iOS version combo) - PWA release version"
 // ex) "1.0.1/1.0.0-r20251101k"
  
@@ -20,7 +20,7 @@ const INSTALLATION_FILE_LIST = [
 
 
 // Common files cache - Be changes some time but, well not changed very often
-const CACHE_NAME_COMMON_FILES = "common-files-cache-v1-20251103";
+const CACHE_NAME_COMMON_FILES = "common-files-cache-v1-20251122";
 
 const COMMON_FILES_TO_CACHE = [
     "./",
