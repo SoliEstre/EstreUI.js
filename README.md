@@ -25,7 +25,7 @@ EstreUI is not just a library, nor a full-blown framework in the traditional sen
 
 ### System Requirements
 *   **Browsers**: Chromium 92+, Safari 15+ (iOS 15+).
-*   **Recommendation**: **iOS 16+** is strongly recommended due to severe memory and CSS limitations in iOS 15.
+*   **Recommendation**: **iOS 16+** is strongly recommended due to severe CSS limitations in iOS 15.
 
 ---
 
@@ -235,7 +235,7 @@ EstreUI는 단순한 라이브러리도, 전통적인 의미의 완전한 프레
 
 ### 시스템 요구사항
 *   **브라우저**: Chromium 92+, Safari 15+ (iOS 15+).
-*   **권장 사항**: iOS 15의 심각한 메모리 및 CSS 제한으로 인해 **iOS 16 이상**을 강력히 권장합니다.
+*   **권장 사항**: iOS 15의 CSS 제한으로 인해 **iOS 16 이상**을 강력히 권장합니다.
 
 ---
 
