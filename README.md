@@ -102,9 +102,9 @@ EstreUI pages have a distinct lifecycle, similar to Android Activities:
 *   **onIntentUpdated**: Called when the page receives new data (Intent) while already active.
 *   **onApplied**: Executed after `apply()` is called for data binding.
 
-### Handle vs. Handler
-*   **Handle**: The DOM element or UI controller. In handlers, use `handle` for lifecycle methods, otherwise `this.handle`.
-*   **Handler**: The logic class (`EstrePageHandler`) managing the page. Accessed via `this.provider`.
+### Handle & Handler
+*   **Handle**: The DOM element or UI controller. In `handler`, use `handle` for lifecycle methods, otherwise `this.handle`.
+*   **Handler**: The logic class (`EstrePageHandler`) managing the page. Accessed via `handle.handler`.
 *   Use `handle.component`, `handle.container` to access parent handles.
 *   Use `component.containers`, `container.articles` to access child handles.
 *   For other access, use `estreUi.mainSections`, `blindedSections` to access handles in other sections. Refer to the source code for details.
@@ -112,10 +112,11 @@ EstreUI pages have a distinct lifecycle, similar to Android Activities:
 *   **Tip**: In browser developer tools, select a component/container/article element and type `$0.pageHandle` in the console to access it.
 
 ### Data Binding & Intent
-*   **Intent**: A data object passed between pages.
+*   **Intent**: A data object passed between pages. `handle.intent` or `handler.intent`.
+*   **Intent Data**: A data object passed between pages. `handle.intent.data` or `handler.intentData`.
 *   **Intent Action**: You can define actions to be performed at specific lifecycle points. Refer to the source code for details.
     *   *Timing*: For `onBring`, `onOpen`, `onShow`, actions are performed *after* the callback. For `onHide`, `onClose`, `onRelease`, they are performed *before* the callback.
-*   **Active Struct**: A system for binding data to UI elements using `data-bind-*` attributes. When intentData is modified, `handle.applyActiveStruce()` is automatically executed to update UI elements.
+*   **Active Struct**: A system for binding intent data to UI elements using `data-bind-*` attributes. When intentData is modified, `handle.applyActiveStruce()` is automatically executed to update UI elements.
 *   **Apply**: When applying multiple changes at once, use `handle.apply(data)` to prevent `applyActiveStruce()` from running for each change. It executes once after all changes are complete, preventing overhead.
 
 ### Exported Sections
@@ -312,9 +313,9 @@ EstreUI 페이지는 Android Activity와 유사한 뚜렷한 라이프사이클�
 *   **onIntentUpdated**: 이미 활성화된 페이지가 새로운 데이터(Intent)를 받을 때 호출됩니다.
 *   **onApplied**: 데이터 바인딩을 위해 `apply()`가 호출될 때 작업 후 실행됩니다.
 
-### 핸들(Handle) vs 핸들러(Handler)
-*   **Handle**: DOM 요소 또는 UI 컨트롤러입니다. handler애서는 라이프싸이클의 `handle` 그 외에는 `this.handle`로 접근합니다.
-*   **Handler**: 페이지를 관리하는 로직 클래스(`EstrePageHandler`)입니다. `this.provider`로 접근합니다.
+### 핸들(Handle) & 핸들러(Handler)
+*   **Handle**: DOM 요소 또는 UI 컨트롤러입니다. `handler`애서는 라이프싸이클의 `handle` 그 외에는 `this.handle`로 접근합니다.
+*   **Handler**: 페이지를 관리하는 로직 클래스(`EstrePageHandler`)입니다. `handle.handler`로 접근합니다.
 *   `handle.component`, `handle.container`를 사용하여 상위 항목의 핸들에 접근할 수 있습니다.
 *   `component.containers`, `container.articles`를 사용하여 하위 항목의 핸들에 접근할 수 있습니다.
 *   그 외 접근이 필요한 경우 `estreUi`의 `mainSections`, `blindedSections`등을 통하여 다른 섹션의 핸들에 접근할 수 있습니다. 자세한 항목은 소스 구현을 참고하세요.
@@ -322,10 +323,11 @@ EstreUI 페이지는 Android Activity와 유사한 뚜렷한 라이프사이클�
 *   특히 브라우저의 developer tools의 console로 접근하려는 경우 요소 탭에서 component/container/article 요소를 선택한 후 `$0.pageHandle`를 입력하여 접근할 수 있습니다. 
 
 ### 데이터 바인딩 & Intent
-*   **Intent**: 페이지 간에 전달되는 데이터 객체입니다.
+*   **Intent**: 페이지 간에 전달되는 데이터 객체입니다. `handle.intent`나 `handler.intent`로 접근할 수 있습니다.
+*   **Intent Data**: `handle.intent.data`나 `handler.intentData`로 접근할 수 있습니다.
 *   **Intent Action**: 각 라이프싸이클에 해당하는 시점에 수행되는 동작을 지정할 수 있습니다. 자세한 사항은 소스 구현을 참고하세요.
     *   *실행 시점*: onBring, onOpen, onShow의 경우 라이프싸이클의 콜백이 실행 된 이후에 수행되며, onHide, onClose, onRelease의 경우 라이프싸이클의 콜백이 실행 되기 이전에 수행됩니다.
-*   **Active Struct**: `data-bind-*` 속성을 사용하여 데이터를 UI 요소에 바인딩하는 시스템입니다. intentData가 수정되면 자동으로 `handle.applyActiveStruce()`가 실행되어 UI 요소가 업데이트됩니다.
+*   **Active Struct**: `data-bind-*` 속성을 사용하여 인텐트 데이터를 UI 요소에 바인딩하는 시스템입니다. intentData가 수정되면 자동으로 `handle.applyActiveStruce()`가 실행되어 UI 요소가 업데이트됩니다.
 *   **Apply**: 다수의 변경사항이 한번에 적용되는 경우 `handle.apply(data)`를 사용하면 각 변경이 발생할 때 마다 `applyActiveStruce()`가 실행 되는것을 방지하고 변경이 완료 된 후에 한번만 실행되도록 하여 오버헤드를 방지할 수 있습니다.
 
 ### Exported Sections
