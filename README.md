@@ -76,17 +76,36 @@ When starting a new project, you should customize the following:
 ## Core Concepts
 
 ### Page System
+
+#### Section Blocks (Layers)
+EstreUI divides content layer areas as follows.
+Items below cover items above:
+
+*   **MainSections(StaticDoc)**: UI area paired with top/bottom fixed UI. PID starts with `&m`.
+*   **FooterSections(FixedBottom)**: Bottom fixed rootbar UI area. PID starts with `&f`. (Currently unused)
+*   **MenuSections(MainMenu)**: Left/Right sliding drawer menu area. PID starts with `&u`.
+*   **HeaderSections(FixedTop)**: Top fixed appbar UI area. PID starts with `&h`.
+*   **BlindedSections(InstantDoc)**: UI page area covering fixed UI. PID starts with `&b`.
+*   **OverlaySections(ManagedOverlay)**: Topmost overlay area. PID starts with `&o`.
+
+#### Page Composition
 EstreUI organizes content hierarchically:
-*   **Component**: A reusable UI element.
-*   **Container**: A grouping of articles (often represents a major feature area).
-*   **Article**: The actual page content.
+*   **Component(section)**: Top-level page. A functional grouping of pages in the application configuration. In staticDoc, it matches the tabs in fixedBottom. The default component for staticDoc has the id `home`. PID starts with the `=` prefix.
+*   **Container**: Container page. Represents a major feature area of the screen. The default container has the id `root`. PID starts with the `#` prefix.
+*   **Article**: Actual page content. Represents content at the screen or element level. The default article has the id `main`. PID starts with the `@` prefix.
     *   **Multi-Article Support**: You can display multiple articles simultaneously (e.g., split-screen for tablets), though this has some layout limitations.
+
+#### Page Types
+EstreUI classifies pages as follows:
+*   **Static**: Static page. Elements are not deleted and remain after registration during Estre UI initialization. Cannot be closed with closePage(). PID starts with `$s`. (Can be omitted when calling)
+*   **Instant**: Instant page. Elements are deleted after registration during Estre UI initialization and loaded when bringPage() is called separately. Can be closed with closePage(). PID starts with `$i`. (Can be omitted when calling)
+    *   **Multi instance**: Can display the same page implementation with different content simultaneously. PID includes an instance origin id prefixed with `^` at the end. (** Currently unimplemented.)
 
 ### PID (Page ID)
 Navigation is handled via PIDs, similar to deep links or routes.
-*   Format: `&c=component#container#article` or defined aliases.
+*   Format: `$s&m=component#container#article` or defined aliases.
 *   Example: `customPageManager.bringPage("dashboard")` or `pageManager.bringPage("*dashboard")` or `pageManager.bringPage("&b=main#dashboard")`.
-*   `pageManager.pages` contains all registered pages.
+*   You can check the list of registered PIDs via `pageManager.pages`.
 
 ### Lifecycle
 EstreUI pages have a distinct lifecycle, similar to Android Activities:
@@ -103,7 +122,7 @@ EstreUI pages have a distinct lifecycle, similar to Android Activities:
 *   **onIntentUpdated**: Called when the page receives new data (Intent) while already active.
 *   **onApplied**: Executed after `apply()` is called for data binding.
 
-### Handle & Handler
+### Page Handle & Page Handler
 *   **Handle**: The DOM element or UI controller. In `handler`, use `handle` for lifecycle methods, otherwise `this.handle`.
 *   **Handler**: The logic class (`EstrePageHandler`) managing the page. Accessed via `handle.handler`.
 *   Use `handle.component`, `handle.container` to access parent handles.
@@ -113,12 +132,32 @@ EstreUI pages have a distinct lifecycle, similar to Android Activities:
 *   **Tip**: In browser developer tools, select a component/container/article element and type `$0.pageHandle` in the console to access it.
 
 ### Data Binding & Intent
-*   **Intent**: A data object passed between pages. `handle.intent` or `handler.intent`.
-*   **Intent Data**: A data object passed between pages. `handle.intent.data` or `handler.intentData`.
+*   **Intent**: A data object passed between pages. Accessed via `handle.intent` or `handler.intent`.
+*   **Intent Data**: Accessed via `handle.intent.data` or `handler.intentData`.
 *   **Intent Action**: You can define actions to be performed at specific lifecycle points. Refer to the source code for details.
     *   *Timing*: For `onBring`, `onOpen`, `onShow`, actions are performed *after* the callback. For `onHide`, `onClose`, `onRelease`, they are performed *before* the callback.
 *   **Active Struct**: A system for binding intent data to UI elements using `data-bind-*` attributes. When intentData is modified, `handle.applyActiveStruce()` is automatically executed to update UI elements.
 *   **Apply**: When applying multiple changes at once, use `handle.apply(data)` to prevent `applyActiveStruce()` from running for each change. It executes once after all changes are complete, preventing overhead.
+
+### Handle (Extending EstreHandle Class)
+*   Handles are for reusable components within an Article page.
+*   Handles matching the UIS (UI specifier) in the HTML structure are initialized after onBring.
+
+#### Built-in Handles
+*   Includes `EstreUnifiedCalendarHandle`, `EstreDedicatedCalanderHandle`, etc. Refer to the default registered classes in the `EstreHandle` class in `estreUi.js`.
+
+#### Custom Handles
+*   You can register and use your own handles before Estre UI initialization. Refer to the implementation of the `EstreHandle` class in `estreUi.js`.
+
+### Handler (Direct Class Implementation)
+*   Reusable implementations that perform specific actions as needed are called handlers.
+*   Mainly initialized and used during page start callbacks.
+
+#### Built-in Handlers
+*   Includes `EstreSwipeHandler`, `EstreDraggableHandler`, etc. Refer to the default registered classes under the `// handlers` comment in `estreUi.js`.
+
+#### Custom Handlers
+*   There is no specific format for handler implementation, so feel free to implement them as needed.
 
 ### Exported Sections
 Parts of the layout like the header (`fixedTop`) or static content (`staticDoc`) are loaded from separate HTML files to keep `index.html` clean.
@@ -288,15 +327,34 @@ Estre UI 데모 애플리케이션
 ## 핵심 개념 (Core Concepts)
 
 ### 페이지 시스템
+
+#### 섹션 블록(레이어) 구성
+EstreUI는 콘텐츠 레이어 영역이 다음과 같이 나뉩니다.
+아래에 있는 항목이 위에 있는 항목을 덮습니다:
+
+*   **MainSections(StaticDoc)**: 상/하단 고정 UI와 세트되는 UI 영역. PID가 `&m`으로 시작됩니다.
+*   **FooterSections(FixedBottom)**: 하단 고정 rootbar UI 영역. PID가 `&f`으로 시작됩니다. (현재는 사용되지 않음)
+*   **MenuSections(MainMenu)**: 좌/우측 슬라이딩 드로어 메뉴 영역. PID가 `&u`으로 시작됩니다.
+*   **HeaderSections(FixedTop)**: 상단 고정 appbar UI 영역. PID가 `&h`으로 시작됩니다.
+*   **BlindedSections(InstantDoc)**: 고정 UI를 덮는 UI 페이지 영역. PID가 `&b`으로 시작됩니다.
+*   **OverlaySections(ManagedOverlay)**: 최상단 오버레이 영역. PID가 `&o`으로 시작됩니다.
+
+#### 페이지 구성
 EstreUI는 콘텐츠를 계층적으로 구성합니다:
-*   **Component**: 재사용 가능한 UI 요소.
-*   **Container**: 아티클의 그룹 (주로 주요 기능 영역을 나타냄).
-*   **Article**: 실제 페이지 콘텐츠.
-    *   **다중 아티클 지원**: 태블릿의 분할 화면처럼 여러 아티클을 동시에 표시할 수 있으나, 레이아웃에 일부 제한이 있습니다.
+*   **Component(section)**: 최상위 페이지. 애플리케이션 구성 상 기능적으로 분리된 페이지 묶음 단위. staticDoc의 경우 fixedBottom의 탭과 매칭. staticDoc의 기본 컴포넌트는 `home` id를 가짐. PID에서 `=`프리픽스로 시작합니다.
+*   **Container**: 컨테이너 페이지. 주로 화면 단위의 주요 기능 영역을 나타내며, 기본 컨테이너는 `root` id를 가짐. PID에서 `#`프리픽스로 시작합니다.
+*   **Article**: 실제 페이지 콘텐츠. 주로 화면 또는 요소 단위의 컨텐츠를 나타내며, 기본 아티클은 `main` id를 가짐. PID에서 `@`프리픽스로 시작합니다.
+    *   **다중 아티클 지원**: 태블릿의 분할 화면처럼 여러 아티클을 동시에 표시할 수 있으나, 레이아웃에 일부 제한이 있습니다. 
+
+#### 페이지 유형
+EstreUI는 페이지를 다음과 같이 구분합니다:
+*   **Static**: 정적 페이지. Estre UI 초기화 중 페이지 등록 시 요소가 삭제되지 않고 유지되며, closePage()로 닫을 수 없습니다. PID가 `$s`로 시작합니다. (호출 시 생략 가능)
+*   **Instant**: 인스턴트 페이지. Estre UI 초기화 중 페이지 등록 후 요소가 삭제되며, 별도로 bringPage()호출을 할 때 로드됩니다. closePage()로 닫을 수 있습니다. PID가 `$i`로 시작합니다. (호출 시 생략 가능)
+    *   **Multi instance**: 같은 페이지 구현을 다른 내용으로 동시에 표시할 수 있습니다. PID 끝에 `^`를 프리픽스로 하는 instance origin id가 포함됩니다. (** 현재 미구현입니다.)
 
 ### PID (Page ID)
 네비게이션은 딥링크나 라우트와 유사한 PID를 통해 처리됩니다.
-*   형식: `&m=component#container#article` 또는 정의된 별칭(alias).
+*   형식: `$s&m=component#container#article` 또는 정의된 별칭(alias).
 *   예시: `customPageManager.bringPage("dashboard")` 또는 `pageManager.bringPage("*dashboard")` 또는 `pageManager.bringPage("&b=main#dashboard")`.
 *   등록된 PID 목록은 `pageManager.pages`를 통해 확인 할 수 있습니다.
 
@@ -315,7 +373,7 @@ EstreUI 페이지는 Android Activity와 유사한 뚜렷한 라이프사이클�
 *   **onIntentUpdated**: 이미 활성화된 페이지가 새로운 데이터(Intent)를 받을 때 호출됩니다.
 *   **onApplied**: 데이터 바인딩을 위해 `apply()`가 호출될 때 작업 후 실행됩니다.
 
-### 핸들(Handle) & 핸들러(Handler)
+### 페이지 핸들(Page handle) & 페이지 핸들러(Page handler)
 *   **Handle**: DOM 요소 또는 UI 컨트롤러입니다. `handler`애서는 라이프싸이클의 `handle` 그 외에는 `this.handle`로 접근합니다.
 *   **Handler**: 페이지를 관리하는 로직 클래스(`EstrePageHandler`)입니다. `handle.handler`로 접근합니다.
 *   `handle.component`, `handle.container`를 사용하여 상위 항목의 핸들에 접근할 수 있습니다.
@@ -331,6 +389,26 @@ EstreUI 페이지는 Android Activity와 유사한 뚜렷한 라이프사이클�
     *   *실행 시점*: onBring, onOpen, onShow의 경우 라이프싸이클의 콜백이 실행 된 이후에 수행되며, onHide, onClose, onRelease의 경우 라이프싸이클의 콜백이 실행 되기 이전에 수행됩니다.
 *   **Active Struct**: `data-bind-*` 속성을 사용하여 인텐트 데이터를 UI 요소에 바인딩하는 시스템입니다. intentData가 수정되면 자동으로 `handle.applyActiveStruce()`가 실행되어 UI 요소가 업데이트됩니다.
 *   **Apply**: 다수의 변경사항이 한번에 적용되는 경우 `handle.apply(data)`를 사용하면 각 변경이 발생할 때 마다 `applyActiveStruce()`가 실행 되는것을 방지하고 변경이 완료 된 후에 한번만 실행되도록 하여 오버헤드를 방지할 수 있습니다.
+
+### 핸들(handle) (EstreHandle 클래스 확장)
+*   Article 페이지 내 재사용 가능한 구성 요소를 위한 것이 핸들입니다.
+*   HTML 스트럭처 내 UIS(UI spceifier)에 따라 매칭되는 핸들이 onBring 이후 시점에 초기화됩니다.
+
+#### 기본 제공 핸들
+*   `EstreUnifiedCalendarHandle`, `EstreDedicatedCalanderHandle` 등의 기본 제공 핸들이 있습니다. 자세한 항목은 `estreUi.js`의 `EstreHandle` 클래스에 기본 등록된 클래스들을 참조하세요.
+
+#### 사용자 정의 핸들
+*   Estre UI의 초기화 전에 직접 구현한 핸들을 등록하여 사용할 수 있습니다. 자세한 사항은 `estreUi.js`의 `EstreHandle` 클래스의 구현을 참고하세요.
+
+### 핸들러(handler) (직접 클래스 구현)
+*   필요에 따라 특정 작동을 수행하는 재사용 가능한 구현을 핸들러라고 칭합니다.
+*   주로 페이지 시작 콜백 중에 초기화하여 사용합니다.
+
+#### 기본 제공 핸들러
+*   `EstreSwipeHandler`, `EstreDraggableHandler` 등의 기본 제공 핸들러가 있습니다. 자세한 항목은 `estreUi.js`의 `// handlers` 주석 아래에 기본 등록된 클래스들을 참조하세요.
+
+#### 사용자 정의 핸들러
+*   핸들러의 구현은 형식이 따로 없으므로 자유롭게 구현하여 사용하시기 바랍니다.
 
 ### Exported Sections
 헤더(`fixedTop`)나 정적 콘텐츠(`staticDoc`)와 같은 레이아웃 부분은 `index.html`을 깔끔하게 유지하기 위해 별도의 HTML 파일에서 로드됩니다.
