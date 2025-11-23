@@ -84,8 +84,9 @@ EstreUI organizes content hierarchically:
 
 ### PID (Page ID)
 Navigation is handled via PIDs, similar to deep links or routes.
-*   Format: `&c=container#article` or defined aliases.
-*   Example: `bringPage("home")` or `bringPage("&c=main#dashboard")`.
+*   Format: `&c=component#container#article` or defined aliases.
+*   Example: `customPageManager.bringPage("dashboard")` or `pageManager.bringPage("*dashboard")` or `pageManager.bringPage("&b=main#dashboard")`.
+*   `pageManager.pages` contains all registered pages.
 
 ### Lifecycle
 EstreUI pages have a distinct lifecycle, similar to Android Activities:
@@ -295,8 +296,9 @@ EstreUI는 콘텐츠를 계층적으로 구성합니다:
 
 ### PID (Page ID)
 네비게이션은 딥링크나 라우트와 유사한 PID를 통해 처리됩니다.
-*   형식: `&c=container#article` 또는 정의된 별칭(alias).
-*   예시: `bringPage("home")` 또는 `bringPage("&c=main#dashboard")`.
+*   형식: `&m=component#container#article` 또는 정의된 별칭(alias).
+*   예시: `customPageManager.bringPage("dashboard")` 또는 `pageManager.bringPage("*dashboard")` 또는 `pageManager.bringPage("&b=main#dashboard")`.
+*   등록된 PID 목록은 `pageManager.pages`를 통해 확인 할 수 있습니다.
 
 ### 라이프사이클
 EstreUI 페이지는 Android Activity와 유사한 뚜렷한 라이프사이클을 가집니다:
