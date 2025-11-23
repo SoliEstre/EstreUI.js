@@ -1,660 +1,421 @@
 # EstreUI.js
-<img src="https://estreui.mpsolutions.kr/images/EstreUI-flatter-144x144.png">
 
-## English
+EstreUI is a "Rimwork" (Runnable Frame) designed to bridge the gap between classic web development and modern native-like web applications. It provides a structured, mobile-first environment for developers familiar with jQuery, ASP, PHP, or JSP, as well as native app developers looking to transition to the web.
+
+[한국어 문서 (Korean Documentation)](#estre-ui-rimwork-korean)
 
-# Estre UI Rimwork (similar to a framework, yet quite distinct)
+---
+
+## Introduction
+
+### Concept: Rimwork
+EstreUI is not just a library, nor a full-blown framework in the traditional sense. It is a **Rimwork**—a "Runnable Frame" that provides the essential rim (structure) and lifecycle management for your application, allowing you to fill in the content with your preferred tools (like jQuery).
+
+### Target Audience
+*   **Classic Web Developers**: If you are comfortable with jQuery, ASP, PHP, or JSP but want to build modern, single-page applications (SPA) with mobile-app-like experiences, EstreUI is for you.
+*   **Native App Developers**: If you are moving from Android or iOS development to the web, you will find EstreUI's lifecycle events (`onCreate`, `onShow`, `onPause` equivalent) and intent system very familiar.
+
+### Key Features
+*   **MVC Pattern**: Structured separation of concerns.
+*   **Lifecycle Management**: Native-like page lifecycle (`onBring`, `onShow`, `onHide`, etc.).
+*   **Native-like UI**: Smooth transitions, stack-based navigation, and mobile-optimized touch interactions.
+*   **jQuery 4.0 Support**: Fully compatible with the latest jQuery. Can also be used with lighter alternatives like Cash (experimental).
+*   **Hybrid App Ready**: Designed to work seamlessly with **WVCA4EUI** (Flutter-based wrapper) for deploying to Google Play and App Store.
+*   **PWA Support**: Ready for Progressive Web App deployment, including Windows Store support (requires SSL).
+
+### System Requirements
+*   **Browsers**: Chromium 92+, Safari 15+ (iOS 15+).
+*   **Recommendation**: **iOS 16+** is strongly recommended due to severe memory and CSS limitations in iOS 15.
+
+---
+
+## Getting Started
 
-This project has been provided by [MP Solutions inc.](https://mpsolutions.kr) since 2024
+### Installation & Update
+EstreUI is typically installed by cloning the repository or forking it.
+To update, you can pull from the upstream repository.
+
+You can also start with an example web app that includes a basic implementation:
+
+[Example Web App 1 (preview)](https://estreui.mpsolutions.kr/App1)
+/ [(Github)](https://github.com/SoliEstre/EstreUI.js-sample-app1)
+
+Estre UI Demo Application
+
+[APT. (preview)](https://estreui.mpsolutions.kr/APT)
+/ [(Github)](https://github.com/Esterkxz/APT-EstreUI.js-demo)
+
+#### File Structure
+*   `serviceLoader.html`: Service Worker Loader (handles updates before app launch).
+*   `scripts/`: Core libraries and logic.
+    *   `estreUi.js`: Main framework code.
+    *   `estreU0EE0Z.js`: Estre Common library.
+    *   `main.js`: Application entry point and configuration.
+*   `styles/`: CSS files for the framework and your app.
+*   `index.html`: The main entry point (The "Rim").
+*   `fixedTop.html`, `fixedBottom.html`, `mainMenu.html`, `staticDoc.html`, `instantDoc.html`, `managedOverlay.html`: Exported sections for layout.
+
+### Core Libraries
+*   **JCODD**: A JSON-alternative format and utility library for robust data handling.
+*   **Doctre.js**: DOM manipulation and document management helper.
+*   **Modernism.js**: Polyfills and support for modern JavaScript features.
+*   **Alienise.js**: Bridge for communication between heterogeneous systems (e.g., Web <-> Native).
+*   **estreU0EE0Z.js**: Common utilities and base classes for EstreUI.
+
+### Initial Customization Guide
+When starting a new project, you should customize the following:
+1.  **Metadata**: Update `<title>`, `<meta name="description">`, and Open Graph (OG) tags in `index.html`.
+2.  **Icons & Manifest**: Replace `favicon.ico`, app icons in `images/` and `/vectors/`, and update `webmanifest.json`.
+3.  **Layout**: Modify `fixedTop.html` for your header and `mainMenu.html` for navigation.
+4.  **Theme**: Update `styles/main.css` to match your brand colors.
+5.  **Main Script**: Update `scripts/main.js`.
+6.  **PWA**: Configure the service worker loader in `serviceLoader.html` (update messages and colors).
+
+---
+
+## Core Concepts
+
+### Page System
+EstreUI organizes content hierarchically:
+*   **Component**: A reusable UI element.
+*   **Container**: A grouping of articles (often represents a major feature area).
+*   **Article**: The actual page content.
+    *   **Multi-Article Support**: You can display multiple articles simultaneously (e.g., split-screen for tablets), though this has some layout limitations.
+
+### PID (Page ID)
+Navigation is handled via PIDs, similar to deep links or routes.
+*   Format: `&c=container#article` or defined aliases.
+*   Example: `bringPage("home")` or `bringPage("&c=main#dashboard")`.
+
+### Lifecycle
+EstreUI pages have a distinct lifecycle, similar to Android Activities:
+1.  **onBring**: Page is being prepared. Since the Active Struct hasn't been called yet, this is a good place for element creation tasks involving handles.
+2.  **onOpen**: Page is opening (transition start). Called only once.
+3.  **onShow**: Page is fully visible.
+4.  **onHide**: Page is hidden (covered by another page or closed).
+5.  **onClose**: Page is closed. Called only once.
+6.  **onRelease**: Page resources are released.
+
+*   **onBack**: Called when back navigation is triggered. Return `true` to cancel the default action.
+*   **onReload**: Called when page reload is triggered. Return `true` to cancel the default action (which is closing and reopening the page).
+
+*   **onIntentUpdated**: Called when the page receives new data (Intent) while already active.
+*   **onApplied**: Executed after `apply()` is called for data binding.
+
+### Handle vs. Handler
+*   **Handle**: The DOM element or UI controller. In handlers, use `handle` for lifecycle methods, otherwise `this.handle`.
+*   **Handler**: The logic class (`EstrePageHandler`) managing the page. Accessed via `this.provider`.
+*   Use `handle.component`, `handle.container` to access parent handles.
+*   Use `component.containers`, `container.articles` to access child handles.
+*   For other access, use `estreUi.mainSections`, `blindedSections` to access handles in other sections. Refer to the source code for details.
+*   You can access the page handle from any element object via `element.pageHandle`.
+*   **Tip**: In browser developer tools, select a component/container/article element and type `$0.pageHandle` in the console to access it.
+
+### Data Binding & Intent
+*   **Intent**: A data object passed between pages.
+*   **Intent Action**: You can define actions to be performed at specific lifecycle points. Refer to the source code for details.
+    *   *Timing*: For `onBring`, `onOpen`, `onShow`, actions are performed *after* the callback. For `onHide`, `onClose`, `onRelease`, they are performed *before* the callback.
+*   **Active Struct**: A system for binding data to UI elements using `data-bind-*` attributes. When intentData is modified, `handle.applyActiveStruce()` is automatically executed to update UI elements.
+*   **Apply**: When applying multiple changes at once, use `handle.apply(data)` to prevent `applyActiveStruce()` from running for each change. It executes once after all changes are complete, preventing overhead.
+
+### Exported Sections
+Parts of the layout like the header (`fixedTop`) or static content (`staticDoc`) are loaded from separate HTML files to keep `index.html` clean.
+
+Content written directly in `index.html` will be placed after the content of each file.
 
-***
+If needed (e.g., for local execution), you can remove `data-exported="1"` or the attribute entirely to write directly in `index.html` without AJAX loading.
+
+---
 
-Estre UI Rimwork is conceptually similar to a front-end framework, yet it differs in several aspects.
-It is developed to function as a rim (a runnable frame) for universal (Mobile & PC) web-based front-end applications.
+## UI/UX & Utilities
+
+### UI Modes
+*   **Scroll Modes**:
+    *   `vfv_scroll`: Scroll with inset added for `fixedTop` and `fixedBottom`.
+    *   `sv_scroll`: Standard scroll without inset.
+    *   `txv_scroll`, `bxv_scroll`: Scroll with only top or bottom inset added.
+*   **Article Modes**:
+    *   `fwvs`: Full Width Vertical Scroll.
+    *   `limit_on_screen`: Limits page width to mobile levels.
+        *   `fixed_height`, `full_height`, `max_height`: Height limit modes. Refer to `estreUiCore2.css`.
+
+### Layout Utilities
+*   **Flex Presets**: `line_block` (row), `inline_block`, `lines_block` (column).
+*   **Inset Utilities**: `inset_on_margin`, `inset_on_padding`, `inset_on_gap` for consistent spacing.
 
-- Built on jQuery, it facilitates access and efficient usage for existing jQuery users.
-- It can coexist with other front-end frameworks (such as Vue.js) and supports binding within Articles.
-- It provides a basic UI and lifecycle that mirror those of native mobile applications (following an MVC pattern).
-- It enables developers to directly leverage diverse, flexible web-based implementations within their projects.
-- It offers fundamental implementations of SPA and PWA for rapid web application development.
+### Dialog Replacements
+Native browser alerts are blocking and ugly. EstreUI provides non-blocking alternatives:
+*   `estreAlert(message)`: Replaces default `alert`.
+*   `estreConfirm(message, callback)`: Replaces default `confirm`.
+*   `estrePrompt(message, callback)`: Replaces default `prompt`.
+*   *Legacy calls*: You can still use `classicAlert` if absolutely necessary.
+*   `estreToast*`: Bottom-sheet style dialogs. Provides the same interface as alert/confirm/prompt and supports custom dialogs. Refer to source code.
+*   `note(message)`: Android Toast-like message output.
+*   `wait()`, `go()`, `stedy()`: Show/hide global loading indicators.
 
-<br />
+### Storage System
+*   **Async Storage**: Prototype implementation for asynchronous storage matching Local/Session Storage.
+*   **Native Storage**: Uses native app storage when running in **WVCA4EUI**.
+*   **Account/Device Storage**: Backend-synced data (account/device specific). Requires custom API implementation to link with async storage.
+*   **Codded Storage**: Storage implementation that automatically handles JCODD serialization/deserialization.
 
-# Preview
+### Global Alias Objects
+*   `uis`: Collection of UI specifier aliases.
+*   `eds`: Collection of Element dataset name aliases.
 
-Application preview implementations.
+---
+
+## Development Cautions
 
-- **Example web app 1** - [repo](https://github.com/SoliEstre/EstreUI.js-sample-app1) / [preview](https://estreui.mpsolutions.kr/App1)
+### iOS Memory Limits
+*   **Issue**: iOS 15+ (especially 15) has strict memory limits for web apps. Large CSS files can cause the app to crash or fail to load.
+*   **Solution**:
+    *   Separate critical CSS for the splash screen.
+    *   Load the rest of the CSS (including heavy fonts) using **Lazy Loading** (`<meta link="lazy" ...>`).
+    *   Use `defer` for script loading.
+    *   Implement HTML in exported section files (like `staticDoc.html`).
+
+---
+
+## Usage Examples
+
+### Mango Class (App developed with Estre UI as live code)
+Demonstrates a full-featured education app with complex data binding, multiple page containers, and dynamic content.
+*   **Key Pattern**: Extensive use of `AppPagesProvider` to map PIDs to specific handlers.
+*   Application link: [Mango Class](https://class.mangoedu.co.kr)
+
+### GMDG (Utility App)
+A Braille viewer utility.
+*   **Key Pattern**: File processing and simple UI structure. Shows how to handle file inputs and process data locally.
+*   Application link: [GMDG](https://gmdg.nm3.kr)
+*   Github repository: [https://github.com/Esterkxz/GMDG](https://github.com/Esterkxz/GMDG)
+
+### Common Patterns
+*   **index.html**: The skeleton.
+*   **AppPagesProvider**: The router configuration.
+*   **EstrePageHandler**: The controller for each page.
+
+---
+
+## Migration Guide
+
+### Classic Web (ASP/PHP/JSP) -> EstreUI
+*   **SSR Hybrid**: You can still use Server-Side Rendering for the initial load (`staticDoc`), but since it loads only once at first run, you must handle page content and navigation via AJAX/Fetch to maintain the SPA experience.
+*   **AJAX**: Replace form submissions and page reloads with `fetch` calls and EstreUI's page transitions.
+
+### Native App -> EstreUI
+*   **WVCA4EUI**: Use this Flutter-based wrapper to package your EstreUI app for app stores.
+    *   **Features**: Provides a bridge for native features, handles PWA caching, and manages the webview lifecycle.
+    *   **Bridge Handler**: Allows JavaScript to call Flutter code and vice-versa.
+
+---
+
+# Estre UI Rimwork (Korean)
+
+EstreUI는 클래식 웹 개발과 현대적인 네이티브 스타일 웹 애플리케이션 간의 격차를 해소하기 위해 설계된 "Rimwork" (Runnable Frame)입니다. jQuery, ASP, PHP, JSP에 익숙한 개발자뿐만 아니라 웹으로 전환하려는 네이티브 앱 개발자에게 구조화된 모바일 우선 환경을 제공합니다.
+
+---
+
+## 소개 (Introduction)
+
+### 개념: Rimwork
+EstreUI는 단순한 라이브러리도, 전통적인 의미의 완전한 프레임워크도 아닙니다. 이는 애플리케이션의 필수적인 **Rim**(구조)과 라이프사이클 관리를 제공하는 **Rimwork**(실행 가능한 프레임)로, 그 안의 내용은 여러분이 선호하는 도구(예: jQuery)로 채울 수 있습니다.
+
+### 타겟 독자
+*   **클래식 웹 개발자**: jQuery, ASP, PHP, JSP에 익숙하지만 모바일 앱과 같은 경험을 제공하는 현대적인 SPA(Single Page Application)를 구축하고 싶은 분.
+*   **네이티브 앱 개발자**: Android나 iOS 개발에서 웹으로 전환하려는 분들에게 EstreUI의 라이프사이클 이벤트(`onCreate`, `onShow`, `onPause` 등과 유사)와 인텐트 시스템은 매우 친숙할 것입니다.
+
+### 주요 특징
+*   **MVC 패턴**: 관심사의 구조적 분리.
+*   **라이프사이클 관리**: 네이티브 앱과 유사한 페이지 라이프사이클 (`onBring`, `onShow`, `onHide` 등).
+*   **네이티브 스타일 UI**: 부드러운 전환, 스택 기반 네비게이션, 모바일에 최적화된 터치 인터랙션.
+*   **jQuery 4.0 지원**: 최신 jQuery와 완벽 호환됩니다. 더 가벼운 대안인 Cash와도 함께 사용할 수 있습니다(실험적).
+*   **하이브리드 앱 지원**: Flutter 기반의 **WVCA4EUI** 래퍼와 연동하여 Google Play 및 App Store에 배포할 수 있도록 설계되었습니다.
+*   **PWA 지원**: Windows Store 등록을 포함한 프로그레시브 웹 앱 배포를 지원합니다(SSL 필수).
+
+### 시스템 요구사항
+*   **브라우저**: Chromium 92+, Safari 15+ (iOS 15+).
+*   **권장 사항**: iOS 15의 심각한 메모리 및 CSS 제한으로 인해 **iOS 16 이상**을 강력히 권장합니다.
+
+---
+
+## 시작하기 (Getting Started)
+
+### 설치 및 업데이트
+EstreUI는 일반적으로 리포지토리를 복제(clone)하거나 포크(fork)하여 설치합니다.
+업데이트를 위해서는 업스트림(upstream) 리포지토리에서 풀(pull)을 수행할 수 있습니다.
+
+아래 기초 구현이 포함된 예제를 기반으로 사용할 수도 있습니다.
+
+[예제 웹 앱 1 (preview)](https://estreui.mpsolutions.kr/App1)
+/ [(Github)](https://github.com/SoliEstre/EstreUI.js-sample-app1)
+
+Estre UI 데모 애플리케이션
+
+[APT. (preview)](https://estreui.mpsolutions.kr/APT)
+/ [(Github)](https://github.com/Esterkxz/APT-EstreUI.js-demo)
+
+#### 파일 구조
+*   `serviceLoader.html`: 서비스 워커 로더 (앱 실행 전 업데이트 진행).
+*   `scripts/`: 핵심 라이브러리 및 로직.
+    *   `estreUi.js`: 메인 프레임워크 코드.
+    *   `estreU0EE0Z.js`: Estre Common 라이브러리.
+    *   `main.js`: 애플리케이션 진입점 및 설정.
+*   `styles/`: 프레임워크 및 앱을 위한 CSS 파일.
+*   `index.html`: 메인 진입점 ("Rim").
+*   `fixedTop.html`, `fixedBottom.html`, `mainMenu.html`, `staticDoc.html`, `instantDoc.html`, `managedOverlay.html`: 레이아웃을 위한 내보내진 섹션들.
+
+### 핵심 라이브러리
+*   **JCODD**: 강력한 데이터 처리를 위한 JSON 대체 포맷 및 유틸리티 라이브러리.
+*   **Doctre.js**: DOM 조작 및 문서 관리 헬퍼.
+*   **Modernism.js**: 최신 자바스크립트 기능 폴리필 및 지원.
+*   **Alienise.js**: 이질적인 시스템 간(예: Web <-> Native)의 통신을 위한 브릿지.
+*   **estreU0EE0Z.js**: EstreUI를 위한 공통 유틸리티 및 기본 클래스.
+
+### 초기 커스텀 가이드
+새 프로젝트를 시작할 때 다음 사항들을 커스터마이징해야 합니다:
+1.  **메타데이터**: `index.html`의 `<title>`, `<meta name="description">`, Open Graph (OG) 태그 업데이트.
+2.  **아이콘 및 매니페스트**: `favicon.ico`, `images/` 및 `/vectors/` 폴더의 앱 아이콘 교체 및 `webmanifest.json` 업데이트.
+3.  **레이아웃**: 헤더를 위한 `fixedTop.html`과 네비게이션을 위한 `mainMenu.html` 수정.
+4.  **테마**: 브랜드 컬러에 맞춰 `styles/main.css` 수정.
+5.  **메인 스크립트**: `scripts/main.js` 수정.
+6.  **PWA**: `serviceLoader.html`에서 서비스 워커 로더 설정(메시지 및 색상) 업데이트.
+
+---
+
+## 핵심 개념 (Core Concepts)
+
+### 페이지 시스템
+EstreUI는 콘텐츠를 계층적으로 구성합니다:
+*   **Component**: 재사용 가능한 UI 요소.
+*   **Container**: 아티클의 그룹 (주로 주요 기능 영역을 나타냄).
+*   **Article**: 실제 페이지 콘텐츠.
+    *   **다중 아티클 지원**: 태블릿의 분할 화면처럼 여러 아티클을 동시에 표시할 수 있으나, 레이아웃에 일부 제한이 있습니다.
+
+### PID (Page ID)
+네비게이션은 딥링크나 라우트와 유사한 PID를 통해 처리됩니다.
+*   형식: `&c=container#article` 또는 정의된 별칭(alias).
+*   예시: `bringPage("home")` 또는 `bringPage("&c=main#dashboard")`.
+
+### 라이프사이클
+EstreUI 페이지는 Android Activity와 유사한 뚜렷한 라이프사이클을 가집니다:
+1.  **onBring**: 페이지가 준비되는 중입니다. Active struct가 호출되기 이전이므로 각종 handle 등을 포함하는 element 생성 작업을 할 수 있습니다.
+2.  **onOpen**: 페이지가 열리는 중입니다 (전환 시작). 1회만 호출됩니다.
+3.  **onShow**: 페이지가 완전히 보입니다.
+4.  **onHide**: 페이지가 숨겨졌습니다 (다른 페이지에 가려지거나 닫힘).
+5.  **onClose**: 페이지가 닫혔습니다. 1회만 호출됩니다.
+6.  **onRelease**: 페이지 리소스가 해제됩니다.
+
+*   **onBack**: Back navigation이 호출될 때 실행되며, true를 반환할 경우 기본 작동이 취소됩니다.
+*   **onReload**: 페이지를 새로고침하려고 할 때 호출됩니다. true를 반환할 경우 기본 작동이 취소됩니다. 기본 작동은 해당 페이지를 닫은 후 다시 열어주는 것입니다.
+
+*   **onIntentUpdated**: 이미 활성화된 페이지가 새로운 데이터(Intent)를 받을 때 호출됩니다.
+*   **onApplied**: 데이터 바인딩을 위해 `apply()`가 호출될 때 작업 후 실행됩니다.
+
+### 핸들(Handle) vs 핸들러(Handler)
+*   **Handle**: DOM 요소 또는 UI 컨트롤러입니다. handler애서는 라이프싸이클의 `handle` 그 외에는 `this.handle`로 접근합니다.
+*   **Handler**: 페이지를 관리하는 로직 클래스(`EstrePageHandler`)입니다. `this.provider`로 접근합니다.
+*   `handle.component`, `handle.container`를 사용하여 상위 항목의 핸들에 접근할 수 있습니다.
+*   `component.containers`, `container.articles`를 사용하여 하위 항목의 핸들에 접근할 수 있습니다.
+*   그 외 접근이 필요한 경우 `estreUi`의 `mainSections`, `blindedSections`등을 통하여 다른 섹션의 핸들에 접근할 수 있습니다. 자세한 항목은 소스 구현을 참고하세요.
+*   각 페이지의 엘리먼트 객체에서 접근이 필요한 경우 `element.pageHandle`로 접근할 수 있습니다.
+*   특히 브라우저의 developer tools의 console로 접근하려는 경우 요소 탭에서 component/container/article 요소를 선택한 후 `$0.pageHandle`를 입력하여 접근할 수 있습니다. 
+
+### 데이터 바인딩 & Intent
+*   **Intent**: 페이지 간에 전달되는 데이터 객체입니다.
+*   **Intent Action**: 각 라이프싸이클에 해당하는 시점에 수행되는 동작을 지정할 수 있습니다. 자세한 사항은 소스 구현을 참고하세요.
+    *   *실행 시점*: onBring, onOpen, onShow의 경우 라이프싸이클의 콜백이 실행 된 이후에 수행되며, onHide, onClose, onRelease의 경우 라이프싸이클의 콜백이 실행 되기 이전에 수행됩니다.
+*   **Active Struct**: `data-bind-*` 속성을 사용하여 데이터를 UI 요소에 바인딩하는 시스템입니다. intentData가 수정되면 자동으로 `handle.applyActiveStruce()`가 실행되어 UI 요소가 업데이트됩니다.
+*   **Apply**: 다수의 변경사항이 한번에 적용되는 경우 `handle.apply(data)`를 사용하면 각 변경이 발생할 때 마다 `applyActiveStruce()`가 실행 되는것을 방지하고 변경이 완료 된 후에 한번만 실행되도록 하여 오버헤드를 방지할 수 있습니다.
+
+### Exported Sections
+헤더(`fixedTop`)나 정적 콘텐츠(`staticDoc`)와 같은 레이아웃 부분은 `index.html`을 깔끔하게 유지하기 위해 별도의 HTML 파일에서 로드됩니다.
+
+`index.html`에 직접 작성한 사항은 각 파일의 내용의 뒤에 위치하게 됩니다.
+
+필요에 따라(로컬 실행이 필요한 경우 등) `data-exported="1"`의 `1`을 지우거나 속성을 제거하여 별도 파일의 AJAX 로드를 하지 않고 `index.html`에 직접 작성하는 방식을 사용할 수 있습니다.
+
+---
+
+## UI/UX 및 유틸리티
+
+### UI 모드
+*   **스크롤 방식**:
+    *   `vfv_scroll`: fixedTop 및 fixedBottom의 크기만큼 inset이 추가되는 스크롤.
+    *   `sv_scroll`: inset이 없는 표준 스크롤.
+    *   `txv_scroll`, `bxv_scroll`: 상단 또는 하단 inset 만 추가되는 스크롤.
+*   **아티클 모드**:
+    *   `fwvs`: Full Width Vertical Scroll (전체 너비 세로 스크롤).
+    *   `limit_on_screen`: 페이지 폭을 모바일 수준으로 제한.
+        *   `fixed_height`, `full_height`, `max_height`: 높이 제한 모드 설정. `estreUiCore2.css` 구현 참조.
+
+### 레이아웃 유틸리티
+*   **Flex 프리셋**: `line_block` (행), `inline_block`, `lines_block` (열).
+*   **Inset 유틸리티**: 일관된 간격을 위한 `inset_on_margin`, `inset_on_padding`, `inset_on_gap`.
+
+### 대화상자 대체
+기본 브라우저 경고창은 차단적이고 미려하지 않습니다. EstreUI는 비차단 대안을 제공합니다:
+*   `estreAlert(message)`: 기본 `alert` 호출은 이 함수로 대체됩니다.
+*   `estreConfirm(message, callback)`: 기본 `confirm` 호출은 이 함수로 대체됩니다.
+*   `estrePrompt(message, callback)`: 기본 `prompt` 호출은 이 함수로 대체됩니다.
+*   *레거시 호출*: 꼭 필요한 경우 `classicAlert`를 사용할 수 있습니다.
+*   `estreToast*`: 화면 하단에 부착된 형태의 다이얼로그 형식 또한 제공됩니다. alert, confirm, prompt와 동일한 인터페이스를 제공하며 커스텀 다이얼로그 또한 지원합니다.
+    자세한 사항은 소스 구현을 참고하세요.
+*   `note(message)`: 안드로이드의 Toast와 비슷한 형식의 메시지 출력을 제공합니다.
+*   `wait()`, `go()`, `stedy()`: 전역 로딩 인디케이터를 표시하거나 숨깁니다.
+
+### 스토리지 시스템
+*   **Async Storage**: Local/Session Storage구현과 일치하는 비동기 스토리지용 prototype 구현입니다.
+*   **Native Storage**: **WVCA4EUI**에서 실행 시 네이티브 앱 저장소를 사용합니다.
+*   **Account/Device Storage**: 백엔드와 연동된 데이터 (계정별/기기별 저장소). 이 부분은 자체 API와 연동하여 async storage를 직접 구현해야 합니다.
+*   **Codded Storage**: JCODD 직렬화/역직렬화를 자동으로 처리하는 스토리지 구현입니다.
+
+### 전역 alias 객체
+*   `uis`: UI specifier alias 모음.
+*   `eds`: Element dataset name alias 모음.
+
+---
+
+## 개발 시 주의사항 (Development Cautions)
+
+### iOS 메모리 제한
+*   **이슈**: iOS 15+(특히 15)는 웹 앱에 대한 엄격한 메모리 제한이 있습니다. 큰 CSS 파일은 앱 충돌이나 로드 실패를 유발할 수 있습니다.
+*   **해결책**:
+    *   스플래시 화면에 필요한 CSS만 분리하세요.
+    *   나머지 CSS(무거운 폰트 포함)는 **Lazy Loading** (`<meta link="lazy" ...>`)을 사용하세요.
+    *   스크립트 로딩 시 `defer` 속성을 사용하세요.
+    *   exported section html (`staticDoc.html` 등) 파일에 html을 구현하여 사용하세요.
+
+---
+
+## 사용 예제 (Usage Examples)
+
+### 망고클래스 (Estre UI가 라이브 코드로 개발되는 앱)
+복잡한 데이터 바인딩, 다중 페이지 컨테이너, 동적 콘텐츠를 갖춘 교육용 앱 예시입니다.
+*   **핵심 패턴**: `AppPagesProvider`를 사용하여 PID를 특정 핸들러에 매핑하는 광범위한 사용.
+*   Application link: [망고클래스](https://class.mangoedu.co.kr)
+
+### 관맹동감 (유틸리티 앱)
+점자 뷰어 유틸리티입니다.
+*   **핵심 패턴**: 파일 처리 및 간단한 UI 구조. 로컬에서 파일 입력을 처리하고 데이터를 가공하는 방법을 보여줍니다.
+*   Application link: [관맹동감](https://gmdg.nm3.kr)
+*   Github repository: [https://github.com/Esterkxz/GMDG](https://github.com/Esterkxz/GMDG)
+
+### 공통 패턴
+*   **index.html**: 뼈대(Skeleton).
+*   **AppPagesProvider**: 라우터 설정.
+*   **EstrePageHandler**: 각 페이지의 컨트롤러.
+
+---
+
+## 마이그레이션 가이드 (Migration Guide)
+
+### Classic Web (ASP/PHP/JSP) -> EstreUI
+*   **SSR 하이브리드**: 초기 로드(`staticDoc`)에는 여전히 서버 사이드 렌더링을 사용할 수 있지만, 처음 실행 시 최초 1회만 로드되므로 SPA 경험을 유지하려면 각 페이지의 컨텐츠 및 네비게이션은 AJAX/Fetch로 처리해야 합니다.
+*   **AJAX**: 폼 제출과 페이지 새로고침을 `fetch` 호출과 EstreUI의 페이지 전환으로 대체하세요.
+
+### Native App -> EstreUI
+*   **WVCA4EUI**: 이 Flutter 기반 래퍼를 사용하여 EstreUI 앱을 앱 스토어용으로 패키징하세요.
+    *   **기능**: 네이티브 기능을 위한 브릿지를 제공하고, PWA 캐싱을 처리하며, 웹뷰 라이프사이클을 관리합니다.
+    *   **Bridge Handler**: 자바스크립트가 Flutter 코드를 호출하거나 그 반대로 호출할 수 있게 해줍니다.
 
-Applications for Estre UI demonstration  
-- **APT.** - [repo](https://github.com/Esterkxz/APT-EstreUI.js-demo) / [preview](https://estreui.mpsolutions.kr/APT)
-
-<br />
-
-# Flutter Codebase for WebView Container Application for Estre UI
-
-[WVCA4EUI Github](https://github.com/SoliEstre/WebViewContainerApplication-for-EstreUI.js) - https://github.com/SoliEstre/WebViewContainerApplication-for-EstreUI.js
-
-> We have made the referenced Flutter project public.
-> It enables a seamlessly integrated, native-like web application for iOS and Android,
-> making deployment to app stores both easier and faster.
-> Moreover, it is optimized to interoperate organically with the Estre UI Rimwork and its PWA service.
-
-<br />
-
-# Document index
-
-- [Structure](#Structure)
-- [Lifecycle](#Lifecycle)
-
-<br />
-
-# Structure
-
-## Rimwork top-level elements (children of document.body)
-- `header#fixedTop` – App bar layer (similar to Android)
-- `main#splashRoot` – Primary splash layer
-- `nav#mainMenu` – Main menu layer
-- `div#ptr` – Pull-to-refresh indicator layer (currently not implemented)
-- `main#staticDoc` – Main content area (located below fixed top, bottom, and main menu)
-- `footer#fixedBottom` – Fixed bottom menu (similar to Windows taskbar)
-- `main#instantDoc` – Overlay content layer (covers everything except the splash screen when a page is open)
-- `nav#managedOverlay` – Managed overlay layer for essential application UIs
-
-<br />
-
-## Section bounds (root page holder)
-- `headerSections` contains the component sections of `header#fixedTop`
-- `menuSections` contains the component sections of `nav#mainMenu`
-- `mainSections` contains the component sections of `main#staticDoc` corresponding to the footer tab buttons in `footer#fixedBottom`
-- `blindSections` contains the component sections of `main#instantDoc`
-- `overlaySections` contains the component sections of `nav#managedOverlay`
-
-<br />
-
-## Page
-A Page is a managed unit (akin to a component) with a lifecycle, consisting of three levels: **Component > Container > Article**.
-Pages are managed (opened and closed) by the pageManager (an EstreUiPageManager object).
-
-Each page is assigned a unique PID (Page ID) upon initializing Estre UI.
-The format is: **${statement}&{sectionBound}={component id}#{container id}@{article id}**.
-This PID is used to control the opening and closing of pages.
-After initialization, pages can be reviewed in **pageManager.pages**.
-
-### Component
-A Component is the root element of a Page.
-It is specified using the selector `section#{component id}`.
-A Component can include multiple Containers.   
-The initial Component's ID is `home`; if no home tab exists, all sections with the `home` designation—or, lacking that, all sections except modal tabs—serve as the default tab (exiting the app upon a back action).
-
-### Container
-A Container is the full-screen content holder.
-It is selected via `div.container[data-container-id="{container id}"]`.
-Only the Container with `data-on-top="1"` is displayed within a Component.
-A Component can contain multiple Articles.   
-The default Container's ID is `root`.
-
-### Article
-An Article is the smallest unit of a Page.
-It is selected via `article[data-article-id="{article id}"]`.
-An Article can be displayed full-screen (within the safe area) or as part of a Container.   
-The default Article's ID is `main`.
-
-<br />
-
-## Page Handle
-A Page Handle implements the behavior of a Page.
-Its associated element is referred to as `host`.
-Page Handles are comparable to Activities/Fragments in the Android framework.
-
-### statement
-A statement can be either static or instant.
-Static pages remain in the DOM after initialization, whereas instant pages are removed when their parent page is released.
-Instant pages are extracted from the HTML during Estre UI initialization and appended as elements when a Page is opened.
-Once the browser is loaded, the Page's statement should not change; it is determined by the presence (or absence) of the attribute `data-static="1"`.
-Even static pages will be removed if their parent Container or Component is instant.
-Generally, aside from default screens (such as the home Component or the root Container/main Article), all pages are recommended to be instant.
-
-### intent
-Estre UI can pass intent data when opening or displaying a Page.
-The intent may include custom data for the Page and specify actions during various lifecycle events.
-At present, only a limited set of actions is provided.
-It is similar in concept to the intent used in the Android framework.
-Furthermore, when an Article is loaded, the contents of `intent.data` can be automatically bound via the element’s `data-bind-*` attributes.
-
-<br />
-
-## Page Handler
-> Extends EstrePageHandler or a custom handler class
-
-A Page Handler functions as the controller in the MVC pattern and is invoked at every lifecycle event by the Page Handle.
-It provides access to the host DOM and the intent data.
-
-### Basic Elements Accessible in a Handler
-- `this.handle` - Accesses the associated page handler.
-- `this.intent` - Accesses the intent of the associated page.
-- `this.intentData` - Direct access to the data of the page intent.
-- `this.provider` - Allows access to common app elements without relying on global JS objects, members, or variables.
-
-<br />
-
-## Handle
-> Extends EstreHandle; the class name starts with "Estre" and ends with "Handle"
-
-A Handle is the operational controller for a specified bound.
-Estre UI offers built-in Handles and allows the registration of custom Handles prior to initialization.
-The associated element is referred to as a `bound`.
-
-<br />
-
-## Handler
-> Each implementation’s class name starts with "Estre" and ends with "Handler"
-
-A Handler is an independent, attachable functional controller.
-Estre UI will continue to add more built-in Handlers over time.
-
-<br />
-
-# Lifecycle
-
-### onIntentUpdated()*
-For instant pages, this is called immediately upon creation or when a bring/show call includes intent data.
-It is invoked before `onBring()`, and passes the updated intent (as well as the original unmerged data) to the handler.
-In an Article, the Active Struct is called immediately afterward to update data bindings.
-
-> * Though not a lifecycle event per se, this is treated similarly in this Rimwork.
-
-### onBring()
-Called when the page host element and Page Handle are created.
-This is similar to `onCreate()` in the Android fragment lifecycle.
-Since Active Struct processes (such as data binding) run immediately after this function, any changes to the DOM at this point are automatically applied without additional calls.
-
-### onOpen()
-Called exactly once when the Page is opened, after the Page Handle and its internal handlers (in the Article) have been initialized.
-This mirrors `onViewCreated()` in the Android fragment lifecycle.
-
-### onShow()
-Called when a Page is displayed from an initial or hidden state.
-This is analogous to `onStart()` in the Android fragment lifecycle.
-
-### onFocus()
-Called when a Page gains focus (currently partially implemented).
-This is analogous to `onResume()` in the Android fragment lifecycle.
-
-### onReload()*
-Triggered by pressing F5; instead of reloading the entire site, only the currently displayed Estre UI Page is reloaded.
-Developers may override the onReload event with a custom Page Handler. If the event is handled internally (thus requiring no additional actions), the handler should return true.
-(Pressing Ctrl+F5 forces a full browser reload.)
-
-> * While not strictly a lifecycle event, this is treated similarly in this Rimwork.
-
-### onBack()*
-Called when a back action is requested (e.g., browser back, Android back button, or iOS swipe back).
-Triggered by the window’s popstate event.
-If handled internally with no extra or default behavior required, the handler should return true.
-> * This event is treated similarly to a lifecycle event in this Rimwork.
-> * Note: Forward navigation (pushstate) is not currently implemented.
-
-### onBlur()
-Called when a Page loses focus (currently not implemented).
-This corresponds to `onPause()` in the Android fragment lifecycle.
-
-### onHide()
-Called when a Page is hidden due to a request to hide or close it.
-This is analogous to `onStop()` in the Android fragment lifecycle.
-
-### onClose()
-Called exactly once when a Page is about to be closed, just before the Page Handle and its internal handlers (in the Article) are released.
-This mirrors `onDestroyView()` in the Android fragment lifecycle.
-
-### onRelease()
-Called once when the Page Handle is released (destroyed) and its host element is removed.
-However, a fully static Page Handle (without an instant statement in its parent) is not removed from the DOM.
-This is analogous to `onDestroy()` in the Android fragment lifecycle.
-
-<br />
-
-# Essential methods
-
-It is recommended to use `await` when executing synchronized code.
-
-## Basic dialogs
-Basic center popup dialogs  
-<br />
-### alert(args..) / estreAlert({options..})
-Overrides the classic `alert` method by calling `classicAlert()` for standard alerts.
-
-### confirm(args..) / estreConfirm({options..})
-Overrides the classic `confirm` method by calling `classicConfirm()` for standard confirmations.
-If a second (message) argument is not provided, it falls back to the classic method.
-
-### prompt(args..) / estrePrompt({options..})
-Overrides the classic `prompt` method by calling `classicPrompt()` for standard prompts.
-If a second (message) argument is missing, it falls back to the classic method.
-
-<br />
-
-## Slide-up Toast dialogs
-Similar to Android's Bottom Sheet Dialog.  
-It is recommended to use `await` for synchronized execution.
-
-### toastAlert(args..) / estreToastAlert({options..})
-Displays a slide-up alert dialog.
-
-### toastConfirm(args..) / estreToastConfirm({options..})
-Displays a slide-up confirmation dialog.
-
-### toastPrompt(args..) / estreToastPrompt({options..})
-Displays a slide-up prompt dialog.
-
-### toastOption(args..) / estreToastOption({options..})
-#### optionToast([selections], ..)
-Presents a simple selection list.
-
-### toastSelection(args..) / estreToastSelection({options..})
-#### selectionToast([selections], ..)
-Displays a checklist dialog and returns the list of selected items upon confirmation.
-
-<br />
-
-## Progress indicators
-
-### wait()
-Displays a full-screen infinite loading animation.
-It blocks the screen to prevent duplicate requests while notifying the user of ongoing loading.
-After calling `wait()`, `go()` must be called to close the animation.
-
-### stedy()
-Before displaying a full-screen infinite loading animation, it waits for a specified time (default 0.8 seconds) without showing the animation.
-This is used when loading completes within the specified time to avoid unnecessary screen blocking or flicker.
-After `stedy()`, `go()` must be called.
-
-### go()
-Closes the full-screen infinite loading animation.
-If future multi-instance support is added, the instanceOrigin returned by `wait()` or `stedy()` should be passed to `go()`.
-
-### going()
-Displays a full-screen gauged loading animation.
-The returned object’s current value can be updated to reflect progress.
-
-### arrived()
-Closes the full-screen gauged loading animation.
-If multi-instance support is added in the future, the instanceOrigin from the object returned by `going()` should be provided.
-
-<br />
-
-## Notification posts
-
-### noti() *not implemented currently
-Posts a notification card at the top of the screen.
-A slide notification page, similar to those in mobile OS, is planned for future implementation.
-
-### note()
-Posts a note card (similar to Android's Toast) at the bottom of the screen.
-Notifications are displayed sequentially for the set duration. Excessive durations or rapid requests may delay subsequent notifications, potentially affecting UX.
-
-<br />
-
-## Popup browser
-
-Used to display external web pages within Estre UI via nesting (iframe).
-However, due to the iframe-based implementation, cookies are not supported.
-If the external page requires cookies, use `window.open()` instead.   
-
-**Note**: `window.open()` is not supported on **PWA** for **iOS** or **Samsung Browser**; use a native app container in those cases.
-
-### popupBrowser(args..) / estrePopupBrowser({options..})
-Opens a nested (iframe) popup browser in the overlay section.
-
-### closePopupBrowserWhenOnTop()
-Closes the popup browser if it is currently displayed on top.
-This method is specifically for use by `WVCA4EUI`.
-
-<br />
-
-*** 
-
-** This project is currently in its initial phase.
-More documentation and examples will be added soon. **
-
-***
-
-## Korean
-
-# Estre UI Rimwork (프레임워크와 비슷하나, 하여튼 좀 다름)
-
-이 프로젝트는 [MP Solutions inc.](https://mpsolutions.kr)에서 2024년부터 제공되었습니다.
-
-***
-
-Estre UI Rimwork은 프론트엔드 프레임워크와 유사하지만 여러 면에서 다릅니다.
-
-이 Estre UI Rimwork은 범용(모바일 & PC) 웹 기반 프론트엔드 애플리케이션을 위한 림(러너블 프레임)으로서 작동하도록 개발되었습니다.
-
-- 이 림워크는 jQuery를 기반으로 개발되어 기존 jQuery 사용자의 접근 및 활용에 유리합니다.
-- 이 림워크는 다른 프론트엔드 프레임워크(Vue.js 등)와 공존할 수 있습니다. (Article에 bind 가능)
-- 이 림워크는 네이티브 모바일 애플리케이션과 유사한 기본 UI 및 라이프사이클(MVC 패턴)을 제공합니다.
-- 이 림워크는 앱 프로젝트에 다양한 웹 기반의 자유로운 구현을 그대로 활용하여 개발 수 있게 해 줍니다.
-- 이 림워크는 빠른 웹 애플리케이션 개발을 위해 SPA와 PWA의 기본 구현을 제공합니다.
-
-<br />
-
-# 미리보기
-
-본 리포지터리에 포함된 애플리케이션 미리보기 페이지
-
-[예제 웹 앱 1](https://estreui.mpsolutions.kr/App1)
-
-
-Estre UI 데모를 위한 애플리케이션   
-[APT.](https://estreui.mpsolutions.kr/APT)
-
-
-<br />
-
-
-# Estre UI를 위한 WebView 컨테이너 애플리케이션용 Flutter 코드베이스
-
-[WVCA4EUI Github](https://github.com/SoliEstre/WebViewContainerApplication-for-EstreUI.js) - https://github.com/SoliEstre/WebViewContainerApplication-for-EstreUI.js
-
-> 저희는 위 레퍼런스 Flutter 프로젝트를 공개했습니다.
-> 이는 iOS와 Android에서 통합된 웹 기반 애플리케이션을 네이티브와 유사하게 제공 및 이용 가능하게 하며 각 앱 스토어로의 배포를 용이하고 빠르게 할 수 있도록 제작되었습니다.
-> 또한 Estre UI Rimwork의 구현 및 PWA 서비스와의 연동이 구현되어 상호 유기적으로 작동할 수 있도록 최적화되어 있습니다.
-
-<br />
-
-
-# 문서 인덱스
-
-- [구조](#구조)
-- [라이프사이클](#라이프사이클)
-
-
-<br />
-
-
-# 구조
-
-## 림워크 최상위 요소 (document.body의 자식들)
-- `header#fixedTop` - 앱바 레이어 (안드로이드와 유사)
-- `main#splashRoot` - 기본 스플래시 레이어
-- `nav#mainMenu` - 메인 메뉴 레이어
-- `div#ptr` - 당겨서 새로고침을 표시하는 레이어 (현재 미구현)
-- `main#staticDoc` - 고정된 top, bottom 및 메인 메뉴 아래에 위치한 주요 콘텐츠 레이어
-- `footer#fixedBottom` - 하단 고정 메뉴 (Windows 작업표시줄과 유사)
-- `main#instantDoc` - 페이지 열림 시 스플래시 화면을 제외한 모든 부분을 덮는 오버레이 콘텐츠 레이어
-- `nav#managedOverlay` - 필수 애플리케이션 UI를 위한 관리형 오버레이 레이어
-
-<br />
-
-
-## 섹션 바운드 (루트 페이지 홀더)
-- `headerSections`에는 `header#fixedTop`의 컴포넌트 섹션이 들어갑니다.
-- `menuSections`에는 `nav#mainMenu`의 컴포넌트 섹션이 들어갑니다.
-- `mainSections`에는 `footer#fixedBottom`의 탭 버튼에 매칭되는 `main#staticDoc`의 컴포넌트 섹션이 들어갑니다.
-- `blindSections`에는 `main#instantDoc`의 컴포넌트 섹션이 들어갑니다.
-- `overlaySections`에는 `nav#managedOverlay`의 컴포넌트 섹션이 들어갑니다.
-
-<br />
-
-
-## 페이지
-페이지는 라이프사이클이 있는 관리 단위(컴포넌트와 유사)이며, `컴포넌트 > 컨테이너 > 아티클`의 세 단계로 구성됩니다.
-페이지는 pageManager(EstreUiPageManager 객체)에 의해 관리(열기 및 닫기)됩니다.
-
-각 페이지는 Estre UI 초기화 시 고유한 PID(페이지 ID)를 가집니다.
-포맷은 `${statement}&{sectionBound}={컴포넌트 id}#{컨테이너 id}@{아티클 id}`입니다.
-PID는 페이지를 열고 닫을 때 사용됩니다.
-Estre UI 초기화 후 `pageManager.pages`에서 가져온 페이지들을 확인할 수 있습니다.
-
-### 컴포넌트
-컴포넌트는 페이지 구조의 최상위입니다.
-셀렉터 `section#{컴포넌트 id}`로 지정됩니다.
-하나의 컴포넌트에는 여러 컨테이너를 포함할 수 있습니다.   
-초기 컴포넌트의 ID는 `home`이며, 홈 탭이 없는 경우 `home`클래스를 갖는 모든 섹션 혹은 이도 없는 경우 모달 탭을 제외한 모든 섹션이 기본 탭(뒤로 가기 버튼을 누르면 앱 종료)으로 사용됩니다.
-
-### 컨테이너
-컨테이너는 전체 화면 콘텐츠를 담는 영역입니다.
-셀렉터 `div.container[data-container-id="{컨테이너 id}"]`로 지정됩니다.
-`data-on-top="1"`이 지정된 컨테이너만 컴포넌트 내에서 표시됩니다.
-하나의 컴포넌트는 여러 아티클을 가질 수 있습니다.   
-기본 컨테이너의 ID는 `root`입니다.
-
-### 아티클
-아티클은 페이지의 최소 단위입니다.
-셀렉터 `article[data-article-id="{아티클 id}"]`로 지정됩니다.
-아티클은 안전 영역 내 전체 화면으로 표시되거나 컨테이너의 일부로 표시될 수 있습니다.   
-기본 아티클의 ID는 `main`입니다.
-
-<br />
-
-
-## 페이지 핸들
-
-페이지 핸들은 페이지 동작을 구현합니다.
-관련 엘리먼트는 `"host"`라고 부릅니다. (페이지 핸들러에서 `handle.host` 또는 `handle.$host`로 접근)
-페이지 핸들은 안드로이드의 액티비티 또는 프래그먼트와 유사합니다.
-
-### statement
-statement는 `static`(정적)이거나 `instant`(인스턴트)일 수 있습니다.
-Estre UI 초기화 시 정적 페이지는 DOM에서 제거되지 않는 반면, 인스턴트 페이지는 DOM에서 제거됩니다.
-인스턴트 페이지는 HTML코드가 Doctre.js의 HFNL로 추출되어 Estre UI 초기화 시 DOM에서 제거된 후 페이지가 열릴 때 엘리먼트로 생성되어 추가됩니다.
-페이지의 statement는 브라우저 로드 후 변경되지 않아야 하며, 엘리먼트 속성 `data-static="1"`의 존재 유무에 따라 결정됩니다.
-static 페이지이더라도 상위 페이지인 컨테이너나 컴포넌트가 instant인 경우 해당 페이지가 닫힐 경우 같이 DOM에서 제거됩니다.
-일반적으로 home 컴포넌트나 컴포넌트나 컨테이너의 root 컨테이너 및 main 아티클 같은 기본 화면에 해당하는 페이지를 제외하고 모든 페이지는 인스턴트로 사용을 권장합니다.
-
-### intent
-Estre UI는 페이지를 열거나 표시할 때 intent 데이터를 전달할 수 있습니다.
-intent는 열리는 페이지에 대한 커스텀 데이터를 포함할 수 있으며,
-다양한 라이프사이클 이벤트에서의 동작을 지정할 수 있습니다.
-현재는 일부 동작만 제공됩니다.
-intent는 안드로이드 프레임워크의 intent와 유사합니다.
-Article 로드 시 엘리먼트의 `data-bind-*` 속성을 통해 `intent.data` 내의 내용을 기반으로 자동 삽입되도록 이용 가능합니다.
-
-<br />
-
-
-## 페이지 핸들러
-> EstrePageHandler을 확장 또는 임의 클래스에 커스텀으로 페이지 핸들러 함수 작성
-
-페이지 핸들러는 MVC 패턴에서의 컨트롤러 역할을 하며, 페이지 핸들에 의해 각 라이프사이클 이벤트 시 호출됩니다.
-이를 통해 호스트 DOM 및 intent 데이터에 접근할 수 있습니다.
-
-### 핸들러 내 접근 가능한 기본 요소
-- `this.handle` - 연결된 페이지 핸들에 접근합니다.
-- `this.intent` - 연결된 페이지의 인텐트에 접근합니다.
-- `this.intentData` - 연결된 페이지 인텐트의 데이터에 바로 접근합니다.
-- `this.provider` - 핸들러에서 JS 최상위 객체/멤버/변수에 의존하지 않고 앱 공통 요소에 접근할 수있도록 연결해주는 프로바이더에 접근합니다.
-
-<br />
-
-
-## 핸들
-> EstreHandle을 확장하며, 클래스 이름은 `Estre`로 시작하고 `Handle`로 끝남
-
-핸들은 특정 바운드를 위한 운영 컨트롤러입니다.
-Estre UI는 기본 핸들을 제공하며, 초기화 전에 커스텀 핸들을 등록할 수 있습니다.
-연결된 엘리먼트는 `bound`라고 부릅니다. (핸들 내에서 `this.host` 또는 `this.$host`로 접근)
-
-<br />
-
-
-## 핸들러
-> 정해진 형식이 없으며, 각 구현체의 클래스 이름은 `Estre`로 시작하고 `Handler`로 끝남
-
-핸들러는 독립적이고 부착 가능한 기능 컨트롤러입니다.
-Estre UI는 지속적으로 기본 핸들러를 추가해 나갈 예정입니다.
-
-<br />
-
-
-# 라이프사이클
-
-### onIntentUpdated()*
-인스턴트 페이지의 경우 생성 직후, 혹은 bring/show 호출에 intent가 포함된 경우 각각 호출됩니다.
-onBring보다 먼저 호출되며, 위와 같은 추가 전달 시 handle에 intent가 업데이트된 상태로 호출되고 병합 전의 추가 전달된 내용 원본도 함수 호출 시 전달됩니다.
-Article에서는 직후 Active Struct가 호출되어 데이터 바인드가 업데이트 됩니다.
-
-> * 이는 라이프사이클 이벤트와는 다르지만, 이 림워크에서는 유사하게 취급합니다.
-
-### onBring()
-페이지 호스트 요소와 페이지 핸들 생성 시 호출됩니다.
-이는 안드로이드 프래그먼트 라이프사이클의 `onCreate()`와 유사합니다.
-데이터 바인드 등의 Active Struct 처리가 함수 종료 직후 추가 실행되므로 이 시점에 DOM을 변경/추가 하는 경우 데이터 바인드 등의 Active Struct 적용이 별도 호출 없이 적용됩니다.
-
-### onOpen()
-페이지 핸들과 아티클 내의 핸들들이 초기화된 후 페이지가 열린 순간 단 한 번 호출됩니다.
-이는 안드로이드 프래그먼트 라이프사이클의 `onViewCreated()`와 유사합니다.
-
-### onShow()
-페이지가 초기 또는 숨김 상태에서 표시될 때 호출됩니다.
-이는 안드로이드 프래그먼트 라이프사이클의 `onStart()`와 유사합니다.
-
-### onFocus()
-페이지가 포커스를 얻을 때 호출됩니다. (현재 미구현 *일부 구현)
-이는 안드로이드 프래그먼트 라이프사이클의 `onResume()`과 유사합니다.
-
-### onReload()*
-F5 키를 눌러 전체 사이트를 새로고침하는 대신 현재 표시된 Estre UI 페이지를 새로고침합니다.
-개발자는 커스텀 페이지 핸들러를 통해 `onReload` 이벤트를 재정의할 수 있으며, Ctrl+F5는 이를 무시하고 브라우저 전체 새로고침을 수행합니다.
-해당 핸들러에서 자체 처리하여 별도의 추가/기본 작동이 필요 없는 경우 `true`를 리턴해야 합니다.
-
-> * 이는 라이프사이클 이벤트와는 다르지만, 이 림워크에서는 유사하게 취급합니다.
-
-### onBack()*
-뒤로 가기 액션이 요청될 때 호출됩니다 (예: 브라우저 뒤로가기, 안드로이드 뒤로가기 버튼, iOS 스와이프 백).
-윈도우의 popstate 이벤트에 의해 트리거됩니다.
-해당 핸들러에서 자체 처리하여 별도의 추가/기본 작동이 필요 없는 경우 `true`를 리턴해야 합니다.
-
-> * 이는 라이프사이클 이벤트와는 다르지만, 이 림워크에서는 유사하게 취급합니다.
-
-### onBlur()
-페이지가 포커스를 잃을 때 호출됩니다. (현재 미구현)
-이는 안드로이드 프래그먼트 라이프사이클의 `onPause()`와 유사합니다.
-
-### onHide()
-페이지가 숨겨지거나 닫히는 요청에 의해 화면에서 사라질 때 호출됩니다.
-이는 안드로이드 프래그먼트 라이프사이클의 `onStop()`와 유사합니다.
-
-### onClose()
-페이지 핸들과 아티클 내의 핸들이 해제(파괴)되기 직전에 페이지가 닫힐 때 단 한 번 호출됩니다.
-이는 안드로이드 프래그먼트 라이프사이클의 `onDestroyView()`와 유사합니다.
-
-### onRelease()
-페이지 핸들이 해제(파괴)되고 호스트 요소가 제거될 때 단 한 번 호출됩니다.
-단, 완전히 정적인 페이지 핸들(상위에 인스턴트 statement가 없는 경우)은 DOM에서 제거되지 않습니다.
-이는 안드로이드 프래그먼트 라이프사이클의 `onDestroy()`와 유사합니다.
-
-<br />
-
-
-# 기본 메서드
-공통적으로 동기화된 코드 실행이 필요한 경우를 위해 `await` 사용을 권장합니다.
-
-## 기본 대화상자
-기본 중앙 팝업 대화상자  
-<br />
-
-### alert(args..) / estreAlert({options..})
-기본 `alert`는 `classicAlert()`로 호출할 수 있도록 재정의됩니다.
-비동기 함수이나 구분을 위한 판단 요소가 없어 기존 함수의 대체 실행은 되지 않으므로 주의바랍니다.
-
-### confirm(args..) / estreConfirm({options..})
-기본 `confirm`는 `classicConfirm()`로 호출할 수 있도록 재정의됩니다.
-비동기 함수이므로 호환성을 위해 두 번째(메시지) 인자가 제공되지 않으면 기존 메서드로 대체 실행합니다.
-
-### prompt(args..) / estrePrompt({options..})
-기본 `prompt`는 `classicPrompt()`로 호출할 수 있도록 재정의됩니다.
-비동기 함수이므로 호환성을 위해 세 번째(메시지) 인자가 제공되지 않으면 기존 메서드로 대체 실행합니다.
-
-<br />
-
-
-## 슬라이드 업 토스트 대화상자
-안드로이드의 바텀 시트 다이얼로그와 유사합니다.  
-동기화된 코드 실행을 위해 `await` 사용을 권장합니다.
-
-### toastAlert(args..) / estreToastAlert({options..})
-슬라이드 업 알림 대화상자를 표시합니다.
-
-### toastConfirm(args..) / estreToastConfirm({options..})
-슬라이드 업 확인 대화상자를 표시합니다.
-
-### toastPrompt(args..) / estreToastPrompt({options..})
-슬라이드 업 프롬프트 대화상자를 표시합니다.
-
-### toastOption(args..) / estreToastOption({options..})
-#### optionToast([selections], ..)
-간단한 선택 목록을 제시합니다.
-
-### toastSelection(args..) / estreToastSelection({options..})
-#### selectionToast([selections], ..)
-체크리스트 대화상자를 표시하며, 확인 시 선택된 항목들의 목록을 반환합니다.
-
-<br />
-
-
-## 진행 표시기
-
-### wait()
-전체 화면 무한 로딩 애니메이션을 표시합니다.   
-화면을 차단하여 중복 요청 호출 등을 방지하고 로딩중임을 사용자에게 알리기 위해 사용합니다.   
-`wait()` 호출 후에는 반드시 `go()`를 호출하여야 합니다.
-
-### stedy()
-전체 화면 무한 로딩 애니메이션을 표시하기 전에 주어진 시간(기본 0.8초)만큼 표시하지 않고 대기합니다.   
-일반적으로 로딩이 해당 지정 시간 내에 이루어져 화면 차단이 불필요한 경우 및 화면 차단 출력으로 인한 화면 깜빡임을 방지하고자 하는 경우 사용합니다.   
-`wait()`과 마찬가지로 호출 후에는 반드시 `go()`를 호출하여야 합니다.
-
-### go()
-전체 화면 무한 로딩 애니메이션을 종료합니다.   
-현재는 페이지의 멀티 인스턴스가 지원되지 않아 문제가 되지 않으나, 추후 지원될 경우 모든 `onRunning` 레이어(페이지)를 닫게 되므로 호출 시 반드시 해당하는 `wait()`이나 `stedy()`의 리턴 값인 `instanceOrigin`을 전달해야 합니다.
-
-### going()
-전체 화면 게이지형 로딩 애니메이션을 표시합니다.
-리턴받은 객체의 `current`값을 수정하여 진행 게이지를 업데이트 할 수 있습니다.
-
-### arrived()
-전체 화면 게이지형 로딩 애니메이션을 종료합니다.
-현재는 페이지의 멀티 인스턴스가 지원되지 않아 문제가 되지 않으나, 추후 지원될 경우 모든 `onProgress` 레이어(페이지)를 닫게 되므로 호출 시 반드시 해당하는 `going()`의 리턴 객체의 `instanceOrigin`값을 전달해야 합니다.
-
-<br />
-
-
-## 알림 게시
-
-### noti() *현재 미구현
-화면 상단에 알림 카드를 게시합니다.
-향후 모바일 OS와 유사한 상단 슬라이드 알림 페이지가 추가될 예정입니다.
-
-### note()
-화면 하단에 안드로이드의 토스트와 유사한 노트 카드를 게시합니다.
-요청된 내용들은 각 설정 시간 동안 출력된 후 다음 요청된 내용으로 순차 출력됩니다.
-너무 많은 지속시간 설정 또는 요청을 호출하는 경우 이후 호출 내용의 출력이 시점이 밀리게 되어 UX에 문제가 되므로 남발되지 않도록 해야 합니다.
-
-<br />
-
-
-## 팝업 브라우저
-
-Estre UI 내에서 외부 웹 페이지를 중첩(iframe)하여 표시할 때 사용됩니다.
-그러나 iframe 기반 구현으로 인해 쿠키를 지원하지 않습니다.
-외부 페이지가 쿠키를 요구하는 경우, `window.open()`을 사용하시기 바랍니다.   
-
-**참고**: `window.open()`은 **iOS** 및 **Samsung Browser**의 **PWA**에서 지원되지 않으므로, 해당 경우 네이티브 앱 컨테이너를 사용하세요.
-
-### popupBrowser(args..) / estrePopupBrowser({options..})
-오버레이 섹션에 중첩(iframe) 팝업 브라우저를 엽니다.
-
-### closePopupBrowserWhenOnTop()
-현재 팝업 브라우저가 맨 위에 표시되어 있다면 이를 종료합니다.
-이 메서드는 **WVCA4EUI**(플러터 웹뷰 컨테이너)에서의 호출 전용입니다.
-
-<br />
-
-***
-
-** 이 프로젝트는 현재 초기 단계입니다.
-추가 문서와 예제가 곧 추가될 예정입니다. **
-
-***
