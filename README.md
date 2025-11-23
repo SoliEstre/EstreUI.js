@@ -69,7 +69,7 @@ When starting a new project, you should customize the following:
 3.  **Layout**: Modify `fixedTop.html` for your header and `mainMenu.html` for navigation.
 4.  **Theme**: Update `styles/main.css` to match your brand colors.
 5.  **Main Script**: Update `scripts/main.js`.
-6.  **PWA**: Configure the service worker loader in `serviceLoader.html` (update messages and colors).
+6.  **PWA**: Configure the service worker loader in `serviceLoader.html` (update messages and colors). Update `serviceWorker.js` to include your app's files and version.
 
 ---
 
@@ -281,7 +281,7 @@ Estre UI 데모 애플리케이션
 3.  **레이아웃**: 헤더를 위한 `fixedTop.html`과 네비게이션을 위한 `mainMenu.html` 수정.
 4.  **테마**: 브랜드 컬러에 맞춰 `styles/main.css` 수정.
 5.  **메인 스크립트**: `scripts/main.js` 수정.
-6.  **PWA**: `serviceLoader.html`에서 서비스 워커 로더 설정(메시지 및 색상) 업데이트.
+6.  **PWA**: `serviceLoader.html`에서 서비스 워커 로더 설정(메시지 및 색상) 업데이트 및 `serviceWorker.js`의 구성 파일 목록 및 버전 수정.
 
 ---
 
