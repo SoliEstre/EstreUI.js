@@ -1649,7 +1649,8 @@ class EstrePageHandle {
     }
 
     takeOnPageBind(pr, bind) {
-        this.#revokeIntentDataBindProxy[pr]?.();
+        const rv = this.#revokeIntentDataBindProxy[pr];
+        if (tf(rv)) rv();
         if (nn(bind) && tj(bind)) {
             const { proxy, revoke } = Proxy.revocable(bind, {
                 get: (target, prop) => prop == "isProxy" ? t : target[prop],
