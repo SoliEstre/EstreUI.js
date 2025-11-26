@@ -20,7 +20,7 @@ const uis = {
     dotlottieLoader: "dotlottie-loader",
 
     // rim ui //
-    
+
     // component //
     container: ".container",
     rootTabContent: "root_tab_content",
@@ -68,7 +68,7 @@ const uis = {
     filterFixed: "ul.fixed",
     filterVariable: "ul.variable",
     dataSelection: "ul.data_selection",
-    
+
     // unified scheduler
     unifiedScheduler: ".unified_scheduler",
     scheduleHolder: ".schedule_holder",
@@ -88,7 +88,7 @@ const uis = {
     minimalScheduler: ".minimal_scheduler",
     minimalScheduleList: ".schedule_list",
     schedule: ".schedule",
-    
+
     // calendar common
     scaler: ".scaler",
     daysSubjects: ".days_subjects",
@@ -184,7 +184,7 @@ const uis = {
     allowSwipe: ".allow_swipe",
     blockSwipe: ".block_swipe",
     blockSwipeFilter: "*:not(.block_swipe)",
-    
+
 
 
     // data related using //
@@ -343,7 +343,7 @@ const eds = {
     showToday: "data-show-today",
     loaded: "data-loaded",
     scheduleUnit: "data-schedule-unit",
-    
+
     // for calendar structure
     todayYear: "data-today-y",
     todayMonth: "data-today-m",
@@ -501,7 +501,7 @@ function estreToastAlert(options = {}) {
             this?.data?.callbackDissmiss?.();
             resolve(undefined);
         },
-     }));
+    }));
 }
 
 const toastAlert = (title, message,
@@ -570,7 +570,7 @@ function estreToastPrompt(options = {}) {
             this?.data?.callbackDissmiss?.();
             resolve(undefined);
         },
-     }));
+    }));
 }
 
 const toastPrompt = (title,
@@ -678,7 +678,7 @@ function estreAlert(options = {}) {
             this?.data?.callbackDissmiss?.();
             resolve(undefined);
         },
-     }));
+    }));
 }
 
 alert = (title, message,
@@ -750,7 +750,7 @@ function estrePrompt(options = {}) {
             this?.data?.callbackDissmiss?.();
             resolve(undefined);
         },
-     }));
+    }));
 }
 
 prompt = (title,
@@ -1015,7 +1015,7 @@ class ES {
         this._storagePrefix = storagePrefix;
     }
 
-    
+
     #get(key, type = "string", def) {
         if (key == null | key == "") return;
         const value = this._storage.getItem(this._getFullKey(key));
@@ -1084,7 +1084,7 @@ class ES {
     getObject(key, def) { return this.#get(key, "object", def); }
 
     get(key, def) { return this.getString(key, def); }
-        
+
 
     #set(key, type = "string", value) {
         if (key == null | key == "") return undefined;
@@ -1150,10 +1150,10 @@ class ES {
     setBinary(key, value) { return this.#set(key, "binary", value); }
     setBytes(key, value) { return this.#set(key, "bytes", value); }
     setObject(key, value) { return this.#set(key, "object", value); }
-    
+
     set(key, value) { return this.setString(key, value); }
 
-    
+
     #remove(key) {
         if (key == null | key == "") return undefined;
         return this._storage.removeItem(this._getFullKey(key));
@@ -1203,7 +1203,7 @@ class EAS extends ES {
     async setBinary(key, value) { return await this.#set(key, "binary", value); }
     async setBytes(key, value) { return await this.#set(key, "bytes", value); }
     async setObject(key, value) { return await this.#set(key, "object", value); }
-    
+
     async set(key, value) { return await this.setString(key, value); }
 
 
@@ -1223,8 +1223,8 @@ class EAS extends ES {
 class EJS {
 
     get _typePrefix() { return equalCase(this._codeType, {
-        json: "JSON_",
-        jcodd: "JCODD_",
+            json: "JSON_",
+            jcodd: "JCODD_",
     }); }
 
     _storage = null;
@@ -1256,13 +1256,13 @@ class EJS {
         if (key == null | key == "") return undefined;
         let valueString
         try {
-        valueString = equalCase(this._codeType, {
-            json: _ => JSON.stringify(value),
-            jcodd: _ => Jcodd.coddify(value),
-        });
+            valueString = equalCase(this._codeType, {
+                json: _ => JSON.stringify(value),
+                jcodd: _ => Jcodd.coddify(value),
+            });
         } catch (ex) {
             if (window.isLogging) console.error(ex);
-        }            
+        }
         return this._storage.setItem(this._getFullKey(key), valueString == null ? "" : valueString);
     }
 
@@ -1290,18 +1290,18 @@ class EAJS extends EJS {
         if (key == null | key == "") return undefined;
         let valueString
         try {
-        valueString = equalCase(this._codeType, {
-            json: _ => JSON.stringify(value),
-            jcodd: _ => Jcodd.coddify(value),
-        });
+            valueString = equalCase(this._codeType, {
+                json: _ => JSON.stringify(value),
+                jcodd: _ => Jcodd.coddify(value),
+            });
         } catch (ex) {
             if (window.isLogging) console.error(ex);
-        }            
+        }
         return await this._storage.setItem(this._getFullKey(key), valueString == null ? "" : valueString);
     }
 
 }
-    
+
 
 
 /**
@@ -1347,14 +1347,14 @@ const ECNS = new EAJS(nativeStorage, "NS_");
 class EstreUiParameterManager {
 
     get ssPrefix() { return this.#prefix + "PARAMETER_MANAGER_"; }
-    
+
     get forLS() { return {
 
     }; }
 
     get forSS() { return {
-        get page() { return "requestPage"; },
-        get origin() { return "requestOrigin"; },
+            get page() { return "requestPage"; },
+            get origin() { return "requestOrigin"; },
     }; }
 
     // class property
@@ -1370,7 +1370,7 @@ class EstreUiParameterManager {
         this.#lsMatch = lsMatch ?? {};
         this.#ssMatch = ssMatch ?? {};
     }
-    
+
 
     init() {
         for (const [key, value] of this.#params) {
@@ -1407,7 +1407,7 @@ class EstreAsyncManager {
     static onClears = new Set();
 
     static get workIs() { return Array.from(this.works).length; }
-    
+
     static beginWork(specifier, host, just = Date.now()) {
         const id = just + "@" + host + "#" + specifier;
 
@@ -1415,7 +1415,7 @@ class EstreAsyncManager {
 
         return id;
     }
-    
+
     static endOfWork(id) {
         this.works.delete(id);
 
@@ -1485,22 +1485,22 @@ class EstrePageHandle {
     get isAppbarRightAssigned() { return this.hostType != "component" && !(this.isStatic && !this.isFullyStatic) && (this.$host.let(it => it.hasClass("constraint") || (it.hasClass("fwvs") && !EUX.isExtensive))) ? !typeUndefined(this.appbarRight) : isNotNully(this.appbarRight); }
     get isAppbarCenterAssigned() { return this.hostType != "component" && !(this.isStatic && !this.isFullyStatic) && (this.$host.let(it => it.hasClass("constraint") || (it.hasClass("fwvs") && !EUX.isExtensive))) ? !typeUndefined(this.appbarCenter) : isNotNully(this.appbarCenter); }
     get appbarLeftFeed() { return setter => {
-        const $set = setter(this.appbarLeft)?.let(it => $(it));
-        this.$appbarLeft = $set;
-        this.onInitAppbarLeft($set);
-        return $set;
+            const $set = setter(this.appbarLeft)?.let(it => $(it));
+            this.$appbarLeft = $set;
+            this.onInitAppbarLeft($set);
+            return $set;
     } }
     get appbarRightFeed() { return setter => {
-        const $set = setter(this.appbarRight)?.let(it => $(it));
-        this.$appbarRight = $set;
-        this.onInitAppbarRight($set);
-        return $set;
+            const $set = setter(this.appbarRight)?.let(it => $(it));
+            this.$appbarRight = $set;
+            this.onInitAppbarRight($set);
+            return $set;
     } }
     get appbarCenterFeed() { return setter => {
-        const $set = setter(this.appbarCenter)?.let(it => $(it));
-        this.$appbarCenter = $set;
-        this.onInitAppbarCenter($set);
-        return $set;
+            const $set = setter(this.appbarCenter)?.let(it => $(it));
+            this.$appbarCenter = $set;
+            this.onInitAppbarCenter($set);
+            return $set;
     } }
     $appbarLeft;
     $appbarRight;
@@ -1519,7 +1519,7 @@ class EstrePageHandle {
 
     #intent = null;
     get intent() { return this.#intent; }
-    
+
     #isOpened = false;
     get isOpened() { return this.#isOpened; }
     #isShowing = false;
@@ -1555,7 +1555,7 @@ class EstrePageHandle {
 
         if (this.host.pageHandle != null && this.host.pageHandle != this) {
             try {
-            this.host.pageHandle.release();
+                this.host.pageHandle.release();
             } catch (ex) {
                 if (window.isLogging) console.error(ex.name + "\n", ex.message);
             }
@@ -1696,12 +1696,12 @@ class EstrePageHandle {
     placeIntent(intent = {}) {
         return this.#intent ??= this.takeOnPageIntent(intent);
     }
-    
+
     placeIntentData(data = {}) {
         this.placeIntent();
         return this.#intent.data ??= data;
     }
-    
+
     pushIntent(intent, onInit = false) {
         if (intent != n) {
             const push = _ => {
@@ -1784,7 +1784,7 @@ class EstrePageHandle {
                 this.$host.attr(eds.onTop, t0);
                 const delay = cvt.t2ms(this.$host.css(a.trdr));
                 return new Promise(async (resolve) => {
-                    setTimeout(_ =>{
+                    setTimeout(_ => {
                         const $host = this?.$host;
                         if ($host != null && $host.attr(eds.onTop) == t0) {
                             $host.attr(eds.onTop, "");
@@ -2066,7 +2066,7 @@ class EstrePageHandle {
                     // $elem.empty();
                     if (elem.dataset.frozenItem == null) elem.solid("frozenItem");
                     else $elem.empty();
-                    
+
                     if (value.length < 1) {
                         // if ($placeholder.length > 0) {
                         //     if (nne(placeholderMessage)) $placeholder.find(".message").html(placeholderMessage);
@@ -2143,7 +2143,7 @@ class EstrePageHandle {
                             $li.find(ax(eds.bindArrayIndex)).html(index);
                             $li.find(ax(eds.bindArrayIndexAmount)).html(v2a(index));
                             $li.find(ax(eds.bindArrayIndexValue)).val(index);
-                            
+
                             if (valueIsObject) arrayItemValue = btoa(Jcodd.toCodd(arrayItemValue));
 
 
@@ -2190,7 +2190,7 @@ class EstrePageHandle {
                             if (isNully(arrayItem) || isNully(arrayItem[elem.dataset.showOnExistsObjectArrayItem])) $(elem).css("display", "none");
                             else $(elem).css("display", "");
                         });
-            
+
                         if ($li.is(ax(eds.showOnNotExistsObjectArrayItem))) {
                             if (isNotNully(arrayItem) && isNotNully(arrayItem[$li.attr(eds.showOnNotExistsObjectArrayItem)])) $li.css("display", "none");
                             else $li.css("display", "");
@@ -2199,7 +2199,7 @@ class EstrePageHandle {
                             if (isNotNully(arrayItem) && isNotNully(arrayItem[elem.dataset.showOnNotExistsObjectArrayItem])) $(elem).css("display", "none");
                             else $(elem).css("display", "");
                         });
-            
+
                         if ($li.is(acv(eds.showOnEqualsObjectArrayItem, "="))) {
                             const [objItem, matchValue] = $li.attr(eds.showOnEqualsObjectArrayItem).split("=");
                             if (isNully(arrayItem) || arrayItem[objItem] != matchValue) $li.css("display", "none");
@@ -2209,7 +2209,7 @@ class EstrePageHandle {
                             const [objItem, matchValue] = elem.dataset.showOnEqualsObjectArrayItem.split("=");
                             if (isNully(arrayItem) || arrayItem[objItem] != matchValue) $(elem).css("display", "none");
                             else $(elem).css("display", "");
-                        });            
+                        });
                     }
                 });
             }
@@ -2235,11 +2235,11 @@ class EstrePageHandle {
             if ($host.is(acv(eds.showOnEquals, "="))) {
                 const [item, matchValue] = $host.attr(eds.showOnEquals).split("=");
                 if (isNully(data) || data[item] != matchValue) $host.css("display", "none");
-            }            
+            }
             $host.find(acv(eds.showOnEquals, "=")).each((i, elem) => {
                 const [item, matchValue] = elem.dataset.showOnEquals.split("=");
                 if (isNully(data) || data[item] != matchValue) $(elem).css("display", "none");
-            });            
+            });
         }
     }
 
@@ -2270,7 +2270,7 @@ class EstrePageHandle {
         const $localStyles = $host.find("local-style");
         for (const elem of $localStyles) LocalStyle.localize(elem);
     }
-    
+
 
     // live element
     initLiveElement($host = this.$host, replaceHandles = false) {
@@ -2303,7 +2303,7 @@ class EstrePageHandle {
         if ($host.is(ax(eds.closePage))) this.setEventPageCloseLink($host[0]);
         const $closeLinks = $host.find(ax(eds.closePage));
         for (const item of $closeLinks) this.setEventPageCloseLink(item);
-        
+
         if ($host.is(ax(eds.openPage))) this.setEventPageOpenLink($host[0]);
         const $openLinks = $host.find(ax(eds.openPage));
         for (const item of $openLinks) this.setEventPageOpenLink(item);
@@ -2333,7 +2333,7 @@ class EstrePageHandle {
     setEventInternalLink(item) {
         const handle = this;
 
-        this.#internalLinkEvent ??= async function(e) {
+        this.#internalLinkEvent ??= async function (e) {
             e.preventDefault();
 
             const $this = $(this);
@@ -2374,7 +2374,7 @@ class EstrePageHandle {
                                         pushedIntent = true;
                                     }
                                     break;
-                    
+
                                 case "blind":
                                     component = estreUi.blindSections[id];
                                     if (component == null) {
@@ -2390,7 +2390,7 @@ class EstrePageHandle {
                                         else estreUi.showInstantBlinded(id, intent);
                                     }
                                     break;
-                    
+
                                 case "overlay":
                                     component = estreUi.overlaySections[id];
                                     if (component == null) {
@@ -2406,7 +2406,7 @@ class EstrePageHandle {
                                         else estreUi.showManagedOverlay(id, intent);
                                     }
                                     break;
-                    
+
                                 case "menu":
                                     component = estreUi.menuSections[id];
                                     if (component == null) {
@@ -2422,7 +2422,7 @@ class EstrePageHandle {
                                         else estreUi.showMenuArea(id, intent);
                                     }
                                     break;
-                    
+
                                 case "header":
                                     component = estreUi.headerSections[id];
                                     if (component == null) {
@@ -2458,7 +2458,7 @@ class EstrePageHandle {
                                         component = estreUi.mainSections[target];
                                     }
                                     break;
-                    
+
                                 case "blind":
                                     component = estreUi.blindSections[target];
                                     if (component == null) {
@@ -2466,7 +2466,7 @@ class EstrePageHandle {
                                         component = estreUi.blindSections[target];
                                     }
                                     break;
-                    
+
                                 case "overlay":
                                     component = estreUi.overlaySections[target];
                                     if (component == null) {
@@ -2474,7 +2474,7 @@ class EstrePageHandle {
                                         component = estreUi.overlaySections[target];
                                     }
                                     break;
-                    
+
                                 case "menu":
                                     component = estreUi.menuSections[target];
                                     if (component == null) {
@@ -2482,7 +2482,7 @@ class EstrePageHandle {
                                         component = estreUi.menuSections[target];
                                     }
                                     break;
-                    
+
                                 case "header":
                                     component = estreUi.headerSections[target];
                                     if (component == null) {
@@ -2507,7 +2507,7 @@ class EstrePageHandle {
                                         case "main":
                                             estreUi.switchRootTab(target);
                                             break;
-                                            
+
                                         case "blind":
                                             estreUi.showInstantBlinded(target);
                                             break;
@@ -2570,7 +2570,7 @@ class EstrePageHandle {
     setEventPageOpenLink(item) {
         const handle = this;
 
-        this.#pageOpenLinkEvent ??= function(e) {
+        this.#pageOpenLinkEvent ??= function (e) {
             e.stopPropagation();
 
             const $this = $(this);
@@ -2604,7 +2604,7 @@ class EstrePageHandle {
     setEventPageShowLink(item) {
         const handle = this;
 
-        this.#pageShowLinkEvent ??= function(e) {
+        this.#pageShowLinkEvent ??= function (e) {
             e.stopPropagation();
 
             const $this = $(this);
@@ -2636,7 +2636,7 @@ class EstrePageHandle {
     }
 
     setEventPageCloseLink(item) {
-        this.#pageCloseLinkEvent ??= function(e) {
+        this.#pageCloseLinkEvent ??= function (e) {
             e.stopPropagation();
 
             const $this = $(this);
@@ -2683,7 +2683,7 @@ class EstrePageHostHandle extends EstrePageHandle {
 
     #prevSubPageId = null;
     get prevSubPageId() { return this.#prevSubPageId; };
-    set prevSubPageId(id) { 
+    set prevSubPageId(id) {
         this.#prevSubPageId = id;
     };
 
@@ -2812,7 +2812,7 @@ class EstreComponent extends EstrePageHostHandle {
     }
 
     release(remove) {
-            
+
         this.unregister();
 
         return super.release(remove);
@@ -2837,7 +2837,7 @@ class EstreComponent extends EstrePageHostHandle {
         EstreComponent.unregister(this);
     }
 
-    
+
     initSubPages(intent) {
         return this.initContainers(intent);
     }
@@ -3009,7 +3009,7 @@ class EstreComponent extends EstrePageHostHandle {
     //         if ($targetContainer != null) {
     //             processed = $targetContainer[$targetContainer.length - 1]?.pageHandle?.focus();
     //         }
-            
+
     //         super.focus();
 
     //         return processed;
@@ -3098,7 +3098,7 @@ class EstreMenuComponent extends EstreComponent {
 
 
     // static methods
-    
+
 
 
     // instance property
@@ -3121,7 +3121,7 @@ class EstreMenuComponent extends EstreComponent {
 
         super.init(intent);
 
-        
+
 
         return this;
     }
@@ -3162,7 +3162,7 @@ class EstreHeaderComponent extends EstreComponent {
 
 
     // static methods
-    
+
 
 
     // instance property
@@ -3185,7 +3185,7 @@ class EstreHeaderComponent extends EstreComponent {
 
         super.init(intent);
 
-        
+
 
         return this;
     }
@@ -3226,7 +3226,7 @@ class EstreInstantComponent extends EstreComponent {
 
 
     // static methods
-    
+
 
 
     // instance property
@@ -3249,7 +3249,7 @@ class EstreInstantComponent extends EstreComponent {
 
         super.init(intent);
 
-        
+
 
         return this;
     }
@@ -3290,7 +3290,7 @@ class EstreOverlayComponent extends EstreInstantComponent {
 
 
     // static methods
-    
+
 
 
     // instance property
@@ -3313,7 +3313,7 @@ class EstreOverlayComponent extends EstreInstantComponent {
 
         super.init(intent);
 
-        
+
 
         return this;
     }
@@ -3344,7 +3344,7 @@ class EstreOverlayComponent extends EstreInstantComponent {
  * Container page handle
  */
 class EstreContainer extends EstrePageHostHandle {
-    
+
     hostType = "container";
 
     get sectionBound() { return this.component.sectionBound; }
@@ -3411,7 +3411,7 @@ class EstreContainer extends EstrePageHostHandle {
         this.component = component;
         this.id = this.$host.attr(eds.containerId);
     }
-    
+
     release(remove) {
 
         super.release(remove);
@@ -3429,7 +3429,7 @@ class EstreContainer extends EstrePageHostHandle {
 
     setEventHandle() {
         const inst = this;
-        
+
         this.$host.find(".back_navigation").click(function (e) {
             e.preventDefault();
 
@@ -3441,7 +3441,7 @@ class EstreContainer extends EstrePageHostHandle {
 
             return false;
         });
-        
+
         this.$host.find(".container_closer").click(function (e) {
             e.preventDefault();
 
@@ -3483,10 +3483,10 @@ class EstreContainer extends EstrePageHostHandle {
 
             this.#$masterFloat.before(doc.ce(div, "master_float_pad"));
             this.#$masterFloatPad = this.$host.find(".master_float_pad");
-            setTimeout(_ => this.#$masterFloatPad.css("height",  + this.#$masterFloat.height() + "px"), 0);
+            setTimeout(_ => this.#$masterFloatPad.css("height", this.#$masterFloat.height() + "px"), 0);
         }
     }
-    
+
     initSubPages(intent) {
         return this.initArticles(intent);
     }
@@ -3512,15 +3512,15 @@ class EstreContainer extends EstrePageHostHandle {
         } else switch ($scalables.length) { //섹션 컴포넌트의 메인 항목 갯수에 따른 초기 표시 모드 적용
             case 0: //해당 없음 - 기본적으로 학생 등록 항목 노출
                 break;
-                
+
             case 1: //신규 등록 항목만 노출될 때
             case 2: //등록된 항목 1건
                 // $scalables.attr(eds.lookScale, t2);
                 // break;
 
-            // case 3: //등록된 항목 2건
+                // case 3: //등록된 항목 2건
                 $scalables.attr(eds.lookScale, t1);
-            break;
+                break;
 
             default: //등록된 항목 3건 이상
                 $scalables.attr(eds.lookScale, t0);
@@ -3533,7 +3533,7 @@ class EstreContainer extends EstrePageHostHandle {
         if ($top.length < 1) $top = this.$articles.filter(aiv(eds.articleId, "main"));
         if ($top.length < 1) $top = this.$articles;
         const handle = $top[$top.length - 1]?.pageHandle;
-        
+
         if (handle != null) {
             if (handle.show(false, false)) {
                 if (estreUi.euiState == "onReady") {
@@ -3579,7 +3579,7 @@ class EstreContainer extends EstrePageHostHandle {
     #updateStepNavigation(articleStepsId = this.#articleStepsId) {
         const $currentArticle = this.$currentArticle;
 
-        if (this.#$stepIndicator != null) { 
+        if (this.#$stepIndicator != null) {
             const $articleSteps = this.$host.find(asv(eds.articleId, articleStepsId + "%"));
             const $stepPointers = this.#$stepPointers;
             const $stepDividers = this.#$stepDividers;
@@ -3900,7 +3900,7 @@ class EstreContainer extends EstrePageHostHandle {
         }
         return null;
     }
-    
+
     getArticleStepIndex($article) {
         if ($article.length > 0) {
             return parseInt($article.attr(eds.articleId).split("%")[1]);
@@ -3929,7 +3929,7 @@ class EstreArticle extends EstrePageHandle {
 
 
     handles = [];
-    
+
 
     unifiedCalendars = [];
 
@@ -4038,11 +4038,11 @@ class EstrePageHandler {
     get intentAction() { return this.intent?.action; }
     get intentData() { return this.intent?.data; }
 
-    constructor (handle, provider) {
+    constructor(handle, provider) {
         this.#handle = handle;
         this.#provider = provider;
     }
-    
+
 
     onBring(handle) {
 
@@ -4166,13 +4166,13 @@ class EstreDialogPageHandler extends EstrePageHandler {
             e.stopPropagation();
 
             handle?.close();
-            
+
             return false;
         });
         this.$dialog.click(function (e) {
             // e.preventDefault();
             e.stopPropagation();
-            
+
             // return false;
         });
         this.$dialog.keydown(function (e) {
@@ -4212,7 +4212,7 @@ class EstreDialogPageHandler extends EstrePageHandler {
             }
         });
 
-        
+
         const data = this.intentData;
         if (data?.containerBlindColor != n) this.$container.css("background-color", data.containerBlindColor);
         if (data?.articleBlindColor != n) this.$article.css("background-color", data.articleBlindColor);
@@ -4438,11 +4438,11 @@ class EstreSelectionDialogPageHandler extends EstreDialogPageHandler {
 
         const defaultSelected = this.intentData?.defaultSelected;
         if (isNotNully(defaultSelected)) forkv(defaultSelected, (k, v) => {
-            switch(to(v)) {
+            switch (to(v)) {
                 case BOOLEAN:
                     this.$optionCheckboxes.filter(aiv("data-index", k)).prop(m.v, v);
                     break;
-                
+
                 case NUMBER:
                     this.$optionCheckboxes.filter(aiv("data-index", v)).prop(m.v, true);
                     break;
@@ -4624,7 +4624,7 @@ class EstreUiPage {
             get url() { return this.loction?.href; }
 
             $iframe;
-            
+
             $back;
             $forward;
             $home;
@@ -4879,7 +4879,7 @@ class EstreUiPage {
                 EstreNotationManager.checkOut(handle.intent);
             }
         },
-        
+
         "$s&o=operation#root@timeline": class extends EstrePageHandler { },
         "$s&o=operation#root@quickPanel": class extends EstrePageHandler { },
 
@@ -4940,7 +4940,7 @@ class EstreUiPage {
     static getHandler(pid) {
         return this.foundHandler(pid);
     }
-    
+
 
     #raw = null;
     get raw() { return this.#raw; }
@@ -5172,7 +5172,7 @@ class EstreUiPage {
                     page.setComponentRefer($element);
                     break;
             }
-            
+
             return page;
         } else return null;
     }
@@ -5358,7 +5358,7 @@ class EstreUiPageManager {
 
 
     // constants
-    
+
 
     // instnace property
     #pages = {};
@@ -5391,7 +5391,7 @@ class EstreUiPageManager {
 
         get popNoti() { return "$i&o=notification#noti@noti^"; },
         get popNote() { return "$i&o=notification#note@note^"; },
-        
+
         get timeline() { return "$s&o=operation#root@timeline"; },
         get quickPanel() { return "$s&o=operation#root@quickPanel"; },
     }
@@ -5406,9 +5406,9 @@ class EstreUiPageManager {
 
 
     init() {
-        
+
     }
-    
+
     register(euiPage) {
         const pid = euiPage.pid;
         if (this.#pages[pid] == null) {
@@ -5416,7 +5416,7 @@ class EstreUiPageManager {
 
         }
     }
-    
+
 
     findPid(pid) {
         if (pid == null) return null;
@@ -5520,7 +5520,7 @@ class EstreUiPageManager {
                     } else container = component.openContainer(page.container);
                 } else if (page.isContainer) return false;//static container is cannot open
                 else {
-                    
+
                 }
             } else existContainer = true;
             if (container == null) return null;
@@ -5761,7 +5761,7 @@ class EstreUiCustomPageManager {
 
 
     // constants
-    
+
 
     // instnace property
 
@@ -5821,7 +5821,7 @@ class EstreHandle {
         get [uis.toggleBlock]() { return EstreToggleBlockHandle; },
         get [uis.toggleTabBlock]() { return EstreToggleTabBlockHandle; },
         get [uis.tabBlock]() { return EstreTabBlockHandle; },
-        
+
         get [uis.dynamicSectionBlock]() { return EstreDynamicSectionBlockHandle; },
 
         get [uis.numKeypad]() { return EstreNumKeypadHandle; },
@@ -5941,7 +5941,7 @@ class EstreHandle {
     data = null;
 
     get prototypeTemplate() { return this.constructor.handleName?.let(it => EstreHandle.getHandlePrototype(it)); }
-    
+
     constructor(bound, host) {
         this.host = host;
         this.bound = bound;
@@ -5988,7 +5988,7 @@ class EstreHandle {
             });
             if (styles != null) for (const [name, value] of styles.entire) bound.style[name] = value;
             for (const name in attributes) bound.setAttribute(name, attributes[name]);
-            
+
             temp.content.cloneNode(true).let(clone => bound.prepend(clone));
         });
     }
@@ -6074,7 +6074,7 @@ class EstreUnifiedCalendarHandle extends EstreHandle {
         });
         this.resizeObserver.observe(this.bound);
     }
-    
+
     // getter and setter
     get lang() { return this.$bound.attr("lang") ?? EsLocale.currentLocale ?? "en"; }
 
@@ -6088,7 +6088,7 @@ class EstreYear {
     $months = null;
     subMonths = [];
     month = null;
-    
+
     constructor(calendar, year, month = {}, months = year.querySelector(uis.months)) {
         this.calendar = calendar;
         this.year = year;
@@ -6181,7 +6181,7 @@ class EstreMonth {
     $daysSubject = null;
     subWeeks = [];
     week = null;
-    
+
     constructor(calendar, month, week = {}, weeks = month.querySelector(uis.weeks), daysSubject = month.querySelector(uis.daysSubjects)) {
         this.calendar = calendar;
         this.month = month;
@@ -6294,7 +6294,7 @@ class EstreWeek {
     $days = null;
     subDays = [];
     day = null;
-    
+
     constructor(calendar, week, day = {}, days = week.querySelector(uis.days)) {
         this.calendar = calendar;
         this.week = week;
@@ -6405,7 +6405,7 @@ class EstreDay {
     $scheduleds = null;
     subScheduleds = [];
     scheduled = null;
-    
+
     constructor(calendar, day, scheduled = {}, scheduleds = day.querySelectorAll(uis.scheduled)) {
         this.calendar = calendar;
         this.day = day;
@@ -6629,7 +6629,7 @@ class EstreCalendar {
     get scale() {
         return this.#scale + "";
     }
-    
+
     get scaleInt() {
         return this.#scale;
     }
@@ -6662,7 +6662,7 @@ class EstreCalendar {
         this.#origins[originBase] = origin;
     }
 
-    
+
     //checker
     isSelectedYear(year) {
         const fd = this.dateFocused;
@@ -6758,13 +6758,13 @@ class EstreCalendar {
         this.#focusedYear = selected;
         if (toScaledBe != null) this.setScale(toScaledBe);
     }
-    
+
     setSelectedMonth(year, month, toScaledBe) {
         this.#focusedYear = year;
         this.#focusedMonth = month;
         if (toScaledBe != null) this.setScale(toScaledBe);
     }
-    
+
     setSelectedWeek(year, month, week, adjoin, toScaledBe) {
         year = parseInt(year);
         month = parseInt(month);
@@ -6774,7 +6774,7 @@ class EstreCalendar {
             week = isPrevMonth ? Ecal.getLastWeek(year, month - 1) : 1;
         }
         const date = Ecal.getDateSundayOfWeek(year, month - 1, parseInt(week));
-        
+
         const focused = this.dateFocused;
         date.setDate(date.getDate() + focused.getDay());
 
@@ -6783,7 +6783,7 @@ class EstreCalendar {
         this.#focusedMonth = td.month;
         this.#focusedDay = td.date;
         this.#focusedWeek = td.week;
-        
+
         if (toScaledBe != null) this.setScale(toScaledBe);
     }
 
@@ -6803,7 +6803,7 @@ class EstreCalendar {
     pushUpdateFocused(forceUpdate = false) {
         if (this.unical != null && this.unical.scheduler != null) {
             const scopes = ["yearly", "monthly", "weekly", "daily"];
-            
+
             for (var scope of scopes) this.unical.scheduler.initPages(scope, forceUpdate);
         }
     }
@@ -6815,7 +6815,7 @@ class EstreCalendar {
             case "yearly":
                 if (scale > 2) this.setScale(2);
                 break;
-                
+
             case "monthly":
                 if (scale > 3) this.setScale(3);
                 break;
@@ -6829,7 +6829,7 @@ class EstreCalendar {
                 break;
         }
     }
-    
+
     notifyBoundChanged(bound, scope) {
         const d = Escd.parseBound(bound, scope);
 
@@ -6837,7 +6837,7 @@ class EstreCalendar {
             case "yearly":
                 this.setSelectedYear(d.year);
                 break;
-                
+
             case "monthly":
                 this.setSelectedMonth(d.year, d.month);
                 break;
@@ -6855,7 +6855,7 @@ class EstreCalendar {
 
 
 class EstreVoidCalendarStructure {
-    
+
     calendar = null;
     get commonGroups() { return this.calendar.commonGroups; }
 
@@ -6881,7 +6881,7 @@ class EstreVoidCalendarStructure {
 
     init() {
         this.$structure.empty();
-        
+
         this.setSwipeHandler();
 
         return new Date();
@@ -6902,7 +6902,7 @@ class EstreVoidCalendarStructure {
     setSwipeHandler() {
         this.releaseSwipeHandler();
         const inst = this;
-        this.swipeHandler = new EstreSwipeHandler(this.$structure, false, false).setOnUp(function(grabX, grabY, handled, canceled, directed) {
+        this.swipeHandler = new EstreSwipeHandler(this.$structure, false, false).setOnUp(function (grabX, grabY, handled, canceled, directed) {
             if (window.isVerbosely) console.log("handled: " + handled + " / canceled: " + canceled + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
             const handledDirection = this.handledDirection;
             if (window.isVerbosely) console.log("handledDirection: " + handledDirection);
@@ -6945,7 +6945,7 @@ class EstreVoidCalendarStructure {
                 }
                 setTimeout(_ => inst.calendar.endTransition(), inst.calendar.transitionTime);
             }
-        }).setOnMove(function(grabX, grabY, handled, dropped, directed) {
+        }).setOnMove(function (grabX, grabY, handled, dropped, directed) {
             if (window.isVerbosely) console.log("handled: " + handled + " / dropped: " + dropped + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
             // to do implement action preview feedback
         });
@@ -6981,7 +6981,7 @@ class EstreVoidCalendarStructure {
 }
 
 class EstreSimpleCalendarStructure extends EstreVoidCalendarStructure {
-    
+
     constructor($structure, calendar) {
         super($structure, calendar);
 
@@ -6996,9 +6996,9 @@ class EstreSimpleCalendarStructure extends EstreVoidCalendarStructure {
 
     init() {
         this.$structure.empty();
-        
+
         this.setSwipeHandler();
-        
+
         // to do implement
         return new Date();
     }
@@ -7151,7 +7151,7 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
     }
 
     initMonths(months, year, withWeek = false) {
-        var isNew  = true;
+        var isNew = true;
         if (months instanceof jQuery) {
             isNew = false;
             months.empty();
@@ -7208,7 +7208,7 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
     }
 
     initWeeks(weeks, year, month, withDay = false) {
-        var isNew  = true;
+        var isNew = true;
         if (weeks instanceof jQuery) {
             isNew = false;
             weeks.empty();
@@ -7244,7 +7244,7 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
             weekset[weekOrigin] = ew;
             weeks.append(ew.week);
             this.setEventWeek(ew);
-            
+
             bday.setDate(bdd + 7);
             bdy = bday.getFullYear();
             bdm = bday.getMonth();
@@ -7270,7 +7270,7 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
     }
 
     initDays(days, bdy, bdm, bdd, checkSelected = false) {
-        var isNew  = true;
+        var isNew = true;
         if (days instanceof jQuery) {
             isNew = false;
             days.empty();
@@ -7284,7 +7284,7 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
             const set = Ecal.getDateSet(bday);
             const ed = this.initDay(set.year, set.month, day, set.date);
             if (checkSelected) {
-                if(this.calendar.isSelectedDate(set.year, set.month, set.date)) ed.$day.attr(eds.selected, t1);
+                if (this.calendar.isSelectedDate(set.year, set.month, set.date)) ed.$day.attr(eds.selected, t1);
             }
             this.setEachDay(ed, set.year, set.month - 1, set.date);
             dayset[set.date] = ed;
@@ -7309,7 +7309,7 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
     }
 
     releaseStructureHandler(scale) {
-        switch(scale) {
+        switch (scale) {
             default:
             case "year":
                 this.$year = this.$years.find(c.c + uis.year);
@@ -7506,7 +7506,7 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
     getEachDayBy(dateId) {
         const set = this.eachDay[dateId];
         if (set != null) return Array.from(set.values());
-        else [];
+        else return [];
     }
 
     //event handler
@@ -7726,7 +7726,7 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
             const week = month.week[fd.week];
             if (week != null) week.$week.attr(eds.selected, t1);
         }
-                
+
         this.$day.filter(aiv(eds.selected, t1) + nto + aiv(eds.year, fd.year) + aiv(eds.month, fd.month) + aiv(eds.date, fd.date) + cps).attr(eds.selected, "");
         // const dateSpecfier = uis.day + aiv(eds.year, fd.year) + aiv(eds.month, fd.month) + aiv(eds.date, fd.date);
         // month.$month.find(dateSpecfier).attr(eds.selected, t1);
@@ -7830,7 +7830,7 @@ class EstreMassiveCalendarStructure extends EstreVoidCalendarStructure {
                             isLoaded = true;
                         }
                     }
-                    
+
                 }
 
                 if (isLoaded) {
@@ -8005,7 +8005,7 @@ class EstreVariableCalendar extends EstreCalendar {
         this.setEventSettings();
 
         this.setEventAreaHandles();
-        
+
         const today = this.initStructure();
 
         this.$bound.attr(eds.showToday, "");
@@ -8056,7 +8056,7 @@ class EstreVariableCalendar extends EstreCalendar {
             case "simple":
                 this.structure = new EstreSimpleCalendarStructure(this.$structure, this);
                 break;
-                
+
             case "massive":
                 this.structure = new EstreMassiveCalendarStructure(this.$structure, this);
                 break;
@@ -8081,11 +8081,11 @@ class EstreVariableCalendar extends EstreCalendar {
     setStructureType(type = null) {
         this.$structure.attr(eds.structureType, type);
     }
-    
+
     get scale() {
         return this.$bound.attr(eds.scale);
     }
-    
+
     get scaleInt() {
         return parseInt(this.scale);
     }
@@ -8151,20 +8151,20 @@ class EstreVariableCalendar extends EstreCalendar {
     setEventScaler() {
         const inst = this;
 
-        this.$scalers.click(function(e) {
+        this.$scalers.click(function (e) {
             const $this = $(this);
             const scaleId = $this.attr(eds.scaleId);
             if (scaleId != null && scaleId != "") {
                 inst.setScale(scaleId);
                 $this.attr(eds.scaleSelected, t1);
             }
-        });    
+        });
 
-        this.$showToday.change(function(e) {
+        this.$showToday.change(function (e) {
             inst.beginTransition();
             inst.$bound.attr(eds.showToday, this.checked ? t1 : "");
             setTimeout(_ => inst.endTransition(), inst.transitionTime);
-        });    
+        });
     }
 
     setEventSettings() {
@@ -8226,13 +8226,13 @@ class EstreVariableCalendar extends EstreCalendar {
         const inst = this;
         var startHeight = null;
         var fallbackSize = null;
-        this.areaResizeHandler = new EstreSwipeHandler(this.$areaResizer).unuseX().setThresholdY(1).setDropStrayed(false).setPreventDefault().setPreventAll().setOnDown(function(startX, startY) {
+        this.areaResizeHandler = new EstreSwipeHandler(this.$areaResizer).unuseX().setThresholdY(1).setDropStrayed(false).setPreventDefault().setPreventAll().setOnDown(function (startX, startY) {
             if (window.isVerbosely) console.log("startX: " + startX + " / startY: " + startY);
             inst.beginTransition();
             $(document.body).attr(eds.onResizing, "v");
             startHeight = inst.$area.height();//.offsetHeight;
             fallbackSize = inst.$area.attr(eds.size);
-        }).setOnUp(function(grabX, grabY, handled, canceled, directed) {
+        }).setOnUp(function (grabX, grabY, handled, canceled, directed) {
             if (window.isVerbosely) console.log("handled: " + handled + " / canceled: " + canceled + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
             $(document.body).attr(eds.onResizing, null);
             const height = parseInt(startHeight + grabY);
@@ -8250,7 +8250,7 @@ class EstreVariableCalendar extends EstreCalendar {
             setTimeout(_ => inst.endTransition(), inst.transitionTime);
             startHeight = null;
             fallbackSize = null;
-        }).setOnMove(function(grabX, grabY, handled, dropped, directed) {
+        }).setOnMove(function (grabX, grabY, handled, dropped, directed) {
             if (window.isVerbosely) console.log("handled: " + handled + " / dropped: " + dropped + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
             if (startHeight != null) {
                 const height = parseInt(startHeight + grabY);
@@ -8272,7 +8272,7 @@ class EstreVariableCalendar extends EstreCalendar {
 
     //common
     get isNoTransition() { return this.$bound.attr(eds.noTransition) == t1; }
-    
+
     setNoTransition(enable = true) {
         this.$bound.attr(eds.noTransition, enable ? t1 : null);
         return this;
@@ -8292,7 +8292,7 @@ class EstreVariableCalendar extends EstreCalendar {
         this.checkSetDayFocused(toScaledBe);
         setTimeout(_ => this.endTransition(), this.transitionTime);
     }
-    
+
     setSelectedMonth(year, month, toScaledBe) {
         super.setSelectedMonth(year, month);
 
@@ -8302,7 +8302,7 @@ class EstreVariableCalendar extends EstreCalendar {
         this.checkSetDayFocused(toScaledBe);
         setTimeout(_ => this.endTransition(), this.transitionTime);
     }
-    
+
     setSelectedWeek(year, month, week, adjoin, toScaledBe) {
         super.setSelectedWeek(year, month, week, adjoin);
 
@@ -8314,7 +8314,7 @@ class EstreVariableCalendar extends EstreCalendar {
             week = isPrevMonth ? Ecal.getLastWeek(year, month - 1) : 1;
         }
         const date = Ecal.getDateSundayOfWeek(year, month - 1, parseInt(week));
-        
+
         const focused = this.dateFocused;
         date.setDate(date.getDate() + focused.getDay());
         const monthBefore = focused.getMonth();
@@ -8324,7 +8324,7 @@ class EstreVariableCalendar extends EstreCalendar {
         this.$structure.attr(eds.focusMonth, td.month);
         this.$structure.attr(eds.focusDay, td.date);
         this.$structure.attr(eds.focusWeek, td.week);
-        
+
         const onTransition = toScaledBe == null && (this.dateFocused.getMonth() != monthBefore || this.scaleInt > 3);
         if (onTransition) this.beginTransition();
         this.checkSetDayFocused(toScaledBe);
@@ -8334,7 +8334,7 @@ class EstreVariableCalendar extends EstreCalendar {
     setSelectedDay(year, month, date, toScaledBe) {
         super.setSelectedDay(year, month, date);
 
-        const fdb = this.dateSetFocused; 
+        const fdb = this.dateSetFocused;
         const monthBefore = fdb.month0;
         const weekBefore = fdb.ymw.week;
         this.$structure.attr(eds.focusYear, year);
@@ -8396,7 +8396,7 @@ class EstreVariableCalendar extends EstreCalendar {
         const suffix = seq.substring(seq.indexOf("d") + 1);
         dateIndic.attr(eds.prefix, prefix.replace("y", dateSet.year2d).replace("m", dateSet.month2d));
         dateIndic.attr(eds.suffix, suffix.replace("y", dateSet.year2d).replace("m", dateSet.month2d));
-    }    
+    }
 
     releaseDate(toScaledBe, fd = this.dateSetFocused) {
         const inst = this;
@@ -8561,7 +8561,7 @@ class EstreVariableCalendar extends EstreCalendar {
         super.notifyBoundChanged(bound, scope);
         setTimeout(_ => { this.endTransition(); }, this.transitionTime);
     }
-    
+
 }
 
 
@@ -8633,7 +8633,7 @@ class EstreUnifiedScheduler {
 
 
         return this;
-    }    
+    }
 
 
     // getter and setter
@@ -8641,7 +8641,7 @@ class EstreUnifiedScheduler {
 
 
     // common
-    
+
     registerScope(content, scope = content.dataset.scope, titleSpan) {
         this.content[scope] = content;
         if (titleSpan != null) this.titleSpan[scope] = titleSpan;
@@ -8730,7 +8730,7 @@ class EstreUnifiedScheduler {
 
     buildScheduleItem(info, dateSet) {
         const dateInfo = scheduleDataSet.dataHandler?.getLocalizedDateInfo?.(dateSet.year, dateSet.month0, dateSet.date);
-        
+
         const item = doc.ce(li, "division_block schedule_item");
         item.setAttribute(eds.scheduleId, info.id);
         if (info.category != null) item.setAttribute(eds.category, info.category);
@@ -8795,17 +8795,17 @@ class EstreUnifiedScheduler {
                 case "yearly":
                     title = EsLocale.get("yearSequencePrefix", this.lang) + d.year + EsLocale.get("yearSequenceSuffix", this.lang);
                     break;
-                    
+
                 case "monthly":
                     const yearBock = EsLocale.get("yearPrefix", this.lang) + d.year + EsLocale.get("yearSuffix", this.lang);
                     title = [...dateSeq.replace("d", "")].join(" ").replace("y", yearBock).replace("m", monthSeqBlock);
                     break;
-    
+
                 case "weekly":
                     const weekBlock = EsLocale.get("weekSequencePrefix", this.lang).toLowerCase() + d.week + EsLocale.get("weekSequenceSuffix", this.lang).toLowerCase();
                     title = monthBlock + " " + weekBlock;
                     break;
-    
+
                 case "daily":
                     const dateSeqBlock = EsLocale.get("daySequencePrefix", this.lang).toLowerCase() + d.date + EsLocale.get("daySequenceSuffix", this.lang).toLowerCase();
                     const dayBlock = EsLocale.get("weekdayShortPrefix", this.lang) + d.day + EsLocale.get("weekdayShortSuffix", this.lang);
@@ -8843,7 +8843,7 @@ class EstreUnifiedScheduler {
         const dateBeginEnd = Escd.getDateBeginEndFrom(bound, scope);
         if (window.isVerbosely) console.log("requestPushData(" + dateBeginEnd.beginDate + ", " + dateBeginEnd.endDate + ", " + groups + ", this);");
         scheduleDataSet.requestPushData(dateBeginEnd.beginDate, dateBeginEnd.endDate, groups, this);
-        
+
     }
 
 
@@ -8863,14 +8863,14 @@ class EstreUnifiedScheduler {
 
 
     // from scheduleDataSet
-/*
-    pushYearlySchedule(datas, year, groups) {
-        for (var dateId in datas) {
-            const data = datas[dateId];
-            this.pushDailySchedule(data, dateId);
+    /*
+        pushYearlySchedule(datas, year, groups) {
+            for (var dateId in datas) {
+                const data = datas[dateId];
+                this.pushDailySchedule(data, dateId);
+            }
         }
-    }
-*/
+    */
 
     pushDailySchedule(listGrouped, dateId) {
         for (var bound of this.registeredBound) {
@@ -8899,7 +8899,7 @@ class ScheduleDataSet {
 
 
     dataMatrix = new Map();//key = origin, value = [dateId] = data
- 
+
     /** this value has when exist any request */
     requestIssuer = null;
 
@@ -8932,7 +8932,7 @@ class ScheduleDataSet {
 
         for (const [origin, requests] of this.dataRequests) {
             const pendings = this.dataPendings.get(origin);
-            
+
             if (pendings != null && pendings.length > 0) {
                 this.issueRequest(true);
                 continue;
@@ -9067,7 +9067,7 @@ class ScheduleDataSet {
             }
         }
     }
-    
+
     // to caller
     pushDataBy(caller, dataSet, dateId, groups) {
         const groupSet = new Set(groups);
@@ -9111,7 +9111,7 @@ class ScheduleDataSet {
 
     //old methods
     dataArray = [];
-    
+
     callers = new Set();
 
     dataRequestsYear = [];
@@ -9124,12 +9124,12 @@ class ScheduleDataSet {
     releaseCaller(caller) {
         this.callers.delete(caller);
     }
-    
+
     requestPushDataYear(year, caller, groups = ["basic", ...caller.commonGroups]) {
         if (caller != null) this.callers.add(caller);
-        
+
         const dataReady = this.dataReadyYear[year];
-        
+
         const forPush = [];
         const forRequest = [];
         for (var group of groups) {
@@ -9255,7 +9255,7 @@ class EstreDedicatedCalanderHandle extends EstreHandle {
     // open property
     $calendarBlock;
     $scheduleBlock;
-    
+
     // enclosed property
 
     calendar;
@@ -9535,7 +9535,7 @@ class EstreMicroCalendar {
 
         this.checkSetDayFocused();
     }
-    
+
     checkSetDayFocused(dateSet = Ecal.getDateSet(this.dateFocused ?? new Date())) {
         this.$structure.find(uis.day + aiv(eds.selected, t1)).removeAttr(eds.selected);
 
@@ -9860,7 +9860,7 @@ class EstreWeekFloorStructure {
 
             dateSet = Ecal.getDateSet(new Date(dateSet.year, dateSet.month0, dateSet.date + 1));
         } while (dateSet.day > 0);
-        
+
         daysHolder.append(days);
         weekBlock.append(daysHolder);
 
@@ -9919,7 +9919,7 @@ class EstreMinimalScheduler {
 
 
     // statics
-    
+
 
     // open property
     dediCal;
@@ -9992,7 +9992,7 @@ class EstreMinimalScheduler {
     setDateSelected(year, month, date) {
         const message = this.$scheduleList.attr(eds.messageOnLoading) ?? "Loading schedule...";
         this.scheduleList.melt({ message }, "frozenPlaceholder");
-        
+
 
         postAsyncQueue(async _ => {
             const documentFragment = await this.#onShowSelectedDayCallback?.(year, month, date, this, this.calendar);
@@ -10082,7 +10082,7 @@ class EstreScalableHandle extends EstreHandle {
 
         this.$toggle.off("click");
 
-        this.$toggle.click(function(e) {
+        this.$toggle.click(function (e) {
             if (!inst.isOnSwipe) {
                 e.preventDefault();
 
@@ -10092,7 +10092,7 @@ class EstreScalableHandle extends EstreHandle {
             }
         });
     }
-    
+
     //handles
     toggleScaler() {
         const lookScale = this.data.lookScale;
@@ -10154,7 +10154,7 @@ class EstreCollapsibleHandle extends EstreHandle {
 
     init() {
         super.init();
-        
+
         this.setEventToggleBtn();
 
         return this;
@@ -10171,7 +10171,7 @@ class EstreCollapsibleHandle extends EstreHandle {
 
         this.$toggle.off("click");
 
-        this.$toggle.click(function(e) {
+        this.$toggle.click(function (e) {
             if (!inst.isOnSwipe) {
                 e.preventDefault();
 
@@ -10186,7 +10186,7 @@ class EstreCollapsibleHandle extends EstreHandle {
 
         $base.off("click");
 
-        $base.click(function(e) {
+        $base.click(function (e) {
             if (!inst.isOnSwipe) {
                 e.preventDefault();
 
@@ -10195,9 +10195,9 @@ class EstreCollapsibleHandle extends EstreHandle {
                 return false;
             }
         });
-        
+
     }
-    
+
     //handles
     toggleCollapser() {
         const collapsed = this.data.collapsed;
@@ -10264,7 +10264,7 @@ class EstreToggleBlockHandle extends EstreHandle {
 
     init() {
         super.init();
-        
+
         this.setEventToggleBtn();
 
         return this;
@@ -10285,7 +10285,7 @@ class EstreToggleBlockHandle extends EstreHandle {
 
         this.$toggle.off("click");
 
-        this.$toggle.click(function(e) {
+        this.$toggle.click(function (e) {
             if (!inst.isOnSwipe) {
                 e.preventDefault();
 
@@ -10300,7 +10300,7 @@ class EstreToggleBlockHandle extends EstreHandle {
 
         $base.off("click");
 
-        $base.click(function(e) {
+        $base.click(function (e) {
             if (!inst.isOnSwipe) {
                 e.preventDefault();
 
@@ -10311,7 +10311,7 @@ class EstreToggleBlockHandle extends EstreHandle {
         });
 
     }
-    
+
     //handles
     toggleCollapser() {
         const collapsed = this.data.collapsed;
@@ -10348,7 +10348,7 @@ class EstreToggleTabBlockHandle extends EstreToggleBlockHandle {
 
     swipeHandler = null;
 
-    
+
     //getter and setter
     get $tabs() {
         return this.$tabSet.find(c.c + li + ax(eds.tabId));
@@ -10430,7 +10430,7 @@ class EstreToggleTabBlockHandle extends EstreToggleBlockHandle {
 
         this.$tabs.off("click");
 
-        this.$tabs.click(function(e) {
+        this.$tabs.click(function (e) {
             e.preventDefault();
 
             inst.selectTab($(this).attr(eds.tabId));
@@ -10448,7 +10448,7 @@ class EstreToggleTabBlockHandle extends EstreToggleBlockHandle {
         const inst = this;
         const applyToSSB = this.$ssb.length > 0;
         const $feedbackTarget = applyToSSB ? this.$subjects : this.$contents;
-        this.swipeHandler = new EstreSwipeHandler(this.$tcb).unuseY().setResponseBound(applyToSSB ? this.$ssb : this.$tcb).setOnUp(function(grabX, grabY, handled, canceled, directed) {
+        this.swipeHandler = new EstreSwipeHandler(this.$tcb).unuseY().setResponseBound(applyToSSB ? this.$ssb : this.$tcb).setOnUp(function (grabX, grabY, handled, canceled, directed) {
             if (window.isVerbosely) console.log("handled: " + handled + " / canceled: " + canceled + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
             if (handled) {
                 const isNext = grabX < 0;
@@ -10458,7 +10458,7 @@ class EstreToggleTabBlockHandle extends EstreToggleBlockHandle {
                 }, 0);
                 return { delay: cvt.t2ms($feedbackTarget.filter(naiv(eds.slide, t1)).css(a.trdr)), callback: () => setTimeout(_ => $feedbackTarget.filter(ax(eds.slide)).attr(eds.slide, null), 0) };
             } else $feedbackTarget.filter(ax(eds.slide)).attr(eds.slide, null);
-        }).setOnMove(function(grabX, grabY, handled, dropped, directed) {
+        }).setOnMove(function (grabX, grabY, handled, dropped, directed) {
             if (window.isVerbosely) console.log("handled: " + handled + " / dropped: " + dropped + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
             const isNext = grabX < 0;
             if (grabX !== 0) {
@@ -10496,7 +10496,7 @@ class EstreToggleTabBlockHandle extends EstreToggleBlockHandle {
     getPrevTabId() {
         const tabs = this.getTabs();
         const selected = this.selected;
-        
+
         const target = selected - 1;
         if (window.isVerbosely) console.log("selectPrevTab - current: " + selected + ", target: " + target);
         return target > -1 ? target : 0;
@@ -10510,7 +10510,7 @@ class EstreToggleTabBlockHandle extends EstreToggleBlockHandle {
     getNextTabId() {
         const tabs = this.getTabs();
         const selected = this.selected;
-        
+
         const target = selected + 1;
         if (window.isVerbosely) console.log("selectNextTab - current: " + selected + ", target: " + target);
         return target < tabs.length ? target : tabs.length - 1;
@@ -10535,7 +10535,7 @@ class EstreToggleTabBlockHandle extends EstreToggleBlockHandle {
         this.$contents.filter(obk + eds.tabId + equ + v4(id) + cbk).attr(eds.tabSelected, t1);
         this.$contents.filter(nto + obk + eds.tabId + equ + v4(id) + cbk + cps).attr(eds.tabSelected, "");
     }
-    
+
 }
 
 
@@ -10563,7 +10563,7 @@ class EstreTabBlockHandle extends EstreHandle {
 
     swipeHandler = null;
 
-    
+
     //getter and setter
     get $tabs() {
         return this.$tabSet.find(c.c + li + ax(eds.tabId));
@@ -10637,7 +10637,7 @@ class EstreTabBlockHandle extends EstreHandle {
 
         this.$tabs.off("click");
 
-        this.$tabs.click(function(e) {
+        this.$tabs.click(function (e) {
             e.preventDefault();
 
             inst.selectTab($(this).attr(eds.tabId));
@@ -10655,7 +10655,7 @@ class EstreTabBlockHandle extends EstreHandle {
         const inst = this;
         const applyToSSB = this.$ssb.length > 0;
         const $feedbackTarget = applyToSSB ? this.$subjects : this.$contents;
-        this.swipeHandler = new EstreSwipeHandler(this.$tcb).unuseY().setResponseBound(applyToSSB ? this.$ssb : this.$tcb).setOnUp(function(grabX, grabY, handled, canceled, directed) {
+        this.swipeHandler = new EstreSwipeHandler(this.$tcb).unuseY().setResponseBound(applyToSSB ? this.$ssb : this.$tcb).setOnUp(function (grabX, grabY, handled, canceled, directed) {
             if (window.isVerbosely) console.log("handled: " + handled + " / canceled: " + canceled + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
             if (handled) {
                 const isNext = grabX < 0;
@@ -10665,7 +10665,7 @@ class EstreTabBlockHandle extends EstreHandle {
                 }, 0);
                 return { delay: cvt.t2ms($feedbackTarget.filter(naiv(eds.slide, t1)).css(a.trdr)), callback: () => setTimeout(_ => $feedbackTarget.filter(ax(eds.slide)).attr(eds.slide, null), 0) };
             } else $feedbackTarget.filter(ax(eds.slide)).attr(eds.slide, null);
-        }).setOnMove(function(grabX, grabY, handled, dropped, directed) {
+        }).setOnMove(function (grabX, grabY, handled, dropped, directed) {
             if (window.isVerbosely) console.log("handled: " + handled + " / dropped: " + dropped + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
             const isNext = grabX < 0;
             if (grabX !== 0) {
@@ -10702,7 +10702,7 @@ class EstreTabBlockHandle extends EstreHandle {
     getPrevTabId() {
         const tabs = this.getTabs();
         const selected = this.selected;
-        
+
         const target = selected - 1;
         if (window.isVerbosely) console.log("selectPrevTab - current: " + selected + ", target: " + target);
         return target > -1 ? target : 0;
@@ -10716,7 +10716,7 @@ class EstreTabBlockHandle extends EstreHandle {
     getNextTabId() {
         const tabs = this.getTabs();
         const selected = this.selected;
-        
+
         const target = selected + 1;
         if (window.isVerbosely) console.log("selectNextTab - current: " + selected + ", target: " + target);
         return target < tabs.length ? target : tabs.length - 1;
@@ -10745,7 +10745,7 @@ class EstreTabBlockHandle extends EstreHandle {
     notifyTabSelected(id, isInit) {
         //do nothing (for derived class)
     }
-    
+
 }
 
 
@@ -10826,7 +10826,7 @@ class EstreScopedTabBlock extends EstreTabBlockHandle {
 
 
         this.setPagerEvent();
-    }    
+    }
 
     setPagerEvent() {
         const inst = this;
@@ -10856,7 +10856,7 @@ class EstreScopedTabBlock extends EstreTabBlockHandle {
         this.releaseSwipeHandler();
         const inst = this;
         const $feedbackTarget = this.$subjects;
-        this.swipeHandler = new EstreSwipeHandler(this.$ssb).unuseY().setResponseBound(this.$ssb).setOnUp(function(grabX, grabY, handled, canceled, directed) {
+        this.swipeHandler = new EstreSwipeHandler(this.$ssb).unuseY().setResponseBound(this.$ssb).setOnUp(function (grabX, grabY, handled, canceled, directed) {
             if (window.isVerbosely) console.log("handled: " + handled + " / canceled: " + canceled + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
             if (handled) {
                 const isNext = grabX < 0;
@@ -10866,7 +10866,7 @@ class EstreScopedTabBlock extends EstreTabBlockHandle {
                 }, 0);
                 return { delay: cvt.t2ms($feedbackTarget.filter(naiv(eds.slide, t1)).css(a.trdr)), callback: () => setTimeout(_ => $feedbackTarget.filter(ax(eds.slide)).attr(eds.slide, null), 0) };
             } else $feedbackTarget.filter(ax(eds.slide)).attr(eds.slide, null);
-        }).setOnMove(function(grabX, grabY, handled, dropped, directed) {
+        }).setOnMove(function (grabX, grabY, handled, dropped, directed) {
             if (window.isVerbosely) console.log("handled: " + handled + " / dropped: " + dropped + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
             const isNext = grabX < 0;
             if (grabX !== 0) {
@@ -10878,7 +10878,7 @@ class EstreScopedTabBlock extends EstreTabBlockHandle {
             } else $feedbackTarget.filter(ax(eds.slide)).attr(eds.slide, null);
         });
 
-        this.boundSwipeHandler = new EstreSwipeHandler(this.$tcb).unuseY().setResponseBound(this.$tcb).setOnUp(function(grabX, grabY, handled, canceled, directed) {
+        this.boundSwipeHandler = new EstreSwipeHandler(this.$tcb).unuseY().setResponseBound(this.$tcb).setOnUp(function (grabX, grabY, handled, canceled, directed) {
             if (window.isVerbosely) console.log("handled: " + handled + " / canceled: " + canceled + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
             const $boundHosts = inst.getCurrentContentScope().find(c.c + uis.boundHost);
             if (handled) {
@@ -10889,7 +10889,7 @@ class EstreScopedTabBlock extends EstreTabBlockHandle {
                 }, 0);
                 return { delay: cvt.t2ms($boundHosts.filter(naiv(eds.slide, t1)).css(a.trdr)), callback: () => setTimeout(_ => $boundHosts.filter(ax(eds.slide)).attr(eds.slide, null), 0) };
             } else $boundHosts.filter(ax(eds.slide)).attr(eds.slide, null);
-        }).setOnMove(function(grabX, grabY, handled, dropped, directed) {
+        }).setOnMove(function (grabX, grabY, handled, dropped, directed) {
             if (window.isVerbosely) console.log("handled: " + handled + " / dropped: " + dropped + " / directed: " + directed + " / grab: " + grabX + ", " + grabY + " / lastX: " + this.lastX + ", " + this.lastY + " / startX: " + this.startX + ", " + this.startY);
             const $boundHosts = inst.getCurrentContentScope().find(c.c + uis.boundHost);
             const isNext = grabX < 0;
@@ -10980,7 +10980,7 @@ class EstreDynamicSectionBlockHandle extends EstreHandle {
     $hostItems;
 
     $blockItems;
-    
+
     // enclosed property
 
     // getter and setter
@@ -11053,7 +11053,7 @@ class EstreNumKeypadHandle extends EstreHandle {
 
     // open property
 
-    
+
     // enclosed property
     #$input = null;
     #input = null;
@@ -11117,7 +11117,7 @@ class EstreNumKeypadHandle extends EstreHandle {
                 case "action":
                     this.#key[key.dataset.action] = key;
                     break;
-                    
+
             }
         }
 
@@ -11129,12 +11129,12 @@ class EstreNumKeypadHandle extends EstreHandle {
     setEvent() {
         const inst = this;
 
-        if (this.$bound.attr("data-prevent-direct") == t1) this.#$input.focus(function(e) {
+        if (this.$bound.attr("data-prevent-direct") == t1) this.#$input.focus(function (e) {
             e.preventDefault();
             this.blur();
-            return false; 
+            return false;
         });
-        this.#$input.on("input paste cut propertychange change", function(e) {
+        this.#$input.on("input paste cut propertychange change", function (e) {
             const value = this.value;
             const length = value.length;
 
@@ -11156,8 +11156,8 @@ class EstreNumKeypadHandle extends EstreHandle {
             }
 
         });
-        
-        this.#$keys.click(function(e) {
+
+        this.#$keys.click(function (e) {
             const input = inst.#input;
             var changed = false;
             switch (this.dataset.type) {
@@ -11212,7 +11212,7 @@ class EstreCheckboxSetHandle extends EstreHandle {
     // open property
     name = null;
     selection = null;
-    
+
     // enclosed property
 
 
@@ -11245,7 +11245,7 @@ class EstreCheckboxSetHandle extends EstreHandle {
 
     setEvent() {
         const inst = this;
-        
+
         this.$checkboxes.change(function (e) {
             if (inst.selection === 1) {
                 for (const checkbox of inst.$checkboxes) if (checkbox != this) checkbox.checked = false;
@@ -11271,7 +11271,7 @@ class EstreCheckboxAllyHandle extends EstreHandle {
     // open property
     ally = null;
     name = null;
-    
+
     // enclosed property
 
 
@@ -11306,7 +11306,7 @@ class EstreCheckboxAllyHandle extends EstreHandle {
         this.$checkboxAlly.change(function (e) {
             inst.$checkboxes.prop("checked", this.checked).change();
         });
-        
+
         this.$checkboxes.change(function (e) {
             const isAlly = inst.$checkboxes.filter(":checked").length == inst.$checkboxes.length;
             inst.$checkboxAlly.prop("checked", isAlly);
@@ -11327,7 +11327,7 @@ class EstreToasterSlotHandle extends EstreHandle {
 
 
     // open property
-    
+
     // enclosed property
 
 
@@ -11356,14 +11356,14 @@ class EstreToasterSlotHandle extends EstreHandle {
 
             switch (this.dataset.toast) {
                 case "option":
-                const options = this.dataset.options;
-                try {
-                    const parsed = JSON.parse(options);
-                    toastOption(this.dataset.toastTitle ?? "", this.dataset.toastMessage ?? "", parsed, (index, value) => this.onselected?.(index, value));
-                } catch (e) {
-                    if (window.isLogging) console.error(e);
-                }
-                break;
+                    const options = this.dataset.options;
+                    try {
+                        const parsed = JSON.parse(options);
+                        toastOption(this.dataset.toastTitle ?? "", this.dataset.toastMessage ?? "", parsed, (index, value) => this.onselected?.(index, value));
+                    } catch (e) {
+                        if (window.isLogging) console.error(e);
+                    }
+                    break;
 
                 // <= 케이스 추가 구현
             }
@@ -11394,7 +11394,7 @@ class EstreCustomSelectorBarHandle extends EstreHandle {
     $nextBtn;
 
     $selectionsList;
-    
+
     // enclosed property
     #selections = [];
     #currentIndex;
@@ -11409,7 +11409,7 @@ class EstreCustomSelectorBarHandle extends EstreHandle {
     get prev() { return this.#currentIndex - 1; }
     get current() { return this.#currentIndex; }
     get next() { return this.#currentIndex + 1; }
-    
+
     get prevId() { return this.#currentIndex > 0 ? this.#selections[this.prev] : n; }
     get currentId() { return this.#selections[this.current]; }
     get nextId() { return this.#currentIndex < this.#selections.length - 1 ? this.#selections[this.next] : n; }
@@ -11494,7 +11494,7 @@ class EstreCustomSelectorBarHandle extends EstreHandle {
         });
 
         this.$selectionsList.empty();
-        
+
         for (const [index, id] of selections.entire) this.$selectionsList.append(this.buildSelectionsItem(index, id, index == initIndex));
 
         this.setEventSelections();
@@ -11589,15 +11589,15 @@ class EstreMonthSelectorBarHandle extends EstreHandle {
 
     onBuildMonthesItem = (month, isCurrent, item, button) => button.if(isCurrent, it => $(it).addClass("font_semi_bold"));
 
-    
+
     // enclosed property
 
 
     // getter and setter
     get prev() { return Ecal.getPrevMonth(this.current); }
     get current() { return this.currentMonth.let(it => {
-        const [year, month] = it.split("-");
-        return new Date(parseInt(year), parseInt(month) - 1);
+            const [year, month] = it.split("-");
+            return new Date(parseInt(year), parseInt(month) - 1);
     }); }
     get next() { return Ecal.getNextMonth(this.current); }
 
@@ -11676,7 +11676,7 @@ class EstreMonthSelectorBarHandle extends EstreHandle {
         else if (isNullOrEmpty(this.currentMonth)) this.currentMonth = Ecal.getDateSet().let(it => it.year + "-" + it.month2d);
 
         this.$monthesList.empty();
-        
+
         const month = this.currentMonth;
 
         const currentDate = this.current;
@@ -11741,7 +11741,7 @@ class EstreMonthSelectorBarHandle extends EstreHandle {
     monthSelected(month, preventCallback = false) {
         if (month != null) this.currentMonth = month;
         else {
-            if (isNullOrEmpty(this.currentMonth)) this.currentMonth = Ecal.getDateSet().let(it => it.year + hp +it.month2d);
+            if (isNullOrEmpty(this.currentMonth)) this.currentMonth = Ecal.getDateSet().let(it => it.year + hp + it.month2d);
             month = this.currentMonth;
         }
 
@@ -11766,7 +11766,7 @@ class EstreDateShowerHandle extends EstreHandle {
 
     // open property
 
-    
+
     // enclosed property
     #date = null;
 
@@ -11798,7 +11798,7 @@ class EstreDateShowerHandle extends EstreHandle {
     setEvent() {
         const inst = this;
 
-        this.$bound.find(uis.dateReplacer).click(function(e) {
+        this.$bound.find(uis.dateReplacer).click(function (e) {
             inst.releaseDate();
         });
     }
@@ -11818,7 +11818,7 @@ class EstreDateShowerHandle extends EstreHandle {
                 break;
         }
 
-       if (this.#date != null) {
+        if (this.#date != null) {
             const ds = Ecal.getDateSet(this.#date);
             const $bound = this.$bound;
 
@@ -11902,7 +11902,7 @@ class EstreExportedContentHandle extends EstreHandle {
 
     // open property
 
-    
+
     // enclosed property
     #src;
     #placeholder;
@@ -11952,7 +11952,7 @@ class EstreEzHidableHandle extends EstreHandle {
 
     // open property
 
-    
+
     // enclosed property
 
 
@@ -11979,7 +11979,7 @@ class EstreEzHidableHandle extends EstreHandle {
     }
 
     setTrigger() {
-        this.bound.hide = function() {
+        this.bound.hide = function () {
             if (this.dataset.hide != null && this.dataset.hide != "0") {
                 this.dataset.hide = "0";
                 setTimeout(_ => {
@@ -11988,14 +11988,14 @@ class EstreEzHidableHandle extends EstreHandle {
             }
         };
 
-        this.bound.show = function() {
+        this.bound.show = function () {
             const appear = () => {
                 this.dataset.hide = "";
                 setTimeout(_ => {
                     if (this.dataset.hide == "") delete this.dataset.hide;
                 }, cvt.t2ms($(this).css(a.trdr)));
             };
-            
+
             if (this.dataset.hide == "0") appear();
             else if (this.dataset.hide == "1") {
                 this.dataset.hide = "0";
@@ -12098,13 +12098,13 @@ class EstreSwipeHandler {
     #eventType = null;
 
     #grabMarker = null;
-    
+
 
     // getter and setter
     #$wind = $(window);
     get $wind() { return this.#$wind }
 
-    get allowedDirection() { return this.allowedDirectionX ? (this.allowedDirectionY ? "both": "horizontal") : (this.allowedDirectionY ? "vertical" : "neither"); }
+    get allowedDirection() { return this.allowedDirectionX ? (this.allowedDirectionY ? "both" : "horizontal") : (this.allowedDirectionY ? "vertical" : "neither"); }
     get allowedDirectionX() { return this.thresholdX > -1; }
     get allowedDirectionY() { return this.thresholdY > -1; }
     get directionFix() { return this.directionFixX ? (this.directionFixY ? "both" : "horizontal") : (this.directionFixY ? "vertical" : "neither"); }
@@ -12113,7 +12113,7 @@ class EstreSwipeHandler {
     get directtion() { return this.grabX > this.grabY ? this.directionX : this.directionY; }
     get directionX() { return this.grabX < 0 ? "left" : (this.grabX > 0 ? "right" : null); }
     get directionY() { return this.grabY < 0 ? "up" : (this.grabY > 0 ? "down" : null); }
-    get handledDirection() { 
+    get handledDirection() {
         if (this.isMoving) switch (this.directionFix) {
             case "both":
                 if (this.directed != null) {
@@ -12198,7 +12198,7 @@ class EstreSwipeHandler {
      * @param {number} [thresholdY=this.defaultThreshold] fix direction threshold px - 0 = unuse direction fix, -1 = unallowed vertical swipe
      * @param {boolean} [debug=false] show event triggers and values when true
      */
-    constructor (element, onMouse = true, onPointer = true, onTouch = true, thresholdX = this.defaultThreshold, thresholdY = this.defaultThreshold, debug = false) {
+    constructor(element, onMouse = true, onPointer = true, onTouch = true, thresholdX = this.defaultThreshold, thresholdY = this.defaultThreshold, debug = false) {
         this.#setHandleId();
 
         this.isDebug = debug;
@@ -12244,7 +12244,7 @@ class EstreSwipeHandler {
         this.#$responseBound.css("--grab-y", "0px");
         this.#$responseBound.attr(eds.onGrab, "");
     }
-    
+
     release() {
         this.#dropHandle();
         this.#clearBound();
@@ -12261,7 +12261,7 @@ class EstreSwipeHandler {
         this.#bound = null;
         this.#data = null;
         delete EstreSwipeHandler.handlers[this.#handleIndex];
-        
+
         return this;
     }
 
@@ -12472,7 +12472,7 @@ class EstreSwipeHandler {
         const pointerType = isTouch ? "touch" : (isMouse ? "mouse" : (isPointer ? "pointer" : "extra"));
 
         var canceled = false;
-        switch(e.type) {
+        switch (e.type) {
             case "pointerdown":
                 break;
             case "mousedown":
@@ -12493,7 +12493,7 @@ class EstreSwipeHandler {
                 this.#lastY = screenY;
                 if (this.shiftX == null) this.#shiftX = 0;
                 if (this.shiftY == null) this.#shiftY = 0;
-                
+
                 if (this.startX != null) {
                     this.#shiftX += screenX - this.startX;
                     if (this.grabX != null) this.#grabX = this.shiftX;
@@ -12522,7 +12522,7 @@ class EstreSwipeHandler {
                     if (this.preventDefault) return false;
                 }
                 break;
-				
+
             case "pointercancel":
             case "touchcancel":
                 if (!this.isMoving) break;
@@ -12613,7 +12613,7 @@ class EstreSwipeHandler {
                     }
                 }
                 break;
-				
+
             case "pointermove":
             case "mousemove":
             case "touchmove":
@@ -12753,10 +12753,10 @@ class EstreSwipeHandler {
                         if (this.isDebug) console.log("ignored");
                         this.#clearBound();
                     }
-				}
+                }
                 break;
-				
-		}
+
+        }
     }
 
     #onHandle = (e) => {
@@ -12828,8 +12828,8 @@ class EstreDraggableHandler {
 
     // getter and setter
     get isTouchSupported() { return "ontouchstart" in window ||
-        navigator.maxTouchPoints > 0 ||
-        navigator.msMaxTouchPoints > 0 ||
+            navigator.maxTouchPoints > 0 ||
+            navigator.msMaxTouchPoints > 0 ||
         window.DocumentTouch && document instanceof DocumentTouch; }
 
 
@@ -12891,7 +12891,7 @@ class EstreDraggableHandler {
         $containers.off("dragover dragleave drop touchmove touchend touchcancel");
         $topScrollerPad.off("dragover dragleave drop touchmove touchend touchcancel");
         $bottomScrollerPad.off("dragover dragleave drop touchmove touchend touchcancel");
-        
+
         const scrollDistance = 10;
         const scrollTerminal = 16; // ~60fps
         let topScrollInterval = n;
@@ -12899,10 +12899,10 @@ class EstreDraggableHandler {
 
         let draggingItem = n;
         let isDragging = false;
-        let touchData = { 
-            startX: 0, 
-            startY: 0, 
-            currentX: 0, 
+        let touchData = {
+            startX: 0,
+            startY: 0,
+            currentX: 0,
             currentY: 0,
             startTime: 0,
             moved: false,
@@ -12936,12 +12936,12 @@ class EstreDraggableHandler {
         this.shouldMoveDraggingItem = (targetContainer, afterElement) => {
             const currentParent = draggingItem.parentNode;
             const currentNext = draggingItem.nextSibling;
-            
+
             // Different container - always move
             if (currentParent !== targetContainer) {
                 return true;
             }
-            
+
             // Same container - check if position actually changes
             if (afterElement === null) {
                 // Moving to end - only move if not already at end
@@ -12955,25 +12955,25 @@ class EstreDraggableHandler {
         // Perform DOM move with throttling to prevent excessive operations
         this.performDragMove = (targetContainer, afterElement) => {
             const now = Date.now();
-            
+
             // Check if this is the same position as last move (within 50ms)
-            if (lastDragPosition.container === targetContainer && 
-                lastDragPosition.afterElement === afterElement && 
+            if (lastDragPosition.container === targetContainer &&
+                lastDragPosition.afterElement === afterElement &&
                 (now - lastDragPosition.timestamp) < 50) {
                 return;
             }
-            
+
             // Check if actual move is needed
             if (!this.shouldMoveDraggingItem(targetContainer, afterElement)) {
                 return;
             }
-            
+
             // Clear any pending throttled move
             if (dragMoveThrottle) {
                 clearTimeout(dragMoveThrottle);
                 dragMoveThrottle = null;
             }
-            
+
             // Throttle the move operation
             dragMoveThrottle = setTimeout(() => {
                 if (draggingItem && targetContainer) {
@@ -12983,7 +12983,7 @@ class EstreDraggableHandler {
                         } else {
                             targetContainer.insertBefore(draggingItem, afterElement);
                         }
-                        
+
                         // Update last position
                         lastDragPosition = {
                             container: targetContainer,
@@ -13001,11 +13001,11 @@ class EstreDraggableHandler {
         // Handle drag start
         this.startDragging = (element) => {
             if (isDragging) return;
-            
+
             isDragging = true;
             this.$bound.attr("data-dragging", t1);
             element.dataset.dragging = t1;
-            
+
             // Create ghost element for visual feedback
             ghostElement = element.cloneNode(true);
             ghostElement.classList.add('ghost-element');
@@ -13031,13 +13031,13 @@ class EstreDraggableHandler {
                 clearTimeout(dragStartTimeout);
                 dragStartTimeout = null;
             }
-            
+
             // Clear drag move timeout
             if (dragMoveThrottle) {
                 clearTimeout(dragMoveThrottle);
                 dragMoveThrottle = null;
             }
-            
+
             // Clear scroll intervals
             if (topScrollInterval != n) {
                 clearInterval(topScrollInterval);
@@ -13047,26 +13047,26 @@ class EstreDraggableHandler {
                 clearInterval(bottomScrollInterval);
                 bottomScrollInterval = n;
             }
-            
+
             // Remove ghost element
             this.clearGhost();
-            
+
             // Remove all highlights
             setTimeout(_ => {
                 $containers.removeAttr("data-highlight");
             }, 200);
-            
+
             if (!isDragging) return;
-            
+
             isDragging = false;
             this.$bound.removeAttr("data-dragging");
-            
+
             // Remove drag state
             if (draggingItem) {
                 draggingItem.dataset.dragging = n;
                 draggingItem = n;
             }
-            
+
             // Reset position tracking
             lastDragPosition = { container: null, afterElement: null, timestamp: 0 };
         };
@@ -13084,7 +13084,7 @@ class EstreDraggableHandler {
             "touchstart": function (e) {
                 const touch = e.originalEvent.touches[0];
                 handler.startTouch(this, touch);
-                
+
                 // Set delayed timeout for drag start
                 dragStartTimeout = setTimeout(() => {
                     if (draggingItem === this && !isDragging && !touchData.moved) {
@@ -13098,7 +13098,7 @@ class EstreDraggableHandler {
                 const touch = e.originalEvent.touches[0];
                 touchData.currentX = touch.clientX;
                 touchData.currentY = touch.clientY;
-                
+
                 // Detect movement
                 if (!touchData.moved) {
                     const distance = handler.getDragDistance();
@@ -13110,25 +13110,25 @@ class EstreDraggableHandler {
                         }
                     }
                 }
-                
+
                 // Do not process if not dragging
                 if (!isDragging) return;
-                
+
                 e.preventDefault();
                 e.stopPropagation();
-                
+
                 // Update ghost element position
                 if (ghostElement) {
                     ghostElement.style.left = (touchData.currentX - 200) + 'px';
                     ghostElement.style.top = (touchData.currentY - 25) + 'px';
                 }
-                
+
                 // Find drop target from touch position
                 const elementBelow = document.elementFromPoint(touchData.currentX, touchData.currentY);
                 const container = elementBelow?.closest(aiv("droppable", "true"));
                 const topScrollPad = elementBelow?.closest(aiv("scroller-pad", "top"));
                 const bottomScrollPad = elementBelow?.closest(aiv("scroller-pad", "bottom"));
-                
+
                 // Handle auto-scrolling for touch drag
                 if (topScrollPad) {
                     if (topScrollInterval == n) {
@@ -13153,14 +13153,14 @@ class EstreDraggableHandler {
                         bottomScrollInterval = n;
                     }
                 }
-                
+
                 if (container) {
                     // Remove highlights from all containers
                     $containers.removeAttr("data-highlight");
-                    
+
                     // Apply highlight to current container
                     container.dataset.highlight = t1;
-                    
+
                     // Use improved drag move logic
                     const afterElement = handler.getDragAfterElement(container, touchData.currentY);
                     handler.performDragMove(container, afterElement);
@@ -13181,20 +13181,20 @@ class EstreDraggableHandler {
                     clearInterval(bottomScrollInterval);
                     bottomScrollInterval = n;
                 }
-                
+
                 // Treat as click if touch is short and movement is minimal
                 const touchDuration = Date.now() - touchData.startTime;
                 const dragDistance = handler.getDragDistance();
-                
+
                 if (!isDragging && touchDuration < 200 && dragDistance < touchData.dragThreshold) {
                     // Handle as regular click - allow default behavior
                     handler.endDragging();
                     return;
                 }
-                
+
                 e.preventDefault();
                 e.stopPropagation();
-                
+
                 handler.endDragging();
             },
 
@@ -13209,12 +13209,12 @@ class EstreDraggableHandler {
                     clearInterval(bottomScrollInterval);
                     bottomScrollInterval = n;
                 }
-                
+
                 handler.endDragging();
             },
         });
 
-         // Desktop drag events
+        // Desktop drag events
         $draggables.on({
             "dragstart": function (e) {
                 draggingItem = this;
@@ -13235,7 +13235,7 @@ class EstreDraggableHandler {
             },
         });
 
-       // Desktop container events
+        // Desktop container events
         $containers.on({
             "dragover": function (e) {
                 e.preventDefault();
@@ -13244,7 +13244,7 @@ class EstreDraggableHandler {
                 this.dataset.highlight = t1;
                 const event = e.originalEvent;
                 event.dataTransfer.dropEffect = "move";
-                
+
                 // Use improved drag move logic
                 const afterElement = handler.getDragAfterElement(this, e.clientY);
                 if (handler.#isEnabledTouch) handler.performDragMove(this, afterElement);
@@ -13257,9 +13257,9 @@ class EstreDraggableHandler {
             "dragleave": function (e) {
                 // Prevent dragleave from being triggered incorrectly by child elements
                 const rect = this.getBoundingClientRect();
-                const isOutside = e.clientX < rect.left || e.clientX > rect.right || 
-                                e.clientY < rect.top || e.clientY > rect.bottom;
-                
+                const isOutside = e.clientX < rect.left || e.clientX > rect.right ||
+                    e.clientY < rect.top || e.clientY > rect.bottom;
+
                 if (isOutside) {
                     delete this.dataset.highlight;
                 }
@@ -13267,7 +13267,7 @@ class EstreDraggableHandler {
 
             "drop": function (e) {
                 e.preventDefault();
-                
+
                 delete this.dataset.highlight;
 
                 return false;
@@ -13339,7 +13339,7 @@ class EstreDraggableHandler {
         });
 
         // Global touch event to handle drag end during scroll
-        $(document).on('touchstart.dragHandler', function(e) {
+        $(document).on('touchstart.dragHandler', function (e) {
             if (isDragging && !$(e.target).closest(aiv("draggable", "true")).length) {
                 handler.endDragging();
             }
@@ -13457,13 +13457,13 @@ const estreUi = {
 
     $overlayArea: null,
     get $overlaySections() { return this.$overlayArea.find(c.c + se); },
-    
+
     $blindArea: null,
     get $blindSections() { return this.$blindArea.find(c.c + se); },
 
     $mainArea: null,
     get $mainSections() { return this.$mainArea.find(c.c + se); },
-    
+
     $mainMenu: null,
     get $menuSections() { return this.$mainMenu.find(c.c + se); },
     $menuArea: null,
@@ -13512,9 +13512,9 @@ const estreUi = {
         scheduleDataSet.commit();
 
         this.$blindArea = $("main#instantDoc");
-        
+
         this.$mainArea = $("main#staticDoc");
-        
+
         this.$overlayArea = $("nav#managedOverlay");
 
         this.$mainMenu = $("nav#mainMenu");
@@ -13523,7 +13523,9 @@ const estreUi = {
 
         this.$fixedBottom = $("#fixedBottom");
 
-        
+        this.$handlePrototypes = $("section#handlePrototypes");
+
+
         // events
         this.setReload();
         this.setBackNavigation();
@@ -13633,6 +13635,16 @@ const estreUi = {
             return loadExportedMainMenu(subTerm);
         });
 
+        let loadExportedHandlePrototypes;
+        loadExportedHandlePrototypes = _ => loadExported("handlePrototypes.html").then(htmlContent => {
+            this.$handlePrototypes.append(htmlContent);
+            return true;
+        }).catch(error => {
+            console.error("There has been a problem with your fetch operation for handlePrototypes: ", error);
+            console.log("Retrying to load handlePrototypes...");
+            return loadExportedHandlePrototypes();
+        });
+
 
         //common element initializing
         const term = 1;//isIPhone ? 1000 : 1;
@@ -13640,6 +13652,8 @@ const estreUi = {
         const delayer = (delay = term) => postPromise(resolve => setTimeout(resolve, delay));
         return postAsyncQueue(async _ => {
             // await delayer();
+            if (this.$handlePrototypes.attr(eds.exported) == t1) await loadExportedHandlePrototypes();
+
             pageManager.init();
 
             const topBottomLoader = [
@@ -13662,7 +13676,7 @@ const estreUi = {
 
             this.initSessionManager();
 
-            
+
             // $("#splashRoot").css("z-index", null);
 
             window.addEventListener("focus", (e) => {
@@ -13783,7 +13797,7 @@ const estreUi = {
         if (this.$mainMenu.length > 0) {
             this.releaseMenuSwipeHandler();
             const ui = this;
-            this.menuSwipeHandler = new EstreSwipeHandler(this.$mainMenu).unuseY().setOnUp(function(grabX, grabY, handled, canceled, directed) {
+            this.menuSwipeHandler = new EstreSwipeHandler(this.$mainMenu).unuseY().setOnUp(function (grabX, grabY, handled, canceled, directed) {
                 if (window.isVerbosely) console.log("grabX: " + grabX + ", grabY: " + grabY + ", lastX: " + this.lastX + ", startX: " + this.startX);
                 if (handled) {
                     const isOpen = ui.$mainMenu.hasClass("right") ? grabX < 0 : grabX > 0;
@@ -13882,7 +13896,7 @@ const estreUi = {
         //     .catch((error) => console.log("fetch error: " + error));
     },
 
-// === Currently not using
+    // === Currently not using
     renderRootBar(esd) {
         this.$rootTabs.empty();
         this.$mainArea.empty();
@@ -13945,7 +13959,7 @@ const estreUi = {
         }
         return set;
     },
-// ===========================
+    // ===========================
 
     showExactAppbar(component, container, article) {
         const appbar = this.appbar;
@@ -14052,7 +14066,7 @@ const estreUi = {
                     const currentTopHandleId = currentTopHandle?.id;
                     if (id != currentTopHandleId && currentTopHandleId != this.prevRootTabId) {
                         this.prevRootTabId = currentTopHandleId;
-    
+
                         // if (estreUi.euiState == "onReady" && currentTopHandle != null) {
                         //     estreUi.pushCurrentState(currentTopHandle);
                         // }
@@ -14063,7 +14077,7 @@ const estreUi = {
                 const targetComponent = this.mainSections[id];
                 if (targetComponent.isOnTop) {
                     unhandled = true;
-                    
+
                     //현재 선택된 탭을 다시 선택했을 때
                     targetComponent.back();
                     // history.back();
@@ -14084,7 +14098,7 @@ const estreUi = {
                 }
 
                 return !unhandled;
-                //break;
+            //break;
         }
     },
 
@@ -14197,7 +14211,7 @@ const estreUi = {
         const $targetSection = this.$menuSections.filter(eid + id);
 
         if ($targetSection.length < 1) return false;
-        
+
         const isModal = $targetSection.hasClass("modal");
 
         var unhandled = false;
@@ -14403,9 +14417,9 @@ const estreUi = {
         // if (isMainSection && this.mainCurrentOnTop != null) this.prevRootTabId = this.mainCurrentOnTop.id;
 
         component?.pushIntent(intent);
-        
+
         $targetSection.off("click");
-        $targetSection.click(function(e) {
+        $targetSection.click(function (e) {
             e.preventDefault();
 
             estreUi.closeModalTab(this.id, $targetSection, $sectionSet);
@@ -14414,7 +14428,7 @@ const estreUi = {
         });
         const $container = $targetSection.find(c.c + div + uis.container);
         $container.off("click");
-        $container.click(function(e) {
+        $container.click(function (e) {
             e.preventDefault();
 
             return false;
@@ -14439,7 +14453,7 @@ const estreUi = {
 
         $targetSection.off("click");
         $targetSection.find(c.c + div + uis.container).off("click");
-        
+
         return $targetSection[0]?.pageHandle?.close(false);
     },
 
@@ -14634,7 +14648,7 @@ const estreUi = {
         return component;
     },
 
-   initSessionManager() {
+    initSessionManager() {
         this.$more = this.$mainSections.filter("#more");
         this.$sessionManager = this.$more.find(".session_manager");
         this.$sessionGroupHolder = this.$more.find(".session_group_holder");
@@ -14643,8 +14657,8 @@ const estreUi = {
         this.$openedPages = this.$sessionGroupHolder.find(c.c + ".opened_pages");
         this.$openedPageList = this.$openedPages.find(".session_list");
 
-        this.initSessionList(this.$fixedPageList);  
-        this.initSessionList(this.$openedPageList);  
+        this.initSessionList(this.$fixedPageList);
+        this.initSessionList(this.$openedPageList);
     },
 
     initSessionList($listHolder) {
@@ -14661,14 +14675,14 @@ const estreUi = {
         }
 
         const inst = this;
-        $item.find(btn).click(function(e) {
+        $item.find(btn).click(function (e) {
             const $this = $(this);
             const $item = $this.closest(".page_short_cut");
             const contained = $item.attr(eds.contained);
             const containerType = $item.attr(eds.containerType);
             const containerId = $item.attr(eds.containerId);
 
-            switch(contained) {
+            switch (contained) {
                 case "root":
                     if (containerType == "root_tab_content") inst.switchRootTab(containerId);
                     break;
@@ -14713,7 +14727,7 @@ const estreUi = {
         return this.onCloseContainer();
     },
 
-    
+
     async onReload() {
         return this.isOpenMainMenu ? await this.onReloadMenu() : false ||
             await this.onReloadBlinded() || await this.onReloadMain();
@@ -14800,7 +14814,7 @@ const estreUi = {
         // <= to do implement
         // this.focus();
     },
-    
+
     async onBlur() {
         // <= to do implement
     },
@@ -14843,14 +14857,14 @@ const estreUi = {
 
             } else {
                 // isn't PWA
-                updateInsets({ type: "init"});
+                updateInsets({ type: "init" });
                 // setTimeout(() => updateInsets(), 3000);
                 window.addEventListener("load", updateInsets);
                 window.addEventListener('resize', updateInsets);
                 window.addEventListener('orientationchange', updateInsets);
                 document.addEventListener('scrollend', updateInsets);
             }
-            
+
             setTimeout(() => $("main#splashRoot").css("z-index", null), 0);
         }, linkTimeout));
 

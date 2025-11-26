@@ -1,4 +1,4 @@
-const INSTALLATION_VERSION_NAME = "1.0.0.RC2-r20251124";
+const INSTALLATION_VERSION_NAME = "1.0.0.RC3-r20251126";
 // ^^ Use for check new update "Native application(webview) version(or Android/iOS version combo) - PWA release version"
 // ex) "1.0.1/1.0.0-r20251101k"
 
@@ -10,6 +10,7 @@ const INSTALLATION_FILE_LIST = [
     "./staticDoc.html",
     "./instantDoc.html",
     "./managedOverlay.html",
+    "./handlePrototypes.html",
 
 
     "./styles/main.css",
