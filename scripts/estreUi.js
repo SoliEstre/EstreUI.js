@@ -13635,14 +13635,24 @@ const estreUi = {
             return loadExportedMainMenu(subTerm);
         });
 
-        let loadExportedHandlePrototypes;
-        loadExportedHandlePrototypes = _ => loadExported("handlePrototypes.html").then(htmlContent => {
+        let loadExportedStockHandlePrototypes;
+        loadExportedStockHandlePrototypes = _ => loadExported("stockHandlePrototypes.html").then(htmlContent => {
+            this.$handlePrototypes.prepend(htmlContent);
+            return true;
+        }).catch(error => {
+            console.error("There has been a problem with your fetch operation for stockHandlePrototypes: ", error);
+            console.log("Retrying to load stockHandlePrototypes...");
+            return loadExportedStockHandlePrototypes();
+        });
+
+        let loadExportedCustomHandlePrototypes;
+        loadExportedCustomHandlePrototypes = _ => loadExported("customHandlePrototypes.html").then(htmlContent => {
             this.$handlePrototypes.append(htmlContent);
             return true;
         }).catch(error => {
-            console.error("There has been a problem with your fetch operation for handlePrototypes: ", error);
-            console.log("Retrying to load handlePrototypes...");
-            return loadExportedHandlePrototypes();
+            console.error("There has been a problem with your fetch operation for customHandlePrototypes: ", error);
+            console.log("Retrying to load customHandlePrototypes...");
+            return loadExportedCustomHandlePrototypes();
         });
 
 
@@ -13652,7 +13662,12 @@ const estreUi = {
         const delayer = (delay = term) => postPromise(resolve => setTimeout(resolve, delay));
         return postAsyncQueue(async _ => {
             // await delayer();
-            if (this.$handlePrototypes.attr(eds.exported) == t1) await loadExportedHandlePrototypes();
+            const handlePrototypesLoader = [];
+            if (this.$handlePrototypes.attr(eds.exported) == t1) {
+                handlePrototypesLoader.push(loadExportedStockHandlePrototypes());
+                handlePrototypesLoader.push(loadExportedCustomHandlePrototypes());
+            }
+            await Promise.all(handlePrototypesLoader);
 
             pageManager.init();
 
