@@ -136,7 +136,7 @@ EstreUI pages have a distinct lifecycle, similar to Android Activities:
 *   **Intent Data**: Accessed via `handle.intent.data` or `handler.intentData`.
 *   **Intent Action**: You can define actions to be performed at specific lifecycle points. Refer to the source code for details.
     *   *Timing*: For `onBring`, `onOpen`, `onShow`, actions are performed *after* the callback. For `onHide`, `onClose`, `onRelease`, they are performed *before* the callback.
-*   **Active Struct**: A system for binding intent data to UI elements using `data-bind-*` attributes **and initializing dynamic elements (like `local-style`)**. When intentData is modified, `handle.applyActiveStruce()` is automatically executed to update UI elements.
+*   **Active Struct**: A comprehensive system for binding intent data and initializing dynamic elements. It handles `data-bind-*` attributes, `local-style`, `solid-point`, `handles`, and `passive-links`. It is executed during initialization (specifically around `onBring`) and automatically whenever `intentData` is modified. **It can also be executed manually if needed.**
 *   **Apply**: When applying multiple changes at once, use `handle.apply(data)` to prevent `applyActiveStruce()` from running for each change. It executes once after all changes are complete, preventing overhead.
 
 ### Handle (Extending EstreHandle Class)
@@ -393,7 +393,7 @@ EstreUI 페이지는 Android Activity와 유사한 뚜렷한 라이프사이클�
 *   **Intent Data**: `handle.intent.data`나 `handler.intentData`로 접근할 수 있습니다.
 *   **Intent Action**: 각 라이프싸이클에 해당하는 시점에 수행되는 동작을 지정할 수 있습니다. 자세한 사항은 소스 구현을 참고하세요.
     *   *실행 시점*: onBring, onOpen, onShow의 경우 라이프싸이클의 콜백이 실행 된 이후에 수행되며, onHide, onClose, onRelease의 경우 라이프싸이클의 콜백이 실행 되기 이전에 수행됩니다.
-*   **Active Struct**: `data-bind-*` 속성을 사용하여 인텐트 데이터를 UI 요소에 바인딩**하거나 동적 요소(`local-style` 등)를 초기화하는** 시스템입니다. intentData가 수정되면 자동으로 `handle.applyActiveStruce()`가 실행되어 UI 요소가 업데이트됩니다.
+*   **Active Struct**: `data-bind-*` 속성을 통한 데이터 바인딩뿐만 아니라 `local-style`, `solid-point`, `handles`, `passive-links` 등 동적 요소를 초기화하는 포괄적인 시스템입니다. 초기화 시점(주로 `onBring` 전후)과 `intentData`가 수정될 때 자동으로 실행되어 UI를 업데이트합니다. **필요에 따라 수동으로 실행할 수도 있습니다.**
 *   **Apply**: 다수의 변경사항이 한번에 적용되는 경우 `handle.apply(data)`를 사용하면 각 변경이 발생할 때 마다 `applyActiveStruce()`가 실행 되는것을 방지하고 변경이 완료 된 후에 한번만 실행되도록 하여 오버헤드를 방지할 수 있습니다.
 
 ### 핸들(handle) (EstreHandle 클래스 확장)
