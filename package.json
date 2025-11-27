@@ -1,0 +1,30 @@
+{
+  "name": "estreui",
+  "version": "1.0.0.RC3",
+  "description": "EstreUI Core Library - A comprehensive UI framework for web applications",
+  "main": "scripts/estreUi.js",
+  "files": [
+    "scripts",
+    "styles",
+    "images",
+    "vectors",
+    "lotties",
+    "*.html",
+    "serviceWorker.js",
+    "webmanifest.json",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ui",
+    "framework",
+    "frontend",
+    "estreui"
+  ],
+  "author": "SoliEstre",
+  "license": "MIT",
+  "dependencies": {}
+}
