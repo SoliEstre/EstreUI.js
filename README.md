@@ -136,7 +136,7 @@ EstreUI pages have a distinct lifecycle, similar to Android Activities:
 *   **Intent Data**: Accessed via `handle.intent.data` or `handler.intentData`.
 *   **Intent Action**: You can define actions to be performed at specific lifecycle points. Refer to the source code for details.
     *   *Timing*: For `onBring`, `onOpen`, `onShow`, actions are performed *after* the callback. For `onHide`, `onClose`, `onRelease`, they are performed *before* the callback.
-*   **Active Struct**: A system for binding intent data to UI elements using `data-bind-*` attributes. When intentData is modified, `handle.applyActiveStruce()` is automatically executed to update UI elements.
+*   **Active Struct**: A system for binding intent data to UI elements using `data-bind-*` attributes **and initializing dynamic elements (like `local-style`)**. When intentData is modified, `handle.applyActiveStruce()` is automatically executed to update UI elements.
 *   **Apply**: When applying multiple changes at once, use `handle.apply(data)` to prevent `applyActiveStruce()` from running for each change. It executes once after all changes are complete, preventing overhead.
 
 ### Handle (Extending EstreHandle Class)
@@ -203,6 +203,12 @@ Native browser alerts are blocking and ugly. EstreUI provides non-blocking alter
 ### Global Alias Objects
 *   `uis`: Collection of UI specifier aliases.
 *   `eds`: Collection of Element dataset name aliases.
+
+### Local Style
+EstreUI supports scoped styling within **Article** page elements using the `<local-style>` tag. This feature is processed as part of the Active Struct system.
+*   **Usage**: Place a `<local-style>` tag inside a page element.
+*   **Path Replacement**: Use `##` within the style content to represent the path to the current element. This allows you to write styles that are scoped to that specific element hierarchy.
+*   **Mechanism**: The framework automatically converts `<local-style>` into a standard `<style>` tag, replacing `##` with the actual CSS selector path to the element.
 
 ---
 
@@ -387,7 +393,7 @@ EstreUI 페이지는 Android Activity와 유사한 뚜렷한 라이프사이클�
 *   **Intent Data**: `handle.intent.data`나 `handler.intentData`로 접근할 수 있습니다.
 *   **Intent Action**: 각 라이프싸이클에 해당하는 시점에 수행되는 동작을 지정할 수 있습니다. 자세한 사항은 소스 구현을 참고하세요.
     *   *실행 시점*: onBring, onOpen, onShow의 경우 라이프싸이클의 콜백이 실행 된 이후에 수행되며, onHide, onClose, onRelease의 경우 라이프싸이클의 콜백이 실행 되기 이전에 수행됩니다.
-*   **Active Struct**: `data-bind-*` 속성을 사용하여 인텐트 데이터를 UI 요소에 바인딩하는 시스템입니다. intentData가 수정되면 자동으로 `handle.applyActiveStruce()`가 실행되어 UI 요소가 업데이트됩니다.
+*   **Active Struct**: `data-bind-*` 속성을 사용하여 인텐트 데이터를 UI 요소에 바인딩**하거나 동적 요소(`local-style` 등)를 초기화하는** 시스템입니다. intentData가 수정되면 자동으로 `handle.applyActiveStruce()`가 실행되어 UI 요소가 업데이트됩니다.
 *   **Apply**: 다수의 변경사항이 한번에 적용되는 경우 `handle.apply(data)`를 사용하면 각 변경이 발생할 때 마다 `applyActiveStruce()`가 실행 되는것을 방지하고 변경이 완료 된 후에 한번만 실행되도록 하여 오버헤드를 방지할 수 있습니다.
 
 ### 핸들(handle) (EstreHandle 클래스 확장)
@@ -455,6 +461,12 @@ EstreUI 페이지는 Android Activity와 유사한 뚜렷한 라이프사이클�
 ### 전역 alias 객체
 *   `uis`: UI specifier alias 모음.
 *   `eds`: Element dataset name alias 모음.
+
+### 로컬 스타일 (Local Style)
+EstreUI는 **Article** 페이지 요소 내에서 `<local-style>` 태그를 사용하여 스코프된 스타일링을 지원합니다. 이 기능은 Active Struct 시스템의 일부로 처리됩니다.
+*   **사용법**: 페이지 요소 내부에 `<local-style>` 태그를 배치합니다.
+*   **경로 치환**: 스타일 내용 내에서 `##`을 사용하면 해당 지점까지의 경로로 치환됩니다. 이를 통해 특정 요소 계층에 한정된 스타일을 작성할 수 있습니다.
+*   **작동 원리**: 프레임워크는 자동으로 `<local-style>`을 표준 `<style>` 태그로 변환하며, `##`을 해당 요소의 실제 CSS 선택자 경로로 치환합니다.
 
 ---
 
