@@ -18,7 +18,7 @@ EstreUI is not just a library, nor a full-blown framework in the traditional sen
 ### Key Features
 *   **MVC Pattern**: Structured separation of concerns.
 *   **Lifecycle Management**: Native-like page lifecycle (`onBring`, `onShow`, `onHide`, etc.).
-*   **Native-like UI**: Smooth transitions, stack-based navigation, and mobile-optimized touch interactions.
+*   **Native-like UI**: Smooth transitions, semi-stack-based navigation, and mobile-optimized touch interactions.
 *   **jQuery 4.0 Support**: Fully compatible with the latest jQuery. Can also be used with lighter alternatives like Cash (experimental).
 *   **Hybrid App Ready**: Designed to work seamlessly with **WVCA4EUI** (Flutter-based wrapper) for deploying to Google Play and App Store.
 *   **PWA Support**: Ready for Progressive Web App deployment, including Windows Store support (requires SSL).
@@ -275,7 +275,7 @@ EstreUI는 단순한 라이브러리도, 전통적인 의미의 완전한 프레
 ### 주요 특징
 *   **MVC 패턴**: 관심사의 구조적 분리.
 *   **라이프사이클 관리**: 네이티브 앱과 유사한 페이지 라이프사이클 (`onBring`, `onShow`, `onHide` 등).
-*   **네이티브 스타일 UI**: 부드러운 전환, 스택 기반 네비게이션, 모바일에 최적화된 터치 인터랙션.
+*   **네이티브 스타일 UI**: 부드러운 전환, 세미 스택(Semi-Stack) 기반 네비게이션, 모바일에 최적화된 터치 인터랙션.
 *   **jQuery 4.0 지원**: 최신 jQuery와 완벽 호환됩니다. 더 가벼운 대안인 Cash와도 함께 사용할 수 있습니다(실험적).
 *   **하이브리드 앱 지원**: Flutter 기반의 **WVCA4EUI** 래퍼와 연동하여 Google Play 및 App Store에 배포할 수 있도록 설계되었습니다.
 *   **PWA 지원**: Windows Store 등록을 포함한 프로그레시브 웹 앱 배포를 지원합니다(SSL 필수).
