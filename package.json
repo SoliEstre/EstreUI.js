@@ -1,6 +1,6 @@
 {
   "name": "estreui",
-  "version": "1.0.0.RC4",
+  "version": "1.0.0",
   "description": "EstreUI Core Library - A comprehensive UI framework for web applications",
   "main": "scripts/estreUi.js",
   "files": [
