@@ -1,4 +1,4 @@
-const INSTALLATION_VERSION_NAME = "1.0.0.RC3-r20251126m";
+const INSTALLATION_VERSION_NAME = "1.0.0.RC4-r20251128";
 // ^^ Use for check new update "Native application(webview) version(or Android/iOS version combo) - PWA release version"
 // ex) "1.0.1/1.0.0-r20251101k"
 
