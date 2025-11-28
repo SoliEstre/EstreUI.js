@@ -3372,6 +3372,7 @@ class EstreContainer extends EstrePageHostHandle {
 
     get isRoot() { return this.id == "root"; }
     get isSub() { return this.id != "root"; }
+    get isStepNavigation() { return this.$host.hasClass("v_stack") || this.$host.hasClass("h_stack"); }
 
     get subPages() { return this.articles; }
     get subPageList() { return this.articleList; }
@@ -3433,11 +3434,7 @@ class EstreContainer extends EstrePageHostHandle {
         this.$host.find(".back_navigation").click(function (e) {
             e.preventDefault();
 
-            const index = inst.currentArticleStepIndex;
-            if (index != NaN) {
-                const prevIndex = index - 1;
-                if (prevIndex > -1) inst.showArticle(inst.#articleStepsId + "%" + prevIndex);
-            }
+            inst.backStep();
 
             return false;
         });
@@ -3640,6 +3637,16 @@ class EstreContainer extends EstrePageHostHandle {
         else return this.component.getHost(hostType);
     }
 
+    backStep() {
+        if (this.isStepNavigation) {
+            const index = this.currentArticleStepIndex;
+            if (index != NaN) {
+                const prevIndex = index - 1;
+                if (prevIndex > -1) this.showArticle(this.#articleStepsId + "%" + prevIndex);
+            }
+        }
+    }
+
     show(isRequest = true, setFocus = true) {
         if (isRequest) {
             return this.component.showContainer(this.id);
@@ -3768,7 +3775,7 @@ class EstreContainer extends EstrePageHostHandle {
 
                     // if (estreUi.euiState == "onReady" && currentTopHandle != null) estreUi.pushCurrentState(currentTopHandle);
                 }
-                if (this.$host.hasClass("v_stack") || this.$host.hasClass("h_stack")) {
+                if (this.isStepNavigation) {
                     $target[0]?.pageHandle?.pushIntent(intent);
                     const current = this.currentArticleStepIndex;
                     const target = this.getArticleStepIndex($target);
