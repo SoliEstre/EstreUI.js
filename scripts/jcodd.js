@@ -30,7 +30,7 @@ SOFTWARE.
 //
 // The JSON based lite code format
 //
-// v0.8.1 / release 2025.07.15
+// v0.8.2 / release 2025.11.23
 //
 // Take to be liten from JSON code to smaller converted characters for like as BASE64.
 //
@@ -75,7 +75,7 @@ class Jcodd {
      * 
      * @returns {string} jcodd
      */
-    static toCodd (json) {
+    static toCodd(json) {
         switch (json) {
             case "true": return "t";
             case "false": return "f";
@@ -113,7 +113,7 @@ class Jcodd {
      * 
      * @returns {string} JCODD
      */
-    static coddify (obj) {
+    static coddify(obj) {
         let json = JSON.stringify(obj);
 
         return this.toCodd(json);
@@ -126,7 +126,7 @@ class Jcodd {
      * 
      * @return {string} json
      */
-    static toJson (codd) {
+    static toJson(codd) {
         switch (codd) {
             case "t": return "true";
             case "f": return "false";
@@ -153,7 +153,7 @@ class Jcodd {
      * 
      * @returns {*} object
      */
-    static parse (codd) {
+    static parse(codd) {
         let json = this.toJson(codd);
 
         return JSON.parse(json);
@@ -166,7 +166,7 @@ class Jcodd {
      * 
      * @returns {String} unescaped
      */
-    static esc (cc) {
+    static esc(cc) {
         if (cc < 0x20 || cc > 0x7e) {
             let x16 = cc.toString(16);
             var ex;
@@ -183,9 +183,9 @@ class Jcodd {
      * 
      * @returns {String} unescaped
      */
-    static escape (str) {
+    static escape(str) {
         var escaped = "";
-        for (var i=0; i<str.length; i++) {
+        for (var i = 0; i < str.length; i++) {
             escaped += this.esc(str.charCodeAt(i));
         }
         return escaped;
@@ -198,8 +198,8 @@ class Jcodd {
      * 
      * @returns {String} escaped
      */
-    static unescape (str) {
-        return str.replace(/%u([\dA-F]{4})/gi, (match, block) => 
+    static unescape(str) {
+        return str.replace(/%u([\dA-F]{4})/gi, (match, block) =>
             String.fromCharCode(parseInt(block, 16))
         );
     }
@@ -236,3 +236,8 @@ class Jcodd {
 }
 
 const JCODD = any => new Jcodd(any);
+
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+    module.exports = JCODD;
+    module.exports.Jcodd = Jcodd;
+}

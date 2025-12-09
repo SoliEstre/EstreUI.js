@@ -30,7 +30,7 @@ SOFTWARE.
 // 
 // Cold(array object) assigning of HTML Tree for make to JSON string.
 // 
-// v0.15 / release 2025.10.17
+// v1.0.0 / release 2025.11.24
 // 
 // cold = [] - Cold HTML child node list
 // cold[0] - Tag name, classes, id, name, type = "tag.class1.class2#id@name$type" : string
@@ -150,11 +150,10 @@ class Doctre {
     static createFragment(hcnlArray, matchReplacer = {}) {
         const df = document.createDocumentFragment();
         for (const val of hcnlArray) switch (typeof val) {
-            case "string": 
+            case "string":
                 const tmp = this.createElement();
                 tmp.innerHTML = this.matchReplace(val, matchReplacer);
-                const childNodes = tmp.content.childNodes;
-                while (childNodes.length > 0) df.appendChild(childNodes[0]);
+                for (const node of tmp.content.childNodes) df.appendChild(node);
                 break;
 
             case "object":
@@ -246,15 +245,11 @@ class Doctre {
         const trimmedFrost = frost.trim();
         if (trimmedFrost.startsWith("[['") || trimmedFrost.startsWith("['")) frost = frost.replace(/\'/g, '"');
         const replaced = this.matchReplace(frost, matchReplacer);
-        let parsed;
+        var parsed;
         try {
             parsed = JSON.parse(replaced);
         } catch (error) {
-            try {
-                parsed = this.matchReplaceObject(JSON.parse(frost), matchReplacer);
-            } catch (error) {
-                console.error("Doctre.parse - Frozen JSON parse error: ", error);
-            }
+            console.error("Doctre.parse - Frozen JSON parse error: ", error);
         }
         return this.createFragment(parsed);
     }
@@ -322,7 +317,7 @@ class Doctre {
                 case "class":
                 case "style":
                     break;
-                
+
                 default:
                     if (!name.startsWith("data-")) pack[name] = attr.value;
                     break;
@@ -336,7 +331,7 @@ class Doctre {
         for (const key in dataset) datas[key] = dataset[key];
         return datas;
     }
-    
+
 
     static trimHecp(hecp) {
         for (var i = hecp.length - 1; i > 0; i--) {
@@ -500,12 +495,14 @@ class Doctre {
     get className() { return this.classes.join(" "); }
     set className(value) { this.classes = value.split(" "); }
 
-    get majorAttrs() { return {
-        class: this.className,
-        id: this.id,
-        name: this.name,
-        type: this.type,
-    }; }
+    get majorAttrs() {
+        return {
+            class: this.className,
+            id: this.id,
+            name: this.name,
+            type: this.type,
+        };
+    }
 
     get solidId() { return Doctre.getSolidId(this.tagName, this.className, this.id, this.name, this.type); }
 
@@ -544,8 +541,10 @@ class NodeArray extends Array {
 
     static box(fragmentOrNodeList, into = new NodeArray()) {
         const nodeList = fragmentOrNodeList instanceof DocumentFragment ? fragmentOrNodeList.childNodes : fragmentOrNodeList;
-        for (const node of nodeList) into.push(node); 
+        for (const node of nodeList) into.push(node);
         return into;
     }
 
 }
+
+if (typeof module !== 'undefined') module.exports = Doctre;
