@@ -81,7 +81,7 @@ header#fixedTop > section#appbar > div.container > article > nav.tool_set > * { 
 header#fixedTop > section#appbar > div.container > article > nav.tool_set > * > * { min-width: max-content; max-height: 100%; }
 header#fixedTop > section#appbar > div.container > article.appbarCenter { flex-direction: row; flex-wrap: nowrap; flex-grow: 0; flex-shrink: 0; }
 header#fixedTop > section#appbar > div.container > article.appbarCenter > nav.tool_set { flex-direction: row; flex-wrap: nowrap; }
-header#fixedTop > section#appbar > div.container > article:is(.appbarLeft, .appbarRight) { flex-grow: 1; flex-shrink: 1; }
+header#fixedTop > section#appbar > div.container > article:is(.appbarLeft, .appbarRight) { width: 0%; flex-grow: 1; flex-shrink: 1; }
 header#fixedTop > section#appbar > div.container:has(> article.appbarCenter:not(:has(> *))):is(:has(> article.appbarCenter > *:not(nav.tool_set)), :has(> article.appbarCenter > nav.tool_set:not(:has(> *)))) > article:is(.appbarLeft, .appbarRight) { width: 40%; }
 header#fixedTop > section#appbar > div.container > article.appbarLeft { flex-direction: row; flex-wrap: nowrap; }
 header#fixedTop > section#appbar > div.container > article.appbarLeft > nav.tool_set { flex-direction: row; flex-wrap: nowrap; }
