@@ -211,6 +211,9 @@ const eds = {
     // for container
     articleStepsId: "data-article-steps-id",
 
+    // for article
+    wideDynamicSection: "data-wide-dynamic-section",
+
     // for page manager
 
     // for session manager

@@ -509,59 +509,6 @@ const t7 = "7";
 const t8 = "8";
 const t9 = "9";
 
-const _a = "a";
-const _b = "b";
-const _c = "c";
-const _d = "d";
-const _e = "e";
-const _f = "f";
-const _g = "g";
-const _h = "h";
-const _i = "i";
-const _j = "j";
-const _k = "k";
-const _l = "l";
-const _m = "m";
-const _n = "n";
-const _o = "o";
-const _p = "p";
-const _q = "q";
-const _r = "r";
-const _s = "s";
-const _t = "t";
-const _u = "u";
-const _v = "v";
-const _w = "w";
-const _x = "x";
-const _y = "y";
-const _z = "z";
-const _A = "A";
-const _B = "B";
-const _C = "C";
-const _D = "D";
-const _E = "E";
-const _F = "F";
-const _G = "G";
-const _H = "H";
-const _I = "I";
-const _J = "J";
-const _K = "K";
-const _L = "L";
-const _M = "M";
-const _N = "N";
-const _O = "O";
-const _P = "P";
-const _Q = "Q";
-const _R = "R";
-const _S = "S";
-const _T = "T";
-const _U = "U";
-const _V = "V";
-const _W = "W";
-const _X = "X";
-const _Y = "Y";
-const _Z = "Z";
-
 
 //common methods
 const v2a = function (value) {
@@ -1267,24 +1214,39 @@ const Ecal = {
         return null;
     },
 
-    getPrevMonth(year, month) {
-        let date;
+    getDateMonthFrom(offset, year = new Date(), month, date = 1) {
         if (year instanceof Date) date = year;
-        else date = new Date(year, month - 1, 1);
+        else {
+            if (typeString(year) && year.includes(hp)) [year, month, date] = year.split(hp).map(it => parseInt(it));
+            date = new Date(year, month - 1, date);
+        }
 
-        date.setMonth(date.getMonth() - 1);
+        date.setMonth(date.getMonth() + offset);
 
         return date;
     },
 
-    getNextMonth(year, month) {
-        let date;
-        if (year instanceof Date) date = year;
-        else date = new Date(year, month - 1, 1);
+    getPrevMonth(year, month, date = 1) {
+        return this.getDateMonthFrom(-1, year, month, date);
+    },
 
-        date.setMonth(date.getMonth() + 1);
+    getNextMonth(year, month, date = 1) {
+        return this.getDateMonthFrom(1, year, month, date);
+    },
 
-        return date;
+    getYearMonthFrom(offset, year = new Date(), month) {
+        const date = this.getDateMonthFrom(offset, year, month);
+        return date.getFullYear() + hp + v2d(date.getMonth() + 1);
+    },
+
+    getPrevYearMonth(year, month) {
+        const date = this.getPrevMonth(year, month);
+        return date.getFullYear() + hp + v2d(date.getMonth() + 1);
+    },
+
+    getNextYearMonth(year, month) {
+        const date = this.getNextMonth(year, month);
+        return date.getFullYear() + hp + v2d(date.getMonth() + 1);
     },
 
     getDateSetNearPosition(criteria, offset = 0, unit = "day") {
