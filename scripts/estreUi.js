@@ -2797,10 +2797,13 @@ class EstreComponent extends EstrePageHostHandle {
     get $containers() { return this.$host?.find(c.c + uis.container); };
     $container = {};
 
+    get rootContainer() { return this.containers.root; }
+    get mainArticle() { return this.rootContainer?.mainArticle; }
+
     get isSingleContainer() { return this.isSingleSubPage; }
     get isMultiContainer() { return this.isMultiSubPages; }
 
-    get isAvailableRootContainer() { return this.containers["root"] != null; }
+    get isAvailableRootContainer() { return this.rootContainer != null; }
     get isExistBackContainer() { return this.isMultiSubPages && (this.isAvailablePrevSubPage || ((this.currentTop?.isSub ?? false) && this.isAvailableRootContainer)); }
 
     get isContainersAllyStatic() {
@@ -3390,10 +3393,12 @@ class EstreContainer extends EstrePageHostHandle {
     get $articles() { return this.$host?.find(c.c + ar); };
     $article = {};
 
+    get mainArticle() { return this.articles.main; }
+
     get isSingleArticle() { return this.isSingleSubPage; }
     get isMultiArticle() { return this.isMultiSubPages; }
 
-    get isAvailableMainArticle() { return this.articles["main"] != null; }
+    get isAvailableMainArticle() { return this.mainArticle != null; }
     get isExistBackArticle() { return this.isMultiSubPages && (this.isAvailablePrevSubPage || ((this.currentTop?.isSub ?? false) && this.isAvailableMainArticle)); }
 
     get isArticlesAllyStatic() {

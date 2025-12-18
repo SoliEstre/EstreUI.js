@@ -458,6 +458,12 @@ body img.logo { filter: drop-shadow(0 0 5px rgb(var(--cglr) / 60%)); }
 .ws_bs { white-space: break-spaces; }
 
 
+body .pos_static { position: static; }
+body .pos_relative { position: relative; }
+body .pos_absolute { position: absolute; }
+body .pos_fixed { position: fixed; }
+
+
 body .no_margin { margin: 0; }
 
 body .inset_on_margin { margin: var(--basic-ui-inset-v) var(--basic-ui-inset-h); }
