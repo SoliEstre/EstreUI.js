@@ -13502,6 +13502,8 @@ const estreUi = {
     $openedPages: null,
     $openedPageList: null,
 
+    $handlePrototypes: null,
+
     //handles
     menuSwipeHandler: null,
 
@@ -13540,6 +13542,8 @@ const estreUi = {
         this.$fixedTop = $("header#fixedTop");
 
         this.$fixedBottom = $("#fixedBottom");
+
+        this.$handlePrototypes = $("section#handlePrototypes");
 
         
         // events
@@ -13651,6 +13655,26 @@ const estreUi = {
             return loadExportedMainMenu(subTerm);
         });
 
+        let loadExportedStockHandlePrototypes;
+        loadExportedStockHandlePrototypes = _ => loadExported("stockHandlePrototypes.html").then(htmlContent => {
+            this.$handlePrototypes.prepend(htmlContent);
+            return true;
+        }).catch(error => {
+            console.error("There has been a problem with your fetch operation for stockHandlePrototypes: ", error);
+            console.log("Retrying to load stockHandlePrototypes...");
+            return loadExportedStockHandlePrototypes();
+        });
+
+        let loadExportedCustomHandlePrototypes;
+        loadExportedCustomHandlePrototypes = _ => loadExported("customHandlePrototypes.html").then(htmlContent => {
+            this.$handlePrototypes.append(htmlContent);
+            return true;
+        }).catch(error => {
+            console.error("There has been a problem with your fetch operation for customHandlePrototypes: ", error);
+            console.log("Retrying to load customHandlePrototypes...");
+            return loadExportedCustomHandlePrototypes();
+        });
+
 
         //common element initializing
         const term = 1;//isIPhone ? 1000 : 1;
@@ -13658,6 +13682,13 @@ const estreUi = {
         const delayer = (delay = term) => postPromise(resolve => setTimeout(resolve, delay));
         return postAsyncQueue(async _ => {
             // await delayer();
+            const handlePrototypesLoader = [];
+            if (this.$handlePrototypes.attr(eds.exported) == t1) {
+                handlePrototypesLoader.push(loadExportedStockHandlePrototypes());
+                handlePrototypesLoader.push(loadExportedCustomHandlePrototypes());
+            }
+            await Promise.all(handlePrototypesLoader);
+
             pageManager.init();
 
             const topBottomLoader = [
