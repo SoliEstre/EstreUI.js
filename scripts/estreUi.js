@@ -5156,11 +5156,17 @@ class EstreUiPage {
         else return euiPage;
     }
 
-    static unregisterFrom($element) {
-        const euiPage = this.from($element);
-        if (euiPage == null) return false;
-        const exist = pageManager.get(euiPage.pid);
-        return exist?.unregister(euiPage.$element);
+    static unregisterFrom($element, pid) {
+        if ($element instanceof EstrePageHandle) {
+            pid = $element.pid;
+            $element = $element.$host;
+        } else this.from($element)?.let(euiPage => {
+            pid = euiPage.pid;
+            $element = euiPage.$element;
+        });
+        if (pid == null || $element == null) return false;
+        const exist = pageManager.get(pid);
+        return exist?.unregister($element);
     }
 
     static from($element) {
