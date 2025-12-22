@@ -1,6 +1,6 @@
 {
   "name": "estreui",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "EstreUI Core Library - A comprehensive UI framework for web applications",
   "main": "scripts/estreUi.js",
   "files": [
@@ -20,9 +20,19 @@
   },
   "keywords": [
     "ui",
+    "gui",
     "framework",
     "frontend",
-    "estreui"
+    "estreui",
+    "native-like",
+    "ui-framework",
+    "spa-framework",
+    "pwa-framework",
+    "mobile-first",
+    "mobile-ui",
+    "desktop-ui",
+    "web-desktop",
+    "jquery-plugin"
   ],
   "author": "SoliEstre",
   "license": "MIT",

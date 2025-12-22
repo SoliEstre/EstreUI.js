@@ -32,7 +32,14 @@ EstreUI is not just a library, nor a full-blown framework in the traditional sen
 ## Getting Started
 
 ### Installation & Update
-EstreUI is typically installed by cloning the repository or forking it.
+You can easily create a new EstreUI project using NPM:
+
+```bash
+npm create estreui@latest
+```
+([create-estreui on NPM](https://www.npmjs.com/package/create-estreui))
+
+Alternatively, EstreUI is typically installed by cloning the repository or forking it.
 To update, you can pull from the upstream repository.
 
 You can also start with an example web app that includes a basic implementation:
@@ -130,6 +137,7 @@ EstreUI pages have a distinct lifecycle, similar to Android Activities:
 *   For other access, use `estreUi.mainSections`, `blindedSections` to access handles in other sections. Refer to the source code for details.
 *   You can access the page handle from any element object via `element.pageHandle`.
 *   **Tip**: In browser developer tools, select a component/container/article element and type `$0.pageHandle` in the console to access it.
+*   You can access the page's DOM element via `handle.host` or `handle.$host` (jQuery object).
 
 ### Data Binding & Intent
 *   **Intent**: A data object passed between pages. Accessed via `handle.intent` or `handler.intent`.
@@ -289,7 +297,14 @@ EstreUI는 단순한 라이브러리도, 전통적인 의미의 완전한 프레
 ## 시작하기 (Getting Started)
 
 ### 설치 및 업데이트
-EstreUI는 일반적으로 리포지토리를 복제(clone)하거나 포크(fork)하여 설치합니다.
+NPM을 통해 간편하게 새 프로젝트를 생성할 수 있습니다:
+
+```bash
+npm create estreui@latest
+```
+([create-estreui on NPM](https://www.npmjs.com/package/create-estreui))
+
+또는 일반적으로 리포지토리를 복제(clone)하거나 포크(fork)하여 설치합니다.
 업데이트를 위해서는 업스트림(upstream) 리포지토리에서 풀(pull)을 수행할 수 있습니다.
 
 아래 기초 구현이 포함된 예제를 기반으로 사용할 수도 있습니다.
@@ -387,6 +402,7 @@ EstreUI 페이지는 Android Activity와 유사한 뚜렷한 라이프사이클�
 *   그 외 접근이 필요한 경우 `estreUi`의 `mainSections`, `blindedSections`등을 통하여 다른 섹션의 핸들에 접근할 수 있습니다. 자세한 항목은 소스 구현을 참고하세요.
 *   각 페이지의 엘리먼트 객체에서 접근이 필요한 경우 `element.pageHandle`로 접근할 수 있습니다.
 *   특히 브라우저의 developer tools의 console로 접근하려는 경우 요소 탭에서 component/container/article 요소를 선택한 후 `$0.pageHandle`를 입력하여 접근할 수 있습니다. 
+*   페이지의 DOM 엘리먼트는 `handle.host` 또는 `handle.$host`(jQuery 객체)로 접근할 수 있습니다.
 
 ### 데이터 바인딩 & Intent
 *   **Intent**: 페이지 간에 전달되는 데이터 객체입니다. `handle.intent`나 `handler.intent`로 접근할 수 있습니다.
