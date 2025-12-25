@@ -123,7 +123,7 @@ article .custom_selector_bar > .bar_side > button { display: flex; flex-flow: ro
 article .custom_selector_bar > .bar_side > button > span { padding: 0; }
 article .custom_selector_bar > .bar_side > button:disabled { opacity: 0.3; }
 article .custom_selector_bar > .bar_side > button.selector { }
-article .custom_selector_bar > .bar_side > button.selector::after { content: ''; display: inline-block; width: 12px; height: 9px; margin-left: 0.3em; background-image: var(--svg-dropdown); background-size: contain; background-position: center; background-repeat: no-repeat; transition-timing-function: ease; transition-duration: 0.3s; will-change: auto; }
+article .custom_selector_bar > .bar_side > button.selector::after { content: ''; display: inline-block; width: 12px; height: 9px; margin-left: 0.5em; background-image: var(--svg-dropdown); background-size: contain; background-position: center; background-repeat: no-repeat; transition-timing-function: ease; transition-duration: 0.3s; will-change: auto; }
 article .custom_selector_bar:has(> .float_bottom > ul.selections)[data-dropdown-open="1"] > .bar_side > button.selector::after { transform: rotateX(180deg); }
 article .custom_selector_bar:has(> .float_top > ul.selections) > .bar_side > button.selector::after { transform: rotateX(180deg); }
 article .custom_selector_bar:has(> .float_top > ul.selections)[data-dropdown-open="1"] > .bar_side > button.selector::after { transform: rotateX(0deg); }
@@ -157,7 +157,7 @@ article .month_selector_bar > .bar_side > button { display: flex; flex-flow: row
 article .month_selector_bar > .bar_side > button > span { padding: 0; }
 article .month_selector_bar > .bar_side > button:disabled { opacity: 0.3; }
 article .month_selector_bar > .bar_side > button.selector { }
-article .month_selector_bar > .bar_side > button.selector::after { content: ''; display: inline-block; width: 12px; height: 9px; margin-left: 0.2em; background-image: var(--svg-dropdown); background-size: contain; background-position: center; background-repeat: no-repeat; transition-timing-function: ease; transition-duration: 0.3s; will-change: auto; }
+article .month_selector_bar > .bar_side > button.selector::after { content: ''; display: inline-block; width: 12px; height: 9px; margin-left: 0.5em; background-image: var(--svg-dropdown); background-size: contain; background-position: center; background-repeat: no-repeat; transition-timing-function: ease; transition-duration: 0.3s; will-change: auto; }
 article .month_selector_bar:has(> .float_bottom > ul.selections)[data-dropdown-open="1"] > .bar_side > button.selector::after { transform: rotateX(180deg); }
 article .month_selector_bar:has(> .float_top > ul.selections) > .bar_side > button.selector::after { transform: rotateX(180deg); }
 article .month_selector_bar:has(> .float_top > ul.selections)[data-dropdown-open="1"] > .bar_side > button.selector::after { transform: rotateX(0deg); }

@@ -267,7 +267,7 @@ article nav.instant_appbar > * { max-height: var(--height); margin-top: auto; ma
 article nav.instant_appbar > * > * { max-height: var(--height); }
 article nav.instant_appbar button { height: var(--height); margin: 0; font-size: 1rem; }
 article nav.instant_appbar button.square { aspect-ratio: 1; }
-article nav.instant_appbar > .float_area { position: absolute; top: var(--top-safe-pad); bottom: 0; margin: 0; }
+article nav.instant_appbar > .float_area { position: absolute; bottom: 0; margin: 0; height: var(--appbar-height); }
 article nav.instant_appbar > .float_area > button { }
 article nav.instant_appbar > nav { position: relative; display: flex; align-items: center; }
 article nav.instant_appbar > nav > button { }
@@ -282,7 +282,7 @@ article nav.instant_appbar > nav.appbarCenter > button { }
 article nav.instant_appbar button.home { }
 article nav.instant_appbar button.home img { height: calc(var(--height) * 86%); }
 
-article .appbar_pad { height: var(--appbar-height); }
+article .appbar_pad { height: calc(var(--appbar-height) + var(--top-safe-pad)); }
 
 article ul.for_ui { list-style: none; margin: 0; padding: 0; }
 
