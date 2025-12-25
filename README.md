@@ -56,7 +56,7 @@ Estre UI Demo Application
 *   `serviceLoader.html`: Service Worker Loader (handles updates before app launch).
 *   `scripts/`: Core libraries and logic.
     *   `estreUi.js`: Main framework code.
-    *   `estreU0EE0Z.js`: Estre Common library.
+    *   `estreU0EEOZ.js`: Estre Common library.
     *   `main.js`: Application entry point and configuration.
 *   `styles/`: CSS files for the framework and your app.
 *   `index.html`: The main entry point (The "Rim").
@@ -321,7 +321,7 @@ Estre UI 데모 애플리케이션
 *   `serviceLoader.html`: 서비스 워커 로더 (앱 실행 전 업데이트 진행).
 *   `scripts/`: 핵심 라이브러리 및 로직.
     *   `estreUi.js`: 메인 프레임워크 코드.
-    *   `estreU0EE0Z.js`: Estre Common 라이브러리.
+    *   `estreU0EEOZ.js`: Estre Common 라이브러리.
     *   `main.js`: 애플리케이션 진입점 및 설정.
 *   `styles/`: 프레임워크 및 앱을 위한 CSS 파일.
 *   `index.html`: 메인 진입점 ("Rim").
