@@ -31,7 +31,7 @@ SOFTWARE.
 // Collections of bypass for process codes takes be inline,
 // and monkey patching like as modern languages.
 // 
-// v0.5.0    / release 2025.12.09
+// v0.5.2    / release 2026.01.01
 // 
 // Author: Estre Soliette
 // Established: 2025.01.05
@@ -525,3 +525,98 @@ definePropertyPlex("ifisnt", function (that, process = it => it, ornot = it => {
 
 definePropertyPlex("ifEquals", function (that, process = it => it, ornot = it => {}) { return this.let(it => executeIf(it == that, process, [it], ornot)); });
 definePropertyPlex("ifNotEquals", function (that, process = it => it, ornot = it => {}) { return this.let(it => executeIf(it != that, process, [it], ornot)); });
+
+
+// additional primitive prototype functions
+defineGetterAndSetter(Number, "abs", function () { return Math.abs(this.it); });
+defineGetterAndSetter(Number, "int", function () { return parseInt(this.it); });
+defineGetterAndSetter(Number, "string", function () { return this.it + ""; });
+defineGetterAndSetter(Number, "pricision", function () { return this.it - this.int; });
+defineGetterAndSetter(Number, "pricisionString", function () { return this.it.pricision.string.replace(/^0\./, ""); });
+defineGetterAndSetter(Number, "pricisionInt", function () { return parseInt(this.it.pricisionString); });
+defineGetterAndSetter(Number, "digit2", function () { return this.it.let(it => ((it < 0 ? "-" : "") + it.abs).padStart(2, "0")); });
+defineGetterAndSetter(Number, "digit3", function () { return this.it.let(it => ((it < 0 ? "-" : "") + it.abs).padStart(3, "0")); });
+defineGetterAndSetter(Number, "digit4", function () { return this.it.let(it => ((it < 0 ? "-" : "") + it.abs).padStart(4, "0")); });
+defineGetterAndSetter(Number, "digit5", function () { return this.it.let(it => ((it < 0 ? "-" : "") + it.abs).padStart(5, "0")); });
+defineGetterAndSetter(Number, "digit6", function () { return this.it.let(it => ((it < 0 ? "-" : "") + it.abs).padStart(6, "0")); });
+defineGetterAndSetter(Number, "digit7", function () { return this.it.let(it => ((it < 0 ? "-" : "") + it.abs).padStart(7, "0")); });
+defineGetterAndSetter(Number, "digit8", function () { return this.it.let(it => ((it < 0 ? "-" : "") + it.abs).padStart(8, "0")); });
+defineGetterAndSetter(Number, "digit9", function () { return this.it.let(it => ((it < 0 ? "-" : "") + it.abs).padStart(9, "0")); });
+defineGetterAndSetter(Number, "digit10", function () { return this.it.let(it => ((it < 0 ? "-" : "") + it.abs).padStart(10, "0")); });
+
+defineGetterAndSetter(String, "lower", function () { return this.it.toLowerCase(); });
+defineGetterAndSetter(String, "upper", function () { return this.it.toUpperCase(); });
+defineGetterAndSetter(String, "capitalized", function () { return this.it.let(it => it[0].upper + it.substring(1)); });
+defineGetterAndSetter(String, "int", function () { return parseInt(this.it); });
+defineGetterAndSetter(String, "float", function () { return parseFloat(this.it); });
+defineGetterAndSetter(String, "digit2", function () { return this.it.padStart(2, "0"); });
+defineGetterAndSetter(String, "digit3", function () { return this.it.padStart(3, "0"); });
+defineGetterAndSetter(String, "digit4", function () { return this.it.padStart(4, "0"); });
+defineGetterAndSetter(String, "digit5", function () { return this.it.padStart(5, "0"); });
+defineGetterAndSetter(String, "digit6", function () { return this.it.padStart(6, "0"); });
+defineGetterAndSetter(String, "digit7", function () { return this.it.padStart(7, "0"); });
+defineGetterAndSetter(String, "digit8", function () { return this.it.padStart(8, "0"); });
+defineGetterAndSetter(String, "digit9", function () { return this.it.padStart(9, "0"); });
+defineGetterAndSetter(String, "digit10", function () { return this.it.padStart(10, "0"); });
+
+defineGetterAndSetter(Date, "year", function () { return this.getFullYear(); }, function (val) { this.setFullYear(val); });
+defineGetterAndSetter(Date, "month0", function () { return this.getMonth(); }, function (val) { this.setMonth(val); });
+defineGetterAndSetter(Date, "month", function () { return this.it.month0 + 1; }, function (val) { this.setMonth(val - 1); });
+defineGetterAndSetter(Date, "date", function () { return this.getDate(); }, function (val) { this.setDate(val); });
+defineGetterAndSetter(Date, "day", function () { return this.getDay(); }, function (val) { this.setDay(val); });
+defineGetterAndSetter(Date, "dayEngChar2", function () { return ["su", "mo", "tu", "we", "th", "fr", "sa"][this.it.day]; });
+defineGetterAndSetter(Date, "dayEngChar2Cap", function () { return this.it.dayEngChar2.capitalized; });
+defineGetterAndSetter(Date, "dayEngChar2Up", function () { return this.it.dayEngChar2.upper; });
+defineGetterAndSetter(Date, "dayEngShort", function () { return ["sun", "mon", "tue", "wed", "thu", "fri", "sat"][this.it.day]; });
+defineGetterAndSetter(Date, "dayEngShortCap", function () { return this.it.dayEngShort.capitalized; });
+defineGetterAndSetter(Date, "dayEngShortUp", function () { return this.it.dayEngShort.upper; });
+defineGetterAndSetter(Date, "dayEngPrefix", function () { return ["sun", "mon", "tues", "wednes", "thurs", "fri", "satur"][this.it.day]; });
+defineGetterAndSetter(Date, "dayEngPrefixCap", function () { return this.it.dayEngPrefix.capitalized; });
+defineGetterAndSetter(Date, "dayEngPrefixUp", function () { return this.it.dayEngPrefix.upper; });
+defineGetterAndSetter(Date, "dayEng", function () { return this.it.dayEngPrefix + "day"; });
+defineGetterAndSetter(Date, "dayEngCap", function () { return this.it.dayEng.capitalized; });
+defineGetterAndSetter(Date, "dayEngUp", function () { return this.it.dayEng.upper; });
+defineGetterAndSetter(Date, "dayKorShort", function () { return ["일", "월", "화", "수", "목", "금", "토"][this.it.day]; });
+defineGetterAndSetter(Date, "dayKor", function () { return this.it.dayKorShort + "요일"; });
+defineGetterAndSetter(Date, "dayHanjaShort", function () { return ["日", "月", "火", "水", "木", "金", "土"][this.it.day]; });
+defineGetterAndSetter(Date, "dayHanja", function () { return this.it.dayHanjaShort + "曜日"; });
+defineGetterAndSetter(Date, "dayJpnShort", function () { return ["日", "月", "火", "水", "木", "金", "土"][this.it.day]; });
+defineGetterAndSetter(Date, "dayJpn", function () { return this.it.dayJpnShort + "曜日"; });
+defineGetterAndSetter(Date, "dayChnShort", function () { return ["日", "一", "二", "三", "四", "五", "六"][this.it.day]; });
+defineGetterAndSetter(Date, "dayChn", function () { return "周" + this.it.dayChnShort; });
+defineGetterAndSetter(Date, "dayChnX", function () { return "星期" + this.it.dayChnShort; });
+defineGetterAndSetter(Date, "dayCnT", function () { return "週" + this.it.dayChnShort; });
+defineGetterAndSetter(Date, "dayCnTX", function () { return "星期" + this.it.dayChnShort; });
+defineGetterAndSetter(Date, "yoil", function () { return this.it.dayKorShort; });
+defineGetterAndSetter(Date, "YOIL", function () { return this.it.dayKor; });
+defineGetterAndSetter(Date, "youbi", function () { return this.it.dayJpnShort; });
+defineGetterAndSetter(Date, "YOUBI", function () { return this.it.dayJpn; });
+defineGetterAndSetter(Date, "zhou", function () { return this.it.dayChn; });
+defineGetterAndSetter(Date, "xingqi", function () { return this.it.dayChnX; });
+defineGetterAndSetter(Date, "hours", function () { return this.getHours(); }, function (val) { this.setHours(val); });
+defineGetterAndSetter(Date, "minutes", function () { return this.getMinutes(); }, function (val) { this.setMinutes(val); });
+defineGetterAndSetter(Date, "seconds", function () { return this.getSeconds(); }, function (val) { this.setSeconds(val); });
+defineGetterAndSetter(Date, "millis", function () { return this.getMilliseconds(); }, function (val) { this.setMilliseconds(val); });
+defineGetterAndSetter(Date, "zoneOffset", function () { return this.getTimezoneOffset(); });
+defineGetterAndSetter(Date, "zoneHours", function () { return this.it.zoneOffset / 60; });
+defineGetterAndSetter(Date, "zoneMinutes", function () { return this.it.zoneOffset % 60; });
+defineGetterAndSetter(Date, "isAM", function () { return this.it.hours < 12; }, function (val) { this.setHours(val); });
+defineGetterAndSetter(Date, "isPM", function () { return this.it.hours >= 12; }, function (val) { this.setHours(val); });
+defineGetterAndSetter(Date, "time", function () { return this.getTime(); }, function (val) { this.setTime(val); });
+defineGetterAndSetter(Date, "unix", function () { return parseInt(this.it.time / 1000); });
+defineGetterAndSetter(Date, "minutePoints", function () { return parseInt(this.it.unix / 60); });
+defineGetterAndSetter(Date, "minutePointsLocal", function () { return this.it.minutePoints - this.it.zoneOffset; });
+defineGetterAndSetter(Date, "hourPoints", function () { return parseInt(this.it.minutePoints / 60); });
+defineGetterAndSetter(Date, "hourPointsLocal", function () { return this.it.hourPoints - this.it.zoneHours; });
+defineGetterAndSetter(Date, "dateOffset", function () { return parseInt(this.it.hourPointsLocal / 24); });
+defineGetterAndSetter(Date, "dayMinutes", function () { return (this.it.hours * 60) + this.it.minutes; });
+defineGetterAndSetter(Date, "daySeconds", function () { return (this.it.dayMinutes * 60) + this.it.seconds; });
+defineGetterAndSetter(Date, "dayMillis", function () { return (this.it.daySeconds * 1000) + this.it.millis; });
+defineGetterAndSetter(Date, "yearMonthArray", function () { return [this.it.year.string, this.it.month.digit2]; });
+defineGetterAndSetter(Date, "yearMonth", function () { return this.it.yearMonthArray.join("-"); });
+defineGetterAndSetter(Date, "dateStringArray", function () { return [this.it.year.string, this.it.month.digit2, this.it.date.digit2]; });
+defineGetterAndSetter(Date, "dateString", function () { return this.it.dateStringArray.join("-"); });
+defineGetterAndSetter(Date, "hourMinutesArray", function () { return [this.it.hours.digit2, this.it.minutes.digit2]; });
+defineGetterAndSetter(Date, "hourMinutes", function () { return this.it.hourMinutesArray.join(":"); });
+defineGetterAndSetter(Date, "timeStringArray", function () { return [this.it.hours.digit2, this.it.minutes.digit2, this.it.seconds.digit2]; });
+defineGetterAndSetter(Date, "timeString", function () { return this.it.timeStringArray.join(":"); });

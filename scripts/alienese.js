@@ -32,7 +32,7 @@ SOFTWARE.
 // This patch aims to create smaller (quicker) and more concise (lighter) JavaScript code.
 // It makes the code more implicit and serves as an alternative to obfuscation.
 // 
-// v0.5.1 / release 2025.12.16
+// v0.5.2 / release 2026.01.01
 // 
 // * Must be loaded modernism.js before this script.
 // 
@@ -441,7 +441,8 @@ dfg("dpgsx", _gb.defineGetterAndSetterPlex);
 // additional static function for classes
 defineStaticGetterAndSetter(dt, "n", function () { return new Date(...arguments); });
 defineStaticGetterAndSetter(dt, "t", function () { return this.now(); });
-defineStaticGetterAndSetter(dt, "ttt", function () { return (this.now() + "").padStart(3, "0"); });
+defineStaticGetterAndSetter(dt, "ms", function () { return dt.n.millis; });
+defineStaticGetterAndSetter(dt, "msd", function () { return this.ms.string.padStart(3, "0"); });
 
 
 // additional global prototype functions
@@ -492,84 +493,85 @@ definePropertyPlex("ifneq", function (that, process = it => it, ornot = it => {}
 
 
 // additional primitive prototype functions
-defineGetterAndSetter(num, "abs", function () { return Math.abs(this.it); });
-defineGetterAndSetter(num, "int", function () { return parseInt(this.it); });
-defineGetterAndSetter(num, "prc", function () { return this.it - this.int; });
-defineGetterAndSetter(num, "prs", function () { return (this.prc + "").replace(/^0\./, ""); });
-defineGetterAndSetter(num, "pri", function () { return parseInt(this.prs); });
-defineGetterAndSetter(num, "d00", function () { return this.it.let(it => ((it < 0 ? hp : "") + it.abs).padStart(2, _0)); });
-defineGetterAndSetter(num, "d000", function () { return this.it.let(it => ((it < 0 ? hp : "") + it.abs).padStart(3, _0)); });
-defineGetterAndSetter(num, "d0000", function () { return this.it.let(it => ((it < 0 ? hp : "") + it.abs).padStart(4, _0)); });
+defineGetterAndSetter(num, "str", function () { return this.it.string; });
+defineGetterAndSetter(num, "prc", function () { return this.it.pricision; });
+defineGetterAndSetter(num, "prs", function () { return this.it.pricisionString; });
+defineGetterAndSetter(num, "pri", function () { return this.it.pricisionInt; });
+defineGetterAndSetter(num, "d00", function () { return this.it.digit2; });
+defineGetterAndSetter(num, "d000", function () { return this.it.digit3; });
+defineGetterAndSetter(num, "d0000", function () { return this.it.digit4; });
 
-defineGetterAndSetter(str, "low", function () { return this.it.toLowerCase(); });
-defineGetterAndSetter(str, "upp", function () { return this.it.toUpperCase(); });
-defineGetterAndSetter(str, "cap", function () { return this.it.let(it => it[0].upp + it.substring(1)); });
-defineGetterAndSetter(str, "int", function () { return parseInt(this.it); });
-defineGetterAndSetter(str, "float", function () { return parseFloat(this.it); });
-defineGetterAndSetter(str, "d00", function () { return this.it.padStart(2, _0); });
-defineGetterAndSetter(str, "d000", function () { return this.it.padStart(3, _0); });
-defineGetterAndSetter(str, "d0000", function () { return this.it.padStart(4, _0); });
+defineGetterAndSetter(str, "low", function () { return this.it.lower; });
+defineGetterAndSetter(str, "upp", function () { return this.it.upper; });
+defineGetterAndSetter(str, "cap", function () { return this.it.capitalized; });
+defineGetterAndSetter(str, "d00", function () { return this.it.digit2; });
+defineGetterAndSetter(str, "d000", function () { return this.it.digit3; });
+defineGetterAndSetter(str, "d0000", function () { return this.it.digit4; });
 
-defineGetterAndSetter(dt, "year", function () { return this.getFullYear(); });
-defineGetterAndSetter(dt, "yyyy", function () { return this.year; });
-defineGetterAndSetter(dt, "y", function () { return this.yyyy; });
-defineGetterAndSetter(dt, "yy", function () { return (this.yyyy % 100).d00; });
-defineGetterAndSetter(dt, "M0", function () { return this.getMonth(); });
-defineGetterAndSetter(dt, "M", function () { return this.M0 + 1; });
-defineGetterAndSetter(dt, "MM", function () { return this.M.d00; });
-defineGetterAndSetter(dt, "d", function () { return this.getDate(); });
-defineGetterAndSetter(dt, "dd", function () { return this.d.d00; });
-defineGetterAndSetter(dt, "U", function () { return this.getDay(); });
-defineGetterAndSetter(dt, "u", function () { return this.U.let(it => it == 0 ? 7 : it); });
-defineGetterAndSetter(dt, "uu", function () { return ["su", "mo", "tu", "we", "th", "fr", "sa"][this.U]; });
-defineGetterAndSetter(dt, "Uu", function () { return this.uu.cap; });
-defineGetterAndSetter(dt, "UU", function () { return this.uu.upp; });
-defineGetterAndSetter(dt, "uuu", function () { return ["sun", "mon", "tue", "wed", "thu", "fri", "sat"][this.U]; });
-defineGetterAndSetter(dt, "Uuu", function () { return this.uuu.cap; });
-defineGetterAndSetter(dt, "UUU", function () { return this.uuu.upp; });
-defineGetterAndSetter(dt, "uuuu", function () { return ["sun", "mon", "tues", "wedns", "thurs", "fri", "satur"][this.U]; });
-defineGetterAndSetter(dt, "Uuuu", function () { return this.uuuu.cap; });
-defineGetterAndSetter(dt, "UUUU", function () { return this.uuuu.upp; });
-defineGetterAndSetter(dt, "day", function () { return this.uuuu + "day"; });
-defineGetterAndSetter(dt, "Day", function () { return this.day.cap; });
-defineGetterAndSetter(dt, "DAY", function () { return this.day.upp; });
-defineGetterAndSetter(dt, "yoil", function () { return ["일", "월", "화", "수", "목", "금", "토"][this.U]; });
-defineGetterAndSetter(dt, "YOIL", function () { return this.yoil + "요일"; });
-defineGetterAndSetter(dt, "youbi", function () { return ["日", "月", "火", "水", "木", "金", "土"][this.U]; });
-defineGetterAndSetter(dt, "YOUBI", function () { return this.youbi + "曜日"; });
-defineGetterAndSetter(dt, "H", function () { return this.getHour(); });
-defineGetterAndSetter(dt, "HH", function () { return this.H.d00; });
-defineGetterAndSetter(dt, "a", function () { return this.H < 12 ? _A : _P; });
-defineGetterAndSetter(dt, "aa", function () { return this.a + _M; });
-defineGetterAndSetter(dt, "h", function () { return (this.H % 12).let(it => it == 0 ? 12 : it); });
-defineGetterAndSetter(dt, "hh", function () { return this.h.d00; });
-defineGetterAndSetter(dt, "m", function () { return this.getMinutes(); });
-defineGetterAndSetter(dt, "mm", function () { return this.m.d00; });
-defineGetterAndSetter(dt, "s", function () { return this.getSeconds(); });
-defineGetterAndSetter(dt, "ss", function () { return this.s.d00; });
-defineGetterAndSetter(dt, "S", function () { return this.getMilliseconds(); });
-defineGetterAndSetter(dt, "SSS", function () { return this.S.d000; });
-defineGetterAndSetter(dt, "O", function () { return this.getTimezoneOffset(); });
-defineGetterAndSetter(dt, "Z", function () { return this.O / 60; });
-defineGetterAndSetter(dt, "Zm", function () { return this.O % 60; });
-defineGetterAndSetter(dt, "Zmm", function () { return this.Zm.d00; });
-defineGetterAndSetter(dt, "Zh", function () { return this.Z.int; });
-defineGetterAndSetter(dt, "Zhh", function () { return this.Zh.d00; });
-defineGetterAndSetter(dt, "X", function () { return this.Zhh + cl + this.Zmm; });
-defineGetterAndSetter(dt, "time", function () { return this.getTime(); });
-defineGetterAndSetter(dt, "unix", function () { return (this.t / 1000).int; });
-defineGetterAndSetter(dt, "t", function () { return this.time; });
-defineGetterAndSetter(dt, "ut", function () { return this.unix; });
-defineGetterAndSetter(dt, "mo", function () { return this.y * 12 + this.M0; });
-defineGetterAndSetter(dt, "do", function () { return (((this.time / 60 / 60 / 1000) + (this.O / -60)) / 24).int; });
-defineGetterAndSetter(dt, "yearMonth", function () { return this.YYYY + hp + this.MM; });
-defineGetterAndSetter(dt, "ym", function () { return this.yearMonth; });
-defineGetterAndSetter(dt, "dateString", function () { return this.YYYY + hp + this.MM + hp + this.dd; });
-defineGetterAndSetter(dt, "ymd", function () { return this.dateString; });
-defineGetterAndSetter(dt, "hourMinutes", function () { return this.HH + cl + this.mm; });
-defineGetterAndSetter(dt, "hm", function () { return this.hourMinutes; });
-defineGetterAndSetter(dt, "timeString", function () { return this.HH + cl + this.mm + cl + this.ss; });
-defineGetterAndSetter(dt, "hms", function () { return this.timeString; });
+defineGetterAndSetter(dt, "YYYY", function () { return this.it.year.d0000; });
+defineGetterAndSetter(dt, "yyyy", function () { return this.it.year; });
+defineGetterAndSetter(dt, "y", function () { return this.it.yyyy; });
+defineGetterAndSetter(dt, "yy", function () { return (this.it.yyyy % 100).d00; });
+defineGetterAndSetter(dt, "M0", function () { return this.it.month0; });
+defineGetterAndSetter(dt, "M", function () { return this.it.month; });
+defineGetterAndSetter(dt, "MM", function () { return this.it.M.d00; });
+defineGetterAndSetter(dt, "d", function () { return this.it.date; });
+defineGetterAndSetter(dt, "dd", function () { return this.it.d.d00; });
+defineGetterAndSetter(dt, "U", function () { return this.it.day; });
+defineGetterAndSetter(dt, "u", function () { return this.it.U.let(it => it == 0 ? 7 : it); });
+defineGetterAndSetter(dt, "uu", function () { return this.it.dayEngChar2; });
+defineGetterAndSetter(dt, "Uu", function () { return this.it.dayEngChar2Cap; });
+defineGetterAndSetter(dt, "UU", function () { return this.it.dayEngChar2Up; });
+defineGetterAndSetter(dt, "uuu", function () { return this.it.dayEngShort; });
+defineGetterAndSetter(dt, "Uuu", function () { return this.it.dayEngShortCap; });
+defineGetterAndSetter(dt, "UUU", function () { return this.it.dayEngShortUp; });
+defineGetterAndSetter(dt, "uuuu", function () { return this.it.dayEngPrefix; });
+defineGetterAndSetter(dt, "Uuuu", function () { return this.it.dayEngPrefixCap; });
+defineGetterAndSetter(dt, "UUUU", function () { return this.it.dayEngPrefixUp; });
+defineGetterAndSetter(dt, "wd", function () { return this.it.dayEng + "day"; });
+defineGetterAndSetter(dt, "Wd", function () { return this.it.dayEng.cap; });
+defineGetterAndSetter(dt, "WD", function () { return this.it.dayEng.upp; });
+defineGetterAndSetter(dt, "yi", function () { return this.it.dayKorShort; });
+defineGetterAndSetter(dt, "YI", function () { return this.it.dayKor; });
+defineGetterAndSetter(dt, "yb", function () { return this.it.dayJpnShort; });
+defineGetterAndSetter(dt, "YB", function () { return this.it.dayJpn; });
+defineGetterAndSetter(dt, "zh", function () { return this.it.dayChn; });
+defineGetterAndSetter(dt, "xq", function () { return this.it.dayChnX; });
+defineGetterAndSetter(dt, "zt", function () { return this.it.dayCnT; });
+defineGetterAndSetter(dt, "xqt", function () { return this.it.dayCnTX; });
+defineGetterAndSetter(dt, "H", function () { return this.it.hours; });
+defineGetterAndSetter(dt, "HH", function () { return this.it.H.d00; });
+defineGetterAndSetter(dt, "a", function () { return this.it.H < 12 ? _A : _P; });
+defineGetterAndSetter(dt, "aa", function () { return this.it.a + _M; });
+defineGetterAndSetter(dt, "h", function () { return (this.it.H % 12).let(it => it == 0 ? 12 : it); });
+defineGetterAndSetter(dt, "hh", function () { return this.it.h.d00; });
+defineGetterAndSetter(dt, "m", function () { return this.it.minutes; });
+defineGetterAndSetter(dt, "mm", function () { return this.it.m.d00; });
+defineGetterAndSetter(dt, "s", function () { return this.it.seconds; });
+defineGetterAndSetter(dt, "ss", function () { return this.it.s.d00; });
+defineGetterAndSetter(dt, "ms", function () { return this.it.millis; });
+defineGetterAndSetter(dt, "S", function () { return this.it.ms; });
+defineGetterAndSetter(dt, "SSS", function () { return this.it.S.d000; });
+defineGetterAndSetter(dt, "zone0", function () { return this.it.zoneOffset; });
+defineGetterAndSetter(dt, "O", function () { return this.it.zone0; });
+defineGetterAndSetter(dt, "Z", function () { return this.it.zoneHours; });
+defineGetterAndSetter(dt, "Zm", function () { return this.it.zoneMinutes; });
+defineGetterAndSetter(dt, "Zmm", function () { return this.it.Zm.d00; });
+defineGetterAndSetter(dt, "Zh", function () { return this.it.Z.int; });
+defineGetterAndSetter(dt, "Zhh", function () { return this.it.Zh.d00; });
+defineGetterAndSetter(dt, "X", function () { return this.it.Zhh + cl + this.it.Zmm; });
+defineGetterAndSetter(dt, "t", function () { return this.it.time; });
+defineGetterAndSetter(dt, "ut", function () { return this.it.unix; });
+defineGetterAndSetter(dt, "mo", function () { return this.it.y * 12 + this.it.M0; });
+defineGetterAndSetter(dt, "do", function () { return this.it.dateOffset; });
+defineGetterAndSetter(dt, "yma", function () { return this.it.yearMonthArray; });
+defineGetterAndSetter(dt, "ym", function () { return this.it.yearMonth; });
+defineGetterAndSetter(dt, "ymda", function () { return this.it.dateStringArray; });
+defineGetterAndSetter(dt, "ymd", function () { return this.it.dateString; });
+defineGetterAndSetter(dt, "hma", function () { return this.it.hourMinutesArray; });
+defineGetterAndSetter(dt, "hm", function () { return this.it.hourMinutes; });
+defineGetterAndSetter(dt, "hmsa", function () { return this.it.timeStringArray; });
+defineGetterAndSetter(dt, "hms", function () { return this.it.timeString; });
 
 
 

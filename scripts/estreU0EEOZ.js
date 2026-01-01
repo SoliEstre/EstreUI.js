@@ -512,12 +512,12 @@ const t9 = "9";
 
 //common methods
 const v2a = function (value) {
-    value += "";
+    let newValue = value.it + "";
     
 	var regex = /(^[+-]?\d+)(\d{3})/;
-	while (regex.test(value)) value = value.replace(regex, "$1" + "," + "$2");
+	while (regex.test(newValue)) newValue = newValue.replace(regex, "$1" + "," + "$2");
 
-	return value;
+	return newValue;
 }
 
 const v2d = function (value, length = 2) {
