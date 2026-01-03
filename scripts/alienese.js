@@ -26,13 +26,13 @@ SOFTWARE.
 
 */
 
-// Alienise.js - Estre javscript Alienese patch //
+// Alienise.js - Estre javascript Alienese patch //
 //
 // A collection of aliases for shortening and simplifying JavaScript code.
 // This patch aims to create smaller (quicker) and more concise (lighter) JavaScript code.
 // It makes the code more implicit and serves as an alternative to obfuscation.
 // 
-// v0.5.2 / release 2026.01.01
+// v0.6.0 / release 2026.01.03
 // 
 // * Must be loaded modernism.js before this script.
 // 
@@ -46,396 +46,407 @@ if (typeof require !== 'undefined' && typeof module !== 'undefined') {
     try { require("modernism"); } catch (e) {}
 }
 
-let _gb = _global ?? (typeof globalThis !== 'undefined') ? globalThis : (typeof window !== 'undefined' ? window : global);
-let dfg = defineGlobal ?? ((name, value) => {
-    Object.defineProperty(_gb, name, {
-        value: value,
-        writable: false,
-        configurable: false,
-        enumerable: false
-    });
-});
+const _gb = _global ?? (typeof globalThis !== 'undefined') ? globalThis : (typeof window !== 'undefined' ? window : global);
+const dfg = defineGlobal ?? ((name, value) => Object.defineProperty(_gb, name, {
+    value: value,
+    writable: false,
+    configurable: false,
+    enumerable: false
+}));
 
 
 // common letter constants
-dfg("_0", "0");
-dfg("_1", "1");
-dfg("_2", "2");
-dfg("_3", "3");
-dfg("_4", "4");
-dfg("_5", "5");
-dfg("_6", "6");
-dfg("_7", "7");
-dfg("_8", "8");
-dfg("_9", "9");
+const _0 = "0";
+const _1 = "1";
+const _2 = "2";
+const _3 = "3";
+const _4 = "4";
+const _5 = "5";
+const _6 = "6";
+const _7 = "7";
+const _8 = "8";
+const _9 = "9";
 
-dfg("_a", "a");
-dfg("_b", "b");
-dfg("_c", "c");
-dfg("_d", "d");
-dfg("_e", "e");
-dfg("_f", "f");
-dfg("_g", "g");
-dfg("_h", "h");
-dfg("_i", "i");
-dfg("_j", "j");
-dfg("_k", "k");
-dfg("_l", "l");
-dfg("_m", "m");
-dfg("_n", "n");
-dfg("_o", "o");
-dfg("_p", "p");
-dfg("_q", "q");
-dfg("_r", "r");
-dfg("_s", "s");
-dfg("_t", "t");
-dfg("_u", "u");
-dfg("_v", "v");
-dfg("_w", "w");
-dfg("_x", "x");
-dfg("_y", "y");
-dfg("_z", "z");
+const _a = "a";
+const _b = "b";
+const _c = "c";
+const _d = "d";
+const _e = "e";
+const _f = "f";
+const _g = "g";
+const _h = "h";
+const _i = "i";
+const _j = "j";
+const _k = "k";
+const _l = "l";
+const _m = "m";
+const _n = "n";
+const _o = "o";
+const _p = "p";
+const _q = "q";
+const _r = "r";
+const _s = "s";
+const _t = "t";
+const _u = "u";
+const _v = "v";
+const _w = "w";
+const _x = "x";
+const _y = "y";
+const _z = "z";
 
-dfg("_A", "A");
-dfg("_B", "B");
-dfg("_C", "C");
-dfg("_D", "D");
-dfg("_E", "E");
-dfg("_F", "F");
-dfg("_G", "G");
-dfg("_H", "H");
-dfg("_I", "I");
-dfg("_J", "J");
-dfg("_K", "K");
-dfg("_L", "L");
-dfg("_M", "M");
-dfg("_N", "N");
-dfg("_O", "O");
-dfg("_P", "P");
-dfg("_Q", "Q");
-dfg("_R", "R");
-dfg("_S", "S");
-dfg("_T", "T");
-dfg("_U", "U");
-dfg("_V", "V");
-dfg("_W", "W");
-dfg("_X", "X");
-dfg("_Y", "Y");
-dfg("_Z", "Z");
+const _A = "A";
+const _B = "B";
+const _C = "C";
+const _D = "D";
+const _E = "E";
+const _F = "F";
+const _G = "G";
+const _H = "H";
+const _I = "I";
+const _J = "J";
+const _K = "K";
+const _L = "L";
+const _M = "M";
+const _N = "N";
+const _O = "O";
+const _P = "P";
+const _Q = "Q";
+const _R = "R";
+const _S = "S";
+const _T = "T";
+const _U = "U";
+const _V = "V";
+const _W = "W";
+const _X = "X";
+const _Y = "Y";
+const _Z = "Z";
 
 
 // common extra characters constants
-dfg("lr", "(");
-dfg("rr", ")");
-dfg("lc", "{");
-dfg("rc", "}");
-dfg("ls", "[");
-dfg("rs", "]");
-dfg("lt", "<");
-dfg("gt", ">");
-dfg("ab", lt + gt);
-dfg("cb", gt + lt);
-dfg("ti", "~");
-dfg("ep", "!");
-dfg("em", ep);
-dfg("at", "@");
-dfg("ds", "$");
-dfg("ms", "&");
-dfg("ps", "%");
-dfg("cf", "^");
-dfg("ak", "*");
-dfg("mp", ak);
-dfg("ad", "+");
-dfg("add", ad + ad);
-dfg("hp", "-");
-dfg("sr", hp);
-dfg("srr", sr + sr);
-dfg("us", "_");
-dfg("eq", "=");
-dfg("vl", "|");
-dfg("bs", "\\");
-dfg("ss", "/");
-dfg("dv", ss);
-dfg("qm", "?");
-dfg("nl", ep + eq);
-dfg("le", lt + eq);
-dfg("ge", gt + eq);
-dfg("fa", ad + eq);
-dfg("fs", sr + eq);
-dfg("fm", mp + eq);
-dfg("fd", dv + eq);
-dfg("sq", "'");
-dfg("dq", '"');
-dfg("gv", '`');
-dfg("cl", ":");
-dfg("sc", ";");
-dfg("cm", ",");
-dfg("es", "");
-dfg("l", cm);
-dfg("s", " ");
-dfg("i", "#");
-dfg("d", ".");
+const lr = "(";
+const rr = ")";
+const lc = "{";
+const rc = "}";
+const ls = "[";
+const rs = "]";
+const lt = "<";
+const gt = ">";
+const ab = lt + gt;
+const cb = gt + lt;
+const ti = "~";
+const ep = "!";
+const em = ep;
+const at = "@";
+const ds = "$";
+const ms = "&";
+const ps = "%";
+const cf = "^";
+const ak = "*";
+const mp = ak;
+const ad = "+";
+const add = ad + ad;
+const hp = "-";
+const sr = hp;
+const srr = sr + sr;
+const us = "_";
+const eq = "=";
+const vl = "|";
+const bs = "\\";
+const ss = "/";
+const dv = ss;
+const qm = "?";
+const nl = ep + eq;
+const le = lt + eq;
+const ge = gt + eq;
+const fa = ad + eq;
+const fs = sr + eq;
+const fm = mp + eq;
+const fd = dv + eq;
+const sq = "'";
+const dq = '"';
+const gv = '`';
+const cl = ":";
+const sc = ";";
+const cm = ",";
+const es = "";
+const l = cm;
+const s = " ";
+const i = "#";
+const d = ".";
 
-dfg("cr", "\r");
-dfg("lf", "\n");
-dfg("crlf", cr + lf);
-dfg("lfcr", lf + cr);
-dfg("tab", "\t");
+const cr = "\r";
+const lf = "\n";
+const crlf = cr + lf;
+const lfcr = lf + cr;
+const tab = "\t";
 
-dfg("ecr", "\\r");
-dfg("elf", "\\n");
-dfg("ecrlf", ecr + elf);
-dfg("elfcr", elf + ecr);
-dfg("etab", "\\t");
+const ecr = "\\r";
+const elf = "\\n";
+const ecrlf = ecr + elf;
+const elfcr = elf + ecr;
+const etab = "\\t";
 
 
 // primitive types alias constant
-dfg("U", UNDEFINED);
-dfg("N", NULL);
-dfg("T", TRUE);
-dfg("F", FALSE);
+const U = UNDEFINED;
+const N = NULL;
+const T = TRUE;
+const F = FALSE;
 
-dfg("u", undefined);
-dfg("n", null);
-dfg("t", true);
-dfg("f", false);
+const u = undefined;
+const n = null;
+const t = true;
+const f = false;
 
 // end point assigner constant
-dfg("eoo", _gb.u);
-dfg("eoa", _gb.u);
+const eoo = u;
+const eoa = u;
 
 // prototype of primitive types alias constant
-dfg("FNC", _gb.FUNCTION);
-dfg("BLE", _gb.BOOLEAN);
-dfg("STR", _gb.STRING);
-dfg("SYM", _gb.SYMBOL);
-dfg("NUM", _gb.NUMBER);
-dfg("BIG", _gb.BIGINT);
-dfg("OBJ", _gb.OBJECT);
+const FNC = FUNCTION;
+const BLE = BOOLEAN;
+const STR = STRING;
+const SYM = SYMBOL;
+const NUM = NUMBER;
+const BIG = BIGINT;
+const OBJ = OBJECT;
 
-dfg("fun", Function);
-dfg("ble", Boolean);
-dfg("str", String);
-dfg("sym", Symbol);
-dfg("num", Number);
-dfg("big", BigInt);
-dfg("obj", Object);
+const fun = Function;
+const ble = Boolean;
+const str = String;
+const sym = Symbol;
+const num = Number;
+const big = BigInt;
+const obj = Object;
 
 // class names of primitive types constant
-dfg("FN", _gb._FUNCTION);
-dfg("BL", _gb._BOOLEAN);
-dfg("ST", _gb._STRING);
-dfg("SY", _gb._SYMBOL);
-dfg("NO", _gb._NUMBER);
-dfg("BI", _gb._BIG_INT);
-dfg("OJ", _gb._OBJECT);
+const FN = _FUNCTION;
+const BL = _BOOLEAN;
+const ST = _STRING;
+const SY = _SYMBOL;
+const NO = _NUMBER;
+const BI = _BIG_INT;
+const OJ = _OBJECT;
 
-dfg("fn", Function);
-dfg("bl", Boolean);
-dfg("sg", String);
-dfg("sl", Symbol);
-dfg("no", Number);
-dfg("bi", BigInt);
-dfg("oj", Object);
+const fn = Function;
+const bl = Boolean;
+const sg = String;
+const sl = Symbol;
+const no = Number;
+const bi = BigInt;
+const oj = Object;
 
 
 // frequent object types alias constant
-dfg("DT", _gb._DATE);
+const DT = _DATE;
 
-dfg("RA", _gb._ARRAY);
-dfg("SA", _gb._SET);
-dfg("MA", _gb._MAP);
+const RA = _ARRAY;
+const SA = _SET;
+const MA = _MAP;
 
-dfg("dt", Date);
+const dt = Date;
 
-dfg("ra", Array);
-dfg("sa", Set);
-dfg("ma", Map);
+const ra = Array;
+const sa = Set;
+const ma = Map;
 
 
 // frequent assign types alias constant
-dfg("def", _gb.DEFAULT);
-dfg("fin", _gb.FINALLY);
+const def = DEFAULT;
+const fin = FINALLY;
 
 
 // frequent object types empty object issuer alias constant
-dfg("x", {
+const x = {
     get a() { return new Array(); },
     get d() { return new Date(); },
     get t() { return new Set(); },
     get p() { return new Map(); },
-});
+};
 
 
 // bypass constant
-dfg("ifx", _gb.executeIf);
-dfg("itx", _gb.executeWhen);
+const ifx = executeIf;
+const itx = executeWhen;
 
-dfg("ifr", _gb.ifReturn);
+const ifr = ifReturn;
 
-dfg("roen", _gb.ifReturnOrEmptyNumber);
-dfg("roes", _gb.ifReturnOrEmptyString);
-dfg("roea", _gb.ifReturnOrEmptyArray);
-dfg("roeo", _gb.ifReturnOrEmptyObject);
+const roen = ifReturnOrEmptyNumber;
+const roes = ifReturnOrEmptyString;
+const roea = ifReturnOrEmptyArray;
+const roeo = ifReturnOrEmptyObject;
 
-dfg("val", _gb.valet);
+const val = valet;
 
 
 // common process shortcut constant
-dfg("f02b", _gb.forZeroToBefore);
-dfg("f02r", _gb.forZeroToReach);
+const f02b = forZeroToBefore;
+const f02r = forZeroToReach;
 
-dfg("f20", _gb.forToZeroFrom);
-dfg("f21", _gb.forToPrimeFrom);
+const f20 = forToZeroFrom;
+const f21 = forToPrimeFrom;
 
-dfg("ff", _gb.forForward);
-dfg("fb", _gb.forBackward);
+const ff = forForward;
+const fb = forBackward;
 
-dfg("fi", _gb.forin);
-dfg("fiv", _gb.forinner);
+const fi = forin;
+const fiv = forinner;
 
-dfg("fo", _gb.forof);
-dfg("fkv", _gb.forkv);
+const fo = forof;
+const fkv = forkv;
 
-dfg("w", _gb.whileIn);
-dfg("dw", _gb.doWhileIn);
+const w = whileIn;
+const dw = doWhileIn;
 
 
 // meaning comparator constant
-dfg("to", _gb.typeOf);
+const to = typeOf;
 
-dfg("tm", _gb.typeMatch);
+const tm = typeMatch;
 
-dfg("tu", _gb.typeUndefined);
-dfg("tf", _gb.typeFunction);
-dfg("tb", _gb.typeBoolean);
-dfg("ts", _gb.typeString);
-dfg("ty", _gb.typeSymbol);
-dfg("tn", _gb.typeNumber);
-dfg("tg", _gb.typeBigint);
-dfg("tj", _gb.typeObject);
+const tu = typeUndefined;
+const tf = typeFunction;
+const tb = typeBoolean;
+const ts = typeString;
+const ty = typeSymbol;
+const tn = typeNumber;
+const tg = typeBigint;
+const tj = typeObject;
 
-dfg("im", _gb.instanceMatch);
-dfg("io", _gb.isObject);
-dfg("ia", _gb.isArray);
-dfg("ioa", _gb.isArray);
-dfg("ios", _gb.isString);
-dfg("ion", _gb.isNumber);
-dfg("iot", _gb.isSet);
-dfg("iop", _gb.isMap);
+const im = instanceMatch;
+const io = isObject;
+const ia = isArray;
+const ioa = isArray;
+const ios = isString;
+const ion = isNumber;
+const iot = isSet;
+const iop = isMap;
 
-dfg("xv", _gb.exact);
-dfg("nxv", _gb.notExact);
-dfg("xnv", _gb.exactlyNot);
-dfg("xm", _gb.exactMatches);
-dfg("nx", _gb.notExactMatches);
-dfg("xnm", _gb.exactlyNotMatches);
+const sm = same;
+const df = differ;
 
-dfg("ev", _gb.equals);
-dfg("nev", _gb.notEquals);
-dfg("sm", _gb.same);
-dfg("df", _gb.different);
+const xv = exact;
+const nxv = notExact;
+const xnv = exactlyNot;
+const xm = exactMatches;
+const nx = notExactMatches;
+const xnm = exactlyNotMatches;
 
-dfg("gtv", _gb.getherThan);
-dfg("ltv", _gb.lessThan);
-dfg("ngt", _gb.notGetherThan);
-dfg("nlt", _gb.notLessThan);
+const ev = equals;
+const nev = notEquals;
 
-dfg("gev", _gb.getherOrEquals);
-dfg("lev", _gb.lessOrEquels);
-dfg("nge", _gb.notGetherAndEquals);
-dfg("nle", _gb.notLessAndEquals);
+const gtv = gatherThan;
+const ltv = lessThan;
+const ngt = notGatherThan;
+const nlt = notLessThan;
 
-dfg("fc", _gb.isFalseCase);
-dfg("nfc", _gb.isNotFalseCase);
+const gev = gatherOrEquals;
+const lev = lessOrEquals;
+const nge = notGatherAndEquals;
+const nle = notLessAndEquals;
 
-dfg("xu", _gb.isUndefined);
-dfg("xn", _gb.isNull);
-dfg("xt", _gb.isExactTrue);
-dfg("xf", _gb.isExactFalse);
+const fc = isFalseCase;
+const nfc = isNotFalseCase;
 
-dfg("nxu", _gb.isNotUndefined);
-dfg("nxn", _gb.isNotNull);
-dfg("nxt", _gb.isNotTrue);
-dfg("nxf", _gb.isNotFalse);
+const xu = isUndefined;
+const xn = isNull;
+const xt = isExactTrue;
+const xf = isExactFalse;
 
-dfg("en", _gb.isNully);
-dfg("et", _gb.isTruely);
-dfg("ef", _gb.isFalsely);
-dfg("ee", _gb.isEmpty);
+const nxu = isNotUndefined;
+const nxn = isNotNull;
+const nxt = isNotTrue;
+const nxf = isNotFalse;
 
-dfg("nn", _gb.isNotNully);
-dfg("nt", _gb.isNotTruely);
-dfg("nf", _gb.isNotFalsely);
-dfg("ne", _gb.isNotEmpty);
+const en = isNully;
+const et = isTruely;
+const ef = isFalsely;
+const ee = isEmpty;
 
-dfg("noe", _gb.isNullOrEmpty);
-dfg("nne", _gb.isNotNullAndEmpty);
+const nn = isNotNully;
+const nt = isNotTruely;
+const nf = isNotFalsely;
+const ne = isNotEmpty;
+
+const noe = isNullOrEmpty;
+const nne = isNotNullAndEmpty;
 
 
 // quick execute by conditions constant
-dfg("inoe", _gb.ifNullOrEmpty);
-dfg("inne", _gb.ifNotNullAndEmpty);
+const inoe = ifNullOrEmpty;
+const inne = ifNotNullAndEmpty;
 
 
 // do and return inline double takes
-dfg("dr", _gb.doAndReturn);
-dfg("drx", _gb.doAndReturnByExecute);
+const dr = doAndReturn;
+const drx = doAndReturnByExecute;
 
 
 // object method shortcut constant
-dfg("ok", _gb.keysOf);
-dfg("ov", _gb.valuesOf);
-dfg("oe", _gb.entriesOf);
-dfg("oc", _gb.countOf);
+const ok = keysOf;
+const ov = valuesOf;
+const oe = entriesOf;
+const oc = countOf;
 
-dfg("occ", _gb.checkCount);
+const occ = checkCount;
 
 
 // match case constant
-dfg("mc", _gb.matchCase);
-dfg("ec", _gb.equalCase);
-dfg("xc", _gb.exactCase);
-dfg("tc", _gb.typeCase);
-dfg("cc", _gb.classCase);
-dfg("kc", _gb.kindCase);
+const mc = matchCase;
+const ec = equalCase;
+const xc = exactCase;
+const tc = typeCase;
+const cc = classCase;
+const kc = kindCase;
 
 
 /** variable data copy */
-dfg("cp", _gb.copy);
-dfg("mk", _gb.mock);
-dfg("mm", _gb.mimic);
-dfg("tw", _gb.twin);
-dfg("cn", _gb.clone);
+const cp = copy;
+const mk = mock;
+const mm = mimic;
+const tw = twin;
+const cn = clone;
 
-dfg("pc", _gb.patch);
-dfg("ow", _gb.overwrite);
-dfg("tk", _gb.takeover);
-dfg("aq", _gb.acquire);
-dfg("ih", _gb.inherit);
+const pc = patch;
+const ow = overwrite;
+const tk = takeover;
+const aq = acquire;
+const ih = inherit;
 
-dfg("rv", _gb.revert);
+const rv = revert;
 
 
 /** run handle */
-dfg("pq", _gb.postQueue);
-dfg("pd", _gb.postDelayed);
-dfg("pp", _gb.postPromise);
-dfg("pb", _gb.postBonded);
-dfg("ppq", _gb.postPromiseQueue);
-dfg("paq", _gb.postAsyncQueue);
-dfg("pwq", _gb.postAwaitQueue);
-dfg("pfq", _gb.postFrameQueue);
-dfg("pfp", _gb.postFramePromise);
+const pq = postQueue;
+const pd = postDelayed;
+const pp = postPromise;
+const pb = postBonded;
+const ppq = postPromiseQueue;
+const paq = postAsyncQueue;
+const pwq = postAwaitQueue;
+const pfq = postFrameQueue;
+const pfp = postFramePromise;
 
 
 // Object function shortcut constants
-dfg("dsp", _gb.defineStaticProperty);
-dfg("dp", _gb.defineProperty);
-dfg("dpx", _gb.definePropertyPlex);
-dfg("dspgs", _gb.defineStaticGetterAndSetter);
-dfg("dpgs", _gb.defineGetterAndSetter);
-dfg("dpgsx", _gb.defineGetterAndSetterPlex);
+const dsp = defineStaticProperty;
+const dp = defineProperty;
+const dpx = definePropertyPlex;
+const dspgs = defineStaticGetterAndSetter;
+const dpgs = defineGetterAndSetter;
+const dpgsx = defineGetterAndSetterPlex;
+
+
+// Regex builder alias
+const rx = (regex, flags) => new RegExp(regex, flags);
+const reg = rx;
+const ri = regex => new RegExp(regex, "i");
+const rg = regex => new RegExp(regex, "g");
+const rm = regex => new RegExp(regex, "m");
+const rig = regex => new RegExp(regex, "ig");
+const rim = regex => new RegExp(regex, "im");
+const rgm = regex => new RegExp(regex, "gm");
+const rigm = regex => new RegExp(regex, "igm");
 
 
 // additional static function for classes
@@ -446,50 +457,50 @@ defineStaticGetterAndSetter(dt, "msd", function () { return this.ms.string.padSt
 
 
 // additional global prototype functions
-definePropertyPlex("mc", function () { return _gb.matchCase(this.it, ...arguments); });
-definePropertyPlex("ec", function () { return _gb.equalCase(this.it, ...arguments); });
-definePropertyPlex("xc", function () { return _gb.exactCase(this.it, ...arguments); });
-definePropertyPlex("tc", function () { return _gb.typeCase(this.it, ...arguments); });
-definePropertyPlex("cc", function () { return _gb.classCase(this.it, ...arguments); });
-definePropertyPlex("kc", function () { return _gb.kindCase(this.it, ...arguments); });
+definePropertyPlex("mc", function () { return matchCase(this.it, ...arguments); });
+definePropertyPlex("ec", function () { return equalCase(this.it, ...arguments); });
+definePropertyPlex("xc", function () { return exactCase(this.it, ...arguments); });
+definePropertyPlex("tc", function () { return typeCase(this.it, ...arguments); });
+definePropertyPlex("cc", function () { return classCase(this.it, ...arguments); });
+definePropertyPlex("kc", function () { return kindCase(this.it, ...arguments); });
 
-definePropertyPlex("ee", function (process = it => it, ornot = it => it, numberEmptyMatch = 0) { return _gb.isEmpty(this.it, numberEmptyMatch) ? process(this.it) : ornot(this.it); });
-definePropertyPlex("ne", function (process = it => it, ornot = it => it, numberEmptyMatch = 0) { return _gb.isNotEmpty(this.it, numberEmptyMatch) ? process(this.it) : ornot(this.it); });
+definePropertyPlex("ee", function (process = it => it, ornot = it => it, numberEmptyMatch = 0) { return isEmpty(this.it, numberEmptyMatch) ? process(this.it) : ornot(this.it); });
+definePropertyPlex("ne", function (process = it => it, ornot = it => it, numberEmptyMatch = 0) { return isNotEmpty(this.it, numberEmptyMatch) ? process(this.it) : ornot(this.it); });
 
-definePropertyPlex("dr", function (does = (it, args) => {}, returns, args = []) { return _gb.doAndReturn(does, returns, [this.it, ...args]); });
-definePropertyPlex("drx", function (does = (it, args) => {}, forReturns, args = []) { return _gb.doAndReturnByExecute(does, forReturns, [this.it, ...args]); });
+definePropertyPlex("dr", function (does = (it, args) => {}, returns, args = []) { return doAndReturn(does, returns, [this.it, ...args]); });
+definePropertyPlex("drx", function (does = (it, args) => {}, forReturns, args = []) { return doAndReturnByExecute(does, forReturns, [this.it, ...args]); });
 
-defineGetterAndSetter(obj, "ok", function () { return _gb.keysOf(this.it); });
-defineGetterAndSetter(obj, "ov", function () { return _gb.valuesOf(this.it); });
-defineGetterAndSetter(obj, "oe", function () { return _gb.entriesOf(this.it); });
-defineGetterAndSetter(obj, "oc", function () { return _gb.countOf(this.it); });
-defineGetterAndSetter(obj, "occ", function () { return _gb.checkCount(this.it, (k, v) => true); });
+defineGetterAndSetter(obj, "ok", function () { return keysOf(this.it); });
+defineGetterAndSetter(obj, "ov", function () { return valuesOf(this.it); });
+defineGetterAndSetter(obj, "oe", function () { return entriesOf(this.it); });
+defineGetterAndSetter(obj, "oc", function () { return countOf(this.it); });
+defineGetterAndSetter(obj, "occ", function () { return checkCount(this.it, (k, v) => true); });
 
-defineProperty(obj, "fk", function (work = key => { return false; }) { return _gb.forof(this.it.ways, work); });
-defineProperty(obj, "fv", function (work = value => { return false; }) { return _gb.forof(this.it.looks, work); });
-defineProperty(obj, "fe", function (work = (key, value) => { return false; }) { return _gb.forkv(this.it.entire, work); });
-defineProperty(obj, "fkv", function (work = (key, value) => { return false; }) { return _gb.forkv(this.it.entire, work); });
+defineProperty(obj, "fk", function (work = key => { return false; }) { return forof(this.it.ways, work); });
+defineProperty(obj, "fv", function (work = value => { return false; }) { return forof(this.it.looks, work); });
+defineProperty(obj, "fe", function (work = (key, value) => { return false; }) { return forkv(this.it.entire, work); });
+defineProperty(obj, "fkv", function (work = (key, value) => { return false; }) { return forkv(this.it.entire, work); });
 
 defineProperty(obj, "ko", function (value) { for (const [key, val] of this.it.entire) if (val === value) return key; return undefined; });
 
 defineProperty(obj, "tiw", function (key, process = (value, key, host) => value, ornot = (key, host) => host[key]) { return key in this.it ? process(this.it[key], key, this.it) : ornot(key, this.it); });
 
-defineProperty(obj, "cp", function (dataOnly = true, primitiveOnly = false, recusive = true) { return _gb.copy(this, dataOnly, primitiveOnly, recusive); });
-defineGetterAndSetter(obj, "mk", function () { return _gb.mock(this); });
-defineGetterAndSetter(obj, "mm", function () { return _gb.mimic(this); });
-defineGetterAndSetter(obj, "tw", function () { return _gb.twin(this); });
-defineGetterAndSetter(obj, "cl", function () { return _gb.clone(this); });
+defineProperty(obj, "cp", function (dataOnly = true, primitiveOnly = false, recusive = true) { return copy(this, dataOnly, primitiveOnly, recusive); });
+defineGetterAndSetter(obj, "mk", function () { return mock(this); });
+defineGetterAndSetter(obj, "mm", function () { return mimic(this); });
+defineGetterAndSetter(obj, "tw", function () { return twin(this); });
+defineGetterAndSetter(obj, "cl", function () { return clone(this); });
 
-defineProperty(obj, "pc", function (from, dataOnly = true, primitiveOnly = false, recusive = true, append = false) { return _gb.patch(this.it, from, dataOnly, primitiveOnly, recusive, append); });
-defineProperty(obj, "ow", function (from) { return _gb.overwrite(this.it, from); });
-defineProperty(obj, "to", function (from) { return _gb.takeover(this.it, from); });
-defineProperty(obj, "aq", function (from) { return _gb.acquire(this.it, from); });
-defineProperty(obj, "ih", function (from) { return _gb.inherit(this.it, from); });
+defineProperty(obj, "pc", function (from, dataOnly = true, primitiveOnly = false, recusive = true, append = false) { return patch(this.it, from, dataOnly, primitiveOnly, recusive, append); });
+defineProperty(obj, "ow", function (from) { return overwrite(this.it, from); });
+defineProperty(obj, "tk", function (from) { return takeover(this.it, from); });
+defineProperty(obj, "aq", function (from) { return acquire(this.it, from); });
+defineProperty(obj, "ih", function (from) { return inherit(this.it, from); });
 
-defineProperty(obj, "rv", function (from, dataOnly = true, primitiveOnly = false, recusive = true, exceptNew = false) { return _gb.revert(this.it, from, dataOnly, primitiveOnly, recusive, exceptNew); });
+defineProperty(obj, "rv", function (from, dataOnly = true, primitiveOnly = false, recusive = true, exceptNew = false) { return revert(this.it, from, dataOnly, primitiveOnly, recusive, exceptNew); });
 
-definePropertyPlex("ifeq", function (that, process = it => it, ornot = it => {}) { return this.let(it => _gb.executeIf(it == that, process, [it], ornot)); });
-definePropertyPlex("ifneq", function (that, process = it => it, ornot = it => {}) { return this.let(it => _gb.executeIf(it != that, process, [it], ornot)); });
+definePropertyPlex("ifeq", function (that, process = it => it, ornot = it => {}) { return this.let(it => executeIf(it == that, process, [it], ornot)); });
+definePropertyPlex("ifneq", function (that, process = it => it, ornot = it => {}) { return this.let(it => executeIf(it != that, process, [it], ornot)); });
 
 
 // additional primitive prototype functions
@@ -574,14 +585,372 @@ defineGetterAndSetter(dt, "hmsa", function () { return this.it.timeStringArray; 
 defineGetterAndSetter(dt, "hms", function () { return this.it.timeString; });
 
 
+// Bind to global when not a browser
+if (typeof window === U) {
+    dfg("_0", _0);
+    dfg("_1", _1);
+    dfg("_2", _2);
+    dfg("_3", _3);
+    dfg("_4", _4);
+    dfg("_5", _5);
+    dfg("_6", _6);
+    dfg("_7", _7);
+    dfg("_8", _8);
+    dfg("_9", _9);
 
-// Regex builder alias
-dfg("rx", (regex, flags) => new RegExp(regex, flags));
-dfg("reg", _gb.rx);
-dfg("ri", regex => new RegExp(regex, "i"));
-dfg("rg", regex => new RegExp(regex, "g"));
-dfg("rm", regex => new RegExp(regex, "m"));
-dfg("rig", regex => new RegExp(regex, "ig"));
-dfg("rim", regex => new RegExp(regex, "im"));
-dfg("rgm", regex => new RegExp(regex, "gm"));
-dfg("rigm", regex => new RegExp(regex, "igm"));
+    dfg("_a", _a);
+    dfg("_b", _b);
+    dfg("_c", _c);
+    dfg("_d", _d);
+    dfg("_e", _e);
+    dfg("_f", _f);
+    dfg("_g", _g);
+    dfg("_h", _h);
+    dfg("_i", _i);
+    dfg("_j", _j);
+    dfg("_k", _k);
+    dfg("_l", _l);
+    dfg("_m", _m);
+    dfg("_n", _n);
+    dfg("_o", _o);
+    dfg("_p", _p);
+    dfg("_q", _q);
+    dfg("_r", _r);
+    dfg("_s", _s);
+    dfg("_t", _t);
+    dfg("_u", _u);
+    dfg("_v", _v);
+    dfg("_w", _w);
+    dfg("_x", _x);
+    dfg("_y", _y);
+    dfg("_z", _z);
+
+    dfg("_A", _A);
+    dfg("_B", _B);
+    dfg("_C", _C);
+    dfg("_D", _D);
+    dfg("_E", _E);
+    dfg("_F", _F);
+    dfg("_G", _G);
+    dfg("_H", _H);
+    dfg("_I", _I);
+    dfg("_J", _J);
+    dfg("_K", _K);
+    dfg("_L", _L);
+    dfg("_M", _M);
+    dfg("_N", _N);
+    dfg("_O", _O);
+    dfg("_P", _P);
+    dfg("_Q", _Q);
+    dfg("_R", _R);
+    dfg("_S", _S);
+    dfg("_T", _T);
+    dfg("_U", _U);
+    dfg("_V", _V);
+    dfg("_W", _W);
+    dfg("_X", _X);
+    dfg("_Y", _Y);
+    dfg("_Z", _Z);
+
+
+    dfg("lr", lr);
+    dfg("rr", rr);
+    dfg("lc", lc);
+    dfg("rc", rc);
+    dfg("ls", ls);
+    dfg("rs", rs);
+    dfg("lt", lt);
+    dfg("gt", gt);
+    dfg("ab", ab);
+    dfg("cb", cb);
+    dfg("ti", ti);
+    dfg("ep", ep);
+    dfg("em", em);
+    dfg("at", at);
+    dfg("ds", ds);
+    dfg("ms", ms);
+    dfg("ps", ps);
+    dfg("cf", cf);
+    dfg("ak", ak);
+    dfg("mp", mp);
+    dfg("ad", ad);
+    dfg("add", add);
+    dfg("hp", hp);
+    dfg("sr", sr);
+    dfg("srr", srr);
+    dfg("us", us);
+    dfg("eq", eq);
+    dfg("vl", vl);
+    dfg("bs", bs);
+    dfg("ss", ss);
+    dfg("dv", dv);
+    dfg("qm", qm);
+    dfg("nl", nl);
+    dfg("le", le);
+    dfg("ge", ge);
+    dfg("fa", fa);
+    dfg("fs", fs);
+    dfg("fm", fm);
+    dfg("fd", fd);
+    dfg("sq", sq);
+    dfg("dq", dq);
+    dfg("gv", gv);
+    dfg("cl", cl);
+    dfg("sc", sc);
+    dfg("cm", cm);
+    dfg("es", es);
+    dfg("l", l);
+    dfg("s", s);
+    dfg("i", i);
+    dfg("d", d);
+
+    dfg("cr", cr);
+    dfg("lf", lf);
+    dfg("crlf", crlf);
+    dfg("lfcr", lfcr);
+    dfg("tab", tab);
+
+    dfg("ecr", ecr);
+    dfg("elf", elf);
+    dfg("ecrlf", ecrlf);
+    dfg("elfcr", elfcr);
+    dfg("etab", etab);
+
+
+    dfg("U", U);
+    dfg("N", N);
+    dfg("T", T);
+    dfg("F", F);
+
+    dfg("u", u);
+    dfg("n", n);
+    dfg("t", t);
+    dfg("f", f);
+
+    dfg("eoo", eoo);
+    dfg("eoa", eoa);
+
+    dfg("FNC", FNC);
+    dfg("BLE", BLE);
+    dfg("STR", STR);
+    dfg("SYM", SYM);
+    dfg("NUM", NUM);
+    dfg("BIG", BIG);
+    dfg("OBJ", OBJ);
+
+    dfg("fun", fun);
+    dfg("ble", ble);
+    dfg("str", str);
+    dfg("sym", sym);
+    dfg("num", num);
+    dfg("big", big);
+    dfg("obj", obj);
+
+    dfg("FN", FN);
+    dfg("BL", BL);
+    dfg("ST", ST);
+    dfg("SY", SY);
+    dfg("NO", NO);
+    dfg("BI", BI);
+    dfg("OJ", OJ);
+
+    dfg("fn", fn);
+    dfg("bl", bl);
+    dfg("sg", sg);
+    dfg("sl", sl);
+    dfg("no", no);
+    dfg("bi", bi);
+    dfg("oj", oj);
+
+
+    dfg("DT", DT);
+
+    dfg("RA", RA);
+    dfg("SA", SA);
+    dfg("MA", MA);
+
+    dfg("dt", dt);
+
+    dfg("ra", ra);
+    dfg("sa", sa);
+    dfg("ma", ma);
+
+
+    dfg("def", def);
+    dfg("fin", fin);
+
+
+    dfg("x", x);
+
+
+    dfg("ifx", ifx);
+    dfg("itx", itx);
+
+    dfg("ifr", ifr);
+
+    dfg("roen", roen);
+    dfg("roes", roes);
+    dfg("roea", roea);
+    dfg("roeo", roeo);
+
+    dfg("val", val);
+
+
+    dfg("f02b", f02b);
+    dfg("f02r", f02r);
+
+    dfg("f20", f20);
+    dfg("f21", f21);
+
+    dfg("ff", ff);
+    dfg("fb", fb);
+
+    dfg("fi", fi);
+    dfg("fiv", fiv);
+
+    dfg("fo", fo);
+    dfg("fkv", fkv);
+
+    dfg("w", w);
+    dfg("dw", dw);
+
+
+    dfg("to", to);
+
+    dfg("tm", tm);
+
+    dfg("tu", tu);
+    dfg("tf", tf);
+    dfg("tb", tb);
+    dfg("ts", ts);
+    dfg("ty", ty);
+    dfg("tn", tn);
+    dfg("tg", tg);
+    dfg("tj", tj);
+
+    dfg("im", im);
+    dfg("io", io);
+    dfg("ia", ia);
+    dfg("ioa", ioa);
+    dfg("ios", ios);
+    dfg("ion", ion);
+    dfg("iot", iot);
+    dfg("iop", iop);
+
+    dfg("sm", sm);
+    dfg("df", df);
+
+    dfg("xv", xv);
+    dfg("nxv", nxv);
+    dfg("xnv", xnv);
+    dfg("xm", xm);
+    dfg("nx", nx);
+    dfg("xnm", xnm);
+
+    dfg("ev", ev);
+    dfg("nev", nev);
+
+    dfg("gtv", gtv);
+    dfg("ltv", ltv);
+    dfg("ngt", ngt);
+    dfg("nlt", nlt);
+
+    dfg("gev", gev);
+    dfg("lev", lev);
+    dfg("nge", nge);
+    dfg("nle", nle);
+
+    dfg("fc", fc);
+    dfg("nfc", nfc);
+
+    dfg("xu", xu);
+    dfg("xn", xn);
+    dfg("xt", xt);
+    dfg("xf", xf);
+
+    dfg("nxu", nxu);
+    dfg("nxn", nxn);
+    dfg("nxt", nxt);
+    dfg("nxf", nxf);
+
+    dfg("en", en);
+    dfg("et", et);
+    dfg("ef", ef);
+    dfg("ee", ee);
+
+    dfg("nn", nn);
+    dfg("nt", nt);
+    dfg("nf", nf);
+    dfg("ne", ne);
+
+    dfg("noe", noe);
+    dfg("nne", nne);
+
+
+    dfg("inoe", inoe);
+    dfg("inne", inne);
+
+
+    dfg("dr", dr);
+    dfg("drx", drx);
+
+
+    dfg("ok", ok);
+    dfg("ov", ov);
+    dfg("oe", oe);
+    dfg("oc", oc);
+
+    dfg("occ", occ);
+
+    dfg("mc", mc);
+    dfg("ec", ec);
+    dfg("xc", xc);
+    dfg("tc", tc);
+    dfg("cc", cc);
+    dfg("kc", kc);
+
+
+    dfg("cp", cp);
+    dfg("mk", mk);
+    dfg("mm", mm);
+    dfg("tw", tw);
+    dfg("cn", cn);
+
+    dfg("pc", pc);
+    dfg("ow", ow);
+    dfg("tk", tk);
+    dfg("aq", aq);
+    dfg("ih", ih);
+
+    dfg("rv", rv);
+
+
+    dfg("pq", pq);
+    dfg("pd", pd);
+    dfg("pp", pp);
+    dfg("pb", pb);
+    dfg("ppq", ppq);
+    dfg("paq", paq);
+    dfg("pwq", pwq);
+    dfg("pfq", pfq);
+    dfg("pfp", pfp);
+
+
+    dfg("dsp", dsp);
+    dfg("dp", dp);
+    dfg("dpx", dpx);
+    dfg("dspgs", dspgs);
+    dfg("dpgs", dpgs);
+    dfg("dpgsx", dpgsx);
+
+
+    dfg("rx", rx);
+    dfg("reg", reg);
+    dfg("ri", ri);
+    dfg("rg", rg);
+    dfg("rm", rm);
+    dfg("rig", rig);
+    dfg("rim", rim);
+    dfg("rgm", rgm);
+    dfg("rigm", rigm);
+}

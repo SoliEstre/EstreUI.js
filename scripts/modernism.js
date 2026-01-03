@@ -26,121 +26,119 @@ SOFTWARE.
 
 */
 
-// Modernism.js - Estre Modernism javscript patch //
+// Modernism.js - Estre Modernism javascript patch //
 // 
 // Collections of bypass for process codes takes be inline,
 // and monkey patching like as modern languages.
 // 
-// v0.5.2    / release 2026.01.01
+// v0.6.0    / release 2026.01.03
 // 
 // Author: Estre Soliette
 // Established: 2025.01.05
 
 
-let _global = (typeof globalThis !== 'undefined') ? globalThis : (typeof window !== 'undefined' ? window : global);
-let defineGlobal = (name, value) => {
-    Object.defineProperty(_global, name, {
-        value: value,
-        writable: false,
-        configurable: false,
-        enumerable: false
-    });
-};
+const _global = (typeof globalThis !== 'undefined') ? globalThis : (typeof window !== 'undefined' ? window : global);
+const defineGlobal = (name, value) => Object.defineProperty(_global, name, {
+    value: value,
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
 
 // primitive types alias constant
-defineGlobal("UNDEFINED", "undefined");
-defineGlobal("NULL", "null");
-defineGlobal("TRUE", "true");
-defineGlobal("FALSE", "false");
+const UNDEFINED = "undefined";
+const NULL = "null";
+const TRUE = "true";
+const FALSE = "false";
 
 // prototype of primitive types alias constant
-defineGlobal("FUNCTION", "function");
-defineGlobal("BOOLEAN", "boolean");
-defineGlobal("STRING", "string");
-defineGlobal("SYMBOL", "symbol");
-defineGlobal("NUMBER", "number");
-defineGlobal("BIGINT", "bigint");
-defineGlobal("OBJECT", "object");
+const FUNCTION = "function";
+const BOOLEAN = "boolean";
+const STRING = "string";
+const SYMBOL = "symbol";
+const NUMBER = "number";
+const BIGINT = "bigint";
+const OBJECT = "object";
 
 // class names of primitive types constant
-defineGlobal("_FUNCTION", "Function");
-defineGlobal("_BOOLEAN", "Boolean");
-defineGlobal("_STRING", "String");
-defineGlobal("_SYMBOL", "Symbol");
-defineGlobal("_NUMBER", "Number");
-defineGlobal("_BIG_INT", "BigInt");
-defineGlobal("_OBJECT", "Object");
+const _FUNCTION = "Function";
+const _BOOLEAN = "Boolean";
+const _STRING = "String";
+const _SYMBOL = "Symbol";
+const _NUMBER = "Number";
+const _BIG_INT = "BigInt";
+const _OBJECT = "Object";
 
 // frequent object types alias constant
-defineGlobal("_DATE", "Date");
+const _DATE = "Date";
 
-defineGlobal("_ARRAY", "Array");
-defineGlobal("_SET", "Set");
-defineGlobal("_MAP", "Map");
+const _ARRAY = "Array";
+const _SET = "Set";
+const _MAP = "Map";
 
 
 // frequent assign types alias constant
-defineGlobal("DEFAULT", "default");
-defineGlobal("FINALLY", "finally");
+const DEFAULT = "default";
+const FINALLY = "finally";
 
 
 // bypass constant
-defineGlobal("executeIf", (bool, work = () => {}, args = [], ornot = () => {}) => {
+const executeIf = (bool, work = () => {}, args = [], ornot = () => {}) => {
     if (bool) return work(...args);
     else return ornot(...args);
-});
-defineGlobal("executeWhen", (args = [], isTrue = args => 1 == "0", work = args => {}, ornot = () => {}) => {
+};
+const executeWhen = (args = [], isTrue = args => 1 == "0", work = args => {}, ornot = () => {}) => {
     if (isTrue(...args)) return work(...args);
     else return ornot(...args);
-});
+};
 
-defineGlobal("ifReturn", (bool, returns, orNot) => bool ? returns : orNot);
+const ifReturn = (bool, returns, orNot) => bool ? returns : orNot;
 
-defineGlobal("ifReturnOrEmptyNumber", (bool, returns) => ifReturn(bool, returns, 0));
-defineGlobal("ifReturnOrEmptyString", (bool, returns) => ifReturn(bool, returns, ""));
-defineGlobal("ifReturnOrEmptyArray", (bool, returns) => ifReturn(bool, returns, []));
-defineGlobal("ifReturnOrEmptyObject", (bool, returns) => ifReturn(bool, returns, {}));
+const ifReturnOrEmptyNumber = (bool, returns) => ifReturn(bool, returns, 0);
+const ifReturnOrEmptyString = (bool, returns) => ifReturn(bool, returns, "");
+const ifReturnOrEmptyArray = (bool, returns) => ifReturn(bool, returns, []);
+const ifReturnOrEmptyObject = (bool, returns) => ifReturn(bool, returns, {});
 
-defineGlobal("valet", (value, process = it => it) => process(value));
+const valet = (value, process = it => it) => process(value);
 
 
 // common process shortcut constant
-defineGlobal("forZeroToBefore", (toward, work = i => { return false; }) => {
+const forZeroToBefore = (toward, work = i => { return false; }) => {
     for (let i=0; i<toward; i++) if (work(i)) break;
-});
-defineGlobal("forZeroToReach", (toward, work = i => { return false; }) => {
+};
+const forZeroToReach = (toward, work = i => { return false; }) => {
     for (let i=0; i<=toward; i++) if (work(i)) break;
-});
+};
 
-defineGlobal("forToZeroFrom", (begins, work = i => { return false; }) => {
+const forToZeroFrom = (begins, work = i => { return false; }) => {
     for (let i=begins; i>=0; i--) if (work(i)) break;
-});
-defineGlobal("forToPrimeFrom", (begins, work = i => { return false; }) => {
+};
+const forToPrimeFrom = (begins, work = i => { return false; }) => {
     for (let i=begins; i>0; i--) if (work(i)) break;
-});
+};
 
-defineGlobal("forForward", (from, work = i => { return false; }) => {
+const forForward = (from, work = i => { return false; }) => {
     for (let i=0; i<from.length; i++) if (work(i, from[i])) break;
-});
-defineGlobal("forBackward", (from, work = i => { return false; }) => {
+};
+const forBackward = (from, work = i => { return false; }) => {
     for (let i=from.length-1; i>=0; i--) if (work(i, from[i])) break;
-});
+};
 
-defineGlobal("forin", (from, work = (k, v) => { return false; }) => {
+const forin = (from, work = (k, v) => { return false; }) => {
     for (const k in from) if (work(k, from[k])) break;
-});
-defineGlobal("forinner", (from, work = v => { return false; }) => {
+};
+const forinner = (from, work = v => { return false; }) => {
     for (const k in from) if (work(from[k])) break;
-});
+};
 
-defineGlobal("forof", (from, work = v => { return false; }) => {
+const forof = (from, work = v => { return false; }) => {
     for (const v of from) if (work(v)) break;
-});
-defineGlobal("forkv", (from, work = (k, v) => { return false; }) => {
+};
+const forkv = (from, work = (k, v) => { return false; }) => {
     for (const [k, v] of Object.entries(from)) if (work(k, v)) break;
-});
+};
 
-defineGlobal("whileIn", function (cond = function (self) { return true; }, work = function (self, count) { return false; }, self = {}) {
+const whileIn = function (cond = function (self) { return true; }, work = function (self, count) { return false; }, self = {}) {
     forinner(self, (i, v) => this[i] = v);
     this.origin = self;
     this.cond = cond;
@@ -148,8 +146,8 @@ defineGlobal("whileIn", function (cond = function (self) { return true; }, work 
     let count = 0;
     while (this.cond(this)) if (this.work(this, count++)) break;
     return this;
-});
-defineGlobal("doWhileIn", function (cond = function (self) { return true; }, work = function (self, count) { return false; }, self = {}) {
+};
+const doWhileIn = function (cond = function (self) { return true; }, work = function (self, count) { return false; }, self = {}) {
     forinner(self, (i, v) => this[i] = v);
     this.origin = self;
     this.cond = cond;
@@ -158,73 +156,73 @@ defineGlobal("doWhileIn", function (cond = function (self) { return true; }, wor
     do if (this.work(this, count++)) break;
     while (this.cond(this));
     return this;
-});
+};
 
 
 // meaning comparator constant
-defineGlobal("typeOf", it => it === null ? NULL : typeof it);
+const typeOf = it => it === null ? NULL : typeof it;
 
-defineGlobal("typeMatch", (it, type) => typeOf(it) == type);
+const typeMatch = (it, type) => typeOf(it) == type;
 
-defineGlobal("typeUndefined", it => typeMatch(it, UNDEFINED));
-defineGlobal("typeFunction", it => typeMatch(it, FUNCTION));
-defineGlobal("typeBoolean", it => typeMatch(it, BOOLEAN));
-defineGlobal("typeString", it => typeMatch(it, STRING));
-defineGlobal("typeSymbol", it => typeMatch(it, SYMBOL));
-defineGlobal("typeNumber", it => typeMatch(it, NUMBER));
-defineGlobal("typeBigint", it => typeMatch(it, BIGINT));
-defineGlobal("typeObject", it => typeMatch(it, OBJECT));
-defineGlobal("typeNull", it => typeMatch(it, NULL));
+const typeUndefined = it => typeMatch(it, UNDEFINED);
+const typeFunction = it => typeMatch(it, FUNCTION);
+const typeBoolean = it => typeMatch(it, BOOLEAN);
+const typeString = it => typeMatch(it, STRING);
+const typeSymbol = it => typeMatch(it, SYMBOL);
+const typeNumber = it => typeMatch(it, NUMBER);
+const typeBigint = it => typeMatch(it, BIGINT);
+const typeObject = it => typeMatch(it, OBJECT);
+const typeNull = it => typeMatch(it, NULL);
 
-defineGlobal("instanceMatch", (it, cls = Object) => it instanceof cls);
-defineGlobal("isObject", it => instanceMatch(it) && it !== null);
-defineGlobal("isArray", it => instanceMatch(it, Array));
-defineGlobal("isString", it => instanceMatch(it, String));
-defineGlobal("isNumber", it => instanceMatch(it, Number));
-defineGlobal("isSet", it => instanceMatch(it, Set));
-defineGlobal("isMap", it => instanceMatch(it, Map));
+const instanceMatch = (it, cls = Object) => it instanceof cls;
+const isObject = it => instanceMatch(it) && it !== null;
+const isArray = it => instanceMatch(it, Array);
+const isString = it => instanceMatch(it, String);
+const isNumber = it => instanceMatch(it, Number);
+const isSet = it => instanceMatch(it, Set);
+const isMap = it => instanceMatch(it, Map);
 
-defineGlobal("same", (a, b) => JSON.stringify(a) === JSON.stringify(b));
-defineGlobal("different", (a, b) => JSON.stringify(a) !== JSON.stringify(b));
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+const differ = (a, b) => JSON.stringify(a) !== JSON.stringify(b);
 
-defineGlobal("exact", (...values) => values.reduce((accrue, value, index, array) => array[index-1] === value ? true : array.splice(index + 1) && false));
-defineGlobal("notExact", (...values) => values.reduce((accrue, value, index, array) => array[index-1] !== value ? !(array.splice(index + 1) && false) : false));
-defineGlobal("exactlyNot", (...values) => { let match = undefined; forToPrimeFrom(values.length - 1, i => !(match = values.includes(values.pop()))); return !match; });
-defineGlobal("exactMatches", _global.exact);
-defineGlobal("notExactMatches", _global.notExact);
-defineGlobal("exactlyNotMatches", _global.exactlyNot);
+const exact = (...values) => values.reduce((accrue, value, index, array) => array[index-1] === value ? true : array.splice(index + 1) && false);
+const notExact = (...values) => values.reduce((accrue, value, index, array) => array[index-1] !== value ? !(array.splice(index + 1) && false) : false);
+const exactlyNot = (...values) => { let match = undefined; forToPrimeFrom(values.length - 1, i => !(match = values.includes(values.pop()))); return !match; };
+const exactMatches = exact;
+const notExactMatches = notExact;
+const exactlyNotMatches = exactlyNot;
 
-defineGlobal("equals", (a, b) => a == b);
-defineGlobal("notEquals", (a, b) => a != b);
+const equals = (a, b) => a == b;
+const notEquals = (a, b) => a != b;
 
-defineGlobal("getherThan", (a, b) => a > b);
-defineGlobal("lessThan", (a, b) => a < b);
-defineGlobal("notGetherThan", (a, b) => !(a > b));
-defineGlobal("notLessThan", (a, b) => !(a < b));
+const gatherThan = (a, b) => a > b;
+const lessThan = (a, b) => a < b;
+const notGatherThan = (a, b) => !(a > b);
+const notLessThan = (a, b) => !(a < b);
 
-defineGlobal("getherOrEquals", (a, b) => a >= b);
-defineGlobal("lessOrEquels", (a, b) => a <= b);
-defineGlobal("notGetherAndEquals", (a, b) => !(a >= b));
-defineGlobal("notLessAndEquals", (a, b) => !(a <= b));
+const gatherOrEquals = (a, b) => a >= b;
+const lessOrEquals = (a, b) => a <= b;
+const notGatherAndEquals = (a, b) => !(a >= b);
+const notLessAndEquals = (a, b) => !(a <= b);
 
-defineGlobal("isFalseCase", it => !it);
-defineGlobal("isTrueCase", it => !!it);
-defineGlobal("isNotFalseCase", it => !!it);
+const isFalseCase = it => !it;
+const isTrueCase = it => !!it;
+const isNotFalseCase = it => !!it;
 
-defineGlobal("isUndefined", it => it === undefined);
-defineGlobal("isNull", it => it === null);
-defineGlobal("isExactTrue", it => it === true);
-defineGlobal("isExactFalse", it => it === false);
+const isUndefined = it => it === undefined;
+const isNull = it => it === null;
+const isExactTrue = it => it === true;
+const isExactFalse = it => it === false;
 
-defineGlobal("isNotUndefined", it => it !== undefined);
-defineGlobal("isNotNull", it => it !== null);
-defineGlobal("isNotTrue", it => it !== true);
-defineGlobal("isNotFalse", it => it !== false);
+const isNotUndefined = it => it !== undefined;
+const isNotNull = it => it !== null;
+const isNotTrue = it => it !== true;
+const isNotFalse = it => it !== false;
 
-defineGlobal("isNully", it => it == null);
-defineGlobal("isTruely", it => it == true);
-defineGlobal("isFalsely", it => it == false);
-defineGlobal("isEmpty", (it, numberEmptyMatch = 0) => typeCase(it, {
+const isNully = it => it == null;
+const isTruely = it => it == true;
+const isFalsely = it => it == false;
+const isEmpty = (it, numberEmptyMatch = 0) => typeCase(it, {
     [UNDEFINED]: _ => true,
     [NULL]: _ => true,
     [BOOLEAN]: v => !!v <= numberEmptyMatch,
@@ -240,46 +238,46 @@ defineGlobal("isEmpty", (it, numberEmptyMatch = 0) => typeCase(it, {
         }
         return keys.length <= numberEmptyMatch
     },
-}));
+});
 
-defineGlobal("isNotNully", it => it != null);
-defineGlobal("isNotTruely", it => it != true);
-defineGlobal("isNotFalsely", it => it != false);
-defineGlobal("isNotEmpty", (it, numberEmptyMatch = 0) => !isEmpty(it, numberEmptyMatch));
+const isNotNully = it => it != null;
+const isNotTruely = it => it != true;
+const isNotFalsely = it => it != false;
+const isNotEmpty = (it, numberEmptyMatch = 0) => !isEmpty(it, numberEmptyMatch);
 
-defineGlobal("isNullOrEmpty", (it, numberEmptyMatch = 0) => isNully(it) || isEmpty(it, numberEmptyMatch));
-defineGlobal("isNotNullAndEmpty", (it, numberEmptyMatch = 0) => isNotNully(it) && isNotEmpty(it, numberEmptyMatch));
+const isNullOrEmpty = (it, numberEmptyMatch = 0) => isNully(it) || isEmpty(it, numberEmptyMatch);
+const isNotNullAndEmpty = (it, numberEmptyMatch = 0) => isNotNully(it) && isNotEmpty(it, numberEmptyMatch);
 
 
 // quick execute by conditions constant
-defineGlobal("ifNullOrEmpty", (val, work = () => {}, ornot = () => {}, numberEmptyMatch = 0) => executeIf(isNullOrEmpty(val, numberEmptyMatch), work, [], ornot));
-defineGlobal("ifNotNullAndEmpty", (val, work = () => {}, ornot = () => {}, numberEmptyMatch = 0) => executeIf(isNotNullAndEmpty(val, numberEmptyMatch), work, [], ornot));
+const ifNullOrEmpty = (val, work = () => {}, ornot = () => {}, numberEmptyMatch = 0) => executeIf(isNullOrEmpty(val, numberEmptyMatch), work, [], ornot);
+const ifNotNullAndEmpty = (val, work = () => {}, ornot = () => {}, numberEmptyMatch = 0) => executeIf(isNotNullAndEmpty(val, numberEmptyMatch), work, [], ornot);
 
 
 // do and return inline double takes
-defineGlobal("doAndReturn", (does = (...args) => {}, returns, args = []) => { does(...args); return returns; });
-defineGlobal("doAndReturnByExecute", (does = (...args) => {}, forReturns = (...args) => {}, args = []) => { does(...args); return forReturns(...arg); });
+const doAndReturn = (does = (...args) => {}, returns, args = []) => { does(...args); return returns; };
+const doAndReturnByExecute = (does = (...args) => {}, forReturns = (...args) => {}, args = []) => { does(...args); return forReturns(...arg); };
 
 
 // object method shortcut constant
-defineGlobal("keysOf", (object) => Object.keys(object));
-defineGlobal("waysOf", keysOf);
-defineGlobal("valuesOf", (object) => Object.values(object));
-defineGlobal("looksOf", valuesOf);
-defineGlobal("entriesOf", (object) => Object.entries(object));
-defineGlobal("entireOf", entriesOf);
-defineGlobal("countOf", (object) => keysOf(object).length);
-defineGlobal("casesOf", countOf);
+const keysOf = (object) => Object.keys(object);
+const waysOf = keysOf;
+const valuesOf = (object) => Object.values(object);
+const looksOf = valuesOf;
+const entriesOf = (object) => Object.entries(object);
+const entireOf = entriesOf;
+const countOf = (object) => keysOf(object).length;
+const casesOf = countOf;
 
-defineGlobal("checkCount", (object, checker = (k, v) => true) => {
+const checkCount = (object, checker = (k, v) => true) => {
     let count = 0;
     forin(entriesOf(object), ([k, v]) => executeIf(checker(k, v), _ => count++));
     return count;
-});
+};
 
 
 // match case constant
-defineGlobal("matchCase", (val, cases = { [DEFAULT]: val => {}, [FINALLY]: (val, returns) => {} }, ignoreCase = false) => {
+const matchCase = (val, cases = { [DEFAULT]: val => {}, [FINALLY]: (val, returns) => {} }, ignoreCase = false) => {
     let match;
     forin(cases, (k, v) => executeIf(k != DEFAULT && rx(k, ignoreCase ? "i" : "").test(val), () => doAndReturn(() => match = v, true)));
     const defaultCase = cases[DEFAULT];
@@ -287,8 +285,8 @@ defineGlobal("matchCase", (val, cases = { [DEFAULT]: val => {}, [FINALLY]: (val,
     const returns = isNotNully(match) ? (typeFunction(match) ? match(val) : match) : (typeFunction(defaultCase) ? defaultCase(val) : defaultCase);
     const returnFinal = typeFunction(finallyCase) ? finallyCase(val, returns) : finallyCase;
     return isUndefined(returnFinal) ? returns : returns ?? returnFinal;
-});
-defineGlobal("equalCase", (val, cases = { [DEFAULT]: val => {}, [FINALLY]: (val, returns) => {} }, ignoreCase = false) => {
+};
+const equalCase = (val, cases = { [DEFAULT]: val => {}, [FINALLY]: (val, returns) => {} }, ignoreCase = false) => {
     let match;
     const vlc = typeOf(val) == STRING ? val.toLowerCase() : val;
     forin(cases, (k, v) => executeIf(k != DEFAULT && (ignoreCase ? (typeOf(k) == STRING ? k.toLowerCase() : k) == vlc : k == val), () => doAndReturn(() => match = v, true)));
@@ -297,16 +295,16 @@ defineGlobal("equalCase", (val, cases = { [DEFAULT]: val => {}, [FINALLY]: (val,
     const returns = isNotNully(match) ? (typeFunction(match) ? match(val) : match) : (typeFunction(defaultCase) ? defaultCase(val) : defaultCase);
     const returnFinal = typeFunction(finallyCase) ? finallyCase(val, returns) : finallyCase;
     return isUndefined(returnFinal) ? returns : returns ?? returnFinal;
-});
-defineGlobal("exactCase", (val, cases = { [DEFAULT]: val => {}, [FINALLY]: (val, returns) => {} }) => {
+};
+const exactCase = (val, cases = { [DEFAULT]: val => {}, [FINALLY]: (val, returns) => {} }) => {
     const match = cases[val];
     const defaultCase = cases[DEFAULT];
     const finallyCase = cases[FINALLY];
     const returns = isNotNully(match) ? (typeFunction(match) ? match(val) : match) : (typeFunction(defaultCase) ? defaultCase(val) : defaultCase);
     const returnFinal = typeFunction(finallyCase) ? finallyCase(val, returns) : finallyCase;
     return isUndefined(returnFinal) ? returns : returns ?? returnFinal;
-});
-defineGlobal("typeCase", (variable, cases = { [DEFAULT]: variable => {}, [FINALLY]: (variable, returns) => {} }) => {
+};
+const typeCase = (variable, cases = { [DEFAULT]: variable => {}, [FINALLY]: (variable, returns) => {} }) => {
     const type = typeOf(variable);
     const match = cases[type];
     const defaultCase = cases[DEFAULT];
@@ -314,8 +312,8 @@ defineGlobal("typeCase", (variable, cases = { [DEFAULT]: variable => {}, [FINALL
     const returns = isNotNully(match) ? (typeFunction(match) ? match(variable) : match) : (typeFunction(defaultCase) ? defaultCase(variable) : defaultCase);
     const returnFinal = typeFunction(finallyCase) ? finallyCase(variable, returns) : finallyCase;
     return isUndefined(returnFinal) ? returns : returns ?? returnFinal;
-});
-defineGlobal("classCase", (object, cases = { [DEFAULT]: object => {}, [FINALLY]: (object, returns) => {} }) => {
+};
+const classCase = (object, cases = { [DEFAULT]: object => {}, [FINALLY]: (object, returns) => {} }) => {
     const className = object.constructor.name;
     const match = cases[className];
     const defaultCase = cases[DEFAULT];
@@ -323,12 +321,12 @@ defineGlobal("classCase", (object, cases = { [DEFAULT]: object => {}, [FINALLY]:
     const returns = isNotNully(match) ? (typeFunction(match) ? match(object) : match) : (typeFunction(defaultCase) ? defaultCase(object) : defaultCase);
     const returnFinal = typeFunction(finallyCase) ? finallyCase(object, returns) : finallyCase;
     return isUndefined(returnFinal) ? returns : returns ?? returnFinal;
-});
-defineGlobal("kindCase", (kindFrom, cases = { [DEFAULT]: val => {}, [FINALLY]: val => { val, returns } }) => typeCase(kindFrom, { ...cases, [OBJECT]: () => classCase(kindFrom, { ...cases, [FINALLY]: undefined }) }));
+};
+const kindCase = (kindFrom, cases = { [DEFAULT]: val => {}, [FINALLY]: val => { val, returns } }) => typeCase(kindFrom, { ...cases, [OBJECT]: () => classCase(kindFrom, { ...cases, [FINALLY]: undefined }) });
 
 
 /** variable data copy */
-defineGlobal("copy", (from, dataOnly = true, primitiveOnly = false, recusive = true) => isNully(from) ? from : typeCase(from, {
+const copy = (from, dataOnly = true, primitiveOnly = false, recusive = true) => isNully(from) ? from : typeCase(from, {
     [OBJECT]: val => {
         const object = new val.constructor();
         if (dataOnly || primitiveOnly) {
@@ -341,18 +339,18 @@ defineGlobal("copy", (from, dataOnly = true, primitiveOnly = false, recusive = t
         return object;
     },
     [DEFAULT]: val => val
-}));
+});
 /** Object data only shallow copy */
-defineGlobal("mock", from => copy(from, true, false, true));
+const mock = from => copy(from, true, false, true);
 /** Object data only deep copy */
-defineGlobal("mimic", from => copy(from, true, false, true));
+const mimic = from => copy(from, true, false, true);
 /** Object functional shallow copy */
-defineGlobal("twin", from => copy(from, false, false, false));
+const twin = from => copy(from, false, false, false);
 /** Object functional deep copy */
-defineGlobal("clone", from => copy(from, false, false, true));
+const clone = from => copy(from, false, false, true);
 
 /** object data patch */
-defineGlobal("patch", (to, from, dataOnly = true, primitiveOnly = false, recusive = true, append = false) => {
+const patch = (to, from, dataOnly = true, primitiveOnly = false, recusive = true, append = false) => {
     if (!append) for (const key in to) if (typeUndefined(from[key]) && typeCase(to[key], {
         [FUNCTION]: _ => !dataOnly,
         [OBJECT]: _ => !primitiveOnly,
@@ -374,17 +372,17 @@ defineGlobal("patch", (to, from, dataOnly = true, primitiveOnly = false, recusiv
         [DEFAULT]: val => to[key] = val
     });
     return to;
-});
+};
 /** object data overwrite */
-defineGlobal("overwrite", (to, from) => patch(to, from, false, false, true, false));
+const overwrite = (to, from) => patch(to, from, false, false, true, false);
 /** object data takeover */
-defineGlobal("takeover", (to, from) => patch(to, from, false, false, true, true));
+const takeover = (to, from) => patch(to, from, false, false, true, true);
 /** object data acquire */
-defineGlobal("acquire", (to, from) => patch(to, from, true, false, true, false));
+const acquire = (to, from) => patch(to, from, true, false, true, false);
 /** object data inherit */
-defineGlobal("inherit", (to, from) => patch(to, from, true, false, true, true));
+const inherit = (to, from) => patch(to, from, true, false, true, true);
 
-defineGlobal("revert", (to, from, dataOnly = true, primitiveOnly = false, recusive = true, exceptNew = false) => {
+const revert = (to, from, dataOnly = true, primitiveOnly = false, recusive = true, exceptNew = false) => {
     fromKeys = keysOf(from);
     toKeys = keysOf(to);
     scanKeys = exceptNew ? fromKeys : [...new Set([...fromKeys, ...toKeys])];
@@ -407,31 +405,31 @@ defineGlobal("revert", (to, from, dataOnly = true, primitiveOnly = false, recusi
         [OBJECT]: _ => !primitiveOnly,
         [DEFAULT]: _ => true
     })) delete to[key];
-});
+};
 
 
 /** run handle */
-defineGlobal("postQueue", (process = (...args) => args[0], ...args) => setTimeout(process, 0, ...args));
-defineGlobal("postDelayed", (process = (...args) => args[0], delay = 100, ...args) => setTimeout(process, delay, ...args));
-defineGlobal("postPromise", (process = (rs, rj, ...args) => rs(args[0]), ...args) => new Promise((rs, rj) => process(rs, rj, ...args)));
-defineGlobal("postBonded", (process = (rs, rj, ...args) => rs(args[0]), delay = 100, ...args) => new Promise((rs, rj) => setTimeout(process, delay, rs, rj, ...args)));
-defineGlobal("postPromiseQueue", (process = (rs, rj, ...args) => rs(args[0]), ...args) => new Promise((rs, rj) => setTimeout(process, 0, rs, rj, ...args)));
-defineGlobal("postAsyncQueue", (process = async (...args) => args[0], ...args) => process(...args));
-defineGlobal("postAwaitQueue", async (process = async (...args) => args[0], ...args) => await process(...args));
-defineGlobal("postFrameQueue", (process = (...args) => args[0], ...args) => requestAnimationFrame(() => process(...args)));
-defineGlobal("postFramePromise", (process = (rs, rj, ...args) => rs(args[0]), ...args) => new Promise((rs, rj) => requestAnimationFrame(() => process(rs, rj, ...args))));
+const postQueue = (process = (...args) => args[0], ...args) => setTimeout(process, 0, ...args);
+const postDelayed = (process = (...args) => args[0], delay = 100, ...args) => setTimeout(process, delay, ...args);
+const postPromise = (process = (rs, rj, ...args) => rs(args[0]), ...args) => new Promise((rs, rj) => process(rs, rj, ...args));
+const postBonded = (process = (rs, rj, ...args) => rs(args[0]), delay = 100, ...args) => new Promise((rs, rj) => setTimeout(process, delay, rs, rj, ...args));
+const postPromiseQueue = (process = (rs, rj, ...args) => rs(args[0]), ...args) => new Promise((rs, rj) => setTimeout(process, 0, rs, rj, ...args));
+const postAsyncQueue = (process = async (...args) => args[0], ...args) => process(...args);
+const postAwaitQueue = async (process = async (...args) => args[0], ...args) => await process(...args);
+const postFrameQueue = (process = (...args) => args[0], ...args) => requestAnimationFrame(() => process(...args));
+const postFramePromise = (process = (rs, rj, ...args) => rs(args[0]), ...args) => new Promise((rs, rj) => requestAnimationFrame(() => process(rs, rj, ...args)));
 
 
 // Object function shortcut constants
-defineGlobal("defineStaticProperty", (cls, name, value, wa = true, ca = true, ea = false, extras = {}) => Object.defineProperty(cls, name, {
+const defineStaticProperty = (cls, name, value, wa = true, ca = true, ea = false, extras = {}) => Object.defineProperty(cls, name, {
     value,
     writable: wa,
     configurable: ca,
     enumerable: ea,
     ...extras,
-}));
-defineGlobal("defineProperty", (cls, name, value, wa = true, ca = true, ea = false, extras = {}) => defineStaticProperty(cls.prototype, name, value, wa, ca, ea, extras));
-// obj.defineProperty(cls.prototype, name, {
+});
+const defineProperty = (cls, name, value, wa = true, ca = true, ea = false, extras = {}) => defineStaticProperty(cls.prototype, name, value, wa, ca, ea, extras);
+// Object.defineProperty(cls.prototype, name, {
 //     // get value() { return tc(value, {
 //     //     // [FUNCTION]: it => it,//function (...args) { return (value.bind(this))(...args); },
 //     //     // [DEFAULT]: it => cls(it),
@@ -447,21 +445,21 @@ defineGlobal("defineProperty", (cls, name, value, wa = true, ca = true, ea = fal
 //     enumerable: ea,
 //     ...extras,
 // });
-defineGlobal("definePropertyPlex", (name, value, wa = true, ca = true, ea = false, classes = [Object, Function, String, Number, Boolean, BigInt], extras = {}) => forof(classes, cls => defineProperty(cls, name, value, wa, ca, ea, extras)));
-defineGlobal("ESTRE_MODERNISM_COMPATIBILITY_PREFIX", "__emcp_");
-defineGlobal("defineStaticGetterAndSetter", (cls, name, gets, sets, ca = true, ea = false, extras = {}) => Object.defineProperty(cls, name, {
+const definePropertyPlex = (name, value, wa = true, ca = true, ea = false, classes = [Object, Function, String, Number, Boolean, BigInt], extras = {}) => forof(classes, cls => defineProperty(cls, name, value, wa, ca, ea, extras));
+const ESTRE_MODERNISM_COMPATIBILITY_PREFIX = "__emcp_";
+const defineStaticGetterAndSetter = (cls, name, gets, sets, ca = true, ea = false, extras = {}) => Object.defineProperty(cls, name, {
     "get": function () { return isNotUndefined(this[ESTRE_MODERNISM_COMPATIBILITY_PREFIX + name]) ? this[ESTRE_MODERNISM_COMPATIBILITY_PREFIX + name] : gets.bind(this)() },
     "set": function (val) { if (isUndefined(sets)) this[ESTRE_MODERNISM_COMPATIBILITY_PREFIX + name] = val; else sets.bind(this)(val); },
     configurable: ca,
     enumerable: ea,
     ...extras,
-}));
-defineGlobal("defineGetterAndSetter", (cls, name, gets, sets, ca = true, ea = false, extras = {}) => defineStaticGetterAndSetter(cls.prototype, name, gets, sets, ca, ea, extras));
-defineGlobal("defineGetterAndSetterPlex", (name, gets, sets, ca = true, ea = false, classes = [Object, Function, String, Number, Boolean, BigInt], extras = {}) => forof(classes, cls => defineGetterAndSetter(cls, name, gets, sets, ca, ea, extras)));
+});
+const defineGetterAndSetter = (cls, name, gets, sets, ca = true, ea = false, extras = {}) => defineStaticGetterAndSetter(cls.prototype, name, gets, sets, ca, ea, extras);
+const defineGetterAndSetterPlex = (name, gets, sets, ca = true, ea = false, classes = [Object, Function, String, Number, Boolean, BigInt], extras = {}) => forof(classes, cls => defineGetterAndSetter(cls, name, gets, sets, ca, ea, extras));
 
 
 // additional static function for classes
-defineStaticGetterAndSetter(Object, "new", function () { return new this.constructor(...arguments); });
+defineGetterAndSetter(Object, "new", function () { return new this.constructor(...arguments); });
 
 
 // additional global prototype functions
@@ -620,3 +618,204 @@ defineGetterAndSetter(Date, "hourMinutesArray", function () { return [this.it.ho
 defineGetterAndSetter(Date, "hourMinutes", function () { return this.it.hourMinutesArray.join(":"); });
 defineGetterAndSetter(Date, "timeStringArray", function () { return [this.it.hours.digit2, this.it.minutes.digit2, this.it.seconds.digit2]; });
 defineGetterAndSetter(Date, "timeString", function () { return this.it.timeStringArray.join(":"); });
+
+
+
+// Bind to global when not a browser
+if (typeof window === UNDEFINED) {
+    defineGlobal("UNDEFINED", UNDEFINED);
+    defineGlobal("NULL", NULL);
+    defineGlobal("TRUE", TRUE);
+    defineGlobal("FALSE", FALSE);
+    
+    defineGlobal("FUNCTION", FUNCTION);
+    defineGlobal("BOOLEAN", BOOLEAN);
+    defineGlobal("STRING", STRING);
+    defineGlobal("SYMBOL", SYMBOL);
+    defineGlobal("NUMBER", NUMBER);
+    defineGlobal("BIGINT", BIGINT);
+    defineGlobal("OBJECT", OBJECT);
+
+    defineGlobal("_FUNCTION", _FUNCTION);
+    defineGlobal("_BOOLEAN", _BOOLEAN);
+    defineGlobal("_STRING", _STRING);
+    defineGlobal("_SYMBOL", _SYMBOL);
+    defineGlobal("_NUMBER", _NUMBER);
+    defineGlobal("_BIG_INT", _BIG_INT);
+    defineGlobal("_OBJECT", _OBJECT);
+    
+    defineGlobal("_DATE", _DATE);
+
+    defineGlobal("_ARRAY", _ARRAY);
+    defineGlobal("_SET", _SET);
+    defineGlobal("_MAP", _MAP);
+
+
+    defineGlobal("DEFAULT", DEFAULT);
+    defineGlobal("FINALLY", FINALLY);
+
+
+    defineGlobal("executeIf", executeIf);
+    defineGlobal("executeWhen", executeWhen);
+
+    defineGlobal("ifReturn", ifReturn);
+
+    defineGlobal("ifReturnOrEmptyNumber", ifReturnOrEmptyNumber);
+    defineGlobal("ifReturnOrEmptyString", ifReturnOrEmptyString);
+    defineGlobal("ifReturnOrEmptyArray", ifReturnOrEmptyArray);
+    defineGlobal("ifReturnOrEmptyObject", ifReturnOrEmptyObject);
+
+    defineGlobal("valet", valet);
+
+
+    defineGlobal("forZeroToBefore", forZeroToBefore);
+    defineGlobal("forZeroToReach", forZeroToReach);
+
+    defineGlobal("forToZeroFrom", forToZeroFrom);
+    defineGlobal("forToPrimeFrom", forToPrimeFrom);
+
+    defineGlobal("forForward", forForward);
+    defineGlobal("forBackward", forBackward);
+
+    defineGlobal("forin", forin);
+    defineGlobal("forinner", forinner);
+
+    defineGlobal("forof", forof);
+    defineGlobal("forkv", forkv);
+
+    defineGlobal("whileIn", whileIn);
+    defineGlobal("doWhileIn", doWhileIn);
+
+    defineGlobal("typeOf", typeOf);
+
+    defineGlobal("typeMatch", typeMatch);
+
+    defineGlobal("typeUndefined", typeUndefined);
+    defineGlobal("typeFunction", typeFunction);
+    defineGlobal("typeBoolean", typeBoolean);
+    defineGlobal("typeString", typeString);
+    defineGlobal("typeSymbol", typeSymbol);
+    defineGlobal("typeNumber", typeNumber);
+    defineGlobal("typeBigint", typeBigint);
+    defineGlobal("typeObject", typeObject);
+    defineGlobal("typeNull", typeNull);
+
+    defineGlobal("instanceMatch", instanceMatch);
+    defineGlobal("isObject", isObject);
+    defineGlobal("isArray", isArray);
+    defineGlobal("isString", isString);
+    defineGlobal("isNumber", isNumber);
+    defineGlobal("isSet", isSet);
+    defineGlobal("isMap", isMap);
+
+    defineGlobal("same", same);
+    defineGlobal("differ", differ);
+
+    defineGlobal("exact", exact);
+    defineGlobal("notExact", notExact);
+    defineGlobal("exactlyNot", exactlyNot);
+    defineGlobal("exactMatches", exactMatches);
+    defineGlobal("notExactMatches", notExactMatches);
+    defineGlobal("exactlyNotMatches", exactlyNotMatches);
+
+    defineGlobal("equals", equals);
+    defineGlobal("notEquals", notEquals);
+
+    defineGlobal("gatherThan", gatherThan);
+    defineGlobal("lessThan", lessThan);
+    defineGlobal("notGatherThan", notGatherThan);
+    defineGlobal("notLessThan", notLessThan);
+
+    defineGlobal("gatherOrEquals", gatherOrEquals);
+    defineGlobal("lessOrEquals", lessOrEquals);
+    defineGlobal("notGatherAndEquals", notGatherAndEquals);
+    defineGlobal("notLessAndEquals", notLessAndEquals);
+
+    defineGlobal("isFalseCase", isFalseCase);
+    defineGlobal("isTrueCase", isTrueCase);
+    defineGlobal("isNotFalseCase", isNotFalseCase);
+
+    defineGlobal("isUndefined", isUndefined);
+    defineGlobal("isNull", isNull);
+    defineGlobal("isExactTrue", isExactTrue);
+    defineGlobal("isExactFalse", isExactFalse);
+
+    defineGlobal("isNotUndefined", isNotUndefined);
+    defineGlobal("isNotNull", isNotNull);
+    defineGlobal("isNotTrue", isNotTrue);
+    defineGlobal("isNotFalse", isNotFalse);
+
+    defineGlobal("isNully", isNully);
+    defineGlobal("isTruely", isTruely);
+    defineGlobal("isFalsely", isFalsely);
+    defineGlobal("isEmpty", isEmpty);
+
+    defineGlobal("isNotNully", isNotNully);
+    defineGlobal("isNotTruely", isNotTruely);
+    defineGlobal("isNotFalsely", isNotFalsely);
+    defineGlobal("isNotEmpty", isNotEmpty);
+
+    defineGlobal("isNullOrEmpty", isNullOrEmpty);
+    defineGlobal("isNotNullAndEmpty", isNotNullAndEmpty);
+
+
+    defineGlobal("ifNullOrEmpty", ifNullOrEmpty);
+    defineGlobal("ifNotNullAndEmpty", ifNotNullAndEmpty);
+
+
+    defineGlobal("doAndReturn", doAndReturn);
+    defineGlobal("doAndReturnByExecute", doAndReturnByExecute);
+
+
+    defineGlobal("keysOf", keysOf);
+    defineGlobal("waysOf", waysOf);
+    defineGlobal("valuesOf", valuesOf);
+    defineGlobal("looksOf", looksOf);
+    defineGlobal("entriesOf", entriesOf);
+    defineGlobal("entireOf", entireOf);
+    defineGlobal("countOf", countOf);
+    defineGlobal("casesOf", casesOf);
+
+    defineGlobal("checkCount", checkCount);
+
+
+    defineGlobal("matchCase", matchCase);
+    defineGlobal("equalCase", equalCase);
+    defineGlobal("exactCase", exactCase);
+    defineGlobal("typeCase", typeCase);
+    defineGlobal("classCase", classCase);
+    defineGlobal("kindCase", kindCase);
+
+    defineGlobal("copy", copy);
+    defineGlobal("mock", mock);
+    defineGlobal("mimic", mimic);
+    defineGlobal("twin", twin);
+    defineGlobal("clone", clone);
+
+    defineGlobal("patch", patch);
+    defineGlobal("overwrite", overwrite);
+    defineGlobal("takeover", takeover);
+    defineGlobal("acquire", acquire);
+    defineGlobal("inherit", inherit);
+
+    defineGlobal("revert", revert);
+
+
+    defineGlobal("postQueue", postQueue);
+    defineGlobal("postDelayed", postDelayed);
+    defineGlobal("postPromise", postPromise);
+    defineGlobal("postBonded", postBonded);
+    defineGlobal("postPromiseQueue", postPromiseQueue);
+    defineGlobal("postAsyncQueue", postAsyncQueue);
+    defineGlobal("postAwaitQueue", postAwaitQueue);
+    defineGlobal("postFrameQueue", postFrameQueue);
+    defineGlobal("postFramePromise", postFramePromise);
+
+    defineGlobal("defineStaticProperty", defineStaticProperty);
+    defineGlobal("defineProperty", defineProperty);
+    defineGlobal("definePropertyPlex", definePropertyPlex);
+    defineGlobal("ESTRE_MODERNISM_COMPATIBILITY_PREFIX", ESTRE_MODERNISM_COMPATIBILITY_PREFIX);
+    defineGlobal("defineStaticGetterAndSetter", defineStaticGetterAndSetter);
+    defineGlobal("defineGetterAndSetter", defineGetterAndSetter);
+    defineGlobal("defineGetterAndSetterPlex", defineGetterAndSetterPlex);
+}
