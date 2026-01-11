@@ -13,7 +13,7 @@ EstreUI is not just a library, nor a full-blown framework in the traditional sen
 
 ### Target Audience
 *   **Classic Web Developers**: If you are comfortable with jQuery, ASP, PHP, or JSP but want to build modern, single-page applications (SPA) with mobile-app-like experiences, EstreUI is for you.
-*   **Native App Developers**: If you are moving from Android or iOS development to the web, you will find EstreUI's lifecycle events (`onCreate`, `onShow`, `onPause` equivalent) and intent system very familiar.
+*   **Native App Developers**: If you are moving from Android or iOS development to the web, you will find EstreUI's lifecycle events (`onCreate`, `onStart`, `onResume` equivalent) and intent system very familiar.
 
 ### Key Features
 *   **MVC Pattern**: Structured separation of concerns.
@@ -278,7 +278,7 @@ EstreUI는 단순한 라이브러리도, 전통적인 의미의 완전한 프레
 
 ### 타겟 독자
 *   **클래식 웹 개발자**: jQuery, ASP, PHP, JSP에 익숙하지만 모바일 앱과 같은 경험을 제공하는 현대적인 SPA(Single Page Application)를 구축하고 싶은 분.
-*   **네이티브 앱 개발자**: Android나 iOS 개발에서 웹으로 전환하려는 분들에게 EstreUI의 라이프사이클 이벤트(`onCreate`, `onShow`, `onPause` 등과 유사)와 인텐트 시스템은 매우 친숙할 것입니다.
+*   **네이티브 앱 개발자**: Android나 iOS 개발에서 웹으로 전환하려는 분들에게 EstreUI의 라이프사이클 이벤트(`onCreate`, `onStart`, `onResume` 등과 유사)와 인텐트 시스템은 매우 친숙할 것입니다.
 
 ### 주요 특징
 *   **MVC 패턴**: 관심사의 구조적 분리.
