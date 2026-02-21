@@ -217,6 +217,9 @@ const m = {
     get st() { return "style"; },
     get ph() { return "placeholder"; },
     get t() { return "title"; },
+    get u() { return "value"; },
+    get vl() { return "value"; },
+    get val() { return "value"; },
 };
 
 // Tag type case constants
@@ -297,15 +300,40 @@ const g = {
 }
 
 
-// CSS combinator constants
-const c = {
-    get a() { return ad; },
-    get b() { return s; },
-    get c() { return gt; },
-    get d() { return s; },
-    get g() { return ti; },
-    get w() { return ak; },
-};
+// CSS combinator/operator/option constants and Characters loopback (2 letters and more)
+const c = new Proxy({
+    get a() { return ad; }, // next sibling combinator
+    get b() { return s; }, // descendant combinator
+    get c() { return gt; }, // child combinator
+    get d() { return s; }, // descendant combinator
+    get e() { return wq; }, // equal operator
+    get f() { return ak; }, // contains operator
+    get g() { return ti; }, // subsequent sibling combinator / contains match operator
+    get h() { return vl; }, // head match operator
+    get i() { return _i; }, // ignore case option
+    get j() { return ; }, // *reserved*
+    get k() { return ; }, // *reserved*
+    get l() { return vl + vl; }, // column combinator
+    get m() { return ; }, // *reserved*
+    get n() { return ad; }, // next sibling combinator
+    get o() { return ; }, // *reserved*
+    get p() { return cf; }, // prefix match operator
+    get q() { return ; }, // *reserved*
+    get r() { return ; }, // *reserved*
+    get s() { return ds; }, // suffix match operator
+    get t() { return _s; }, // strict case option
+    get u() { return ; }, // *reserved*
+    get v() { return ; }, // *reserved*
+    get w() { return ak; }, // contains operator
+    get x() { return ; }, // *reserved*
+    get y() { return ; }, // *reserved*
+    get z() { return ; }, // *reserved*
+}, {
+    get: (target, prop) => {
+        if (prop in target) return target[prop];
+        else return prop;
+    }
+});
 
 // CSS group constant
 const cor = l;
@@ -862,6 +890,28 @@ class EsLocale {
             "secondPrefix": "",
             "secondSuffix": "",
 
+
+            "yearsSuffix": "years",
+            "monthsSuffix": "months",
+            "weeksSuffix": "weeks",
+            "daysSuffix": "days",
+            "yearsShortSuffix": "y",
+            "monthsShortSuffix": "m",
+            "weeksShortSuffix": "w",
+            "daysShortSuffix": "d",
+
+            "hoursSuffix": "hours",
+            "minutesSuffix": "minutes",
+            "secondsSuffix": "seconds",
+            "hoursShortSuffix": "h",
+            "minutesShortSuffix": "m",
+            "secondsShortSuffix": "s",
+
+            "just": "just",
+            "ago": "ago",
+            "now": "now",
+
+
             "yearly": "Yearly",
             "monthly": "Monthly",
             "weekly": "Weekly",
@@ -934,6 +984,29 @@ class EsLocale {
             "minuteSuffix": "분",
             "secondPrefix": "",
             "secondSuffix": "초",
+
+
+            "yearsSuffix": "년",
+            "monthsSuffix": "개월",
+            "weeksSuffix": "주",
+            "daysSuffix": "일",
+            "yearsShortSuffix": "년",
+            "monthsShortSuffix": "개월",
+            "weeksShortSuffix": "주",
+            "daysShortSuffix": "일",
+
+            "hoursSuffix": "시간",
+            "minutesSuffix": "분",
+            "secondsSuffix": "초",
+            "hoursShortSuffix": "시간",
+            "minutesShortSuffix": "분",
+            "secondsShortSuffix": "초",
+
+            "just": "방금",
+            "ago": "전",
+            "now": "지금",
+
+
 
             "yearly": "연간",
             "monthly": "월간",

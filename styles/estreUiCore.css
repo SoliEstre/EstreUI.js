@@ -190,5 +190,6 @@ main#instantDoc > section > div.container:not(:is([data-on-top^="1"], [data-on-t
 main#instantDoc > section > div.container:not([data-on-top="1"]) { opacity: 0; }
 main#instantDoc > section > div.container > article { }
 main#instantDoc > section > div.container > article[data-on-top="1"] { z-index: 201; }
+main#instantDoc > section > div.container > article:has(.appbar_pad.fixed_pad) { padding-top: 0; }
 main#instantDoc > section > div.container > .container_master_float { z-index: 212; }
 

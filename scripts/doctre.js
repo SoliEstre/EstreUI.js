@@ -30,7 +30,7 @@ SOFTWARE.
 // 
 // Cold(array object) assigning of HTML Tree for make to JSON string.
 // 
-// v1.1.0 / release 2025.12.10
+// v1.1.1 / release 2026.02.20
 // 
 // cold = [] - Cold HTML child node list
 // cold[0] - Tag name, classes, id, name, type = "tag.class1.class2#id@name$type" : string
@@ -178,6 +178,12 @@ class Doctre {
         return jsonContent;
     }
 
+    static copyPrimitives(obj) {
+        return Object.fromEntries(
+            Object.entries(obj).filter(([, v]) => v !== Object(v))
+        );
+    }
+
     static matchReplace(frostOrString, matchReplacer = {}) {
         if (typeof frostOrString != "string") return this.matchReplaceObject(frostOrString, matchReplacer);
 
@@ -198,7 +204,11 @@ class Doctre {
                         forReplaced = replacer(key);
                         break;
                     case "object":
-                        forReplaced = JSON.stringify(replacer);
+                        try {
+                            forReplaced = JSON.stringify(replacer);
+                        } catch (error) {
+                            forReplaced = JSON.stringify(this.copyPrimitives(replacer));
+                        }
                         break;
                     default:
                         forReplaced = "" + replacer;
@@ -221,7 +231,11 @@ class Doctre {
                                 forReplaced = replacer(match);
                                 break;
                             case "object":
-                                forReplaced = JSON.stringify(replacer);
+                                try {
+                                    forReplaced = JSON.stringify(replacer);
+                                } catch (error) {
+                                    forReplaced = JSON.stringify(this.copyPrimitives(replacer));
+                                }
                                 break;
                             default:
                                 forReplaced = "" + replacer;

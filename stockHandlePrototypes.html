@@ -116,7 +116,7 @@
             <template data-handle="dedicatedCalendar" class="dedicated_calendar">
                 <div class="calendar_block">
                     <div class="micro_calendar" data-stretchable="" data-collapsed="">
-                        <div class="calendar_structure" data-structure-type="weekfloor" data-bound-y="" data-bound-m="" data-bound-w="" data-today-y="" data-today-m="" data-today-w="" data-today-d="" data-focus-y="" data-focus-m="" data-focus-w="" data-focus-d="" data-hide-weekage="1" data-hide-weekend="">
+                        <div class="calendar_structure" data-structure-type="weekfloor" data-bound-y="" data-bound-m="" data-bound-w="" data-today-y="" data-today-m="" data-today-w="" data-today-d="" data-focus-y="" data-focus-m="" data-focus-w="" data-focus-d="" data-hide-weekage="1" data-hide-weekend="" data-show-pointer-days-subject="" data-show-pointer-days="" data-show-pointer-selected="">
                             <div class="days_subjects">
                                 <div class="days_holder">
                                     <div class="days">
@@ -164,6 +164,18 @@
                     <div class="lines_block" data-tab-id="">
                     </div>
                 </div>
+            </template>
+            <template data-handle="multiDialSlot" class="multi_dial_slot">
+                <ul class="dialHolder">
+                    <li class="dial_bound" data-index="|boundIndex|">
+                        <div class="prefix"><span></span></div>
+                        <ul class="dial_host">
+                            <li data-index="|index|"><span>|value|</span></li>
+                        </ul>
+                        <div class="suffix"><span></span></div>
+                    </li>
+                    <li class="divider" data-offset="|offset|"><span></span></li>
+                </ul>
             </template>
         </article>
         <!-- end of stock prototypes -->

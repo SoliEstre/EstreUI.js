@@ -20,6 +20,9 @@ const uis = {
     dotlottieLoader: "dotlottie-loader",
 
     // rim ui //
+    prefix: ".prefix",
+    suffix: ".suffix",
+    divider: ".divider",
     
     // component //
     container: ".container",
@@ -158,6 +161,20 @@ const uis = {
     paddedDate: ".padded_date",
     shortDay: ".short_day",
 
+    // live timestamp
+    liveTimestamp: "[data-live-timestamp]",
+
+
+    // on click set text
+    onClickSetText: "[data-on-click-set-text]",
+
+    // on click set html
+    onClickSetHtml: "[data-on-click-set-html]",
+
+
+    // help alert
+    dataHelpAlert: "[data-help-alert]",
+
     // num keypad
     numKeypad: ".num_keypad",
 
@@ -170,6 +187,12 @@ const uis = {
     // toaster slot
     toasterSlot: ".toaster_slot",
 
+    // multi dial slot
+    multiDialSlot: ".multi_dial_slot",
+    dialHolder: ".dialHolder",
+    dialBound: ".dial_bound",
+    dialHost: ".dial_host",
+    
 
     // exported content
     exportedContent: ".exported_content",
@@ -313,6 +336,8 @@ const eds = {
     options: "data-options",
     code: "data-code",
     value: "data-value",
+    align: "data-align",
+    initial: "data-initial",
     intersectionRootMargin: "data-intersection-root-margin",
     intersectionThreshold: "data-intersection-threshold",
 
@@ -402,10 +427,30 @@ const eds = {
     withPrefix: "data-with-prefix",
     withSuffix: "data-with-suffix",
 
+    // for live timestamp
+    liveTimestamp: "data-live-timestamp",
+    shortSuffix: "data-short-suffix",
+
+
+    // for on click set text
+    onClickSetText: "data-on-click-set-text",
+
+    // for on click set html
+    onClickSetHtml: "data-on-click-set-html",
+
+
     // for month selector bar
     dropdownOpen: "data-dropdown-open",
     showFuture: "data-show-future",
     usePopupSelector: "data-use-popup-selector",
+
+
+    // multi dial slot
+    itemTable: "data-item-table", // [['item1', 'item2', 'item3', ...], ['item1', 'item2', 'item3', ...], ...]
+    itemAligns: "data-item-aligns", // [t, n, f, ...] :: f: left, n: center, t: right
+    itemPrefixes: "data-item-prefixes", // ['prefix1', 'prefix2', ...]
+    itemSuffixes: "data-item-suffixes", // ['suffix1', 'suffix2', ...]
+    itemDividers: "data-item-dividers", // ['before', 'dividerForAll', 'after'] / ['divider0', 'divider1', ...]
 
 
     // for solid point
@@ -660,6 +705,74 @@ const selectionToast = (options = ["option A", "option B", "option C"],
     callbackDissmiss = (selections, keys, values) => {},
     callbackSelect = (selected, key, value, selections, keys, values) => {},
 ) => toastSelection(title, message, minSelection, maxSelection, options, defaultSelected, callbackConfirm, callbackSelect, callbackDissmiss, callbackAnother, confirm, another);
+
+
+function estreToastDials(options = {}) {
+    const arrays = [c.table, c.initial, c.aligns, c.prefixes, c.suffixes, c.dividers];
+    for (const name of arrays) if (!typeString(options[name])) options[name] = Jcodd.coddify(options[name]);
+    options.stretch = !options.stretch ? "" : t1;
+    options.hideScrollbar = !options.hideScrollbar ? "" : t1;
+    let intent;
+    new Promise((resolve) => {
+        intent = {
+            data: options,
+            onConfirm(selections, keys, values) {
+                this.data?.callbackConfirm?.(selections, keys, values);
+                resolve(selections)
+            },
+            onSelect(boundIndex, index, value, selectionIndexes, selectionValues) {
+                this?.data?.callbackSelect?.(boundIndex, index, value, selectionIndexes, selectionValues);
+            },
+            onAnother(selections, keys, values) {
+                this?.data?.callbackAnother?.(selections, keys, values);
+                resolve(false);
+            },
+            onDissmiss(selections, keys, values) {
+                this?.data?.callbackDissmiss?.(selections, keys, values);
+                resolve(undefined);
+            },
+        };
+        return pageManager.bringPage("!toastDials", intent);
+    });
+    return new class {
+        get data() { return intent.data; }
+        get handle() { return intent.handle; }
+    }();
+}
+
+const toastDials = (title = "", message = "",
+    table = [[]],
+    initial = [],
+    callbackConfirm = (selections, keys, values) => {},
+    callbackSelect = (boundIndex, index, value, selectionIndexes, selectionValues) => {},
+    callbackDissmiss = (selections, keys, values) => {},
+    callbackAnother = null,
+    confirm = isKorean() ? "닫기" : "Close",
+    another = isKorean() ? "되돌리기" : "rollback",
+    aligns = [],
+    prefixes = [],
+    suffixes = [],
+    dividers = [],
+    stretch = t,
+    hideScrollbar = t,
+) => estreToastDials({ title, message, table, initial, aligns, prefixes, suffixes, dividers, stretch, hideScrollbar, callbackConfirm, callbackSelect, callbackDissmiss, callbackAnother, confirm, another });
+
+const dialsToast = (table = [[]],
+    initial = [],
+    title = "", message = "",
+    callbackConfirm = (selections, keys, values) => {},
+    confirm = isKorean() ? "닫기" : "Close",
+    callbackAnother = null,
+    another = isKorean() ? "되돌리기" : "rollback",
+    callbackDissmiss = (selections, keys, values) => {},
+    callbackSelect = (boundIndex, index, value, selectionIndexes, selectionValues) => {},
+    aligns = [],
+    prefixes = [],
+    suffixes = [],
+    dividers = [],
+    stretch = t,
+    hideScrollbar = t,
+) => toastDials(title, message, table, initial, callbackConfirm, callbackSelect, callbackDissmiss, callbackAnother, confirm, another, aligns, prefixes, suffixes, dividers, stretch, hideScrollbar);
 
 
 
@@ -1546,9 +1659,9 @@ class EstrePageHandle {
     #intentProxy;
     #intentDataProxy;
     #intentDataBindProxy = {};
-    #revokeIntentProxy;
-    #revokeIntentDataProxy;
-    #revokeIntentDataBindProxy = {};
+    // #revokeIntentProxy;
+    // #revokeIntentDataProxy;
+    // #revokeIntentDataBindProxy = {};
 
     #isProcessing = f;
 
@@ -1597,9 +1710,10 @@ class EstrePageHandle {
     }
 
     takeOnPageIntent(intent = {}) {
-        this.#revokeIntentProxy?.();
+        // this.#revokeIntentProxy?.();
         if (nn(intent?.data) && !intent.data.isProxy) intent.data = this.takeOnPageData(intent.data);
-        const { proxy, revoke } = nn(intent) ? Proxy.revocable(intent, {
+        // const { proxy, revoke } = nn(intent) ? Proxy.revocable(intent, {
+        const proxy = nn(intent) ? new Proxy(intent, {
             get: (target, prop) => prop == "isProxy" ? t : target[prop],
             set: (target, prop, value) => {
                 if (prop == "data") {
@@ -1616,17 +1730,18 @@ class EstrePageHandle {
                 if (!this.#isProcessing) this.applyActiveStruct();
                 return t;
             },
-        }) : { proxy: u, revoke: u };
+        }) : u;//{ proxy: u, revoke: u };
         this.#intentProxy = proxy;
-        this.#revokeIntentProxy = revoke;
+        // this.#revokeIntentProxy = revoke;
         return proxy ?? intent;
     }
 
     takeOnPageData(data = {}) {
-        this.#revokeIntentDataProxy?.();
+        // this.#revokeIntentDataProxy?.();
         const isObject = nn(data) && tj(data);
         if (isObject) for (const key in data) if (!data[key]?.isProxy) data[key] = this.takeOnPageBind(key, data[key]);
-        const { proxy, revoke } = isObject ? Proxy.revocable(data, {
+        // const { proxy, revoke } = isObject ? Proxy.revocable(data, {
+        const proxy = isObject ? new Proxy(data, {
             get: (target, prop) => prop == "isProxy" ? t : target[prop],
             set: (target, prop, value) => {
                 target[prop] = this.takeOnPageBind(prop, value);
@@ -1639,17 +1754,18 @@ class EstrePageHandle {
                 if (!this.#isProcessing) this.applyActiveStruct();
                 return t;
             },
-        }) : { proxy: u, revoke: u };
+        }) : u;//{ proxy: u, revoke: u };
         this.#intentDataProxy = proxy;
-        this.#revokeIntentDataProxy = revoke;
+        // this.#revokeIntentDataProxy = revoke;
         return proxy ?? data;
     }
 
     takeOnPageBind(pr, bind) {
-        const rv = this.#revokeIntentDataBindProxy[pr];
-        if (tf(rv)) rv();
+        // const rv = this.#revokeIntentDataBindProxy[pr];
+        // if (tf(rv)) rv();
         if (nn(bind) && tj(bind)) {
-            const { proxy, revoke } = Proxy.revocable(bind, {
+            // const { proxy, revoke } = Proxy.revocable(bind, {
+            const proxy = new Proxy(bind, {
                 get: (target, prop) => prop == "isProxy" ? t : target[prop],
                 set: (target, prop, value) => {
                     target[prop] = value;
@@ -1663,11 +1779,11 @@ class EstrePageHandle {
                 },
             });
             this.#intentDataBindProxy[pr] = proxy;
-            this.#revokeIntentDataBindProxy[pr] = revoke;
+            // this.#revokeIntentDataBindProxy[pr] = revoke;
             return proxy;
         } else {
             delete this.#intentDataBindProxy[pr];
-            delete this.#revokeIntentDataBindProxy[pr];
+            // delete this.#revokeIntentDataBindProxy[pr];
             return bind;
         }
     }
@@ -1929,11 +2045,11 @@ class EstrePageHandle {
             if (this.handler?.onRelease != null) await this.handler.onRelease(this, remove);
             if (this.intent?.onRelease != null) for (var item of this.intent.onRelease) if (item.from == this.hostType && !item.disabled) await this.processAction(item);
 
-            for (const revoke of this.#revokeIntentDataBindProxy.looks) try {
-                revoke?.();
-            } catch (ex) {}
-            this.#revokeIntentDataProxy?.();
-            this.#revokeIntentProxy?.();
+            // for (const revoke of this.#revokeIntentDataBindProxy.looks) try {
+            //     revoke?.();
+            // } catch (ex) {}
+            // this.#revokeIntentDataProxy?.();
+            // this.#revokeIntentProxy?.();
             return true;
         } else return false;
     }
@@ -1998,11 +2114,11 @@ class EstrePageHandle {
         const eachTarget = ($elem, attrId, each = (target, prefix = "", suffix = "") => {}) => {
             const specifier = $elem.attr(attrId);
             if (specifier != null && specifier != "") {
-                const targets = specifier.split(" ");
+                const targets = specifier.split(s);
                 for (let target of targets) {
                     let prefix = "", suffix = "";
-                    if (target.indexOf("^") > -1) [target, prefix] = target.split("^");
-                    if (target.indexOf("$") > -1) [suffix, target] = target.split("$");
+                    if (target.indexOf(cf) > -1) [target, prefix] = target.split(cf);
+                    if (target.indexOf(ds) > -1) [suffix, target] = target.split(ds);
                     each(target, prefix, suffix);
                 }
             }
@@ -2010,12 +2126,12 @@ class EstrePageHandle {
         const eachTargetFor = ($elem, attrId, each = (targetItem, targetName, prefix = "", suffix = "") => {}) => {
             const specifier = $elem.attr(attrId);
             if (specifier != null && specifier != "") {
-                const targets = specifier.split(" ");
+                const targets = specifier.split(s);
                 for (const target of targets) {
-                    let [targetItem, targetName] = target.split("@");
+                    let [targetItem, targetName] = target.split(at);
                     let prefix = "", suffix = "";
-                    if (targetItem.indexOf("^") > -1) [targetItem, prefix] = targetItem.split("^");
-                    if (targetItem.indexOf("$") > -1) [suffix, targetItem] = targetItem.split("$");
+                    if (targetItem.indexOf(cf) > -1) [targetItem, prefix] = targetItem.split(cf);
+                    if (targetItem.indexOf(ds) > -1) [suffix, targetItem] = targetItem.split(ds);
                     each(targetItem, targetName, prefix, suffix);
                 }
             }
@@ -2036,20 +2152,20 @@ class EstrePageHandle {
                 $host.find(aiv(eds.bindAmount, item)).html(v2a(value));
                 $host.find(aiv(eds.bindValue, item)).val(value);
 
-                if ($host.is(acv(eds.bindAttr, item + "@"))) eachTargetFor($host, eds.bindAttr, (targetItem, targetAttr, prefix = "", suffix = "") => {
+                if ($host.is(acv(eds.bindAttr, item) + acv(eds.bindAttr, at))) eachTargetFor($host, eds.bindAttr, (targetItem, targetAttr, prefix = "", suffix = "") => {
                     if (targetItem == item) $host.attr(targetAttr, prefix + value + suffix);
                 });
-                $host.find(acv(eds.bindAttr, item + "@")).each((i, elem) => {
+                $host.find(acv(eds.bindAttr, item) + acv(eds.bindAttr, at)).each((i, elem) => {
                     const $elem = $(elem);
                     eachTargetFor($elem, eds.bindAttr, (targetItem, targetAttr, prefix = "", suffix = "") => {
                         if (targetItem == item) $elem.attr(targetAttr, prefix + value + suffix);
                     });
                 });
 
-                if ($host.find(acv(eds.bindStyle, item + "@"))) eachTargetFor($host, eds.bindStyle, (targetItem, targetStyle, prefix = "", suffix = "") => {
+                if ($host.find(acv(eds.bindStyle, item) + acv(eds.bindStyle, at))) eachTargetFor($host, eds.bindStyle, (targetItem, targetStyle, prefix = "", suffix = "") => {
                     if (targetItem == item) $host.css(targetStyle, prefix + value + suffix);
                 });
-                $host.find(acv(eds.bindStyle, item + "@")).each((i, elem) => {
+                $host.find(acv(eds.bindStyle, item) + acv(eds.bindStyle, at)).each((i, elem) => {
                     const $elem = $(elem);
                     eachTargetFor($elem, eds.bindStyle, (targetItem, targetStyle, prefix = "", suffix = "") => {
                         if (targetItem == item) $elem.css(targetStyle, prefix + value + suffix);
@@ -2112,10 +2228,10 @@ class EstrePageHandle {
                                     $li.find(aiv(eds.bindObjectArrayAmount, objItem)).html(v2a(value));
                                     $li.find(aiv(eds.bindObjectArrayValue, objItem)).val(value);
 
-                                    if ($li.is(acv(eds.bindObjectArrayAttr, objItem + "@"))) eachTargetFor($li, eds.bindObjectArrayAttr, (targetItem, targetAttr, prefix = "", suffix = "") => {
+                                    if ($li.is(acv(eds.bindObjectArrayAttr, objItem) + acv(eds.bindObjectArrayAttr, at))) eachTargetFor($li, eds.bindObjectArrayAttr, (targetItem, targetAttr, prefix = "", suffix = "") => {
                                         if (targetItem == objItem) $li.attr(targetAttr, prefix + value + suffix);
                                     });
-                                    $li.find(acv(eds.bindObjectArrayAttr, objItem + "@")).each((i, elem) => {
+                                    $li.find(acv(eds.bindObjectArrayAttr, objItem) + acv(eds.bindObjectArrayAttr, at)).each((i, elem) => {
                                         const $elem = $(elem);
                                         eachTargetFor($elem, eds.bindObjectArrayAttr, (targetItem, targetAttr, prefix = "", suffix = "") => {
                                             if (targetItem == objItem) $elem.attr(targetAttr, prefix + value + suffix);
@@ -2124,10 +2240,10 @@ class EstrePageHandle {
 
                                     const styleValue = isEmpty(value) ? "unset" : value;
 
-                                    if ($li.is(acv(eds.bindObjectArrayStyle, objItem + "@"))) eachTargetFor($li, eds.bindObjectArrayStyle, (targetItem, targetStyle, prefix = "", suffix = "") => {
+                                    if ($li.is(acv(eds.bindObjectArrayStyle, objItem) + acv(eds.bindObjectArrayStyle, at))) eachTargetFor($li, eds.bindObjectArrayStyle, (targetItem, targetStyle, prefix = "", suffix = "") => {
                                         if (targetItem == objItem) $li.css(targetStyle, prefix + styleValue + suffix);
                                     });
-                                    $li.find(acv(eds.bindObjectArrayStyle, objItem + "@")).each((i, elem) => {
+                                    $li.find(acv(eds.bindObjectArrayStyle, objItem) + acv(eds.bindObjectArrayStyle, at)).each((i, elem) => {
                                         const $elem = $(elem);
                                         eachTargetFor($elem, eds.bindObjectArrayStyle, (targetItem, targetStyle, prefix = "", suffix = "") => {
                                             if (targetItem == objItem) $elem.css(targetStyle, prefix + styleValue + suffix);
@@ -4458,11 +4574,11 @@ class EstreSelectionDialogPageHandler extends EstreDialogPageHandler {
         if (isNotNully(defaultSelected)) forkv(defaultSelected, (k, v) => {
             switch(to(v)) {
                 case BOOLEAN:
-                    this.$optionCheckboxes.filter(aiv("data-index", k)).prop(m.v, v);
+                    this.$optionCheckboxes.filter(aiv(eds.index, k)).prop(m.v, v);
                     break;
                 
                 case NUMBER:
-                    this.$optionCheckboxes.filter(aiv("data-index", v)).prop(m.v, true);
+                    this.$optionCheckboxes.filter(aiv(eds.index, v)).prop(m.v, true);
                     break;
             }
         });
@@ -4535,6 +4651,72 @@ class EstreSelectionDialogPageHandler extends EstreDialogPageHandler {
     }
 }
 
+class EstreDialsDialogPageHandler extends EstreDialogPageHandler {
+    $dial;
+    dialHandle;
+
+    $confirm;
+    $another;
+
+    onBring(handle) {
+        super.onBring(handle);
+
+        this.$dial = handle.$host.find(uis.multiDialSlot);
+
+        this.$confirm = this.$actions.find(btn + cls + "confirm");
+        this.$another = this.$actions.find(btn + cls + "another");
+    }
+
+    onOpen(handle) {
+        super.onOpen(handle);
+
+        this.intent.handle = this.dialHandle = this.$dial[0].handle;
+
+        handle.intent?.onSelect?.let(it => this.dialHandle.setOnSelected(it));
+
+        handle.intent?.data?.let(it => {
+            this.$dial.css("--font-size", it.fontSize ?? "2rem");
+            if (it.fontWeight != n) this.$dial.css("--font-weight", it.fontWeight);
+            this.$dial.css("--item-height", it.itemHeight ?? "1.2em");
+            this.$dial.css("--holder-pad", it.holderPad ?? "var(--basic-ui-inset-h)");
+            if (it.holderPadL != n) this.$dial.css("--holder-pad-l", it.holderPadL);
+            if (it.holderPadR != n) this.$dial.css("--holder-pad-r", it.holderPadR);
+            if (it.colGap != n) this.$dial.css("--col-gap", it.colGap);
+            if (it.boundGap != n) this.$dial.css("--bound-gap", it.boundGap);
+        });
+
+        const handler = this;
+
+        this.$confirm.click(function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const { itemSelectionIndexes, itemSelectionValues } = handler.dialHandle;
+            handle?.intent?.onConfirm?.(itemSelectionIndexes.mock, itemSelectionValues.mock, handle.intent?.data?.initial);
+            handle?.close();
+            return false;
+        });
+        if (handle?.intent?.data?.callbackAnother == null) this.$another.remove();
+        else this.$another.click(function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const { itemSelectionIndexes, itemSelectionValues } = handler.dialHandle;
+            handle?.intent?.onAnother?.(itemSelectionIndexes.mock, itemSelectionValues.mock, handle.intent?.data?.initial);
+            handle?.close();
+            return false;
+        });
+
+        this.$confirm.focus();
+    }
+
+    onFocus(handle) {
+        this.$confirm.focus();
+    }
+
+    onClose(handle) {
+        const { itemSelectionIndexes, itemSelectionValues } = this.dialHandle;
+        handle?.intent?.onDissmiss(handle.intent?.data?.initial, itemSelectionIndexes.mock, itemSelectionValues.mock);
+    }
+}
 
 /**
  * Pages profiling manager
@@ -4747,6 +4929,9 @@ class EstreUiPage {
 
         },
         "$i&o=toastUpSlide#selection^": class extends EstreSelectionDialogPageHandler {
+
+        },
+        "$i&o=toastUpSlide#dials^": class extends EstreDialsDialogPageHandler {
 
         },
 
@@ -5402,6 +5587,7 @@ class EstreUiPageManager {
         get toastPrompt() { return "$i&o=toastUpSlide#prompt^"; },
         get toastOption() { return "$i&o=toastUpSlide#option^"; },
         get toastSelection() { return "$i&o=toastUpSlide#selection^"; },
+        get toastDials() { return "$i&o=toastUpSlide#dials^"; },
 
 
         get onRunning() { return "$i&o=interaction#onRunning^"; },
@@ -5854,14 +6040,20 @@ class EstreHandle {
         get [uis.checkboxAlly]() { return EstreCheckboxAllyHandle; },
 
         get [uis.toasterSlot]() { return EstreToasterSlotHandle; },
+        get [uis.multiDialSlot]() { return EstreMultiDialSlotHandle; },
 
         get [uis.customSelectorBar]() { return EstreCustomSelectorBarHandle; },
         get [uis.monthSelectorBar]() { return EstreMonthSelectorBarHandle; },
 
 
         get [uis.dateShower]() { return EstreDateShowerHandle; },
+        get [uis.liveTimestamp]() { return EstreLiveTimestampHandle; },
+
+        get [uis.onClickSetText]() { return EstreOnClickSetTextHandle; },
+        get [uis.onClickSetHtml]() { return EstreOnClickSetHtmlHandle; },
 
         get [uis.exportedContent]() { return EstreExportedContentHandle; },
+        get [uis.dataHelpAlert]() { return EstreHelpAlertHandle; },
 
         get [uis.ezHidable]() { return EstreEzHidableHandle; },
         get [uis.fixedAccess]() { return EstreFixedAccessHandle; },
@@ -5954,7 +6146,7 @@ class EstreHandle {
         host.unregisterHandle(specifier, element.handle);
         const loaded = this.activeHandle[specifier];
         if (loaded != null) loaded.delete(element.handle);
-        element.handle.release();
+        element.handle?.release();
     }
 
 
@@ -11340,7 +11532,687 @@ class EstreCheckboxAllyHandle extends EstreHandle {
 
 
 /**
- * Toaster slots handle
+ * Multi dial slot handle
+ */
+class EstreMultiDialSlotHandle extends EstreHandle {
+
+    // constants
+
+
+    // statics
+
+
+    // open property
+    $dialHolder;
+    dialHolder;
+    $dialBounds;
+    $dialHosts;
+    $dialPrefixes;
+    $dialSuffixes;
+    $dialDividers;
+
+
+    // enclosed property
+    #itemTableOrigin = [];
+    #itemAlignsOrigin = [];
+    #itemPrefixesOrigin = [];
+    #itemSuffixesOrigin = [];
+    #itemDividersOrigin = [];
+
+    #itemSelectionObserver = [];
+    #itemTableProxy = [];
+
+    #itemTable;
+    #itemAligns;
+    #itemPrefixes;
+    #itemSuffixes;
+    #itemDividers;
+
+    #initialItemSelectionIndexes = [];
+    #itemSelectionIndexes = [];
+    #itemSelectionValues = [];
+
+    #itemSelectionIndexesProxy = [];
+    #itemSelectionValuesProxy = [];
+
+    #onSelectionChanged;
+
+    #isInit = f;
+    
+
+    // getter and setter
+    get itemTable() { return this.#itemTable; }
+    set itemTable(value) { this.updateItemTable(value); }
+    get itemAligns() { return this.#itemAligns; }
+    set itemAligns(value) { this.updateItemAligns(value); }
+    get itemPrefixes() { return this.#itemPrefixes; }
+    set itemPrefixes(value) { this.updateItemPrefixes(value); }
+    get itemSuffixes() { return this.#itemSuffixes; }
+    set itemSuffixes(value) { this.updateItemSuffixes(value); }
+    get itemDividers() { return this.#itemDividers; }
+    set itemDividers(value) { this.updateItemDividers(value); }
+
+    get dataset() { return new Proxy({
+        table: this.#itemTable,
+        aligns: this.#itemAligns,
+        prefixes: this.#itemPrefixes,
+        suffixes: this.#itemSuffixes,
+        dividers: this.#itemDividers,
+    }, {
+        set: (target, property, value) => {
+            equalCase(property, {
+                table: _ => this.updateItemTable(value),
+                aligns: _ => this.updateItemAligns(value),
+                prefixes: _ => this.updateItemPrefixes(value),
+                suffixes: _ => this.updateItemSuffixes(value),
+                dividers: _ => this.updateItemDividers(value),
+                [def]: _ => target[property] = value,
+            });
+            return true;
+        }
+    }); }
+    set dataset(value) { this.setDataset(value); }
+
+    get itemSelectionIndexes() { return this.#itemSelectionIndexesProxy; }
+    set itemSelectionIndexes(value) { this.#setSelectionIndexes(value); }
+    get itemSelectionValues() { return this.#itemSelectionValuesProxy; }
+    set itemSelectionValues(value) { this.#setSelectionValues(value); }
+    get itemSelections() {
+        const selections = [];
+        for (let i=0; i<this.#itemSelectionIndexes.length; i++) {
+            selections.push([this.#itemSelectionIndexes[i], this.#itemSelectionValues[i]]);
+        }
+        return selections;
+    }
+
+
+    constructor(multiDialSlot, host) {
+        super(multiDialSlot, host);
+    }
+
+    release(remove) {
+        super.release(remove);
+    }
+
+    init() {
+        super.init();
+        
+        this.$dialHolder = this.$bound.find(uis.dialHolder);
+        this.dialHolder = this.$dialHolder[0];
+        this.$dialBounds = this.$dialHolder.find(uis.dialBound);
+        this.$dialHosts = this.$dialBounds.find(uis.dialHost);
+
+        this.$dialHosts[0].solid();
+        const divider = this.$dialHolder.find(li + cls + c.divider).stringified();
+        this.$dialHolder.attr("data-frozen-divider", divider);
+        this.$dialHolder[0].solid();
+
+        this.loadDataset();
+    }
+
+    loadDataset() {
+        try {
+            const dataItemTable = this.$bound.attr(eds.itemTable);
+            if (nne(dataItemTable)) this.#itemTableOrigin = Jcodd.parse(dataItemTable);
+        } catch (e) {
+            if (window.isLogging) console.error(e);
+        }
+
+        try {
+            const dataInitial = this.$bound.attr(eds.initial);
+            if (nne(dataInitial)) this.#itemSelectionIndexes = Jcodd.parse(dataInitial);
+        } catch (e) {
+            if (window.isLogging) console.error(e);
+        }
+        
+        try {
+            const dataItemAligns = this.$bound.attr(eds.itemAligns);
+            if (nne(dataItemAligns)) this.#itemAlignsOrigin = Jcodd.parse(dataItemAligns);
+        } catch (e) {
+            if (window.isLogging) console.error(e);
+        }
+
+        try {
+            const dataItemPrefixes = this.$bound.attr(eds.itemPrefixes);
+            if (nne(dataItemPrefixes)) this.#itemPrefixesOrigin = Jcodd.parse(dataItemPrefixes);
+        } catch (e) {
+            if (window.isLogging) console.error(e);
+        }
+
+        try {
+            const dataItemSuffixes = this.$bound.attr(eds.itemSuffixes);
+            if (nne(dataItemSuffixes)) this.#itemSuffixesOrigin = Jcodd.parse(dataItemSuffixes);
+        } catch (e) {
+            if (window.isLogging) console.error(e);
+        }
+
+        try {
+            const dataItemDividers = this.$bound.attr(eds.itemDividers);
+            if (nne(dataItemDividers)) this.#itemDividersOrigin = Jcodd.parse(dataItemDividers);
+        } catch (e) {
+            if (window.isLogging) console.error(e);
+        }
+
+        this.updateAll();
+    }
+
+    get$dialHost(boundIndex) {
+        return this.$dialHosts[boundIndex]?.let(it => $(it));
+    }
+
+    getDialItems(boundIndex) {
+        return this.get$dialHost(boundIndex).find(c.c + li);
+    }
+
+    setDataset(dataset = { table: [[]], initial: [], aligns: [], prefixes: [], suffixes: [], dividers: [] }) {
+        this.#itemTableOrigin = dataset.table;
+        this.#itemSelectionIndexes = dataset.initial;
+        this.#itemAlignsOrigin = dataset.aligns;
+        this.#itemPrefixesOrigin = dataset.prefixes;
+        this.#itemSuffixesOrigin = dataset.suffixes;
+        this.#itemDividersOrigin = dataset.dividers;
+        this.updateAll();
+    }
+
+    updateAll() {
+        this.updateItemTable();
+        this.updateItemAligns();
+        this.updateItemPrefixes();
+        this.updateItemSuffixes();
+        this.updateItemDividers();
+    }
+
+    updateItemTable(itemTable = this.#itemTableOrigin, itemSelectionIndexes = this.#itemSelectionIndexes) {
+        const isInit = this.#isInit;
+        if (!isInit) this.#isInit = t;
+
+        itemTable ??= [];
+        const isNew = itemTable != this.#itemTableOrigin;
+        if (isNew) {
+            this.#itemTableOrigin = itemTable;
+            this.#itemTableProxy = [];
+            this.#itemSelectionObserver = [];
+        }
+
+        if (itemSelectionIndexes.length != itemTable.length) {
+            itemSelectionIndexes = [];
+            for (let i=itemSelectionIndexes.length; i<itemTable.length; i++) itemSelectionIndexes[i] = 0;
+        }
+        if (itemSelectionIndexes != this.#itemSelectionIndexes) this.#itemSelectionIndexes = itemSelectionIndexes;
+        this.#itemSelectionIndexesProxy = new Proxy(itemSelectionIndexes, {
+            set: (target, property, value) => {
+                const index = parseInt(property);
+                const isIndex = !isNaN(index);
+                if (isIndex) this.#scrollInstant(this.getDialItems(index)[value]);
+                else target[property] = value;
+                return true;
+            }
+        });
+
+        const itemSelectionValues = []
+        this.#itemSelectionValues = itemSelectionValues;
+        for (const [index, i] of itemSelectionIndexes.entries()) {
+            const value = this.#itemTableOrigin[index]?.[i];
+            this.#itemSelectionValues[index] = value;
+        }
+        this.#itemSelectionValuesProxy = new Proxy(itemSelectionValues, {
+            set: (target, property, value) => {
+                const index = parseInt(property);
+                const isIndex = !isNaN(index);
+                if (isIndex) {
+                    const itemIndex = this.#itemTableOrigin[index]?.indexOf(value);
+                    if (itemIndex > -1) this.#scrollInstant(this.getDialItems(index)[itemIndex]);
+                } else target[property] = value;
+                return true;
+            }
+        });
+
+        this.$dialHolder.empty();
+        this.dialHolder.worm({ offset: 0 }, c.frozenDivider);
+        for (var [index, list] of itemTable.entries()) {
+            this.dialHolder.worm({ boundIndex: index });
+            this.dialHolder.worm({ offset: index + 1 }, c.frozenDivider);
+        }
+        const updateBoundLinks = _ => {
+            this.$dialBounds = this.$dialHolder.find(uis.dialBound);
+            this.$dialHosts = this.$dialBounds.find(c.c + uis.dialHost);
+            this.$dialPrefixes = this.$dialHolder.find(c.c + li + c.c + uis.prefix + c.c + sp);
+            this.$dialSuffixes = this.$dialHolder.find(c.c + li + c.c + uis.suffix + c.c + sp);
+            this.$dialDividers = this.$dialHolder.find(c.c + uis.divider + c.c + sp);
+        }
+        updateBoundLinks();
+
+        for (var [index, list] of itemTable.entries()) {
+            this.#setItemBoundEvents(index);
+            this.updateItemBound(index, list);
+        }
+
+        if (!isInit) this.#isInit = f;
+
+        return this.#itemTable = new Proxy(this.#itemTableProxy, {
+            set: (target, property, value) => {
+                const index = parseInt(property);
+                const isIndex = !isNaN(index);
+                target[property] = isIndex ? this.#setItemTableProxy(index, value) : value;
+                if (isIndex) {
+                    const boundLength = this.$dialBounds.length;
+                    if (boundLength > index) this.updateItemBound(index, value);
+                    else {
+                        for (let i=boundLength; i<=index; i++) {
+                            this.dialHolder.worm({ boundIndex: i });
+                            this.dialHolder.worm({ offset: i + 1 }, c.frozenDivider);
+                        }
+                        updateBoundLinks();
+
+                        for (let i=boundLength; i<=index; i++) {
+                            this.#setItemBoundEvents(i);
+                            this.updateItemBound(i, i == index ? value : []);
+                        }
+                    }
+                }
+                return true;
+            },
+            deleteProperty: (target, property) => {
+                delete target[property];
+                const index = parseInt(property);
+                const isIndex = !isNaN(index);
+                if (isIndex) {
+                    this.$dialBounds[index].remove();
+                    this.$dialHolder.find(c.c + uis.dialDivider)[index + 1].remove();
+                    const dividerLength = this.#itemDividers.length;
+                    const dividerCount = this.$dialDividers.length;
+                    updateBoundLinks();
+                    this.#itemTableProxy.splice(index, 1);
+                    this.#itemAlignsOrigin.splice(index, 1);
+                    this.#itemPrefixesOrigin.splice(index, 1);
+                    this.#itemSuffixesOrigin.splice(index, 1);
+                    this.#itemSelectionObserver.splice(index, 1);
+                    if (dividerLength == 3 && dividerCount != 3) this.updateItemDividers();
+                    else this.#itemDividersOrigin.splice(index + 1, 1);
+                }
+                return true;
+            }
+        });
+    }
+
+    #setItemBoundEvents(index, itemBound = this.$dialBounds[index]) {
+        const inst = this;
+        const $itemBound = $(itemBound);
+
+        $itemBound.on(c.wheel, function (e) {
+            e.preventDefault();
+
+            const delta = Math.sign(e.originalEvent.deltaY);
+            const selected = parseInt(this.dataset.selected);
+            const $item = $(this).find(c.c + ul + c.c + li + aiv(eds.index, Math.min(Math.max(0, selected + delta), inst.#itemTable[index].length - 1) ) );
+            $item.click();
+
+            return false;
+        });
+
+
+        const threshold = 1;
+        const rootMargin = "0px";
+
+        this.#itemSelectionObserver[index] = new IntersectionObserver(entries => {
+            for (const entry of entries) {
+                if (entry.isIntersecting) {
+                    const idx = entry.target.dataset.index;
+                    const i = parseInt(idx);
+                    itemBound.dataset.selected = idx;
+                    this.#onSelected(index, i);
+                }
+            }
+        }, {
+            root: itemBound,
+            rootMargin,
+            threshold
+        });
+        
+        const ro = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                const items = this.getDialItems(index);
+                const itemHeight = items[0]?.offsetHeight ?? 0;
+                const halfHeight = parseInt(itemHeight / 2);
+                const padding = getComputedStyle(entry.target.querySelector(ul)).padding;
+                const paddings = padding.split(s).map(it => parseInt(it));
+                for (let i=0; i<paddings.length; i+=2) paddings[i] = Math.max(paddings[i] - halfHeight, 0);
+                const rootMargin = paddings.map(it => hp + it + c.px).join(s);
+
+                const current = this.#itemSelectionObserver[index];
+
+                if (current != null) for (const elem of items) current.unobserve(elem);
+
+                this.#itemSelectionObserver[index] = new IntersectionObserver(entries => {
+                    for (const entry of entries) {
+                        if (entry.isIntersecting) {
+                            const idx = entry.target.dataset.index;
+                            const i = parseInt(idx);
+                            itemBound.dataset.selected = idx;
+                            this.#onSelected(index, i);
+                        }
+                    }
+                }, {
+                    root: itemBound,
+                    rootMargin,
+                    threshold
+                });
+
+                for (const item of items) this.#setItemEvent(index, item.dataset.index, item);
+            }
+        });
+
+        ro.observe(itemBound);
+
+        return ro;
+    }
+
+    updateItemBound(index, list) {
+        const host = this.$dialHosts[index];
+        if (host != n) {
+            const isInit = this.#isInit;
+            if (!isInit) this.#isInit = t;
+
+            const $host = $(host);
+            const align = typeCase(list?.[0]?.let(it => parseFloat(it).let(num => isNaN(num) ? it : num)), {
+                [NUMBER]: "right",
+                [STRING]: "left",
+                [DEFAULT]: c.center,
+            });
+            $host.attr(eds.align, align);
+            if (list.length < 1) host.melt({ index: "0", value: "-" });
+            else {
+                $host.empty();
+                for (const [index, value] of list.entries()) {
+                    host.worm({ index, value, dataPlaceholder: "" });
+                }
+                const $items = $host.find(c.c + li);
+                for (let idx = 0; idx < $items.length; idx++) {
+                    this.#setItemEvent(index, idx, $items[idx]);
+                }
+            }
+
+            const $items = $host.find(c.c + li);
+            const selectedIndex = Math.min(Math.max(0, this.#itemSelectionIndexes[index] ?? 0), $items.length - 1);
+            this.#scrollInstant($items[selectedIndex]);
+
+            if (!isInit) this.#isInit = f;
+
+            return this.#setItemTableProxy(index, list);
+        } else return this.#itemTable[index];
+    }
+
+    #setItemTableProxy(boundIndex, list) {
+        return this.#itemTableProxy[boundIndex] = new Proxy(list ?? [], {
+            set: (target, property, value) => {
+                const index = parseInt(property);
+                const isIndex = !isNaN(index);
+                target[property] = value;
+                if (isIndex) {
+                    const host = this.$dialHosts[boundIndex];
+                    const $host = $(host);
+                    const $items = $host.find(c.c + li);
+                    const length = $items.length;
+                    if (length > index) {
+                        const $item = $($items[index]);
+                        const $span = $item.find(c.c + sp);
+                        $span.html(value);
+                    } else for (let i=length; i<=index; i++) {
+                        host.worm({ index: i, value: i == index ? value : "" });
+                        this.#setItemEvent(boundIndex, i);
+                    }
+                }
+                return true;
+            },
+            deleteProperty: (target, property) => {
+                delete target[property];
+                const index = parseInt(property);
+                const isIndex = !isNaN(index);
+                if (isIndex) this.getDialItems(boundIndex)[index].remove();
+                return true;
+            }
+        });
+    }
+
+    #setItemEvent(boundIndex, index, item = this.getDialItems(boundIndex)[index], observer = this.#itemSelectionObserver[boundIndex]) {
+        const inst = this;
+        observer.observe(item);
+        $(item).off(c.click).click(function (e) {
+            e.preventDefault();
+
+            inst.#scrollSmooth(this);
+
+            return false;
+        });
+    }
+
+    updateItemAligns(itemAligns = this.#itemAlignsOrigin) {
+        itemAligns ??= [];
+        if (itemAligns != this.#itemAlignsOrigin) this.#itemAlignsOrigin = itemAligns;
+        for (const [index, value] of itemAligns.entries()) {
+            const align = typeUndefined(value) ? "" : value == n ? c.center : value ? c.right : c.left;
+            this.get$dialHost(index).attr(eds.align, align);
+        }
+        this.#itemAligns = new Proxy(itemAligns, {
+            set: (target, property, value) => {
+                const index = parseInt(property);
+                const isIndex = !isNaN(index);
+                target[property] = value;
+                if (isIndex && index < this.$dialHosts.length) {
+                    const align = typeUndefined(value) ? "" : value == n ? c.center : value ? c.right : c.left;
+                    this.get$dialHost(index).attr(eds.align, align);
+                }
+                return true;
+            },
+            deleteProperty: (target, property) => {
+                delete target[property];
+                return true;
+            }
+        });
+    }
+
+    updateItemPrefixes(itemPrefixes = this.#itemPrefixesOrigin) {
+        itemPrefixes ??= [];
+        if (itemPrefixes != this.#itemPrefixesOrigin) this.#itemPrefixesOrigin = itemPrefixes;
+        for (const [index, value] of itemPrefixes.entries()) {
+            $(this.$dialPrefixes[index]).html(value);
+        }
+        this.#itemPrefixes = new Proxy(itemPrefixes, {
+            set: (target, property, value) => {
+                const index = parseInt(property);
+                const isIndex = !isNaN(index);
+                target[property] = value;
+                if (isIndex && index < this.$dialPrefixes.length) {
+                    $(this.$dialPrefixes[index]).html(value);
+                }
+                return true;
+            },
+            deleteProperty: (target, property) => {
+                delete target[property];
+                return true;
+            }
+        });
+    }
+
+    updateItemSuffixes(itemSuffixes = this.#itemSuffixesOrigin) {
+        itemSuffixes ??= [];
+        if (itemSuffixes != this.#itemSuffixesOrigin) this.#itemSuffixesOrigin = itemSuffixes;
+        for (const [index, value] of itemSuffixes.entries()) {
+            $(this.$dialSuffixes[index]).html(value);
+        }
+        this.#itemSuffixes = new Proxy(itemSuffixes, {
+            set: (target, property, value) => {
+                const index = parseInt(property);
+                const isIndex = !isNaN(index);
+                target[property] = value;
+                if (isIndex && index < this.$dialSuffixes.length) {
+                    $(this.$dialSuffixes[index]).html(value);
+                }
+                return true;
+            },
+            deleteProperty: (target, property) => {
+                delete target[property];
+                return true;
+            }
+        });
+    }
+
+    updateItemDividers(itemDividers = this.#itemDividersOrigin) {
+        itemDividers ??= [];
+        if (itemDividers != this.#itemDividersOrigin) this.#itemDividersOrigin = itemDividers;
+        if (itemDividers.length == 3) {
+            const lastIndex = this.$dialDividers.length - 1;
+            for (let i=0; i<this.$dialDividers.length; i++) {
+                if (i == 0) $(this.$dialDividers[i]).html(itemDividers[0]);
+                else if (i == lastIndex) $(this.$dialDividers[i]).html(itemDividers[2]);
+                else $(this.$dialDividers[i]).html(itemDividers[1]);
+            }
+        } else for (const [index, value] of itemDividers.entire) {
+            $(this.$dialDividers[index]).html(value);
+        }
+        this.#itemDividers = new Proxy(itemDividers, {
+            set: (target, property, value) => {
+                const index = parseInt(property);
+                const isIndex = !isNaN(index);
+                target[property] = value;
+                if (isIndex) {
+                    if (target.length == 3 && index > 0) {
+                        const lastIndex = this.$dialDividers.length - 1;
+                        if (index == 3) $(this.$dialDividers[lastIndex]).html(value);
+                        else if (index == 2) for (let i=1; i<lastIndex; i++) $(this.$dialDividers[i]).html(value);
+                    } else if (index < this.$dialDividers.length) {
+                        $(this.$dialDividers[index]).html(value);
+                    }
+                }
+                return true;
+            },
+            deleteProperty: (target, property) => {
+                delete target[property];
+                return true;
+            }
+        });
+    }
+
+
+    setOnSelected(callback = (boundIndex, index, value, selectionIndexes, selectionValues) => {}) {
+        this.#onSelectionChanged = callback;
+    }
+
+    #onSelected(boundIndex, index, value = this.#itemTable[boundIndex][index]) {
+        if (this.#initialItemSelectionIndexes[boundIndex] == n) {
+            const idx = this.#itemSelectionIndexes[boundIndex];
+            if (idx != n) {
+                const item = this.getDialItems(boundIndex)?.[idx];
+                if (item != n && this.$dialBounds[boundIndex].dataset.selected != idx) {
+                    const isInit = this.#isInit;
+                    if (!isInit) this.#isInit = t;
+                    this.#scrollInstant(item);
+                    if (!isInit) this.#isInit = f;
+                    return;
+                }
+            }
+            this.#initialItemSelectionIndexes[boundIndex] = index;
+        }
+        if (!this.isInit) {
+            if (window.isVerbosely) console.log("Item selected: [" + idx + "] " + value);
+            this.#itemSelectionIndexes[boundIndex] = index;
+            this.#itemSelectionValues[boundIndex] = value;
+            
+            const selectionIndexes = this.#itemSelectionIndexes.mock;
+            const selectionValues = this.#itemSelectionValues.mock;
+            this.#onSelectionChanged?.(boundIndex, index, value, selectionIndexes, selectionValues);
+        }
+    }
+
+    #setSelectionIndexes(selectionIndexes = [], setByEvent = t) {
+        const isInit = this.#isInit;
+        const isInitializing = !setByEvent;
+        const isSingleEvent = setByEvent == n;
+        if (isInitializing && !isInit) this.#isInit = t;
+        for (let i=0; i<this.#itemTableOrigin.length; i++) {
+            const index = selectionIndexes[i];
+            if (index != n) {
+                if (isInitializing) {
+                    this.#itemSelectionIndexes[i] = index;
+                    this.#itemSelectionValues[i] = this.#itemTableOrigin[i]?.[index];
+                }
+                if (this.$dialBounds[i].dataset.selected != index) {
+                    const items = this.getDialItems(i);
+                    this.#scrollInstant(items[index]);
+                }
+            }
+        }
+        if (isInitializing && !isInit) this.#isInit = f;
+        if (isSingleEvent) this.#onSelectionChanged?.(n, n, n, this.#itemSelectionIndexes.mock, this.itemSelectionValues.mock);
+        return this.itemSelectionIndexes;
+    }
+
+    #setSelectionValues(selectionValues = [], setByEvent = t) {
+        const isInit = this.#isInit;
+        const isInitializing = !setByEvent;
+        const isSingleEvent = setByEvent == n;
+        if (isInitializing && !isInit) this.#isInit = t;
+        for (let i=0; i<this.#itemTableOrigin.length; i++) {
+            const value = selectionValues[i];
+            if (value != n) {
+                const index = this.#itemTableOrigin[i]?.indexOf(value);
+                if (index != n) {
+                    if (isInitializing) {
+                        this.#itemSelectionIndexes[i] = index;
+                        this.#itemSelectionValues[i] = value;
+                    }
+                    if (index > -1 && this.$dialBounds[i].dataset.selected != index) {
+                        const items = this.getDialItems(i);
+                        this.#scrollInstant(items[index]);
+                    }
+                }
+            }
+        }
+        if (isInitializing && !isInit) this.#isInit = f;
+        if (isSingleEvent) this.#onSelectionChanged?.(n, n, n, this.#itemSelectionIndexes.mock, this.itemSelectionValues.mock);
+        return this.itemSelectionValues;
+    }
+
+    setSelectionsByIndexes(selectionIndexes = [], isUpdateOnly = n) {
+        return this.#setSelectionIndexes(selectionIndexes, isUpdateOnly?.let(it => !it));
+    }
+
+    setSelectionsByValues(selectionValues = [], isUpdateOnly = n) {
+        return this.#setSelectionValues(selectionValues, isUpdateOnly?.let(it => !it));
+    }
+
+    #scrollInstant(elem, host = elem?.parentElement) {
+        // elem?.scrollIntoView({ behavior: c.instant, block: c.center });
+        if (elem != n && host != n) {
+            host.scrollTop = host.scrollTop;
+
+            postQueue(_ => {
+                const hostRect = host.getBoundingClientRect();
+                const elemRect = elem.getBoundingClientRect();
+
+                const offset = elemRect.top - hostRect.top - (hostRect.height / 2) + (elemRect.height / 2);
+                host.scrollTop += offset;
+            });
+        }
+    }
+
+    #scrollSmooth(elem, host = elem?.parentElement) {
+        // elem?.scrollIntoView({ behavior: c.smooth, block: c.center });
+        if (elem != n && host != n) {
+            const hostRect = host.getBoundingClientRect();
+            const elemRect = elem.getBoundingClientRect();
+
+            host.scrollBy({
+                top: elemRect.top - hostRect.top - (hostRect.height / 2) + (elemRect.height / 2),
+                behavior: c.smooth
+            });
+        }
+    }
+}
+
+
+/**
+ * Toaster slot handle
  */
 class EstreToasterSlotHandle extends EstreHandle {
 
@@ -11914,6 +12786,194 @@ class EstreDateShowerHandle extends EstreHandle {
     }
 }
 
+class EstreLiveTimestampHandle extends EstreHandle {
+
+    // constants
+
+
+    // statics
+
+
+    // open property
+
+    
+    // enclosed property
+    #date;
+    
+    #timeout;
+
+
+    #nextTimeout = 1000;
+
+
+    // getter and setter
+    get date() { return new Date(this.#date); }
+
+    get from() { return this.$bound.attr(eds.liveTimestamp).int; }
+
+    get isShortSuffix() { return this.$bound.attr(eds.shortSuffix) == t1; }
+
+
+    constructor(liveTimestamp, host) {
+        super(liveTimestamp, host);
+    }
+
+    release() {
+        clearTimeout(this.#timeout);
+        this.#timeout = n;
+
+        super.release();
+    }
+
+    init() {
+        super.init();
+
+        this.#date = new Date(this.from).time;
+
+        if (!isNaN(this.#date)) {
+            this.updateDisplay();
+
+            this.setLive();
+        }
+
+        return this;
+    }
+
+    setLive() {
+        if (this.#timeout != n) {
+            clearTimeout(this.#timeout);
+            this.#timeout = n;
+        }
+
+        const postTimeout = _ => this.#timeout = setTimeout(_ => {
+            if (!this.bound.isConnected) {
+                clearTimeout(this.#timeout);
+                this.#timeout = n
+                return;
+            }
+            this.updateDisplay();
+            if (this.#nextTimeout != n) postTimeout();
+            else this.#timeout = n;
+        }, this.#nextTimeout);
+
+        if (this.#nextTimeout != n) postTimeout();
+        else this.#timeout = n;
+    }
+
+    updateDisplay() {
+        const suffixType = this.isShortSuffix ? "ShortSuffix" : "Suffix";
+        const now = dt.t;
+        const time = this.#date;
+        const diff = now - time;
+        let text = "";
+        let nextTimeout = n;
+        if (diff < 10000) {
+            text = EsLocale.get("now");
+            nextTimeout = 10000 - diff;
+        } else {
+            const texts = [];
+            const ago = EsLocale.get("ago");
+            if (diff < 20000) {
+                texts.push(EsLocale.get("just"));
+                nextTimeout = 20000 - diff;
+            } else if (diff < 60000) {
+                texts.push(Math.floor(diff / 1000) + EsLocale.get("seconds" + suffixType));
+                nextTimeout = 10000;
+            } else if (diff < 3600000) {
+                texts.push(Math.floor(diff / 60000) + EsLocale.get("minutes" + suffixType));
+                nextTimeout = 60000;
+            } else if (diff < 86400000) {
+                texts.push(Math.floor(diff / 3600000) + EsLocale.get("hours" + suffixType));
+                nextTimeout = 3600000;
+            } else if (diff < 604800000) {
+                texts.push(Math.floor(diff / 86400000) + EsLocale.get("days" + suffixType));
+                nextTimeout = 86400000;
+            } else if (diff < 2592000000) texts.push(Math.floor(diff / 604800000) + EsLocale.get("weeks" + suffixType));
+            else if (diff < 31104000000) texts.push(Math.floor(diff / 2592000000) + EsLocale.get("months" + suffixType));
+            else texts.push(Math.floor(diff / 31104000000) + EsLocale.get("years" + suffixType));
+            texts.push(ago);
+            text = texts.join(s);
+        }
+        this.#nextTimeout = nextTimeout;
+        this.$bound.html(text);
+    }
+}
+
+
+
+// on click set text
+class EstreOnClickSetTextHandle extends EstreHandle {
+    // constants
+
+    // statics
+
+    // open property
+
+    // enclosed property
+
+    // getter and setter
+
+
+    constructor(bound, host) {
+        super(bound, host);
+    }
+
+    release() {
+        super.release();
+    }
+
+    init() {
+        super.init();
+
+        this.$bound.click(function (e) {
+            e.preventDefault();
+
+            const text = this.dataset.onClickSetText;
+            $(this).text(text);
+
+            return false;
+        });
+    }
+
+}
+
+// on click set html
+class EstreOnClickSetHtmlHandle extends EstreHandle {
+    // constants
+
+    // statics
+
+    // open property
+
+    // enclosed property
+
+    // getter and setter
+
+
+    constructor(bound, host) {
+        super(bound, host);
+    }
+
+    release() {
+        super.release();
+    }
+
+    init() {
+        super.init();
+
+        this.$bound.click(function (e) {
+            e.preventDefault();
+
+            const text = this.dataset.onClickSetHtml;
+            $(this).html(text);
+
+            return false;
+        });
+    }
+
+}
+
+
 
 // exported content
 class EstreExportedContentHandle extends EstreHandle {
@@ -11963,6 +13023,44 @@ class EstreExportedContentHandle extends EstreHandle {
         });
     }
 }
+
+class EstreHelpAlertHandle extends EstreHandle {
+
+    // constants
+
+    // statics
+
+
+    // open property
+
+
+    // enclosed property
+
+
+    // getter and setter
+
+
+    constructor(bound, host) {
+        super(bound, host);
+    }
+
+    release() {
+        super.release();
+    }
+
+    init() {
+        super.init();
+
+        this.$bound.click(function (e) {
+            e.preventDefault();
+
+            alert(this.dataset.helpAlertTitle?.replace(/\\n/g, "<br />") ?? "", this.dataset.helpAlert.replace(/\\n/g, "<br />") ?? "");
+
+            return false;
+        });
+    }
+}
+
 
 
 // quick transitions

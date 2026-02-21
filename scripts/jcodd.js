@@ -30,7 +30,7 @@ SOFTWARE.
 //
 // The JSON based lite code format
 //
-// v0.8.2 / release 2025.11.23
+// v0.9.0 / release 2026.01.12
 //
 // Take to be liten from JSON code to smaller converted characters for like as BASE64.
 //
@@ -43,6 +43,8 @@ SOFTWARE.
 // 1. null is n, true is t, false is f.
 // 2. No space and carriage return & line feed in the code. Only allowed for data definition.
 // 3. Omit "" (double quote) for variable name definition.
+// 4. Unicode characters is escaped with %uXXXX or %XX format.
+// 5. Single quote ' is not allowed in value of JCODD code when code is fallback(using ' instead " for value container) type.
 
 class Jcodd {
 
@@ -90,7 +92,7 @@ class Jcodd {
         let p3 = p2.replace(/([\[\,\:])true([\]\,\}])/g, "$1t$2").replace(/([\[\,\:])true([\]\,\}])/g, "$1t$2");
         //Convert false to f
         let p4 = p3.replace(/([\[\,\:])false([\]\,\}])/g, "$1f$2").replace(/([\[\,\:])false([\]\,\}])/g, "$1f$2");
-        //Rem4ve ""
+        //Remove ""
         let p5 = p4.replace(/([\{\,])\"([^\"]*)\"\:/g, "$1$2:");
         //Check convert unicode
         if (p5.match(/[\u0000-\u001F|\u0080-\uFFFF]/g) != null) {
@@ -126,7 +128,7 @@ class Jcodd {
      * 
      * @return {string} json
      */
-    static toJson(codd) {
+    static toJson(codd, allowFallback = false) {
         switch (codd) {
             case "t": return "true";
             case "f": return "false";
@@ -134,14 +136,23 @@ class Jcodd {
         }
         //unescape
         let p1 = this.unescape(codd);//unescape(codd);//=> deprecated
-        //Assign ""
+        //Replace ' to " (fallback)
+        if (p1.startsWith("'") && p1.endsWith("'")) p1 = '"' + p1.slice(1, -1) + '"';
+        else if (allowFallback) {
+            const fallbackRegex = /([\,\[\:])\'([^\']*)\'([\,\]\}])/g;
+            if (fallbackRegex.test(p1)) p1 = p1.replace(fallbackRegex, '$1"$2"$3').replace(fallbackRegex, '$1"$2"$3');
+        }
+        //Assign property names with ""
         let p2 = p1.replace(/(\{|\}\,|\]\,|\"\,|[eE]?[+\-]?[\d.]+\,|[ntf]\,|true\,|false\,)([^\"\{\}\[\]\,\:]*)\:/g, '$1"$2":');
         //Convert n to null
-        let p3 = p2.replace(/([\[\,\:])n([\]\,\}])/g, "$1null$2").replace(/([\[\,\:])n([\]\,\}])/g, "$1null$2");
+        const nullRegex = /([\[\,\:])n([\]\,\}])/g;
+        let p3 = p2.replace(nullRegex, "$1null$2").replace(nullRegex, "$1null$2");
         //Convert t to true
-        let p4 = p3.replace(/([\[\,\:])t([\]\,\}])/g, "$1true$2").replace(/([\[\,\:])t([\]\,\}])/g, "$1true$2");
+        const trueRegex = /([\[\,\:])t([\]\,\}])/g;
+        let p4 = p3.replace(trueRegex, "$1true$2").replace(trueRegex, "$1true$2");
         //Convert f to false
-        let p5 = p4.replace(/([\[\,\:])f([\]\,\}])/g, "$1false$2").replace(/([\[\,\:])f([\]\,\}])/g, "$1false$2");
+        const falseRegex = /([\[\,\:])f([\]\,\}])/g;
+        let p5 = p4.replace(falseRegex, "$1false$2").replace(falseRegex, "$1false$2");
 
         return p5;
     }
@@ -153,10 +164,23 @@ class Jcodd {
      * 
      * @returns {*} object
      */
-    static parse(codd) {
-        let json = this.toJson(codd);
+    static parse(codd, allowFallback = true) {
+        let json = this.toJson(codd, false);
 
-        return JSON.parse(json);
+        try {
+            return JSON.parse(json);
+        } catch (e) {
+            if (allowFallback) {
+                // try fallback
+                json = this.toJson(codd, true);
+                
+                try {
+                    return JSON.parse(json);
+                } catch (ef) {
+                    throw e;
+                }
+            } else throw e;
+        }
     }
 
     /**

@@ -31,7 +31,7 @@ SOFTWARE.
 // Collections of bypass for process codes takes be inline,
 // and monkey patching like as modern languages.
 // 
-// v0.6.0    / release 2026.01.03
+// v0.7.0    / release 2026.02.06
 // 
 // Author: Estre Soliette
 // Established: 2025.01.05
@@ -71,6 +71,7 @@ const _OBJECT = "Object";
 
 // frequent object types alias constant
 const _DATE = "Date";
+const _TIME = "Time";
 
 const _ARRAY = "Array";
 const _SET = "Set";
@@ -78,6 +79,8 @@ const _MAP = "Map";
 
 
 // frequent assign types alias constant
+const FORE_NOT_DEFAULT = "foreNotDefault";
+const MORE_NOT_DEFAULT = "moreNotDefault";
 const DEFAULT = "default";
 const FINALLY = "finally";
 
@@ -277,57 +280,88 @@ const checkCount = (object, checker = (k, v) => true) => {
 
 
 // match case constant
-const matchCase = (val, cases = { [DEFAULT]: val => {}, [FINALLY]: (val, returns) => {} }, ignoreCase = false) => {
-    let match;
-    forin(cases, (k, v) => executeIf(k != DEFAULT && rx(k, ignoreCase ? "i" : "").test(val), () => doAndReturn(() => match = v, true)));
+const matchCase = (val, cases = { [DEFAULT]: val => {}, [FINALLY]: (more, returns, fore, val, key) => {} }, ignoreCase = false) => {
+    let key, match;
+    forin(cases, (k, v) => executeIf(k != DEFAULT && k != FORE_NOT_DEFAULT && k != MORE_NOT_DEFAULT && rx(k, ignoreCase ? "i" : "").test(val), () => doAndReturn(() => { key = k; match = v; }, true)));
+    const isMatch = isNotNully(match);
+    const foreNotDefault = FORE_NOT_DEFAULT in cases ? cases[FORE_NOT_DEFAULT] : (val => val);
+    const moreNotDefault = MORE_NOT_DEFAULT in cases ? cases[MORE_NOT_DEFAULT] : (val => val);
     const defaultCase = cases[DEFAULT];
-    const finallyCase = cases[FINALLY];
-    const returns = isNotNully(match) ? (typeFunction(match) ? match(val) : match) : (typeFunction(defaultCase) ? defaultCase(val) : defaultCase);
-    const returnFinal = typeFunction(finallyCase) ? finallyCase(val, returns) : finallyCase;
-    return isUndefined(returnFinal) ? returns : returns ?? returnFinal;
+    const finallyCase = FINALLY in cases ? cases[FINALLY] : (val => val);
+    const fore = isMatch ? (typeFunction(foreNotDefault) ? foreNotDefault(val) : foreNotDefault) : val;
+    const returns = isMatch ? (typeFunction(match) ? match(fore, val) : match) : (typeFunction(defaultCase) ? defaultCase(val) : defaultCase);
+    const more = isMatch ? (typeFunction(moreNotDefault) ? moreNotDefault(returns, fore, val, key) : moreNotDefault) : returns;
+    const returnFinal = typeFunction(finallyCase) ? finallyCase(more, returns, fore, val, key) : finallyCase;
+    return returnFinal;
 };
-const equalCase = (val, cases = { [DEFAULT]: val => {}, [FINALLY]: (val, returns) => {} }, ignoreCase = false) => {
-    let match;
+const equalCase = (val, cases = { [DEFAULT]: val => {}, [FINALLY]: (more, returns, fore, val, key) => {} }, ignoreCase = false) => {
+    let key, match;
     const vlc = typeOf(val) == STRING ? val.toLowerCase() : val;
-    forin(cases, (k, v) => executeIf(k != DEFAULT && (ignoreCase ? (typeOf(k) == STRING ? k.toLowerCase() : k) == vlc : k == val), () => doAndReturn(() => match = v, true)));
+    forin(cases, (k, v) => executeIf(k != DEFAULT && k != FORE_NOT_DEFAULT && k != MORE_NOT_DEFAULT && (ignoreCase ? (typeOf(k) == STRING ? k.toLowerCase() : k) == vlc : k == val), () => doAndReturn(() => { key = k; match = v; }, true)));
+    const isMatch = isNotNully(match);
+    const foreNotDefault = FORE_NOT_DEFAULT in cases ? cases[FORE_NOT_DEFAULT] : (val => val);
+    const moreNotDefault = MORE_NOT_DEFAULT in cases ? cases[MORE_NOT_DEFAULT] : (val => val);
     const defaultCase = cases[DEFAULT];
-    const finallyCase = cases[FINALLY];
-    const returns = isNotNully(match) ? (typeFunction(match) ? match(val) : match) : (typeFunction(defaultCase) ? defaultCase(val) : defaultCase);
-    const returnFinal = typeFunction(finallyCase) ? finallyCase(val, returns) : finallyCase;
-    return isUndefined(returnFinal) ? returns : returns ?? returnFinal;
+    const finallyCase = FINALLY in cases ? cases[FINALLY] : (val => val);
+    const fore = isMatch ? (typeFunction(foreNotDefault) ? foreNotDefault(val) : foreNotDefault) : val;
+    const returns = isMatch ? (typeFunction(match) ? match(fore, val) : match) : (typeFunction(defaultCase) ? defaultCase(val) : defaultCase);
+    const more = isMatch ? (typeFunction(moreNotDefault) ? moreNotDefault(returns, fore, val, key) : moreNotDefault) : returns;
+    const returnFinal = typeFunction(finallyCase) ? finallyCase(more, returns, fore, val, key) : finallyCase;
+    return returnFinal;
 };
-const exactCase = (val, cases = { [DEFAULT]: val => {}, [FINALLY]: (val, returns) => {} }) => {
+const exactCase = (val, cases = { [DEFAULT]: val => {}, [FINALLY]: (more, returns, fore, val) => {} }) => {
     const match = cases[val];
+    const isMatch = isNotNully(match);
+    const foreNotDefault = FORE_NOT_DEFAULT in cases ? cases[FORE_NOT_DEFAULT] : (val => val);
+    const moreNotDefault = MORE_NOT_DEFAULT in cases ? cases[MORE_NOT_DEFAULT] : (val => val);
     const defaultCase = cases[DEFAULT];
-    const finallyCase = cases[FINALLY];
-    const returns = isNotNully(match) ? (typeFunction(match) ? match(val) : match) : (typeFunction(defaultCase) ? defaultCase(val) : defaultCase);
-    const returnFinal = typeFunction(finallyCase) ? finallyCase(val, returns) : finallyCase;
-    return isUndefined(returnFinal) ? returns : returns ?? returnFinal;
+    const finallyCase = FINALLY in cases ? cases[FINALLY] : (val => val);
+    const fore = isMatch ? (typeFunction(foreNotDefault) ? foreNotDefault(val) : foreNotDefault) : val;
+    const returns = isMatch ? (typeFunction(match) ? match(fore, val) : match) : (typeFunction(defaultCase) ? defaultCase(val) : defaultCase);
+    const more = isMatch ? (typeFunction(moreNotDefault) ? moreNotDefault(returns, fore, val) : moreNotDefault) : returns;
+    const returnFinal = typeFunction(finallyCase) ? finallyCase(more, returns, fore, val) : finallyCase;
+    return returnFinal;
 };
-const typeCase = (variable, cases = { [DEFAULT]: variable => {}, [FINALLY]: (variable, returns) => {} }) => {
+const typeCase = (variable, cases = { [DEFAULT]: variable => {}, [FINALLY]: (more, returns, fore, variable, type) => {} }) => {
     const type = typeOf(variable);
     const match = cases[type];
+    const isMatch = isNotNully(match);
+    const foreNotDefault = FORE_NOT_DEFAULT in cases ? cases[FORE_NOT_DEFAULT] : (variable => variable);
+    const moreNotDefault = MORE_NOT_DEFAULT in cases ? cases[MORE_NOT_DEFAULT] : (variable => variable);
     const defaultCase = cases[DEFAULT];
-    const finallyCase = cases[FINALLY];
-    const returns = isNotNully(match) ? (typeFunction(match) ? match(variable) : match) : (typeFunction(defaultCase) ? defaultCase(variable) : defaultCase);
-    const returnFinal = typeFunction(finallyCase) ? finallyCase(variable, returns) : finallyCase;
-    return isUndefined(returnFinal) ? returns : returns ?? returnFinal;
+    const finallyCase = FINALLY in cases ? cases[FINALLY] : (variable => variable);
+    const fore = isMatch ? (typeFunction(foreNotDefault) ? foreNotDefault(variable) : foreNotDefault) : variable;
+    const returns = isMatch ? (typeFunction(match) ? match(fore, variable) : match) : (typeFunction(defaultCase) ? defaultCase(variable) : defaultCase);
+    const more = isMatch ? (typeFunction(moreNotDefault) ? moreNotDefault(returns, fore, variable, type) : moreNotDefault) : returns;
+    const returnFinal = typeFunction(finallyCase) ? finallyCase(more, returns, fore, variable, type) : finallyCase;
+    return returnFinal;
 };
-const classCase = (object, cases = { [DEFAULT]: object => {}, [FINALLY]: (object, returns) => {} }) => {
+const classCase = (object, cases = { [DEFAULT]: object => {}, [FINALLY]: (more, returns, fore, object, className) => {} }) => {
     const className = object.constructor.name;
     const match = cases[className];
+    const isMatch = isNotNully(match);
+    const foreNotDefault = FORE_NOT_DEFAULT in cases ? cases[FORE_NOT_DEFAULT] : (object => object);
+    const moreNotDefault = MORE_NOT_DEFAULT in cases ? cases[MORE_NOT_DEFAULT] : (object => object);
     const defaultCase = cases[DEFAULT];
-    const finallyCase = cases[FINALLY];
-    const returns = isNotNully(match) ? (typeFunction(match) ? match(object) : match) : (typeFunction(defaultCase) ? defaultCase(object) : defaultCase);
-    const returnFinal = typeFunction(finallyCase) ? finallyCase(object, returns) : finallyCase;
-    return isUndefined(returnFinal) ? returns : returns ?? returnFinal;
+    const finallyCase = FINALLY in cases ? cases[FINALLY] : (object => object);
+    const fore = isMatch ? (typeFunction(foreNotDefault) ? foreNotDefault(object) : foreNotDefault) : object;
+    const returns = isMatch ? (typeFunction(match) ? match(fore, object) : match) : (typeFunction(defaultCase) ? defaultCase(object) : defaultCase);
+    const more = isMatch ? (typeFunction(moreNotDefault) ? moreNotDefault(returns, fore, object, className) : moreNotDefault) : returns;
+    const returnFinal = typeFunction(finallyCase) ? finallyCase(more, returns, fore, object, className) : finallyCase;
+    return returnFinal;
 };
-const kindCase = (kindFrom, cases = { [DEFAULT]: val => {}, [FINALLY]: val => { val, returns } }) => typeCase(kindFrom, { ...cases, [OBJECT]: () => classCase(kindFrom, { ...cases, [FINALLY]: undefined }) });
+const kindCase = (kindFrom, cases = { [DEFAULT]: val => {}, [FINALLY]: (more, returns, fore, value, kind) => {} }) => typeCase(kindFrom, { ...cases, [OBJECT]: () => classCase(kindFrom, { ...cases, [FINALLY]: undefined }) });
 
 
 /** variable data copy */
 const copy = (from, dataOnly = true, primitiveOnly = false, recusive = true) => isNully(from) ? from : typeCase(from, {
     [OBJECT]: val => {
+        const proto = Object.getPrototypeOf(val);
+        if (proto != n && proto !== Object.prototype && !primitiveOnly) try {
+            return structuredClone(val);
+        } catch (e) {
+            // structuredClone not supported
+        }
         const object = new val.constructor();
         if (dataOnly || primitiveOnly) {
             for (const key in val) if (isNully(val) || typeCase(val[key], {
@@ -420,6 +454,267 @@ const postFrameQueue = (process = (...args) => args[0], ...args) => requestAnima
 const postFramePromise = (process = (rs, rj, ...args) => rs(args[0]), ...args) => new Promise((rs, rj) => requestAnimationFrame(() => process(rs, rj, ...args)));
 
 
+// Additional classes
+class Time {
+    static get dayMillis() { return 86400000; }
+    static get hourMillis() { return 3600000; }
+    static get minuteMillis() { return 60000; }
+    static get secondMillis() { return 1000; }
+
+    static get millisUnitsArray() { return [this.hourMillis, this.minuteMillis, this.secondMillis, 1]; }
+
+    static fromDate(date) { return new Time(date); }
+    static fromDateTime(date) { return new Time(date.time, null, null, null, date.zoneOffset); }
+    static fromString(str) { return new Time(str); }
+    static fromArray(arr) { return new Time(arr); }
+
+    static get now() { return Time.fromDate(new Date()); }
+
+
+    #time = 0;
+    #timezoneOffset = 0;
+
+    constructor(hours = 0, minutes = 0, seconds = 0, milliseconds = 0, timezoneOffset = (hours instanceof Date ? hours : Date.new).zoneOffset) {
+        this.#timezoneOffset = timezoneOffset;
+        kindCase(hours, {
+            [_DATE]: date => {
+                this.timeGMT = (((date.hours * 60) + date.minutes) * 60 + date.seconds) * 1000 + date.millis;
+            },
+            [_TIME]: time => {
+                this.#time = time.time;
+            },
+            [_ARRAY]: arr => {
+                const [h, m, s, ms] = arr;
+                this.timeGMT = ((((h ?? 0) * 60) + (m ?? 0)) * 60 + (s ?? 0)) * 1000 + (ms ?? 0);
+            },
+            [STRING]: str => {
+                let isNegative = false;
+                if (str.startsWith("-")) {
+                    isNegative = true;
+                    str = str.slice(1);
+                }
+                let daysPart = 0;
+                if (str.includes(" ")) {
+                    const [daysStr, timeStr] = str.split(" ");
+                    daysPart = Number(daysStr) * Time.dayMillis;
+                    str = timeStr;
+                }
+                const [hms, ms] = str.split(".");
+                const parts = hms.split(":").map(it => Number(it));
+                const [h, m, s] = parts;
+                this.timeGMT = (daysPart + (((h * 60) + m) * 60 + s) * 1000 + Number(ms)) * (isNegative ? -1 : 1);
+            },
+            [NUMBER]: _ => {
+                if (isNully(minutes) && isNully(seconds) && isNully(milliseconds)) {
+                    this.#time = hours;
+                } else {
+                    this.timeGMT = (((hours * 60) + minutes) * 60 + seconds) * 1000 + milliseconds;
+                }
+            },
+            [NULL]: _ => {
+                const now = new Date();
+                this.timeGMT = (((now.hours * 60) + now.minutes) * 60 + now.seconds) * 1000 + now.millis;
+            },
+            [UNDEFINED]: _ => {
+                const now = new Date();
+                this.timeGMT = (((now.hours * 60) + now.minutes) * 60 + now.seconds) * 1000 + now.millis;
+            },
+            [DEFAULT]: _ => {
+                console.warn("Time constructor received unsupported type:", typeOf(hours));
+            },
+        });
+    }
+
+    get time() { return this.#time; }
+    set time(val) { this.#time = val; }
+
+    get timeAbsolute() { return Math.abs(this.#time); }
+    set timeAbsolute(val) {
+        const valAbs = Math.abs(val);
+        this.#time = this.isNegative ? -valAbs : valAbs;
+    }
+    get timeAbs() { return this.timeAbsolute; }
+    set timeAbs(val) {
+        const valAbs = Math.abs(val);
+        this.#time = this.isNegative ? -valAbs : valAbs;
+    }
+
+    get timeGMT() { return this.#time + (this.#timezoneOffset * Time.minuteMillis); }
+    set timeGMT(val) { this.#time = val - (this.#timezoneOffset * Time.minuteMillis); }
+
+    get isNegative() { return this.timeGMT < 0; }
+    set isNegative(val) {
+        if (val && this.isPositive) this.timeGMT = -this.timeGMT;
+        else if (!val && this.isNegative) this.timeGMT = -this.timeGMT;
+    }
+    get isPositive() { return this.timeGMT >= 0; }
+    set isPositive(val) {
+        if (val && this.isNegative) this.timeGMT = -this.timeGMT;
+        else if (!val && this.isPositive) this.timeGMT = -this.timeGMT;
+    }
+
+    get negativePrefix() { return this.isNegative ? "-" : ""; }
+    get positivePrefix() { return this.isPositive ? "+" : ""; }
+
+    get dayAndMillis() { return [Math.floor(this.timeGMT / Time.dayMillis), this.timeGMT % Time.dayMillis]; }
+    get hourAndMillis() { return [Math.floor(this.timeGMT / Time.hourMillis), this.timeGMT % Time.hourMillis]; }
+    get minuteAndMillis() { return [Math.floor(this.timeGMT / Time.minuteMillis), this.timeGMT % Time.minuteMillis]; }
+    get secondAndMillis() { return [Math.floor(this.timeGMT / Time.secondMillis), this.timeGMT % Time.secondMillis]; }
+
+    get days() { return Math.floor(this.timeGMT / Time.dayMillis); }
+    set days(val) { this.timeGMT = (val * Time.dayMillis) + this.millisInDay; }
+    get daysAbs() { return Math.abs(this.days); }
+    get millisInDay() { return this.timeGMT % Time.dayMillis; }
+    set millisInDay(val) { this.timeGMT = (this.days * Time.dayMillis) + val; }
+
+    get daysAndMillis() { return [this.days, this.millisInDay]; }
+    set daysAndMillis(val) {
+        const [days, millisInDay] = val;
+        this.timeGMT = (days * Time.dayMillis) + millisInDay;
+    }
+
+    get hours() { return Math.floor(this.millisInDay / Time.dayMillis); }
+    set hours(val) { this.timeGMT = (this.days * Time.dayMillis) + (val * Time.hourMillis) + this.millisInHour; }
+    get hoursAbs() { return Math.abs(this.hours); }
+    get hours12() { const hours = this.hours % 12; return hours == 0 ? (hours < 0 ? -12 : 12) : hours; }
+    get hours12Abs() { return Math.abs(this.hours12); }
+    get digitHours() { return this.hoursAbs.toString().padStart(2, "0"); }
+    set digitHours(val) { this.hours = Number(val); }
+    get digitHoursWithNegative() { return this.negativePrefix + this.digitHours; }
+    get millisInHour() { return this.millisInDay % Time.hourMillis; }
+    set millisInHour(val) { this.timeGMT = (this.days * Time.dayMillis) + (this.hours * Time.hourMillis) + val; }
+    
+    get hoursAndMillis() { return [this.hours, this.millisInHour]; }
+    set hoursAndMillis(val) {
+        const [hours, millisInHour] = val;
+        this.timeGMT = (this.days * Time.dayMillis) + (hours * Time.hourMillis) + millisInHour;
+    }
+
+    get minutes() { return Math.floor(this.millisInHour / Time.minuteMillis); }
+    set minutes(val) { this.timeGMT = (this.days * Time.dayMillis) + (this.hours * Time.hourMillis) + (val * Time.minuteMillis) + this.millisInMinute; }
+    get minutesAbs() { return Math.abs(this.minutes); }
+    get digitMinutes() { return this.minutesAbs.toString().padStart(2, "0"); }
+    set digitMinutes(val) { this.minutes = Number(val); }
+    get digitMinutesWithNegative() { return this.negativePrefix + this.digitMinutes; }
+    get millisInMinute() { return this.millisInHour % Time.minuteMillis; }
+    set millisInMinute(val) { this.timeGMT = (this.days * Time.dayMillis) + (this.hours * Time.hourMillis) + (this.minutes * Time.minuteMillis) + val; }
+
+    get minutesAndMillis() { return [this.minutes, this.millisInMinute]; }
+    set minutesAndMillis(val) {
+        const [minutes, millisInMinute] = val;
+        this.timeGMT = (this.days * Time.dayMillis) + (this.hours * Time.hourMillis) + (minutes * Time.minuteMillis) + millisInMinute;
+    }
+
+    get seconds() { return Math.floor(this.millisInMinute / Time.secondMillis); }
+    set seconds(val) { this.timeGMT = (this.days * Time.dayMillis) + (this.hours * Time.hourMillis) + (this.minutes * Time.minuteMillis) + (val * Time.secondMillis) + this.milliseconds; }
+    get secondsAbs() { return Math.abs(this.seconds); }
+    get digitSeconds() { return this.secondsAbs.toString().padStart(2, "0"); }
+    set digitSeconds(val) { this.seconds = Number(val); }
+    get digitSecondsWithNegative() { return this.negativePrefix + this.digitSeconds; }
+
+    get secondsAndMillis() { return [this.seconds, this.milliseconds]; }
+    set secondsAndMillis(val) {
+        const [seconds, milliseconds] = val;
+        this.timeGMT = (this.days * Time.dayMillis) + (this.hours * Time.hourMillis) + (this.minutes * Time.minuteMillis) + (seconds * Time.secondMillis) + milliseconds;
+    }
+
+    get milliseconds() { return this.millisInMinute % Time.secondMillis; }
+    set milliseconds(val) { this.timeGMT = (this.days * Time.dayMillis) + (this.hours * Time.hourMillis) + (this.minutes * Time.minuteMillis) + (this.seconds * Time.secondMillis) + val; }
+    get millis() { return this.milliseconds; }
+    set millis(val) { this.milliseconds = val; }
+    get millisAbs() { return Math.abs(this.milliseconds); }
+    get digitMillis() { return this.millisAbs.toString().padStart(3, "0"); }
+    set digitMillis(val) { this.milliseconds = Number(val); }
+    get digitMillisWithNegative() { return this.negativePrefix + this.digitMillis; }
+
+
+    get array() {
+        const [hm, mm, sm] = Time.millisUnitsArray;
+        let totalMillis = this.timeAbsolute;
+        const hours = Math.floor(totalMillis / hm);
+        totalMillis -= hours * hm;
+        const minutes = Math.floor(totalMillis / mm);
+        totalMillis -= minutes * mm;
+        const seconds = Math.floor(totalMillis / sm);
+        const milliseconds = totalMillis - (seconds * sm);
+        return [hours, minutes, seconds, milliseconds];
+    }
+    set array(val) {
+        const [hours, minutes, seconds, milliseconds] = val;
+        this.timeGMT = (((hours * 60) + minutes) * 60 + seconds) * 1000 + milliseconds;
+    }
+    
+    get hourMinutesIntArray() { return [this.hours, this.minutes]; }
+    get hourMinutesArray() { return [this.digitHours, this.digitMinutes]; }
+    get hourMinutes() { return this.hourMinutesArray.join(":"); }
+    get hourMinutesWithNegative() { return this.negativePrefix + this.hourMinutes; }
+    get minuteSecondsIntArray() { return [this.minutes, this.seconds]; }
+    get minuteSecondsArray() { return [this.digitMinutes, this.digitSeconds]; }
+    get minuteSeconds() { return this.minuteSecondsArray.join(":"); }
+    get minuteSecondsWithNegative() { return this.negativePrefix + this.minuteSeconds; }
+    get secondMillisIntArray() { return [this.seconds, this.milliseconds]; }
+    get secondMillisArray() { return [this.digitSeconds, this.digitMillis]; }
+    get secondMillis() { return this.secondMillisArray.join("."); }
+    get secondMillisWithNegative() { return this.negativePrefix + this.secondMillis; }
+
+    get timeArray() { return [this.hours, this.minutes, this.seconds]; }
+    get timeStringArray() { return [this.digitHours, this.digitMinutes, this.digitSeconds]; }
+    get timeString() { return this.timeArray.join(":"); }
+    get timeStringWithNegative() { return this.negativePrefix + this.timeString; }
+    get hmsArray() { return this.timeArray; }
+    get hhmmssArray() { return this.timeStringArray; }
+    get hhmmss() { return this.timeString; }
+    get hhmmssWithNegative() { return this.timeStringWithNegative; }
+    get hhmmssAndMillis() { return [this.hhmmss, this.digitMillis]; }
+
+    get timeArrayWithMillis() { return [this.hours, this.minutes, this.seconds, this.milliseconds]; }
+    get timeStringArrayWithMillis() { return [this.digitHours, this.digitMinutes, this.digitSeconds, this.digitMillis]; }
+    get timeStringWithMillis() { return this.timeString + "." + this.digitMillis; }
+    get timeStringWithMillisWithNegative() { return this.negativePrefix + this.timeStringWithMillis; }
+    get hmsmsArray() { return this.timeArrayWithMillis; }
+    get hhmmssmsArray() { return this.timeStringArrayWithMillis; }
+    get hhmmssms() { return this.timeStringWithMillis; }
+    get hhmmssmsWithNegative() { return this.timeStringWithMillisWithNegative; }
+    
+
+    get digitArray() { return [this.digitHours, this.digitMinutes, this.digitSeconds, this.digitMillis]; }
+    set digitArray(val) {
+        const [hours, minutes, seconds, milliseconds] = val.map(it => Number(it));
+        this.timeGMT = (((hours * 60) + minutes) * 60 + seconds) * 1000 + milliseconds;
+    }
+
+    get arrayWithDays() { return [this.days, ...this.timeArray, ]; }
+    set arrayWithDays(val) {
+        const [days, hours, minutes, seconds, milliseconds] = val;
+        this.timeGMT = (days * Time.dayMillis) + (((hours * 60) + minutes) * 60 + seconds) * 1000 + milliseconds;
+    }
+    
+    get digitArrayWithDays() { return [this.days.toString(), ...this.digitArray]; }
+    set digitArrayWithDays(val) {
+        const [days, hours, minutes, seconds, milliseconds] = val.map(it => Number(it));
+        this.timeGMT = (days * Time.dayMillis) + (((hours * 60) + minutes) * 60 + seconds) * 1000 + milliseconds;
+    }
+
+    toString() {
+        const days = this.daysAbs;
+        return this.negativePrefix + (days > 0 ? days + " " : "") + this.hhmmssAndMillis.join(".");
+    }
+    toArray() { return this.array; }
+    valueOf() { return this.toString(); }
+
+    dateOn(baseDate = new Date()) {
+        const date = new Date(baseDate);
+        date.setHours(...this.timeArrayWithMillis);
+        return date;
+    }
+    dateAddTo(baseDate = new Date()) {
+        const date = new Date(baseDate.getTime() + this.timeGMT);
+        return date;
+    }
+}
+
+
+
 // Object function shortcut constants
 const defineStaticProperty = (cls, name, value, wa = true, ca = true, ea = false, extras = {}) => Object.defineProperty(cls, name, {
     value,
@@ -459,7 +754,7 @@ const defineGetterAndSetterPlex = (name, gets, sets, ca = true, ea = false, clas
 
 
 // additional static function for classes
-defineGetterAndSetter(Object, "new", function () { return new this.constructor(...arguments); });
+defineGetterAndSetter(Function, "new", function () { return new this(); });
 
 
 // additional global prototype functions
@@ -528,6 +823,7 @@ definePropertyPlex("ifNotEquals", function (that, process = it => it, ornot = it
 // additional primitive prototype functions
 defineGetterAndSetter(Number, "abs", function () { return Math.abs(this.it); });
 defineGetterAndSetter(Number, "int", function () { return parseInt(this.it); });
+defineProperty(Number, "divided", function (by) { return this.it.let(it => [(it / by).int, it % by]); });
 defineGetterAndSetter(Number, "string", function () { return this.it + ""; });
 defineGetterAndSetter(Number, "pricision", function () { return this.it - this.int; });
 defineGetterAndSetter(Number, "pricisionString", function () { return this.it.pricision.string.replace(/^0\./, ""); });
@@ -592,6 +888,7 @@ defineGetterAndSetter(Date, "YOUBI", function () { return this.it.dayJpn; });
 defineGetterAndSetter(Date, "zhou", function () { return this.it.dayChn; });
 defineGetterAndSetter(Date, "xingqi", function () { return this.it.dayChnX; });
 defineGetterAndSetter(Date, "hours", function () { return this.getHours(); }, function (val) { this.setHours(val); });
+defineGetterAndSetter(Date, "hours12", function () { const hours = this.getHours() % 12; return hours == 0 ? 12 : hours; });
 defineGetterAndSetter(Date, "minutes", function () { return this.getMinutes(); }, function (val) { this.setMinutes(val); });
 defineGetterAndSetter(Date, "seconds", function () { return this.getSeconds(); }, function (val) { this.setSeconds(val); });
 defineGetterAndSetter(Date, "millis", function () { return this.getMilliseconds(); }, function (val) { this.setMilliseconds(val); });
@@ -603,21 +900,31 @@ defineGetterAndSetter(Date, "isPM", function () { return this.it.hours >= 12; },
 defineGetterAndSetter(Date, "time", function () { return this.getTime(); }, function (val) { this.setTime(val); });
 defineGetterAndSetter(Date, "unix", function () { return parseInt(this.it.time / 1000); });
 defineGetterAndSetter(Date, "minutePoints", function () { return parseInt(this.it.unix / 60); });
-defineGetterAndSetter(Date, "minutePointsLocal", function () { return this.it.minutePoints - this.it.zoneOffset; });
+defineGetterAndSetter(Date, "minutePointsLocal", function () { return this.it.let(it => it.minutePoints - it.zoneOffset); });
 defineGetterAndSetter(Date, "hourPoints", function () { return parseInt(this.it.minutePoints / 60); });
-defineGetterAndSetter(Date, "hourPointsLocal", function () { return this.it.hourPoints - this.it.zoneHours; });
+defineGetterAndSetter(Date, "hourPointsLocal", function () { return this.it.let(it => it.hourPoints - it.zoneHours); });
 defineGetterAndSetter(Date, "dateOffset", function () { return parseInt(this.it.hourPointsLocal / 24); });
-defineGetterAndSetter(Date, "dayMinutes", function () { return (this.it.hours * 60) + this.it.minutes; });
-defineGetterAndSetter(Date, "daySeconds", function () { return (this.it.dayMinutes * 60) + this.it.seconds; });
-defineGetterAndSetter(Date, "dayMillis", function () { return (this.it.daySeconds * 1000) + this.it.millis; });
-defineGetterAndSetter(Date, "yearMonthArray", function () { return [this.it.year.string, this.it.month.digit2]; });
+defineGetterAndSetter(Date, "dayMinutes", function () { return this.it.let(it => (it.hours * 60) + it.minutes); });
+defineGetterAndSetter(Date, "daySeconds", function () { return this.it.let(it => (it.dayMinutes * 60) + it.seconds); });
+defineGetterAndSetter(Date, "dayMillis", function () { return this.it.let(it => (it.daySeconds * 1000) + it.millis); });
+defineGetterAndSetter(Date, "yearMonthIntArray0", function () { return this.it.let(it => [it.year, it.month0]); });
+defineGetterAndSetter(Date, "yearMonthIntArray", function () { return this.it.let(it => [it.year, it.month]); });
+defineGetterAndSetter(Date, "yearMonthArray", function () { return this.it.let(it => [it.year.string, it.month.digit2]); });
 defineGetterAndSetter(Date, "yearMonth", function () { return this.it.yearMonthArray.join("-"); });
-defineGetterAndSetter(Date, "dateStringArray", function () { return [this.it.year.string, this.it.month.digit2, this.it.date.digit2]; });
+defineGetterAndSetter(Date, "dateArray0", function () { return this.it.let(it => [it.year, it.month0, it.date]); });
+defineGetterAndSetter(Date, "dateArray", function () { return this.it.let(it => [it.year, it.month, it.date]); });
+defineGetterAndSetter(Date, "dateStringArray", function () { return this.it.let(it => [it.year.string, it.month.digit2, it.date.digit2]); });
 defineGetterAndSetter(Date, "dateString", function () { return this.it.dateStringArray.join("-"); });
-defineGetterAndSetter(Date, "hourMinutesArray", function () { return [this.it.hours.digit2, this.it.minutes.digit2]; });
+defineGetterAndSetter(Date, "hourMinutesIntArray", function () { return this.it.let(it => [it.hours, it.minutes]); });
+defineGetterAndSetter(Date, "hourMinutesArray", function () { return this.it.hourMinutesIntArray.map(it => it.digit2); });
 defineGetterAndSetter(Date, "hourMinutes", function () { return this.it.hourMinutesArray.join(":"); });
-defineGetterAndSetter(Date, "timeStringArray", function () { return [this.it.hours.digit2, this.it.minutes.digit2, this.it.seconds.digit2]; });
+defineGetterAndSetter(Date, "timeArray", function () { return this.it.let(it => [it.hours, it.minutes, it.seconds]); });
+defineGetterAndSetter(Date, "timeStringArray", function () { return this.it.timeArray.map(it => it.digit2); });
 defineGetterAndSetter(Date, "timeString", function () { return this.it.timeStringArray.join(":"); });
+defineGetterAndSetter(Date, "timePart", function () { return new Time(this.it); });
+defineGetterAndSetter(Date, "asTime", function () { return Time.fromDateTime(this.it); });
+defineProperty(Date, "setDayTime", function (time, m, s, ms) { return this.it.setHours(...(time instanceof Time ? time.timeArrayWithMillis : arguments)); });
+defineProperty(Date, "addTime", function (time) { return this.it.time += time instanceof Time ? time.time : new Time(...arguments).time; });
 
 
 
@@ -645,6 +952,7 @@ if (typeof window === UNDEFINED) {
     defineGlobal("_OBJECT", _OBJECT);
     
     defineGlobal("_DATE", _DATE);
+    defineGlobal("_TIME", _TIME);
 
     defineGlobal("_ARRAY", _ARRAY);
     defineGlobal("_SET", _SET);
@@ -818,4 +1126,8 @@ if (typeof window === UNDEFINED) {
     defineGlobal("defineStaticGetterAndSetter", defineStaticGetterAndSetter);
     defineGlobal("defineGetterAndSetter", defineGetterAndSetter);
     defineGlobal("defineGetterAndSetterPlex", defineGetterAndSetterPlex);
+}
+
+if (typeof module !== UNDEFINED && module.exports) {
+    module.exports.Time = Time;
 }
