@@ -106,7 +106,7 @@ EstreUI organizes content hierarchically:
 EstreUI classifies pages as follows:
 *   **Static**: Static page. Elements are not deleted and remain after registration during Estre UI initialization. Cannot be closed with closePage(). PID starts with `$s`. (Can be omitted when calling)
 *   **Instant**: Instant page. Elements are deleted after registration during Estre UI initialization and loaded when bringPage() is called separately. Can be closed with closePage(). PID starts with `$i`. (Can be omitted when calling)
-    *   **Multi instance**: Can display the same page implementation with different content simultaneously. PID includes an instance origin id prefixed with `^` at the end. (** Currently unimplemented.)
+    *   **Multi instance**: Can display the same page implementation with different content simultaneously. PID includes an instance origin id prefixed with `^` at the end. When creating (calling) a page, you can explicitly specify the `instanceOrigin`, or it will be automatically generated if not specified. When closing a page, you can also specify the `instanceOrigin` to close a specific page; if not specified, the most recently created page will be closed.
 
 ### PID (Page ID)
 Navigation is handled via PIDs, similar to deep links or routes.
@@ -371,7 +371,7 @@ EstreUI는 콘텐츠를 계층적으로 구성합니다:
 EstreUI는 페이지를 다음과 같이 구분합니다:
 *   **Static**: 정적 페이지. Estre UI 초기화 중 페이지 등록 시 요소가 삭제되지 않고 유지되며, closePage()로 닫을 수 없습니다. PID가 `$s`로 시작합니다. (호출 시 생략 가능)
 *   **Instant**: 인스턴트 페이지. Estre UI 초기화 중 페이지 등록 후 요소가 삭제되며, 별도로 bringPage()호출을 할 때 로드됩니다. closePage()로 닫을 수 있습니다. PID가 `$i`로 시작합니다. (호출 시 생략 가능)
-    *   **Multi instance**: 같은 페이지 구현을 다른 내용으로 동시에 표시할 수 있습니다. PID 끝에 `^`를 프리픽스로 하는 instance origin id가 포함됩니다. (** 현재 미구현입니다.)
+    *   **Multi instance**: 같은 페이지 구현을 다른 내용으로 동시에 표시할 수 있습니다. PID 끝에 `^`를 프리픽스로 하는 instance origin id가 포함됩니다. 페이지 생성(호출) 시 `instanceOrigin`을 직접 지정하거나 지정한 내용이 없는 경우 자동으로 생성됩니다. 페이지를 닫을 때도 `instanceOrigin`을 지정하여 특정 페이지를 닫을 수 있고, 지정하지 않은 경우 가장 마지막 생성된 페이지가 닫힙니다.
 
 ### PID (Page ID)
 네비게이션은 딥링크나 라우트와 유사한 PID를 통해 처리됩니다.

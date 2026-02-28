@@ -150,7 +150,8 @@ body[data-not-allowed="1"] * { cursor: not-allowed !important; }
 
 body button { color: var(--color-text); }
 
-body .emoji { font-family: var(--font-for-emoji) !important; font-variant-emoji: emoji; }
+body .force_emoji { font-variant-emoji: emoji; }
+body .emoji { font-family: var(--font-for-emoji) !important; }
 
 body .square { aspect-ratio: 1; }
 
@@ -175,6 +176,33 @@ body img.logo { filter: drop-shadow(0 0 5px rgb(var(--cglr) / 60%)); }
 
 
 /* global classes */
+.bgc_boundary_o1 { background-color: var(--color-boundary-o1); }
+.bgc_boundary_o3 { background-color: var(--color-boundary-o3); }
+.bgc_boundary_o5 { background-color: var(--color-boundary-o5); }
+.bgc_boundary_o7 { background-color: var(--color-boundary-o7); }
+.bgc_boundary_o10 { background-color: var(--color-boundary-o10); }
+.bgc_boundary_o15 { background-color: var(--color-boundary-o15); }
+.bgc_boundary_o20 { background-color: var(--color-boundary-o20); }
+.bgc_boundary_o25 { background-color: var(--color-boundary-o25); }
+.bgc_boundary_o30 { background-color: var(--color-boundary-o30); }
+.bgc_boundary_o35 { background-color: var(--color-boundary-o35); }
+.bgc_boundary_o40 { background-color: var(--color-boundary-o40); }
+.bgc_boundary_o45 { background-color: var(--color-boundary-o45); }
+.bgc_boundary_o50 { background-color: var(--color-boundary-o50); }
+.bgc_boundary_o55 { background-color: var(--color-boundary-o55); }
+.bgc_boundary_o60 { background-color: var(--color-boundary-o60); }
+.bgc_boundary_o65 { background-color: var(--color-boundary-o65); }
+.bgc_boundary_o70 { background-color: var(--color-boundary-o70); }
+.bgc_boundary_o75 { background-color: var(--color-boundary-o75); }
+.bgc_boundary_o80 { background-color: var(--color-boundary-o80); }
+.bgc_boundary_o85 { background-color: var(--color-boundary-o85); }
+.bgc_boundary_o90 { background-color: var(--color-boundary-o90); }
+.bgc_boundary_o93 { background-color: var(--color-boundary-o93); }
+.bgc_boundary_o95 { background-color: var(--color-boundary-o95); }
+.bgc_boundary_o97 { background-color: var(--color-boundary-o97); }
+.bgc_boundary_o99 { background-color: var(--color-boundary-o99); }
+
+
 .text_darker { color: var(--color-text-darker); }
 .text_darken { color: var(--color-text-darken); }
 .text_dark { color: var(--color-text-dark); }
