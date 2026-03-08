@@ -2839,7 +2839,7 @@ class EstrePageHostHandle extends EstrePageHandle {
     };
     set prevSubPageId(id) {
         if (id == null) return;
-        if (this.#prevSubPageIds.has(id)) this.$prevSubPages.delete(id);
+        if (this.#prevSubPageIds.has(id)) this.#prevSubPageIds.delete(id);
         this.#prevSubPageIds.add(id);
     };
 

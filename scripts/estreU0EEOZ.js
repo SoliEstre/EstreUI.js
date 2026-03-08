@@ -490,15 +490,85 @@ const isv3 = '="3"]';
 /** isv4(val) = ="val"] */
 const isv4 = val => '="' + val + '"]';
 
-// CSS variable name constant
-const v = {
-    supportPrefix: "--support-",
-    s: function(method) { return this.supportPrefix + method; },
+/** CSS value alias constant and Kebab Case Characters loopback (2 letters and more) */
+const v = new Proxy({
+    a(val) { return "attr(" + v[val] + ")"; },
+    get b() { return ; }, // *reserved*
+    get c() { return "center"; },
+    get d() { return ; }, // *reserved*
+    get e() { return ; }, // *reserved*
+    get f() { return "-webkit-fill-available"; },
+    get g() { return ; }, // *reserved*
+    get h() { return "100%"; },
+    get i() { return ; }, // *reserved*
+    get j() { return ; }, // *reserved*
+    get k() { return ; }, // *reserved*
+    get l() { return ; }, // *reserved*
+    get m() { return ; }, // *reserved*
+    get n() { return "no-repeat"; },
+    get o() { return ; }, // *reserved*
+    get p() { return ; }, // *reserved*
+    get q() { return ; }, // *reserved*
+    get r() { return ; }, // *reserved*
+    get s() { return ; }, // *reserved*
+    get t() { return "transparent"; },
+    u(val) {
+        const hasSQ = val.includes(sq);
+        const hasDQ = val.includes(dq);
+        const beginsSQ = val.startsWith(sq);
+        const beginsDQ = val.startsWith(dq);
+        return "url(" + ((hasSQ && hasDQ) || beginsSQ || beginsDQ ? val : hasSQ ? dq + val + dq : sq + val + sq) + ")";
+    },
+    get v() { return ; }, // *reserved*
+    get w() { return ; }, // *reserved*
+    get x() { return ; }, // *reserved*
+    get y() { return ; }, // *reserved*
+    get z() { return t0; },
+}, {
+    get: (target, prop) => {
+        if (prop in target) return target[prop];
+        else return prop.replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+            .replace(/([A-Z])([A-Z][a-z])/g, '$1-$2')
+            .replace(/^([A-Z])/, '-$1').toLowerCase();
+    }
+});
 
-    scalableMethod: "--scalable-method",
-
-    eoo: eoo
-};
+/** CSS variable name constant and Dashed Kebab Case Characters loopback (2 letters and more) */
+const b = new Proxy({
+    get a() { return ; }, // *reserved*
+    get b() { return ; }, // *reserved*
+    get c() { return ; }, // *reserved*
+    get d() { return ; }, // *reserved*
+    get e() { return ; }, // *reserved*
+    get f() { return ; }, // *reserved*
+    get g() { return ; }, // *reserved*
+    get h() { return ; }, // *reserved*
+    get i() { return ; }, // *reserved*
+    get j() { return ; }, // *reserved*
+    get k() { return ; }, // *reserved*
+    get l() { return ; }, // *reserved*
+    get m() { return "--scalable-method"; },
+    get n() { return ; }, // *reserved*
+    get o() { return ; }, // *reserved*
+    get p() { return "--support-"; },
+    get q() { return ; }, // *reserved*
+    get r() { return ; }, // *reserved*
+    s(val) { return this.p + v[val]; },
+    get t() { return ; }, // *reserved*
+    get u() { return ; }, // *reserved*
+    get v() { return ; }, // *reserved*
+    get w() { return ; }, // *reserved*
+    get x() { return "--ui-extensive"; },
+    get y() { return ; }, // *reserved*
+    get z() { return ; }, // *reserved*
+}, {
+    get: (target, prop) => {
+        if (prop in target) return target[prop];
+        else return hp + prop.replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+            .replace(/([A-Z])([A-Z][a-z])/g, '$1-$2')
+            .replace(/^([A-Z])/, '-$1').toLowerCase();
+    }
+});
 
 /** CSS support check */ 
 const csc = method => doc.$b.css(v.s(method)) == t1;
