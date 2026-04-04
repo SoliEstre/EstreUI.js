@@ -488,7 +488,7 @@ const eds = {
 
 
 // Popup browser
-function estrePopupBrowser(options = {}) {
+function estrePopupBrowser(options = {}, instanceOrigin) {
     return new Promise((resolve) => pageManager.bringPage("!popupBrowser", {
         data: options,
         onBeforeAttach(handle, iframe) {
@@ -513,7 +513,7 @@ function estrePopupBrowser(options = {}) {
         onClickForward(handle, iframe, url) {
             return this?.data?.callbackForward?.(handle, iframe, url);
         },
-    }));
+    }, instanceOrigin));
 }
 
 const popupBrowser = (src = "about:blank", name = "webview",
@@ -539,7 +539,7 @@ const closePopupBrowserWhenOnTop = async () => {
 
 
 // Toast up slide dialog
-function estreToastAlert(options = {}) {
+function estreToastAlert(options = {}, instanceOrigin) {
     return new Promise((resolve) => pageManager.bringPage("!toastAlert", {
         data: options,
         onOk() {
@@ -550,7 +550,7 @@ function estreToastAlert(options = {}) {
             this?.data?.callbackDissmiss?.();
             resolve(undefined);
         },
-     }));
+     }, instanceOrigin));
 }
 
 const toastAlert = (title, message,
@@ -560,7 +560,7 @@ const toastAlert = (title, message,
 ) => estreToastAlert({ title, message, callbackOk, callbackDissmiss, ok });
 
 
-function estreToastConfirm(options = {}) {
+function estreToastConfirm(options = {}, instanceOrigin) {
     return new Promise((resolve) => pageManager.bringPage("!toastConfirm", {
         data: options,
         onPositive() {
@@ -579,7 +579,7 @@ function estreToastConfirm(options = {}) {
             this?.data?.callbackDissmiss?.();
             resolve(undefined);
         },
-    }));
+    }, instanceOrigin));
 }
 
 const toastConfirm = (title, message,
@@ -633,7 +633,7 @@ const toastPrompt = (title,
 ) => estreToastPrompt({ title, message, callbackConfirm, callbackDissmiss, confirm, placeholder, type, value });
 
 
-function estreToastOption(options = {}) {
+function estreToastOption(options = {}, instanceOrigin) {
     return new Promise((resolve) => pageManager.bringPage("!toastOption", {
         data: options,
         onSelected(key, value) {
@@ -644,7 +644,7 @@ function estreToastOption(options = {}) {
             this?.data?.callbackDissmiss?.();
             resolve(undefined);
         },
-    }));
+    }, instanceOrigin));
 }
 
 const toastOption = (title = "", message = "",
@@ -708,7 +708,7 @@ const selectionToast = (options = ["option A", "option B", "option C"],
 ) => toastSelection(title, message, minSelection, maxSelection, options, defaultSelected, callbackConfirm, callbackSelect, callbackDissmiss, callbackAnother, confirm, another);
 
 
-function estreToastDials(options = {}) {
+function estreToastDials(options = {}, instanceOrigin) {
     const arrays = [c.table, c.initial, c.aligns, c.prefixes, c.suffixes, c.dividers];
     for (const name of arrays) if (!typeString(options[name])) options[name] = Jcodd.coddify(options[name]);
     options.stretch = !options.stretch ? "" : t1;
@@ -733,7 +733,7 @@ function estreToastDials(options = {}) {
                 resolve(undefined);
             },
         };
-        return pageManager.bringPage("!toastDials", intent);
+        return pageManager.bringPage("!toastDials", intent, instanceOrigin);
     });
     return new class {
         get data() { return intent.data; }
@@ -784,7 +784,7 @@ classicConfirm = confirm;
 classicPrompt = prompt;
 
 
-function estreAlert(options = {}) {
+function estreAlert(options = {}, instanceOrigin) {
     return new Promise((resolve) => pageManager.bringPage("!alert", {
         data: options,
         onOk() {
@@ -795,7 +795,7 @@ function estreAlert(options = {}) {
             this?.data?.callbackDissmiss?.();
             resolve(undefined);
         },
-     }));
+     }, instanceOrigin));
 }
 
 alert = (title, message,
@@ -805,7 +805,7 @@ alert = (title, message,
 ) => tu(title) ? classicAlert() : estreAlert({ title, message, callbackOk, callbackDissmiss, ok });
 
 
-function estreConfirm(options = {}) {
+function estreConfirm(options = {}, instanceOrigin) {
     return new Promise((resolve) => pageManager.bringPage("!confirm", {
         data: options,
         onPositive() {
@@ -824,7 +824,7 @@ function estreConfirm(options = {}) {
             this?.data?.callbackDissmiss?.();
             resolve(undefined);
         },
-    }));
+    }, instanceOrigin));
 }
 
 confirm = (title, message,
@@ -841,7 +841,7 @@ confirm = (title, message,
 }
 
 
-function estrePrompt(options = {}) {
+function estrePrompt(options = {}, instanceOrigin) {
     return new Promise((resolve) => pageManager.bringPage("!prompt", {
         data: options,
         onPromptFocus(input, text, event) {
@@ -867,7 +867,7 @@ function estrePrompt(options = {}) {
             this?.data?.callbackDissmiss?.();
             resolve(undefined);
         },
-     }));
+     }, instanceOrigin));
 }
 
 prompt = (title,
@@ -15501,7 +15501,7 @@ const estreUi = {
         return !unhandled;
     },
 
-    async closeInstantBlinded(id, instanceOrigin, isTermination = !component.isStatic) {
+    async closeInstantBlinded(id, instanceOrigin, isTermination) {
         let component = this.blindSections[id + (instanceOrigin?.let(it => "^" + it) ?? "")];
         if (component == null) {
             if (instanceOrigin != null) return null;
@@ -15520,6 +15520,7 @@ const estreUi = {
             } else return null;
         } else {
             if (!component.$host.hasClass("home")) {
+                isTermination ??= !component.isStatic;
                 const closed = await component.close(false, isTermination);
                 setTimeout(async _ => {
                     const $components = this.$blindSections.filter(naiv(m.id, id));

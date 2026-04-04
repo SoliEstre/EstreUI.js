@@ -170,6 +170,10 @@ body .tp_tiled_btn.padded { padding: 0 12px; }
 body .tp_tiled_btn.padded > span { padding: 0 4px; }
 body .tp_tiled_btn.fit_pad_h { padding-left: 0; padding-right: 0; }
 body .tp_tiled_btn.fit_pad_v { padding-top: 0; padding-bottom: 0; }
+body .tp_tiled_btn:disabled { opacity: 0.5; }
+body .tp_tiled_btn:disabled:active { cursor: not-allowed; }
+body .tp_tiled_btn[data-disabled="1"] { opacity: 0.5; }
+body .tp_tiled_btn[data-disabled="1"]:active { cursor: not-allowed; }
 
 /* extra */
 body img.logo { filter: drop-shadow(0 0 5px rgb(var(--cglr) / 60%)); }

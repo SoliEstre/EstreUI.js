@@ -31,7 +31,7 @@ SOFTWARE.
 // Collections of bypass for process codes takes be inline,
 // and monkey patching like as modern languages.
 // 
-// v0.7.0    / release 2026.02.06
+// v0.7.1    / release 2026.03.31
 // 
 // Author: Estre Soliette
 // Established: 2025.01.05
@@ -758,7 +758,7 @@ defineGetterAndSetter(Function, "new", function () { return new this(); });
 
 
 // additional global prototype functions
-defineGetterAndSetterPlex("it", function () { return classCase(this, { [_BOOLEAN]: it => Boolean(it), [_NUMBER]: it => Number(it), [_STRING]: it => String(it), [_BIG_INT]: it => BigInt(it), [DEFAULT]: it => it }); });
+defineGetterAndSetterPlex("it", function () { return classCase(this, { [_BOOLEAN]: it => it.valueOf(), [_NUMBER]: it => Number(it), [_STRING]: it => String(it), [_BIG_INT]: it => BigInt(it), [DEFAULT]: it => it }); });
 
 definePropertyPlex("matchCase", function () { return matchCase(this.it, ...arguments); });
 definePropertyPlex("equalCase", function () { return equalCase(this.it, ...arguments); });
