@@ -1,5 +1,7 @@
 # EstreUI.js
 
+![jQuery 4.0 Supported](https://img.shields.io/badge/jQuery-4.0%20Supported-0769AD?style=for-the-badge&logo=jquery&logoColor=white)
+
 EstreUI is a "Rimwork" (Runnable Frame) designed to bridge the gap between classic web development and modern native-like web applications. It provides a structured, mobile-first environment for developers familiar with jQuery, ASP, PHP, or JSP, as well as native app developers looking to transition to the web.
 
 [한국어 문서 (Korean Documentation)](#estre-ui-rimwork-korean)
