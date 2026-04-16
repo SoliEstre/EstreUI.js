@@ -593,6 +593,44 @@ const cvt = {
 
 
 
+/** Data Attribute name alias constant and Data prefixed Kebab Case Characters loopback (2 letters and more) */
+const dd = new Proxy({
+    get a() { return ; }, // *reserved*
+    get b() { return ; }, // *reserved*
+    get c() { return ; }, // *reserved*
+    get d() { return "data-disabled"; },
+    get e() { return ; }, // *reserved*
+    get f() { return ; }, // *reserved*
+    get g() { return ; }, // *reserved*
+    get h() { return ; }, // *reserved*
+    get i() { return ; }, // *reserved*
+    get j() { return ; }, // *reserved*
+    get k() { return ; }, // *reserved*
+    get l() { return ; }, // *reserved*
+    get m() { return ; }, // *reserved*
+    get n() { return ; }, // *reserved*
+    get o() { return ; }, // *reserved*
+    get p() { return ; }, // *reserved*
+    get q() { return ; }, // *reserved*
+    get r() { return ; }, // *reserved*
+    get s() { return ; }, // *reserved*
+    get t() { return ; }, // *reserved*
+    get u() { return ; }, // *reserved*
+    get v() { return ; }, // *reserved*
+    get w() { return ; }, // *reserved*
+    get x() { return ; }, // *reserved*
+    get y() { return ; }, // *reserved*
+    get z() { return ; }, // *reserved*
+}, {
+    get: (target, prop) => {
+        if (prop in target) return target[prop];
+        else return "data-" + prop.replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+            .replace(/([A-Z])([A-Z][a-z])/g, '$1-$2')
+            .replace(/^([A-Z])/, '-$1').toLowerCase();
+    }
+});
+
+
 // Utility constants block --
 
 // Text alias constant
@@ -899,8 +937,7 @@ class LocalStyle {
             }
             localPrefix += specifier;
         }
-        // const localizedStyles = styles.replace(/^([\t\s]*)##/gm, "$1" + localPrefix);
-        const localizedStyles = styles.replace(/([^#])##([^#])/g, "$1" + localPrefix + "$2").replace(/^##([^#])/gm, localPrefix + "$1");
+        const localizedStyles = styles.replace(/(^|[^#])##(?!#)/gm, "$1" + localPrefix);
 
         const styleSheet = doc.ce("style");
         if (elem == null) location.append(styleSheet);

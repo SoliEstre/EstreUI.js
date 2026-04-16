@@ -3118,7 +3118,7 @@ class EstreComponent extends EstrePageHostHandle {
 
     openContainer(id, intent, instanceOrigin) {
         if (this.isClosing) return false;
-        const page = pageManager.getConatiner(id, this.id, this.sectionBound);
+        const page = pageManager.getContainer(id, this.id, this.sectionBound);
         if (page == null) return null;
         if (page.statement == "static") return null;
         this.$host.append(page.live);
@@ -5782,7 +5782,7 @@ class EstreUiPageManager {
         else return null;
     }
 
-    getConatiner(id, componentId, sectionBound, statement) {
+    getContainer(id, componentId, sectionBound, statement) {
         var pid = this.findPid(EstreUiPage.getPidContainer(id, componentId, sectionBound, statement));
         if (pid != null) return this.get(pid);
         else return null;
@@ -5895,12 +5895,14 @@ class EstreUiPageManager {
                 if (!isIntentNone && existArticle && (page.isArticle || page.article == "main")) targetProcessed.article = container.showArticle(page.article, intent, articleInstanceOrigin);
                 else targetProcessed.article = article.show();
                 success = targetProcessed.article;
+                // falls through
             case "container":
                 if (success) {
                     if (!isIntentNone && existContainer && (page.isContainer || isRootMain)) targetProcessed.container = component.showContainer(page.container, intent, containerInstanceOrigin);
                     else targetProcessed.container = container.show();
                     success = targetProcessed.container;
                 }
+                // falls through
             case "component":
                 if (success) {
                     if (page.isHeader) {
@@ -5966,12 +5968,14 @@ class EstreUiPageManager {
                 if (!isIntentNone && (page.isArticle || page.article == "main")) targetProcessed.article = container.showArticle(page.article, intent, articleInstanceOrigin);
                 else targetProcessed.article = article.show();
                 success = targetProcessed.article;
+                // falls through
             case "container":
                 if (success) {
                     if (!isIntentNone && (page.isContainer || (page.article == "main" && page.container == "root"))) targetProcessed.container = component.showContainer(page.container, intent, containerInstanceOrigin);
                     else targetProcessed.container = container.show();
                     success = targetProcessed.container;
                 }
+                // falls through
             case "component":
                 if (success) {
                     const isRootMain = page.container == "root" && page.article == "main";
@@ -6053,18 +6057,18 @@ class EstreUiPageManager {
         return postPromise(resolve => {
             postQueue(async _ => {
                 if (pid.indexOf("!") > -1) pid = this.#managedPidMap[pid.replace(/^\!/, "")];
-                if (pid == null) resolve(null);
+                if (pid == null) return resolve(null);
                 if (pid.indexOf("*") > -1) pid = this.extPidMap[pid.replace(/^\*/, "")];
-                if (pid == null) resolve(null);
+                if (pid == null) return resolve(null);
                 if (pid.indexOf("$") < 0) pid = this.findPid(pid);
                 const page = this.get(pid);
-                if (page == null) resolve(null);
+                if (page == null) return resolve(null);
                 page.setInstanceOrigin(instanceOrigin);
                 const sections = page.sections;
-                if (sections == null) resolve(null);
+                if (sections == null) return resolve(null);
 
                 var component = sections[page.componentInstanceId];
-                if (component == null) resolve(null);
+                if (component == null) return resolve(null);
                 var container = null;
                 var article = null;
                 const componentInstanceOrigin = page.componentInstanceOrigin;
@@ -6150,8 +6154,7 @@ class EstreUiCustomPageManager {
     }
 
     showOrBringPage(id, intent, instanceOrigin) {
-        pid = "*" + id;
-        return pageManager.showOrBringPage(id, intent, instanceOrigin);
+        return pageManager.showOrBringPage("*" + id, intent, instanceOrigin);
     }
 
     hidePage(id, hideHost = false, instanceOrigin = null) {
@@ -6174,7 +6177,7 @@ class EstreHandle {
     // constants
     static #handles = {
         get [uis.unifiedCalendar]() { return EstreUnifiedCalendarHandle; },
-        get [uis.dedicatedCalendar]() { return EstreDedicatedCalanderHandle; },
+        get [uis.dedicatedCalendar]() { return EstreDedicatedCalendarHandle; },
 
         get [uis.scalable]() { return EstreScalableHandle; },
         get [uis.collapsible]() { return EstreCollapsibleHandle; },
@@ -9610,7 +9613,7 @@ const scheduleDataSet = new ScheduleDataSet();
 
 
 
-class EstreDedicatedCalanderHandle extends EstreHandle {
+class EstreDedicatedCalendarHandle extends EstreHandle {
 
     // constants
 
@@ -12005,17 +12008,19 @@ class EstreMultiDialSlotHandle extends EstreHandle {
         });
 
 
-        const threshold = 1;
+        const threshold = 0.99;
         const rootMargin = "0px";
 
         this.#itemSelectionObserver[index] = new IntersectionObserver(entries => {
+            let best = n;
             for (const entry of entries) {
-                if (entry.isIntersecting) {
-                    const idx = entry.target.dataset.index;
-                    const i = parseInt(idx);
-                    itemBound.dataset.selected = idx;
-                    this.#onSelected(index, i);
-                }
+                if (entry.intersectionRatio > (best?.intersectionRatio ?? 0)) best = entry;
+            }
+            if (best != n && best.intersectionRatio >= threshold) {
+                const idx = best.target.dataset.index;
+                const i = parseInt(idx);
+                itemBound.dataset.selected = idx;
+                this.#onSelected(index, i);
             }
         }, {
             root: itemBound,
@@ -12038,13 +12043,15 @@ class EstreMultiDialSlotHandle extends EstreHandle {
                 if (current != null) for (const elem of items) current.unobserve(elem);
 
                 this.#itemSelectionObserver[index] = new IntersectionObserver(entries => {
+                    let best = n;
                     for (const entry of entries) {
-                        if (entry.isIntersecting) {
-                            const idx = entry.target.dataset.index;
-                            const i = parseInt(idx);
-                            itemBound.dataset.selected = idx;
-                            this.#onSelected(index, i);
-                        }
+                        if (entry.intersectionRatio > (best?.intersectionRatio ?? 0)) best = entry;
+                    }
+                    if (best != n && best.intersectionRatio >= threshold) {
+                        const idx = best.target.dataset.index;
+                        const i = parseInt(idx);
+                        itemBound.dataset.selected = idx;
+                        this.#onSelected(index, i);
                     }
                 }, {
                     root: itemBound,
@@ -12052,11 +12059,32 @@ class EstreMultiDialSlotHandle extends EstreHandle {
                     threshold
                 });
 
-                for (const item of items) this.#setItemEvent(index, item.dataset.index, item);
+                for (const item of items) this.#setItemEvent(index, item.dataset.index.int, item);
             }
         });
 
         ro.observe(itemBound);
+
+        // Safari/WebKit does not re-evaluate IntersectionObserver entries
+        // when scrolling occurs in an intermediate scroll container (dialHost)
+        // between the IO root (dialBound) and the observed targets (li items).
+        // Force IO re-evaluation on scroll by cycling unobserve/observe.
+        {
+            const dialHost = this.$dialHosts[index];
+            let scrollRaf = 0;
+            dialHost?.addEventListener("scroll", () => {
+                cancelAnimationFrame(scrollRaf);
+                scrollRaf = requestAnimationFrame(() => {
+                    const observer = this.#itemSelectionObserver[index];
+                    if (observer == n) return;
+                    const items = this.getDialItems(index);
+                    for (const item of items) {
+                        observer.unobserve(item);
+                        observer.observe(item);
+                    }
+                });
+            }, { passive: true });
+        }
 
         return ro;
     }
@@ -12133,7 +12161,6 @@ class EstreMultiDialSlotHandle extends EstreHandle {
         observer.observe(item);
         $(item).off(c.click).click(function (e) {
             e.preventDefault();
-
             inst.#scrollSmooth(this);
 
             return false;
@@ -14887,83 +14914,99 @@ const estreUi = {
 
 
         let loadExportedFixedBottom;
-        loadExportedFixedBottom = _ => loadExported("fixedBottom.html").then(htmlContent => {
+        loadExportedFixedBottom = (_, attempt = 0) => loadExported("fixedBottom.html").then(htmlContent => {
             this.$fixedBottom.prepend(htmlContent);
             return onLoadedFixedBottom();
         }).catch(error => {
+            const delay = Math.min(1000 * Math.pow(2, attempt), 30000);
             console.error("There has been a problem with your fetch operation for fixedBottom: ", error);
-            console.log("Retrying to load fixedBottom...");
-            return loadExportedFixedBottom();
+            console.log(`Retrying to load fixedBottom in ${delay}ms...`);
+            return postPromise(resolve => setTimeout(resolve, delay))
+                .then(() => loadExportedFixedBottom(_, attempt + 1));
         });
 
         let loadExportedFixedTop;
-        loadExportedFixedTop = subTerm => loadExported("fixedTop.html").then(htmlContent => {
+        loadExportedFixedTop = (subTerm, attempt = 0) => loadExported("fixedTop.html").then(htmlContent => {
             this.$fixedTop.prepend(htmlContent);
             return onLoadedFixedTop(subTerm);
         }).catch(error => {
+            const delay = Math.min(1000 * Math.pow(2, attempt), 30000);
             console.error("There has been a problem with your fetch operation for fixedTop: ", error);
-            console.log("Retrying to load fixedTop...");
-            return loadExportedFixedTop(subTerm);
+            console.log(`Retrying to load fixedTop in ${delay}ms...`);
+            return postPromise(resolve => setTimeout(resolve, delay))
+                .then(() => loadExportedFixedTop(subTerm, attempt + 1));
         });
 
         let loadExportedStaticDoc;
-        loadExportedStaticDoc = subTerm => loadExported("staticDoc.html").then(htmlContent => {
+        loadExportedStaticDoc = (subTerm, attempt = 0) => loadExported("staticDoc.html").then(htmlContent => {
             this.$mainArea.prepend(htmlContent);
             return onLoadedStaticDoc(subTerm);
         }).catch(error => {
+            const delay = Math.min(1000 * Math.pow(2, attempt), 30000);
             console.error("There has been a problem with your fetch operation for staticDoc: ", error);
-            console.log("Retrying to load staticDoc...");
-            return loadExportedStaticDoc(subTerm);
+            console.log(`Retrying to load staticDoc in ${delay}ms...`);
+            return postPromise(resolve => setTimeout(resolve, delay))
+                .then(() => loadExportedStaticDoc(subTerm, attempt + 1));
         });
 
         let loadExportedInstantDoc;
-        loadExportedInstantDoc = subTerm => loadExported("instantDoc.html").then(htmlContent => {
+        loadExportedInstantDoc = (subTerm, attempt = 0) => loadExported("instantDoc.html").then(htmlContent => {
             this.$blindArea.prepend(htmlContent);
             return onLoadedInstantDoc(subTerm);
         }).catch(error => {
+            const delay = Math.min(1000 * Math.pow(2, attempt), 30000);
             console.error("There has been a problem with your fetch operation for instantDoc: ", error);
-            console.log("Retrying to load instantDoc...");
-            return loadExportedInstantDoc(subTerm);
+            console.log(`Retrying to load instantDoc in ${delay}ms...`);
+            return postPromise(resolve => setTimeout(resolve, delay))
+                .then(() => loadExportedInstantDoc(subTerm, attempt + 1));
         });
 
         let loadExportedManagedOverlay;
-        loadExportedManagedOverlay = subTerm => loadExported("managedOverlay.html").then(htmlContent => {
+        loadExportedManagedOverlay = (subTerm, attempt = 0) => loadExported("managedOverlay.html").then(htmlContent => {
             this.$overlayArea.prepend(htmlContent);
             return onLoadedManagedOverlay(subTerm);
         }).catch(error => {
+            const delay = Math.min(1000 * Math.pow(2, attempt), 30000);
             console.error("There has been a problem with your fetch operation for managedOverlay: ", error);
-            console.log("Retrying to load managedOverlay...");
-            return loadExportedManagedOverlay(subTerm);
+            console.log(`Retrying to load managedOverlay in ${delay}ms...`);
+            return postPromise(resolve => setTimeout(resolve, delay))
+                .then(() => loadExportedManagedOverlay(subTerm, attempt + 1));
         });
 
         let loadExportedMainMenu;
-        loadExportedMainMenu = subTerm => loadExported("mainMenu.html").then(htmlContent => {
+        loadExportedMainMenu = (subTerm, attempt = 0) => loadExported("mainMenu.html").then(htmlContent => {
             this.$mainMenu.prepend(htmlContent);
             return onLoadedMainMenu(subTerm);
         }).catch(error => {
+            const delay = Math.min(1000 * Math.pow(2, attempt), 30000);
             console.error("There has been a problem with your fetch operation for mainMenu: ", error);
-            console.log("Retrying to load mainMenu...");
-            return loadExportedMainMenu(subTerm);
+            console.log(`Retrying to load mainMenu in ${delay}ms...`);
+            return postPromise(resolve => setTimeout(resolve, delay))
+                .then(() => loadExportedMainMenu(subTerm, attempt + 1));
         });
 
         let loadExportedStockHandlePrototypes;
-        loadExportedStockHandlePrototypes = _ => loadExported("stockHandlePrototypes.html").then(htmlContent => {
+        loadExportedStockHandlePrototypes = (_, attempt = 0) => loadExported("stockHandlePrototypes.html").then(htmlContent => {
             this.$handlePrototypes.prepend(htmlContent);
             return true;
         }).catch(error => {
+            const delay = Math.min(1000 * Math.pow(2, attempt), 30000);
             console.error("There has been a problem with your fetch operation for stockHandlePrototypes: ", error);
-            console.log("Retrying to load stockHandlePrototypes...");
-            return loadExportedStockHandlePrototypes();
+            console.log(`Retrying to load stockHandlePrototypes in ${delay}ms...`);
+            return postPromise(resolve => setTimeout(resolve, delay))
+                .then(() => loadExportedStockHandlePrototypes(_, attempt + 1));
         });
 
         let loadExportedCustomHandlePrototypes;
-        loadExportedCustomHandlePrototypes = _ => loadExported("customHandlePrototypes.html").then(htmlContent => {
+        loadExportedCustomHandlePrototypes = (_, attempt = 0) => loadExported("customHandlePrototypes.html").then(htmlContent => {
             this.$handlePrototypes.append(htmlContent);
             return true;
         }).catch(error => {
+            const delay = Math.min(1000 * Math.pow(2, attempt), 30000);
             console.error("There has been a problem with your fetch operation for customHandlePrototypes: ", error);
-            console.log("Retrying to load customHandlePrototypes...");
-            return loadExportedCustomHandlePrototypes();
+            console.log(`Retrying to load customHandlePrototypes in ${delay}ms...`);
+            return postPromise(resolve => setTimeout(resolve, delay))
+                .then(() => loadExportedCustomHandlePrototypes(_, attempt + 1));
         });
 
 
