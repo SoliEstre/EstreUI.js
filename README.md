@@ -29,6 +29,10 @@ EstreUI is not just a library, nor a full-blown framework in the traditional sen
 *   **Browsers**: Chromium 92+, Safari 15+ (iOS 15+).
 *   **Recommendation**: **iOS 16+** is strongly recommended due to severe CSS limitations in iOS 15.
 
+### Developer & AI Agent Documentation
+*   **[EstreUI.js Developer Docs](.agent/estreui/README.md)**: In-depth, case-based developer documentation covering foundations, page system, handles, markup conventions, boot sequence, navigation API, and template engine.
+*   **[Project Adaptation Guide](.agent/project/README.md)**: Reference material for integrating EstreUI.js into a new project or modifying code in an existing one — includes upstream file classification, adaptation patterns, and style guide.
+
 ---
 
 ## Getting Started
@@ -293,6 +297,10 @@ EstreUI는 단순한 라이브러리도, 전통적인 의미의 완전한 프레
 ### 시스템 요구사항
 *   **브라우저**: Chromium 92+, Safari 15+ (iOS 15+).
 *   **권장 사항**: iOS 15의 CSS 제한으로 인해 **iOS 16 이상**을 강력히 권장합니다.
+
+### 개발자 및 AI 에이전트 문서
+*   **[EstreUI.js 개발문서](.agent/estreui/README.md)**: 기초, 페이지 시스템, 핸들, 마크업 컨벤션, 부트 시퀀스, 네비게이션 API, 템플릿 엔진을 다루는 사례 기반 상세 개발문서입니다.
+*   **[프로젝트 적용 가이드](.agent/project/README.md)**: EstreUI.js를 새 프로젝트에 통합하거나 기존 프로젝트의 코드를 수정할 때 필요한 참고 자료 — 업스트림 파일 분류, 적용 패턴, 스타일 가이드를 포함합니다.
 
 ---
 
