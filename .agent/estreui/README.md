@@ -69,6 +69,10 @@ Every topic is provided as a parallel pair of files:
 
 The [review/](review/) subfolder tracks bugs, typos, and improvement suggestions discovered during source analysis. See the [review dashboard](review/README.md) for the full list with resolution status.
 
+## Roadmap
+
+The [roadmap/](roadmap/) subfolder tracks planned improvements for EstreUI.js — JSDoc annotations, module splitting, test suite, and more. See the [roadmap dashboard](roadmap/README.md) for priorities and progress.
+
 ## How to add a new topic
 
 1. Pick a slug (kebab-case), e.g. `active-struct`.
@@ -152,6 +156,10 @@ The [review/](review/) subfolder tracks bugs, typos, and improvement suggestions
 ## 리뷰 & 개선
 
 [review/](review/) 하위 폴더에서 소스 분석 중 발견한 버그, 오타, 개선 제안을 건별로 추적합니다. 전체 목록과 해결 상태는 [리뷰 대시보드](review/README.md) 참고.
+
+## 로드맵
+
+[roadmap/](roadmap/) 하위 폴더에서 EstreUI.js의 향후 개선 계획 — JSDoc 어노테이션, 모듈 분리, 테스트 스위트 등 — 을 추적합니다. 우선순위와 진행 상태는 [로드맵 대시보드](roadmap/README.md) 참고.
 
 ## 새 토픽 추가 방법
 
