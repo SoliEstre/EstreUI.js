@@ -423,6 +423,7 @@ const eds = {
     // for variable calendar
     structureType: "data-structure-type",
     showSchedulePrefix: "data-show-schedule-",
+    /** @type {function(string): string} Generates origin-specific schedule attribute name. */
     currentScheduleOrigin: (origin) => "data-current-schedule-" + origin + "-origin",
     currentScheduleBasicOrigin: "data-current-schedule-basic-origin",
     currentScheduleDataOrigin: "data-current-schedule-data-origin",

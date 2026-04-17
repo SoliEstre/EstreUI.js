@@ -174,17 +174,17 @@ const _Z = "Z";
 /** @const {string} i - hash `"#"`. CSS ID selector prefix. */ const i = "#";
 /** @const {string} d - dot `"."`. CSS class selector prefix and separator. */ const d = ".";
 
-const cr = "\r";
-const lf = "\n";
-const crlf = cr + lf;
-const lfcr = lf + cr;
-const tab = "\t";
+/** @const {string} cr - carriage return. */ const cr = "\r";
+/** @const {string} lf - line feed. */ const lf = "\n";
+/** @const {string} crlf - CR+LF line ending. */ const crlf = cr + lf;
+/** @const {string} lfcr - LF+CR line ending. */ const lfcr = lf + cr;
+/** @const {string} tab - tab character. */ const tab = "\t";
 
-const ecr = "\\r";
-const elf = "\\n";
-const ecrlf = ecr + elf;
-const elfcr = elf + ecr;
-const etab = "\\t";
+/** @const {string} ecr - escaped CR literal string. */ const ecr = "\\r";
+/** @const {string} elf - escaped LF literal string. */ const elf = "\\n";
+/** @const {string} ecrlf - escaped CRLF literal string. */ const ecrlf = ecr + elf;
+/** @const {string} elfcr - escaped LFCR literal string. */ const elfcr = elf + ecr;
+/** @const {string} etab - escaped tab literal string. */ const etab = "\\t";
 
 
 // primitive types alias constant — primitive type aliases
@@ -203,64 +203,65 @@ const etab = "\\t";
 /** @const {undefined} eoa - End Of Array. undefined as array end marker. */ const eoa = u;
 
 // prototype of primitive types alias constant
-const FNC = FUNCTION;
-const BLE = BOOLEAN;
-const STR = STRING;
-const SYM = SYMBOL;
-const NUM = NUMBER;
-const BIG = BIGINT;
-const OBJ = OBJECT;
+/** @const {string} FNC - `"function"` type string. */ const FNC = FUNCTION;
+/** @const {string} BLE - `"boolean"` type string. */ const BLE = BOOLEAN;
+/** @const {string} STR - `"string"` type string. */ const STR = STRING;
+/** @const {string} SYM - `"symbol"` type string. */ const SYM = SYMBOL;
+/** @const {string} NUM - `"number"` type string. */ const NUM = NUMBER;
+/** @const {string} BIG - `"bigint"` type string. */ const BIG = BIGINT;
+/** @const {string} OBJ - `"object"` type string. */ const OBJ = OBJECT;
 
-const fun = Function;
-const ble = Boolean;
-const str = String;
-const sym = Symbol;
-const num = Number;
-const big = BigInt;
-const obj = Object;
+/** @const {FunctionConstructor} fun - `Function` alias. */ const fun = Function;
+/** @const {BooleanConstructor} ble - `Boolean` alias. */ const ble = Boolean;
+/** @const {StringConstructor} str - `String` alias. */ const str = String;
+/** @const {Function} sym - `Symbol` alias. */ const sym = Symbol;
+/** @const {NumberConstructor} num - `Number` alias. */ const num = Number;
+/** @const {Function} big - `BigInt` alias. */ const big = BigInt;
+/** @const {ObjectConstructor} obj - `Object` alias. */ const obj = Object;
 
 // class names of primitive types constant
-const FN = _FUNCTION;
-const BL = _BOOLEAN;
-const ST = _STRING;
-const SY = _SYMBOL;
-const NO = _NUMBER;
-const BI = _BIG_INT;
-const OJ = _OBJECT;
+/** @const {string} FN - `"Function"` class name. */ const FN = _FUNCTION;
+/** @const {string} BL - `"Boolean"` class name. */ const BL = _BOOLEAN;
+/** @const {string} ST - `"String"` class name. */ const ST = _STRING;
+/** @const {string} SY - `"Symbol"` class name. */ const SY = _SYMBOL;
+/** @const {string} NO - `"Number"` class name. */ const NO = _NUMBER;
+/** @const {string} BI - `"BigInt"` class name. */ const BI = _BIG_INT;
+/** @const {string} OJ - `"Object"` class name. */ const OJ = _OBJECT;
 
-const fn = Function;
-const bl = Boolean;
-const sg = String;
-const sl = Symbol;
-const no = Number;
-const bi = BigInt;
-const oj = Object;
+/** @const {FunctionConstructor} fn - `Function` class ref (= fun). */ const fn = Function;
+/** @const {BooleanConstructor} bl - `Boolean` class ref (= ble). */ const bl = Boolean;
+/** @const {StringConstructor} sg - `String` class ref. */ const sg = String;
+/** @const {Function} sl - `Symbol` class ref. */ const sl = Symbol;
+/** @const {NumberConstructor} no - `Number` class ref. */ const no = Number;
+/** @const {Function} bi - `BigInt` class ref. */ const bi = BigInt;
+/** @const {ObjectConstructor} oj - `Object` class ref (= obj). */ const oj = Object;
 
 
 // frequent object types alias constant
-const DT = _DATE;
-const TT = _TIME;
+/** @const {string} DT - `"Date"` class name. */ const DT = _DATE;
+/** @const {string} TT - `"Time"` class name. */ const TT = _TIME;
 
-const RA = _ARRAY;
-const SA = _SET;
-const MA = _MAP;
+/** @const {string} RA - `"Array"` class name. */ const RA = _ARRAY;
+/** @const {string} SA - `"Set"` class name. */ const SA = _SET;
+/** @const {string} MA - `"Map"` class name. */ const MA = _MAP;
 
-const dt = Date;
-const tt = Time;
+/** @const {DateConstructor} dt - `Date` constructor alias. */ const dt = Date;
+/** @const {Function} tt - `Time` constructor alias. */ const tt = Time;
 
-const ra = Array;
-const sa = Set;
-const ma = Map;
+/** @const {ArrayConstructor} ra - `Array` constructor alias. */ const ra = Array;
+/** @const {SetConstructor} sa - `Set` constructor alias. */ const sa = Set;
+/** @const {MapConstructor} ma - `Map` constructor alias. */ const ma = Map;
 
 
 // frequent assign types alias constant
-const fnd = FORE_NOT_DEFAULT;
-const mnd = MORE_NOT_DEFAULT;
-const def = DEFAULT;
-const fin = FINALLY;
+/** @const {string} fnd - `FORE_NOT_DEFAULT` assign priority. */ const fnd = FORE_NOT_DEFAULT;
+/** @const {string} mnd - `MORE_NOT_DEFAULT` assign priority. */ const mnd = MORE_NOT_DEFAULT;
+/** @const {string} def - `DEFAULT` assign priority. */ const def = DEFAULT;
+/** @const {string} fin - `FINALLY` assign priority. */ const fin = FINALLY;
 
 
 // frequent object types empty object issuer alias constant
+/** @const {Object} x - Empty instance issuer. `x.a` → Array, `x.d` → Date, `x.m` → Time, `x.t` → Set, `x.p` → Map. */
 const x = {
     get a() { return new Array(); },
     get d() { return new Date(); },
@@ -271,97 +272,97 @@ const x = {
 
 
 // bypass constant
-const ifx = executeIf;
-const itx = executeWhen;
+/** @const {Function} ifx - `executeIf()` — conditional execution. */ const ifx = executeIf;
+/** @const {Function} itx - `executeWhen()` — conditional execution variant. */ const itx = executeWhen;
 
-const ifr = ifReturn;
+/** @const {Function} ifr - `ifReturn()` — conditional return. */ const ifr = ifReturn;
 
-const roen = ifReturnOrEmptyNumber;
-const roes = ifReturnOrEmptyString;
-const roea = ifReturnOrEmptyArray;
-const roeo = ifReturnOrEmptyObject;
+/** @const {Function} roen - `ifReturnOrEmptyNumber()` — returns value or 0. */ const roen = ifReturnOrEmptyNumber;
+/** @const {Function} roes - `ifReturnOrEmptyString()` — returns value or "". */ const roes = ifReturnOrEmptyString;
+/** @const {Function} roea - `ifReturnOrEmptyArray()` — returns value or []. */ const roea = ifReturnOrEmptyArray;
+/** @const {Function} roeo - `ifReturnOrEmptyObject()` — returns value or {}. */ const roeo = ifReturnOrEmptyObject;
 
-const val = valet;
+/** @const {Function} val - `valet()` — value extraction helper. */ const val = valet;
 
 
 // common process shortcut constant
-const f02b = forZeroToBefore;
-const f02r = forZeroToReach;
+/** @const {Function} f02b - `forZeroToBefore()` — loop 0 to n-1. */ const f02b = forZeroToBefore;
+/** @const {Function} f02r - `forZeroToReach()` — loop 0 to n (inclusive). */ const f02r = forZeroToReach;
 
-const f20 = forToZeroFrom;
-const f21 = forToPrimeFrom;
+/** @const {Function} f20 - `forToZeroFrom()` — reverse loop to 0. */ const f20 = forToZeroFrom;
+/** @const {Function} f21 - `forToPrimeFrom()` — reverse loop to 1. */ const f21 = forToPrimeFrom;
 
-const ff = forForward;
-const fb = forBackward;
+/** @const {Function} ff - `forForward()` — forward iteration. */ const ff = forForward;
+/** @const {Function} fb - `forBackward()` — backward iteration. */ const fb = forBackward;
 
-const fi = forin;
-const fiv = forinner;
+/** @const {Function} fi - `forin()` — for-in loop. */ const fi = forin;
+/** @const {Function} fiv - `forinner()` — nested for-in loop. */ const fiv = forinner;
 
-const fo = forof;
-const fkv = forkv;
+/** @const {Function} fo - `forof()` — for-of loop. */ const fo = forof;
+/** @const {Function} fkv - `forkv()` — key-value iteration. */ const fkv = forkv;
 
-const w = whileIn;
-const dw = doWhileIn;
+/** @const {Function} w - `whileIn()` — while loop. */ const w = whileIn;
+/** @const {Function} dw - `doWhileIn()` — do-while loop. */ const dw = doWhileIn;
 
 
 // meaning comparator constant — type/value comparison function aliases
 /** @const {Function} to - `typeOf()` alias. */ const to = typeOf;
 
-const tm = typeMatch;
+/** @const {Function} tm - `typeMatch()` — typeof comparison. */ const tm = typeMatch;
 
-const tu = typeUndefined;
-const tf = typeFunction;
-const tb = typeBoolean;
-const ts = typeString;
-const ty = typeSymbol;
-const tn = typeNumber;
-const tg = typeBigint;
-const tj = typeObject;
+/** @const {Function} tu - `typeUndefined()` — typeof === "undefined". */ const tu = typeUndefined;
+/** @const {Function} tf - `typeFunction()` — typeof === "function". */ const tf = typeFunction;
+/** @const {Function} tb - `typeBoolean()` — typeof === "boolean". */ const tb = typeBoolean;
+/** @const {Function} ts - `typeString()` — typeof === "string". */ const ts = typeString;
+/** @const {Function} ty - `typeSymbol()` — typeof === "symbol". */ const ty = typeSymbol;
+/** @const {Function} tn - `typeNumber()` — typeof === "number". */ const tn = typeNumber;
+/** @const {Function} tg - `typeBigint()` — typeof === "bigint". */ const tg = typeBigint;
+/** @const {Function} tj - `typeObject()` — typeof === "object". */ const tj = typeObject;
 
-const im = instanceMatch;
-const io = isObject;
-const ia = isArray;
-const ioa = isArray;
-const ios = isString;
-const ion = isNumber;
-const iot = isSet;
-const iop = isMap;
+/** @const {Function} im - `instanceMatch()` — instanceof check. */ const im = instanceMatch;
+/** @const {Function} io - `isObject()` — is plain object. */ const io = isObject;
+/** @const {Function} ia - `isArray()` — Array.isArray(). */ const ia = isArray;
+/** @const {Function} ioa - `isArray()` alias (= ia). */ const ioa = isArray;
+/** @const {Function} ios - `isString()` — is string type. */ const ios = isString;
+/** @const {Function} ion - `isNumber()` — is number type. */ const ion = isNumber;
+/** @const {Function} iot - `isSet()` — is Set instance. */ const iot = isSet;
+/** @const {Function} iop - `isMap()` — is Map instance. */ const iop = isMap;
 
-const sm = same;
-const df = differ;
+/** @const {Function} sm - `same()` — loose equality (==). */ const sm = same;
+/** @const {Function} df - `differ()` — loose inequality (!=). */ const df = differ;
 
-const xv = exact;
-const nxv = notExact;
-const xnv = exactlyNot;
-const xm = exactMatches;
-const nx = notExactMatches;
-const xnm = exactlyNotMatches;
+/** @const {Function} xv - `exact()` — strict equality (===). */ const xv = exact;
+/** @const {Function} nxv - `notExact()` — strict inequality (!==). */ const nxv = notExact;
+/** @const {Function} xnv - `exactlyNot()` — strictly not equal. */ const xnv = exactlyNot;
+/** @const {Function} xm - `exactMatches()` — multi-value strict match. */ const xm = exactMatches;
+/** @const {Function} nx - `notExactMatches()` — none match strictly. */ const nx = notExactMatches;
+/** @const {Function} xnm - `exactlyNotMatches()` — all differ strictly. */ const xnm = exactlyNotMatches;
 
-const ev = equals;
-const nev = notEquals;
+/** @const {Function} ev - `equals()` — deep equality. */ const ev = equals;
+/** @const {Function} nev - `notEquals()` — deep inequality. */ const nev = notEquals;
 
-const gtv = gatherThan;
-const ltv = lessThan;
-const ngt = notGatherThan;
-const nlt = notLessThan;
+/** @const {Function} gtv - `gatherThan()` — greater than (>). */ const gtv = gatherThan;
+/** @const {Function} ltv - `lessThan()` — less than (<). */ const ltv = lessThan;
+/** @const {Function} ngt - `notGatherThan()` — not greater than. */ const ngt = notGatherThan;
+/** @const {Function} nlt - `notLessThan()` — not less than. */ const nlt = notLessThan;
 
-const gev = gatherOrEquals;
-const lev = lessOrEquals;
-const nge = notGatherAndEquals;
-const nle = notLessAndEquals;
+/** @const {Function} gev - `gatherOrEquals()` — greater or equal (>=). */ const gev = gatherOrEquals;
+/** @const {Function} lev - `lessOrEquals()` — less or equal (<=). */ const lev = lessOrEquals;
+/** @const {Function} nge - `notGatherAndEquals()` — strictly less (<). */ const nge = notGatherAndEquals;
+/** @const {Function} nle - `notLessAndEquals()` — strictly greater (>). */ const nle = notLessAndEquals;
 
-const fc = isFalseCase;
-const nfc = isNotFalseCase;
+/** @const {Function} fc - `isFalseCase()` — is falsy case. */ const fc = isFalseCase;
+/** @const {Function} nfc - `isNotFalseCase()` — is truthy case. */ const nfc = isNotFalseCase;
 
-const xu = isUndefined;
-const xn = isNull;
-const xt = isExactTrue;
-const xf = isExactFalse;
+/** @const {Function} xu - `isUndefined()` — === undefined. */ const xu = isUndefined;
+/** @const {Function} xn - `isNull()` — === null. */ const xn = isNull;
+/** @const {Function} xt - `isExactTrue()` — === true. */ const xt = isExactTrue;
+/** @const {Function} xf - `isExactFalse()` — === false. */ const xf = isExactFalse;
 
-const nxu = isNotUndefined;
-const nxn = isNotNull;
-const nxt = isNotTrue;
-const nxf = isNotFalse;
+/** @const {Function} nxu - `isNotUndefined()` — !== undefined. */ const nxu = isNotUndefined;
+/** @const {Function} nxn - `isNotNull()` — !== null. */ const nxn = isNotNull;
+/** @const {Function} nxt - `isNotTrue()` — !== true. */ const nxt = isNotTrue;
+/** @const {Function} nxf - `isNotFalse()` — !== false. */ const nxf = isNotFalse;
 
 /** @const {Function} en - `isNully()` — null or undefined. */ const en = isNully;
 /** @const {Function} et - `isTruely()` — truthy. */ const et = isTruely;
@@ -384,22 +385,22 @@ const nne = isNotNullAndEmpty;
 
 
 // quick execute by conditions constant
-const inoe = ifNullOrEmpty;
-const inne = ifNotNullAndEmpty;
+/** @const {Function} inoe - `ifNullOrEmpty()` — execute if null or empty. */ const inoe = ifNullOrEmpty;
+/** @const {Function} inne - `ifNotNullAndEmpty()` — execute if not null/empty. */ const inne = ifNotNullAndEmpty;
 
 
 // do and return inline double takes
-const dr = doAndReturn;
-const drx = doAndReturnByExecute;
+/** @const {Function} dr - `doAndReturn()` — execute and return value. */ const dr = doAndReturn;
+/** @const {Function} drx - `doAndReturnByExecute()` — execute and return result. */ const drx = doAndReturnByExecute;
 
 
 // object method shortcut constant
-const ok = keysOf;
-const ov = valuesOf;
-const oe = entriesOf;
-const oc = countOf;
+/** @const {Function} ok - `keysOf()` — Object.keys(). */ const ok = keysOf;
+/** @const {Function} ov - `valuesOf()` — Object.values(). */ const ov = valuesOf;
+/** @const {Function} oe - `entriesOf()` — Object.entries(). */ const oe = entriesOf;
+/** @const {Function} oc - `countOf()` — key count. */ const oc = countOf;
 
-const occ = checkCount;
+/** @const {Function} occ - `checkCount()` — filtered key count. */ const occ = checkCount;
 
 
 // match case constant — pattern matching function aliases
@@ -440,24 +441,24 @@ const occ = checkCount;
 
 
 // Object function shortcut constants
-const dsp = defineStaticProperty;
-const dp = defineProperty;
-const dpx = definePropertyPlex;
-const dspgs = defineStaticGetterAndSetter;
-const dpgs = defineGetterAndSetter;
-const dpgsx = defineGetterAndSetterPlex;
+/** @const {Function} dsp - `defineStaticProperty()`. */ const dsp = defineStaticProperty;
+/** @const {Function} dp - `defineProperty()`. */ const dp = defineProperty;
+/** @const {Function} dpx - `definePropertyPlex()`. */ const dpx = definePropertyPlex;
+/** @const {Function} dspgs - `defineStaticGetterAndSetter()`. */ const dspgs = defineStaticGetterAndSetter;
+/** @const {Function} dpgs - `defineGetterAndSetter()`. */ const dpgs = defineGetterAndSetter;
+/** @const {Function} dpgsx - `defineGetterAndSetterPlex()`. */ const dpgsx = defineGetterAndSetterPlex;
 
 
 // Regex builder alias
-const rx = (regex, flags) => new RegExp(regex, flags);
-const reg = rx;
-const ri = regex => new RegExp(regex, "i");
-const rg = regex => new RegExp(regex, "g");
-const rm = regex => new RegExp(regex, "m");
-const rig = regex => new RegExp(regex, "ig");
-const rim = regex => new RegExp(regex, "im");
-const rgm = regex => new RegExp(regex, "gm");
-const rigm = regex => new RegExp(regex, "igm");
+/** @const {Function} rx - RegExp builder with flags. */ const rx = (regex, flags) => new RegExp(regex, flags);
+/** @const {Function} reg - `rx` alias. */ const reg = rx;
+/** @const {Function} ri - RegExp with `"i"` flag. */ const ri = regex => new RegExp(regex, "i");
+/** @const {Function} rg - RegExp with `"g"` flag. */ const rg = regex => new RegExp(regex, "g");
+/** @const {Function} rm - RegExp with `"m"` flag. */ const rm = regex => new RegExp(regex, "m");
+/** @const {Function} rig - RegExp with `"ig"` flags. */ const rig = regex => new RegExp(regex, "ig");
+/** @const {Function} rim - RegExp with `"im"` flags. */ const rim = regex => new RegExp(regex, "im");
+/** @const {Function} rgm - RegExp with `"gm"` flags. */ const rgm = regex => new RegExp(regex, "gm");
+/** @const {Function} rigm - RegExp with `"igm"` flags. */ const rigm = regex => new RegExp(regex, "igm");
 
 
 // additional static function for classes
