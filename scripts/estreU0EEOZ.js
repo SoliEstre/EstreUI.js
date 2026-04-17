@@ -12,7 +12,11 @@
 
 Doctre?.patch?.();
 
-// document aliases
+/**
+ * document 접근 단축 객체 — DOM 조회, 엘리먼트 생성, Doctre 연동.
+ * `doc.b` = document.body, `doc.ce()` = Doctre.createElement, `doc.l()` = Doctre.live 등.
+ * @type {Object}
+ */
 const doc = {
     get b() { return document.body; },
     get $b() { return $(this.b); },
@@ -879,10 +883,20 @@ class EUX {
 
 
 /**
- * Estre Local styler
+ * Estre Local Styler — `##` 토큰을 부모 엘리먼트까지의 CSS 경로로 치환하여 로컬 스코프 스타일을 생성한다.
+ *
+ * HTML 내 `<style>` 태그에 `##`을 쓰면, 해당 스타일 태그의 위치를 기준으로 자동으로
+ * 부모 → 조상 경로의 CSS 셀렉터 체인으로 치환된다. Shadow DOM 없이 스코프 스타일 효과.
+ * @class
  */
 class LocalStyle {
 
+    /**
+     * 엘리먼트 내 스타일 텍스트의 `##`을 로컬 CSS 셀렉터 경로로 치환한다.
+     * @param {Element|null} elem - 스타일 텍스트를 포함한 엘리먼트. null이면 location에 직접 추가.
+     * @param {string} [styleText=elem.innerHTML] - 치환할 스타일 텍스트.
+     * @param {Element} [location=elem.parentElement] - 로컬 경로의 기준 엘리먼트.
+     */
     static localize(elem, styleText = elem.innerHTML, location = elem.parentElement) {
         const htmlEntities = {
             "&nbsp;": " ",
@@ -947,6 +961,11 @@ class LocalStyle {
         }
     }
 
+    /**
+     * 위치에 로컬 스타일을 직접 추가한다.
+     * @param {Element} location - 스타일을 삽입할 기준 엘리먼트.
+     * @param {string} localStyle - `##`을 포함한 스타일 텍스트.
+     */
     static appendLocalize(location, localStyle) {
         this.localize(null, localStyle, location);
     }
@@ -954,7 +973,9 @@ class LocalStyle {
 
 
 /**
- * Locale constants
+ * Estre 로케일 상수 — 언어별 요일명, 월명, 날짜/시간 접두·접미어 컬렉션.
+ * `EsLocale.currentLanguage`로 현재 언어를 감지하고, `EsLocale.collections`에서 해당 언어의 문자열을 조회.
+ * @class
  */
 class EsLocale {
     static get currentLocale() { return navigator.language; }

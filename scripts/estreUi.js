@@ -13,7 +13,12 @@
 // initializing essential states
 
 
-// UI specifier constants
+/**
+ * UI specifier constants — CSS 셀렉터 기반 UI 위젯 식별자 레지스트리.
+ * EstreHandle이 DOM에서 핸들을 탐색할 때 이 값들을 specifier로 사용한다.
+ * `uis.calendar`, `uis.collapsible` 등으로 접근.
+ * @type {Object<string, string>}
+ */
 const uis = {
     // lottie player //
     dotlottiePlayer: "dotlottie-player",
@@ -216,7 +221,12 @@ const uis = {
     eoo: eoo
 };
 
-// Element data specifier constants
+/**
+ * Element data specifier constants — `data-*` 속성명 레지스트리.
+ * Active Struct 바인딩, 페이지 매니저, 핸들 등에서 DOM data 속성을 참조할 때 사용.
+ * `eds.bind`, `eds.active`, `eds.exported` 등으로 접근.
+ * @type {Object<string, string>}
+ */
 const eds = {
     // for rim ui
     onReady: "data-on-ready",

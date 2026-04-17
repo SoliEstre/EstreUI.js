@@ -37,7 +37,13 @@ SOFTWARE.
 // Established: 2025.01.05
 
 
+/** @type {Object} 전역 객체 (globalThis / window / global). */
 const _global = (typeof globalThis !== 'undefined') ? globalThis : (typeof window !== 'undefined' ? window : global);
+/**
+ * 읽기 전용 전역 상수를 정의한다.
+ * @param {string} name - 전역 프로퍼티명.
+ * @param {*} value - 값.
+ */
 const defineGlobal = (name, value) => Object.defineProperty(_global, name, {
     value: value,
     writable: false,
@@ -85,7 +91,15 @@ const DEFAULT = "default";
 const FINALLY = "finally";
 
 
-// bypass constant
+// bypass constant — 조건부 실행 유틸
+/**
+ * 조건이 참이면 work를, 거짓이면 ornot을 실행한다.
+ * @param {boolean} bool - 조건.
+ * @param {Function} [work] - 참일 때 실행할 함수.
+ * @param {Array} [args=[]] - work/ornot에 전달할 인자.
+ * @param {Function} [ornot] - 거짓일 때 실행할 함수.
+ * @returns {*} 실행 결과.
+ */
 const executeIf = (bool, work = () => {}, args = [], ornot = () => {}) => {
     if (bool) return work(...args);
     else return ornot(...args);
@@ -222,9 +236,18 @@ const isNotNull = it => it !== null;
 const isNotTrue = it => it !== true;
 const isNotFalse = it => it !== false;
 
+/** 값이 null 또는 undefined인지 확인. @param {*} it @returns {boolean} */
 const isNully = it => it == null;
+/** 값이 truthy인지 확인. @param {*} it @returns {boolean} */
 const isTruely = it => it == true;
+/** 값이 falsy인지 확인. @param {*} it @returns {boolean} */
 const isFalsely = it => it == false;
+/**
+ * 값이 비어있는지 타입별로 확인. undefined/null → true, 문자열 → length, 배열/객체 → length/size/keys.
+ * @param {*} it - 확인할 값.
+ * @param {number} [numberEmptyMatch=0] - 이 수 이하이면 빈 것으로 판정.
+ * @returns {boolean}
+ */
 const isEmpty = (it, numberEmptyMatch = 0) => typeCase(it, {
     [UNDEFINED]: _ => true,
     [NULL]: _ => true,
@@ -243,12 +266,21 @@ const isEmpty = (it, numberEmptyMatch = 0) => typeCase(it, {
     },
 });
 
+/** 값이 null/undefined가 아닌지 확인. @param {*} it @returns {boolean} */
 const isNotNully = it => it != null;
 const isNotTruely = it => it != true;
 const isNotFalsely = it => it != false;
+/** 값이 비어있지 않은지 확인. @param {*} it @param {number} [numberEmptyMatch=0] @returns {boolean} */
 const isNotEmpty = (it, numberEmptyMatch = 0) => !isEmpty(it, numberEmptyMatch);
 
+/** 값이 null이거나 비어있는지 확인. @param {*} it @param {number} [numberEmptyMatch=0] @returns {boolean} */
 const isNullOrEmpty = (it, numberEmptyMatch = 0) => isNully(it) || isEmpty(it, numberEmptyMatch);
+/**
+ * 값이 null이 아니고 비어있지도 않은지 확인. alienese의 `nne()`.
+ * @param {*} it - 확인할 값.
+ * @param {number} [numberEmptyMatch=0] - 이 수 이하이면 빈 것으로 판정.
+ * @returns {boolean} 값이 의미 있으면 true.
+ */
 const isNotNullAndEmpty = (it, numberEmptyMatch = 0) => isNotNully(it) && isNotEmpty(it, numberEmptyMatch);
 
 
@@ -442,15 +474,24 @@ const revert = (to, from, dataOnly = true, primitiveOnly = false, recusive = tru
 };
 
 
-/** run handle */
+/** run handle — 비동기 실행 유틸 */
+/** setTimeout(process, 0)으로 마이크로태스크 큐에 작업 예약. @param {Function} process @param {...*} args @returns {number} timer ID */
 const postQueue = (process = (...args) => args[0], ...args) => setTimeout(process, 0, ...args);
+/** setTimeout(process, delay)로 지연 실행. @param {Function} process @param {number} [delay=100] @param {...*} args @returns {number} */
 const postDelayed = (process = (...args) => args[0], delay = 100, ...args) => setTimeout(process, delay, ...args);
+/** process(resolve, reject, ...args)를 Promise로 래핑. @param {Function} process @param {...*} args @returns {Promise<*>} */
 const postPromise = (process = (rs, rj, ...args) => rs(args[0]), ...args) => new Promise((rs, rj) => process(rs, rj, ...args));
+/** 지연 후 Promise 실행. @param {Function} process @param {number} [delay=100] @param {...*} args @returns {Promise<*>} */
 const postBonded = (process = (rs, rj, ...args) => rs(args[0]), delay = 100, ...args) => new Promise((rs, rj) => setTimeout(process, delay, rs, rj, ...args));
+/** setTimeout(0) + Promise 조합. @param {Function} process @param {...*} args @returns {Promise<*>} */
 const postPromiseQueue = (process = (rs, rj, ...args) => rs(args[0]), ...args) => new Promise((rs, rj) => setTimeout(process, 0, rs, rj, ...args));
+/** async 함수를 즉시 실행. @param {Function} process @param {...*} args @returns {Promise<*>} */
 const postAsyncQueue = (process = async (...args) => args[0], ...args) => process(...args);
+/** async 함수를 await하여 실행. @param {Function} process @param {...*} args @returns {Promise<*>} */
 const postAwaitQueue = async (process = async (...args) => args[0], ...args) => await process(...args);
+/** requestAnimationFrame으로 다음 프레임에 실행. @param {Function} process @param {...*} args @returns {number} */
 const postFrameQueue = (process = (...args) => args[0], ...args) => requestAnimationFrame(() => process(...args));
+/** requestAnimationFrame + Promise 조합. @param {Function} process @param {...*} args @returns {Promise<*>} */
 const postFramePromise = (process = (rs, rj, ...args) => rs(args[0]), ...args) => new Promise((rs, rj) => requestAnimationFrame(() => process(rs, rj, ...args)));
 
 

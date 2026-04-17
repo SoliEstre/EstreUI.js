@@ -13,7 +13,7 @@ const isSamsungMobile = isSamsungBrowser && isMobile;
 
 
 window.isLog = true;
-window.isDebug = true;
+window.isDebug = location.host.replace("class.mangoedu.co.kr", "").length > 0;
 window.isVerbose = false;
 Object.defineProperty(window, "isLogging", {
     "get": function () { return this.isLog || this.isDebug; },
@@ -44,7 +44,7 @@ const updateInsets = function (e) {
         root.style.setProperty('--fvw', `${width}px`);
         root.style.setProperty('--fvh', `${height}px`);
     }
-
+    
     const vvpw = vvp.width;
     const vvph = vvp.height;
     const vvpt = vvp.offsetTop;
@@ -86,7 +86,6 @@ if (isAppleMobile) {
     document.documentElement.style.setProperty('--viewport-inset-bottom', 'var(--safe-area-inset-bottom)');
 }
 
-
 const releaseInsetForApp = () => {
     const insets = window.safeAreaInsets;
 
@@ -112,20 +111,39 @@ window.addEventListener('safeAreaInsetsChanged', function () {
 releaseInsetForApp();
 
 
-// Service Worker
-
+/**
+ * Service Worker 관리 핸들러.
+ * 등록·설치·대기·활성화 라이프사이클을 추적하고, 메시지 프로토콜로 캐시 관리 등을 수행한다.
+ * 4-tier 캐시 전략: Application / Common / Static / Stony.
+ * @type {Object}
+ */
 const serviceWorkerHandler = {
+    /** @type {ServiceWorkerRegistration|null} 서비스 워커 등록 객체. */
     registeration: null,
+    /** @type {ServiceWorker|null} 설치 중인 워커. */
     installing: null,
+    /** @type {ServiceWorker|null} 대기 중인 워커. */
     waiting: null,
+    /** @type {ServiceWorker|null} 활성화 중인 워커. */
     activating: null,
+    /** @type {ServiceWorker|null} 활성화된 워커. */
     activated: null,
+    /** @type {boolean|null} 최초 설치 여부. */
     isInitialSetup: null,
 
+    /** @type {ServiceWorkerContainer} navigator.serviceWorker. */
     get service() { return navigator.serviceWorker; },
+    /** @type {ServiceWorker|null} 현재 컨트롤러. */
     get controller() { return this.service?.controller; },
+    /** @type {ServiceWorker|null} 가장 최신 워커 (controller → activated → activating → waiting → installing 순). */
     get worker() { return this.controller ?? this.activated ?? this.activating ?? this.waiting ?? this.installing; },
 
+    /**
+     * 워커에 메시지를 전송한다.
+     * @param {ServiceWorker|null} worker - 대상 워커. null이면 현재 worker.
+     * @param {Object} message - 전송할 메시지 객체.
+     * @param {Transferable[]} [transfer] - 전송 가능 객체.
+     */
     postMessage(worker, message, transfer) {
         (worker ?? this.worker)?.postMessage(message, transfer);
     },
@@ -152,6 +170,7 @@ const serviceWorkerHandler = {
         }
     },
 
+    /** 서비스 워커 업데이트를 확인한다. @returns {Promise<ServiceWorker|false|null|undefined>} */
     async update() {
         if (this.registeration == null) return null;
         try {
@@ -171,6 +190,7 @@ const serviceWorkerHandler = {
 
     registerationOnInstalling(worker) {
         this.installing = worker;
+        // this.controller?.let(it => this.clearCache(it));
         this.onInstalling?.(worker);
     },
 
@@ -231,7 +251,7 @@ const serviceWorkerHandler = {
     controllerChangeListener(event) {
         if (isVerbosely) console.log("Service Worker controller changed:", event, "\n", serviceWorkerHandler.service.controller);
         else if (isLogging) console.log("Service Worker controller changed:", event.scriptURL);
-        serviceWorkerHandler.controllerOnChanged(event);
+        serviceWorkerHandler.controllerOnChanged(event);        
     },
 
     messageListener(event) {
@@ -247,7 +267,7 @@ const serviceWorkerHandler = {
                     }
                 }
                 break;
-
+            
             default:
                 if (isVerbosely) console.log("Received message with unknown type '" + event.data.type + "'", event);
                 else if (isLogging) console.log("Received message with unknown type '" + event.data.type + "'");
@@ -255,6 +275,14 @@ const serviceWorkerHandler = {
         }
     },
 
+    /**
+     * 워커에 요청을 전송하고 콜백으로 응답을 받는다.
+     * @param {string} type - 요청 타입.
+     * @param {Object} [content={}] - 요청 콘텐츠.
+     * @param {Function} [onSuccess] - 성공 콜백.
+     * @param {Function} [onError] - 에러 콜백.
+     * @param {ServiceWorker} [worker=this.worker] - 대상 워커.
+     */
     async sendRequest(type, content = {}, onSuccess, onError, worker = this.worker) {
         if (worker != null) {
             const sequence = this.issueRequestSequence;
@@ -263,20 +291,30 @@ const serviceWorkerHandler = {
         } else onError?.("Service Worker is not exist.");
     },
 
+    /**
+     * 워커에 요청을 전송하고 Promise로 응답을 대기한다.
+     * @param {string} type - 요청 타입.
+     * @param {Object} [content={}] - 요청 콘텐츠.
+     * @param {ServiceWorker} [worker=this.worker] - 대상 워커.
+     * @returns {Promise<*>}
+     */
     sendRequestForWait(type, content = {}, worker = this.worker) {
         return new Promise((resolve, reject) => {
             this.sendRequest(type, content, resolve, reject, worker);
         });
     },
 
+    /** 대기 중인 워커를 즉시 활성화하도록 요청한다. @param {ServiceWorker} [worker=this.waiting] */
     skipWaiting(worker = this.waiting) {
         worker?.postMessage({ type: "SKIP_WAITING" });
     },
 
+    /** 활성 워커가 모든 클라이언트를 즉시 제어하도록 요청한다. @param {ServiceWorker} [worker=this.activated] */
     clientsClaim(worker = this.activated) {
         worker?.postMessage({ type: "CLIENTS_CLAIM" });
     },
 
+    /** Application 캐시를 삭제한다. @param {ServiceWorker} [worker] @returns {Promise<*>} */
     async clearCache(worker = this.worker) {
         try {
             return await this.sendRequestForWait("clearCache", {}, worker);
@@ -285,6 +323,7 @@ const serviceWorkerHandler = {
         }
     },
 
+    /** Common 캐시를 삭제한다. @param {ServiceWorker} [worker] @returns {Promise<*>} */
     async clearCommonCache(worker = this.worker) {
         try {
             return await this.sendRequestForWait("clearCommonCache", {}, worker);
@@ -293,6 +332,7 @@ const serviceWorkerHandler = {
         }
     },
 
+    /** Static 캐시를 삭제한다. @param {ServiceWorker} [worker] @returns {Promise<*>} */
     async clearStaticCache(worker = this.worker) {
         try {
             return await this.sendRequestForWait("clearStaticCache", {}, worker);
@@ -301,6 +341,7 @@ const serviceWorkerHandler = {
         }
     },
 
+    /** Stony 캐시를 삭제한다. @param {ServiceWorker} [worker] @returns {Promise<*>} */
     async clearStonyCache(worker = this.worker) {
         try {
             return await this.sendRequestForWait("clearStonyCache", {}, worker);
@@ -309,6 +350,7 @@ const serviceWorkerHandler = {
         }
     },
 
+    /** 모든 캐시(Application + Common + Static + Stony)를 삭제한다. @param {ServiceWorker} [worker] @returns {Promise<*>} */
     async clearAllCaches(worker = this.worker) {
         try {
             return await this.sendRequestForWait("clearAllCaches", {}, worker);
@@ -317,6 +359,7 @@ const serviceWorkerHandler = {
         }
     },
 
+    /** 워커의 버전 정보를 조회한다. @param {ServiceWorker} [worker] @returns {Promise<*>} */
     async getVersion(worker = this.worker) {
         try {
             return await this.sendRequestForWait("getVersion", {}, worker);
@@ -325,10 +368,12 @@ const serviceWorkerHandler = {
         }
     },
 
+    /** 대기 중인 워커의 버전을 조회한다. @returns {Promise<*>} */
     getVersionWaiting() {
         return this.getVersion(this.waiting);
     },
 
+    /** Application 캐시의 항목 수를 조회한다. @param {ServiceWorker} [worker] @returns {Promise<number>} */
     async getApplicationCount(worker = this.controller) {
         try {
             return worker != null ? await this.sendRequestForWait("getApplicationCount", {}, worker) : 0;
@@ -351,6 +396,9 @@ if ("serviceWorker" in navigator) {
 
     const serviceWorkerOnWaiting = (worker) => {
         if (worker) {
+            // console.log("Service Worker is waiting to activate.");
+            // registration.waiting.postMessage({ type: "SKIP_WAITING" });
+
             if (isLogging) console.log("Service Worker is waiting:", worker.scriptURL);
             else if (isVerbosely) console.log("Service Worker is waiting:", worker);
             serviceWorkerHandler.registerationOnWaiting(worker);
@@ -374,72 +422,64 @@ if ("serviceWorker" in navigator) {
     };
 
     // window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./serviceWorker.js", {
-        // scope: "/", // When use service worker file out of location of index.html, have to set scope with HTTP Server response Header 'Service-Worker-Allowed: /'
-        updateViaCache: "none",
+        navigator.serviceWorker.register("./scripts/serviceWorker.js", { scope: "/", updateViaCache: "none" }).then(registration => {
+            serviceWorkerHandler.registeration = registration;
+            if (isLogging) console.log("Service Worker registered with scope:", registration.scope);
 
-        // vv PWA required set HTTP server response headers vv
-        // Cache-Control: no-cache
-        // Pragma: no-cache
-        // Expires: 0
-    }).then(registration => {
-        serviceWorkerHandler.registeration = registration;
-        if (isLogging) console.log("Service Worker registered with scope:", registration.scope);
+            serviceWorkerOnInstalling(registration.installing);
+            serviceWorkerOnWaiting(registration.waiting);
 
-        serviceWorkerOnInstalling(registration.installing);
-        serviceWorkerOnWaiting(registration.waiting);
-
-        registration.addEventListener("statechange", () => {
-            const activated = registration.active;
-            const constoller = navigator.serviceWorker.controller;
-            if (activated) {
-                if (isLogging) console.log("Service Worker state changed to:", activated.state);
-                serviceWorkerOnActive(registration.active, controller != null && activated != controller);
-            }
-        });
-
-        serviceWorkerOnActive(registration.active);
-        serviceWorkerHandler.isInitialSetup = registration.active == null;
-
-        registration.addEventListener("updatefound", () => {
-            const newWorker = registration.installing;
-            if (isLogging) console.log("New Service Worker found:", newWorker.scriptURL);
-            else if (isVerbosely) console.log("New Service Worker found:", newWorker);
-            serviceWorkerOnInstalling(newWorker);
-
-            newWorker.addEventListener("statechange", () => {
-                if (isLogging) console.log("New Service Worker state changed to:", newWorker.state);
-                switch (newWorker.state) {
-                    case "installed":
-                        if (isLogging) console.log("New Service Worker installed and waiting to activate.");
-                        const controllerExist = navigator.serviceWorker.controller;
-                        const isWaiting = registration.waiting == newWorker;
-                        serviceWorkerHandler.registerationOnUpdated();
-                        if (isWaiting) {
-                            if (controllerExist) {
-                                serviceWorkerOnWaiting(newWorker);
-                            } else {
-                                // do nothing (first install)
-                            }
-                        }
-                        break;
-
-                    case "activating":
-                        serviceWorkerOnActivating(newWorker, true);
-                        break;
-
-                    case "activated":
-                        serviceWorkerOnActive(newWorker, true);
-                        break;
-                }
-
-                if (newWorker == navigator.serviceWorker.controller) {
-                    if (isLogging) console.log("New Service Worker is attached.");
+            registration.addEventListener("statechange", () => {
+                const activated = registration.active;
+                const constoller = navigator.serviceWorker.controller;
+                if (activated) {
+                    if (isLogging) console.log("Service Worker state changed to:", activated.state);
+                    serviceWorkerOnActive(registration.active, controller != null && activated != controller);
                 }
             });
+
+            serviceWorkerOnActive(registration.active);
+            serviceWorkerHandler.isInitialSetup = registration.active == null;
+
+            registration.addEventListener("updatefound", () => {
+                const newWorker = registration.installing;
+                if (isLogging) console.log("New Service Worker found:", newWorker.scriptURL);
+                else if (isVerbosely) console.log("New Service Worker found:", newWorker);
+                serviceWorkerOnInstalling(newWorker);
+
+                newWorker.addEventListener("statechange", () => {
+                    if (isLogging) console.log("New Service Worker state changed to:", newWorker.state);
+                    switch (newWorker.state) {
+                        case "installed":
+                            if (isLogging) console.log("New Service Worker installed and waiting to activate.");
+                            const controllerExist = navigator.serviceWorker.controller;
+                            const isWaiting = registration.waiting == newWorker;
+                            serviceWorkerHandler.registerationOnUpdated();
+                            if (isWaiting) {
+                                if (controllerExist) {
+                                    serviceWorkerOnWaiting(newWorker);
+                                } else {
+                                    // do nothing (first install)
+                                }
+                            }
+                            break;
+
+                        case "activating":
+                            serviceWorkerOnActivating(newWorker, true);
+                            break;
+
+                        case "activated":
+                            serviceWorkerOnActive(newWorker, true);
+                            break;
+                    }
+
+                    if (newWorker == navigator.serviceWorker.controller) {
+                        if (isLogging) console.log("New Service Worker is attached.");
+                    }
+                });
+            });
+        }).catch(error => {
+            console.error("Service Worker registration failed:", error);
         });
-    }).catch(error => {
-        console.error("Service Worker registration failed:", error);
-    });
     // });
 }
