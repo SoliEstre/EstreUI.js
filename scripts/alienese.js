@@ -55,7 +55,7 @@ const dfg = defineGlobal ?? ((name, value) => Object.defineProperty(_gb, name, {
 }));
 
 
-// common letter constants — 단일 문자 상수 `_0`~`_9`, `_a`~`_z`, `_A`~`_Z`
+// common letter constants — single character constants `_0`~`_9`, `_a`~`_z`, `_A`~`_Z`
 const _0 = "0";
 const _1 = "1";
 const _2 = "2";
@@ -122,57 +122,57 @@ const _Y = "Y";
 const _Z = "Z";
 
 
-// common extra characters constants — 기호 문자열 별칭
-/** @const {string} lr - 왼쪽 소괄호 `"("`. */ const lr = "(";
-/** @const {string} rr - 오른쪽 소괄호 `")"`. */ const rr = ")";
-/** @const {string} lc - 왼쪽 중괄호 `"{"`. */ const lc = "{";
-/** @const {string} rc - 오른쪽 중괄호 `"}"`. */ const rc = "}";
-/** @const {string} ls - 왼쪽 대괄호 `"["`. */ const ls = "[";
-/** @const {string} rs - 오른쪽 대괄호 `"]"`. */ const rs = "]";
-/** @const {string} lt - 미만 `"<"`. */ const lt = "<";
-/** @const {string} gt - 초과 `">"`. */ const gt = ">";
-/** @const {string} ab - 꺾쇠 열닫 `"<>"`. */ const ab = lt + gt;
-/** @const {string} cb - 꺾쇠 닫열 `"><"`. */ const cb = gt + lt;
-/** @const {string} ti - 틸드 `"~"`. */ const ti = "~";
-/** @const {string} ep - 느낌표 `"!"`. */ const ep = "!";
-/** @const {string} em - 느낌표 별칭 (= ep). */ const em = ep;
-/** @const {string} at - 골뱅이 `"@"`. */ const at = "@";
-/** @const {string} ds - 달러 `"$"`. */ const ds = "$";
-/** @const {string} ms - 앰퍼샌드 `"&"`. */ const ms = "&";
-/** @const {string} ps - 퍼센트 `"%"`. */ const ps = "%";
-/** @const {string} cf - 캐럿 `"^"`. */ const cf = "^";
-/** @const {string} ak - 별표 `"*"`. */ const ak = "*";
-/** @const {string} mp - 곱셈 별표 (= ak). */ const mp = ak;
-/** @const {string} ad - 더하기 `"+"`. */ const ad = "+";
-/** @const {string} add - 증가 `"++"`. */ const add = ad + ad;
-/** @const {string} hp - 빼기/하이픈 `"-"`. */ const hp = "-";
-/** @const {string} sr - 빼기 별칭 (= hp). */ const sr = hp;
-/** @const {string} srr - 감소 `"--"`. */ const srr = sr + sr;
-/** @const {string} us - 밑줄 `"_"`. */ const us = "_";
-/** @const {string} eq - 등호 `"="`. */ const eq = "=";
-/** @const {string} vl - 파이프 `"|"`. */ const vl = "|";
-/** @const {string} bs - 역슬래시 `"\\"`. */ const bs = "\\";
-/** @const {string} ss - 슬래시 `"/"`. */ const ss = "/";
-/** @const {string} dv - 나눗셈 슬래시 (= ss). */ const dv = ss;
-/** @const {string} qm - 물음표 `"?"`. */ const qm = "?";
-/** @const {string} nl - 부정 등호 `"!="`. */ const nl = ep + eq;
-/** @const {string} le - 이하 `"<="`. */ const le = lt + eq;
-/** @const {string} ge - 이상 `">="`. */ const ge = gt + eq;
-/** @const {string} fa - 더하기 대입 `"+="`. */ const fa = ad + eq;
-/** @const {string} fs - 빼기 대입 `"-="`. */ const fs = sr + eq;
-/** @const {string} fm - 곱하기 대입 `"*="`. */ const fm = mp + eq;
-/** @const {string} fd - 나누기 대입 `"/="`. */ const fd = dv + eq;
-/** @const {string} sq - 작은따옴표 `"'"`. */ const sq = "'";
-/** @const {string} dq - 큰따옴표 `'"'`. */ const dq = '"';
-/** @const {string} gv - 백틱 `` "`" ``. */ const gv = '`';
-/** @const {string} cl - 콜론 `":"`. */ const cl = ":";
-/** @const {string} sc - 세미콜론 `";"`. */ const sc = ";";
-/** @const {string} cm - 쉼표 `","`. */ const cm = ",";
-/** @const {string} es - 빈 문자열 `""`. */ const es = "";
-/** @const {string} l - 쉼표 (= cm). 리스트 구분자. */ const l = cm;
-/** @const {string} s - 공백 `" "`. */ const s = " ";
-/** @const {string} i - 해시 `"#"`. CSS ID 셀렉터 접두어. */ const i = "#";
-/** @const {string} d - 점 `"."`. CSS 클래스 셀렉터 접두어 및 구분자. */ const d = ".";
+// common extra characters constants — symbol string aliases
+/** @const {string} lr - left parenthesis `"("`. */ const lr = "(";
+/** @const {string} rr - right parenthesis `")"`. */ const rr = ")";
+/** @const {string} lc - left curly brace `"{"`. */ const lc = "{";
+/** @const {string} rc - right curly brace `"}"`. */ const rc = "}";
+/** @const {string} ls - left bracket `"["`. */ const ls = "[";
+/** @const {string} rs - right bracket `"]"`. */ const rs = "]";
+/** @const {string} lt - less than `"<"`. */ const lt = "<";
+/** @const {string} gt - greater than `">"`. */ const gt = ">";
+/** @const {string} ab - angle bracket open-close `"<>"`. */ const ab = lt + gt;
+/** @const {string} cb - angle bracket close-open `"><"`. */ const cb = gt + lt;
+/** @const {string} ti - tilde `"~"`. */ const ti = "~";
+/** @const {string} ep - exclamation mark `"!"`. */ const ep = "!";
+/** @const {string} em - exclamation alias (= ep). */ const em = ep;
+/** @const {string} at - at sign `"@"`. */ const at = "@";
+/** @const {string} ds - dollar sign `"$"`. */ const ds = "$";
+/** @const {string} ms - ampersand `"&"`. */ const ms = "&";
+/** @const {string} ps - percent `"%"`. */ const ps = "%";
+/** @const {string} cf - caret `"^"`. */ const cf = "^";
+/** @const {string} ak - asterisk `"*"`. */ const ak = "*";
+/** @const {string} mp - multiply asterisk (= ak). */ const mp = ak;
+/** @const {string} ad - plus `"+"`. */ const ad = "+";
+/** @const {string} add - increment `"++"`. */ const add = ad + ad;
+/** @const {string} hp - minus/hyphen `"-"`. */ const hp = "-";
+/** @const {string} sr - minus alias (= hp). */ const sr = hp;
+/** @const {string} srr - decrement `"--"`. */ const srr = sr + sr;
+/** @const {string} us - underscore `"_"`. */ const us = "_";
+/** @const {string} eq - equals sign `"="`. */ const eq = "=";
+/** @const {string} vl - pipe `"|"`. */ const vl = "|";
+/** @const {string} bs - backslash `"\\"`. */ const bs = "\\";
+/** @const {string} ss - slash `"/"`. */ const ss = "/";
+/** @const {string} dv - division slash (= ss). */ const dv = ss;
+/** @const {string} qm - question mark `"?"`. */ const qm = "?";
+/** @const {string} nl - not-equal sign `"!="`. */ const nl = ep + eq;
+/** @const {string} le - less than or equal `"<="`. */ const le = lt + eq;
+/** @const {string} ge - greater than or equal `">="`. */ const ge = gt + eq;
+/** @const {string} fa - addition assignment `"+="`. */ const fa = ad + eq;
+/** @const {string} fs - subtraction assignment `"-="`. */ const fs = sr + eq;
+/** @const {string} fm - multiplication assignment `"*="`. */ const fm = mp + eq;
+/** @const {string} fd - division assignment `"/="`. */ const fd = dv + eq;
+/** @const {string} sq - single quote `"'"`. */ const sq = "'";
+/** @const {string} dq - double quote `'"'`. */ const dq = '"';
+/** @const {string} gv - backtick `` "`" ``. */ const gv = '`';
+/** @const {string} cl - colon `":"`. */ const cl = ":";
+/** @const {string} sc - semicolon `";"`. */ const sc = ";";
+/** @const {string} cm - comma `","`. */ const cm = ",";
+/** @const {string} es - empty string `""`. */ const es = "";
+/** @const {string} l - comma (= cm). List separator. */ const l = cm;
+/** @const {string} s - space `" "`. */ const s = " ";
+/** @const {string} i - hash `"#"`. CSS ID selector prefix. */ const i = "#";
+/** @const {string} d - dot `"."`. CSS class selector prefix and separator. */ const d = ".";
 
 const cr = "\r";
 const lf = "\n";
@@ -187,20 +187,20 @@ const elfcr = elf + ecr;
 const etab = "\\t";
 
 
-// primitive types alias constant — 원시 타입 별칭
-/** @const {string} U - `"undefined"` 문자열 상수. typeof 비교용. */ const U = UNDEFINED;
-/** @const {string} N - `"null"` 문자열 상수. */ const N = NULL;
-/** @const {string} T - `"true"` 문자열 상수. */ const T = TRUE;
-/** @const {string} F - `"false"` 문���열 상수. */ const F = FALSE;
+// primitive types alias constant — primitive type aliases
+/** @const {string} U - `"undefined"` string constant. For typeof comparison. */ const U = UNDEFINED;
+/** @const {string} N - `"null"` string constant. */ const N = NULL;
+/** @const {string} T - `"true"` string constant. */ const T = TRUE;
+/** @const {string} F - `"false"` string constant. */ const F = FALSE;
 
-/** @const {undefined} u - `undefined` 별칭. */ const u = undefined;
-/** @const {null} n - `null` 별칭. */ const n = null;
-/** @const {boolean} t - `true` 별칭. */ const t = true;
-/** @const {boolean} f - `false` 별칭. */ const f = false;
+/** @const {undefined} u - `undefined` alias. */ const u = undefined;
+/** @const {null} n - `null` alias. */ const n = null;
+/** @const {boolean} t - `true` alias. */ const t = true;
+/** @const {boolean} f - `false` alias. */ const f = false;
 
-// end point assigner constant — 배열/객체 끝 마커 (= undefined)
-/** @const {undefined} eoo - End Of Object. 객체 끝 표시용 undefined. */ const eoo = u;
-/** @const {undefined} eoa - End Of Array. 배열 끝 표시용 undefined. */ const eoa = u;
+// end point assigner constant — array/object end marker (= undefined)
+/** @const {undefined} eoo - End Of Object. undefined as object end marker. */ const eoo = u;
+/** @const {undefined} eoa - End Of Array. undefined as array end marker. */ const eoa = u;
 
 // prototype of primitive types alias constant
 const FNC = FUNCTION;
@@ -304,8 +304,8 @@ const w = whileIn;
 const dw = doWhileIn;
 
 
-// meaning comparator constant — 타입·값 비교 함수 별칭
-/** @const {Function} to - `typeOf()` 별칭. */ const to = typeOf;
+// meaning comparator constant — type/value comparison function aliases
+/** @const {Function} to - `typeOf()` alias. */ const to = typeOf;
 
 const tm = typeMatch;
 
@@ -363,22 +363,22 @@ const nxn = isNotNull;
 const nxt = isNotTrue;
 const nxf = isNotFalse;
 
-/** @const {Function} en - `isNully()` — null 또는 undefined인지. */ const en = isNully;
-/** @const {Function} et - `isTruely()` — truthy인지. */ const et = isTruely;
-/** @const {Function} ef - `isFalsely()` — falsy인지. */ const ef = isFalsely;
-/** @const {Function} ee - `isEmpty()` — 빈 값인지. */ const ee = isEmpty;
+/** @const {Function} en - `isNully()` — null or undefined. */ const en = isNully;
+/** @const {Function} et - `isTruely()` — truthy. */ const et = isTruely;
+/** @const {Function} ef - `isFalsely()` — falsy. */ const ef = isFalsely;
+/** @const {Function} ee - `isEmpty()` — empty. */ const ee = isEmpty;
 
-/** @const {Function} nn - `isNotNully()` — null/undefined가 아닌지. */ const nn = isNotNully;
+/** @const {Function} nn - `isNotNully()` — not null/undefined. */ const nn = isNotNully;
 /** @const {Function} nt - `isNotTruely()`. */ const nt = isNotTruely;
 /** @const {Function} nf - `isNotFalsely()`. */ const nf = isNotFalsely;
 /** @const {Function} ne - `isNotEmpty()`. */ const ne = isNotEmpty;
 
-/** @const {Function} noe - `isNullOrEmpty()` — null이거나 빈 값인지. */ const noe = isNullOrEmpty;
+/** @const {Function} noe - `isNullOrEmpty()` — null or empty. */ const noe = isNullOrEmpty;
 /**
- * 값이 null이 아니고, undefined가 아니고, 빈 문자열이 아닌지 확인.
+ * Checks whether the value is not null, not undefined, and not empty string.
  * @const {Function} nne - `isNotNullAndEmpty()`.
- * @param {*} value - 확인할 값.
- * @returns {boolean} 값이 의미 있으면 `true`.
+ * @param {*} value - Value to check.
+ * @returns {boolean} `true` if the value is meaningful.
  */
 const nne = isNotNullAndEmpty;
 
@@ -402,40 +402,40 @@ const oc = countOf;
 const occ = checkCount;
 
 
-// match case constant — 패턴 매칭 함수 별칭
-/** @const {Function} mc - `matchCase()` — 조건 매칭. */ const mc = matchCase;
-/** @const {Function} ec - `equalCase()` — `==` 기반 매칭. */ const ec = equalCase;
-/** @const {Function} xc - `exactCase()` — `===` 기반 매칭. */ const xc = exactCase;
-/** @const {Function} tc - `typeCase()` — typeof 기반 매칭. */ const tc = typeCase;
-/** @const {Function} cc - `classCase()` — class 기반 매칭. */ const cc = classCase;
-/** @const {Function} kc - `kindCase()` — 종류 기반 매칭. */ const kc = kindCase;
+// match case constant — pattern matching function aliases
+/** @const {Function} mc - `matchCase()` — condition matching. */ const mc = matchCase;
+/** @const {Function} ec - `equalCase()` — `==` based matching. */ const ec = equalCase;
+/** @const {Function} xc - `exactCase()` — `===` based matching. */ const xc = exactCase;
+/** @const {Function} tc - `typeCase()` — typeof based matching. */ const tc = typeCase;
+/** @const {Function} cc - `classCase()` — class based matching. */ const cc = classCase;
+/** @const {Function} kc - `kindCase()` — kind-based matching. */ const kc = kindCase;
 
 
-/** variable data copy — 객체 복사/병합 유틸 별칭 */
-/** @const {Function} cp - `copy()` — 깊은 복사. */ const cp = copy;
-/** @const {Function} mk - `mock()` — 얕은 복제. */ const mk = mock;
-/** @const {Function} mm - `mimic()` — 구조 복제. */ const mm = mimic;
-/** @const {Function} tw - `twin()` — 동일 복제. */ const tw = twin;
-/** @const {Function} cn - `clone()` — 완전 복제. */ const cn = clone;
+/** variable data copy — object copy/merge utility aliases */
+/** @const {Function} cp - `copy()` — deep copy. */ const cp = copy;
+/** @const {Function} mk - `mock()` — shallow clone. */ const mk = mock;
+/** @const {Function} mm - `mimic()` — structural clone. */ const mm = mimic;
+/** @const {Function} tw - `twin()` — identical clone. */ const tw = twin;
+/** @const {Function} cn - `clone()` — full clone. */ const cn = clone;
 
-/** @const {Function} pc - `patch()` — 속성 패치. */ const pc = patch;
-/** @const {Function} ow - `overwrite()` — 덮어쓰기. */ const ow = overwrite;
-/** @const {Function} tk - `takeover()` — 인수. */ const tk = takeover;
-/** @const {Function} aq - `acquire()` — 획득. */ const aq = acquire;
-/** @const {Function} ih - `inherit()` — 상속. */ const ih = inherit;
+/** @const {Function} pc - `patch()` — property patch. */ const pc = patch;
+/** @const {Function} ow - `overwrite()` — overwrite. */ const ow = overwrite;
+/** @const {Function} tk - `takeover()` — takeover. */ const tk = takeover;
+/** @const {Function} aq - `acquire()` — acquire. */ const aq = acquire;
+/** @const {Function} ih - `inherit()` — inherit. */ const ih = inherit;
 
-/** @const {Function} rv - `revert()` — 되돌리기. */ const rv = revert;
+/** @const {Function} rv - `revert()` — revert. */ const rv = revert;
 
 
-/** run handle — 비동기 실행 유틸 별칭 */
-/** @const {Function} pq - `postQueue()` — 마이크로태스크 큐에 작업 예약. */ const pq = postQueue;
-/** @const {Function} pd - `postDelayed()` — 지연 실행. */ const pd = postDelayed;
-/** @const {Function} pp - `postPromise()` — Promise 래퍼. */ const pp = postPromise;
-/** @const {Function} pb - `postBonded()` — 바인딩된 Promise. */ const pb = postBonded;
-/** @const {Function} ppq - `postPromiseQueue()` — Promise 큐. */ const ppq = postPromiseQueue;
-/** @const {Function} paq - `postAsyncQueue()` — async 큐. */ const paq = postAsyncQueue;
-/** @const {Function} pwq - `postAwaitQueue()` — await 큐. */ const pwq = postAwaitQueue;
-/** @const {Function} pfq - `postFrameQueue()` — requestAnimationFrame 큐. */ const pfq = postFrameQueue;
+/** run handle — async execution utility aliases */
+/** @const {Function} pq - `postQueue()` — schedules a task on the microtask queue. */ const pq = postQueue;
+/** @const {Function} pd - `postDelayed()` — delayed execution. */ const pd = postDelayed;
+/** @const {Function} pp - `postPromise()` — Promise wrapper. */ const pp = postPromise;
+/** @const {Function} pb - `postBonded()` — bonded Promise. */ const pb = postBonded;
+/** @const {Function} ppq - `postPromiseQueue()` — Promise queue. */ const ppq = postPromiseQueue;
+/** @const {Function} paq - `postAsyncQueue()` — async queue. */ const paq = postAsyncQueue;
+/** @const {Function} pwq - `postAwaitQueue()` — await queue. */ const pwq = postAwaitQueue;
+/** @const {Function} pfq - `postFrameQueue()` — requestAnimationFrame queue. */ const pfq = postFrameQueue;
 /** @const {Function} pfp - `postFramePromise()` — requestAnimationFrame Promise. */ const pfp = postFramePromise;
 
 

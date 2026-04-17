@@ -46,27 +46,27 @@ SOFTWARE.
 // ex) Doctre.parse([["|tag|.|classes|#|id|", "empty content"], "|divider|"], { tag: () => isInline ? "span" | "div", classes: "test fixed", id: getId(), divider: it => '<hr class="' + it + '" />' })
 
 /**
- * Document Object Cold Taste Refrigeration Effortlessness — DOM 직렬화/역직렬화 엔진.
- * cold(배열 객체)와 frost(JSON 문자열) 포맷으로 HTML 트리를 보존·복원한다.
+ * Document Object Cold Taste Refrigeration Effortlessness — DOM serialization/deserialization engine.
+ * Preserves and restores HTML trees using cold (array object) and frost (JSON string) formats.
  *
- * **cold 포맷**: `[solidId, contentData, style, attrs, datas]`
- * - `solidId`: `"tag.class1.class2#id@name$type"` 문자열 또는 추출 객체
- * - `contentData`: cold 배열 / 텍스트 문자열 / NodeList / Element / Node
- * - `style`: 스타일 문자열 또는 객체
- * - `attrs`: 일반 속성 객체
- * - `datas`: data-* 속성 객체
+ * **cold format**: `[solidId, contentData, style, attrs, datas]`
+ * - `solidId`: `"tag.class1.class2#id@name$type"` string or extracted object
+ * - `contentData`: cold array / text string / NodeList / Element / Node
+ * - `style`: style string or object
+ * - `attrs`: regular attribute object
+ * - `datas`: data-* attribute object
  *
- * **frost 포맷**: cold를 JSON.stringify한 문자열
+ * **frost format**: JSON.stringify'd cold string
  *
- * **matchReplace**: `|key|` 토큰을 matchReplacer 객체의 값으로 치환
+ * **matchReplace**: replaces `|key|` tokens with values from the matchReplacer object
  * @class
  */
 class Doctre {
 
     /**
-     * solidId 문자열에서 태그명과 나머지 주요 속성 부분을 분리한다.
-     * @param {string|Object} solidId - solidId 문자열 또는 `{ tagName, ... }` 객체.
-     * @returns {[string, string|Object]} `[tagName, majorAttrs]` 튜플.
+     * Splits a solidId string into the tag name and remaining major attribute parts.
+     * @param {string|Object} solidId - solidId string or `{ tagName, ... }` object.
+     * @returns {[string, string|Object]} `[tagName, majorAttrs]` tuple.
      */
     static extractTagName(solidId) {
         let tagName, majorAttrs;
@@ -83,10 +83,10 @@ class Doctre {
     }
 
     /**
-     * solidId의 주요 속성 부분(`.class#id@name$type`)을 파싱하여 객체로 반환한다.
-     * @param {string} majorAttrs - 주요 속성 문자열.
-     * @param {Object} [to={}] - 결과를 저장할 객체.
-     * @returns {Object} `{ class?, id?, name?, type? }` 속성 객체.
+     * Parses the major attribute part (`.class#id@name$type`) of a solidId into an object.
+     * @param {string} majorAttrs - Major attribute string.
+     * @param {Object} [to={}] - Object to store results into.
+     * @returns {Object} `{ class?, id?, name?, type? }` attribute object.
      */
     static extractMajorAttrs(majorAttrs, to = {}) {
         const process = (string, divider, attrName) => {
@@ -105,8 +105,8 @@ class Doctre {
     }
 
     /**
-     * solidId에서 태그명과 주요 속성을 모두 추출한다.
-     * @param {string} solidId - solidId 문자열.
+     * Extracts both the tag name and major attributes from a solidId.
+     * @param {string} solidId - solidId string.
      * @returns {Object} `{ tagName, class?, id?, name?, type? }`.
      */
     static extractTagAndMajorAttrs(solidId) {
@@ -116,15 +116,15 @@ class Doctre {
 
 
     /**
-     * cold 파라미터로 DOM 엘리먼트를 생성한다.
-     * @param {string|Array} [tagName="template"] - 태그명 또는 cold 배열.
-     * @param {string|Object} [majorAttrs] - 주요 속성 문자열/객체.
-     * @param {string|Array|NodeList|Node|Doctre|null} [contentData] - 자식 콘텐츠.
-     * @param {string|Object} [style={}] - 스타일.
-     * @param {Object} [attrs={}] - 일반 속성.
-     * @param {Object} [datas={}] - data-* 속성.
-     * @param {Object} [matchReplacer={}] - `|key|` 토큰 치환 맵.
-     * @returns {Element} 생성된 DOM 엘리먼트.
+     * Creates a DOM element from cold parameters.
+     * @param {string|Array} [tagName="template"] - Tag name or cold array.
+     * @param {string|Object} [majorAttrs] - Major attributes string/object.
+     * @param {string|Array|NodeList|Node|Doctre|null} [contentData] - Child content.
+     * @param {string|Object} [style={}] - Style.
+     * @param {Object} [attrs={}] - Regular attributes.
+     * @param {Object} [datas={}] - data-* attributes.
+     * @param {Object} [matchReplacer={}] - `|key|` token replacement map.
+     * @returns {Element} The created DOM element.
      */
     static createElement(tagName = "template", majorAttrs, contentData, style = {}, attrs = {}, datas = {}, matchReplacer = {}) {
         if (tagName instanceof Array) return this.createElement(...tagName);
@@ -176,15 +176,15 @@ class Doctre {
     }
 
     /**
-     * matchReplacer를 첫 번째 인자로 받는 createElement 변형.
-     * @param {Object} matchReplacer - 토큰 치환 맵.
-     * @param {string} tagName - 태그명.
-     * @param {string|Object} [majorAttrs] - 주요 속성.
-     * @param {*} [contentData] - 자식 콘텐츠.
-     * @param {string|Object} [style={}] - 스타일.
-     * @param {Object} [attrs={}] - 일반 속성.
-     * @param {Object} [datas={}] - data-* 속성.
-     * @param {Object} [matchReplacerOrigin={}] - matchReplacer가 null일 때의 폴백.
+     * createElement variant that takes matchReplacer as the first argument.
+     * @param {Object} matchReplacer - Token replacement map.
+     * @param {string} tagName - Tag name.
+     * @param {string|Object} [majorAttrs] - Major attributes.
+     * @param {*} [contentData] - Child content.
+     * @param {string|Object} [style={}] - Style.
+     * @param {Object} [attrs={}] - Regular attributes.
+     * @param {Object} [datas={}] - data-* attributes.
+     * @param {Object} [matchReplacerOrigin={}] - Fallback when matchReplacer is null.
      * @returns {Element}
      */
     static createElementReplaced(matchReplacer, tagName, majorAttrs, contentData, style = {}, attrs = {}, datas = {}, matchReplacerOrigin = {}) {
@@ -192,13 +192,13 @@ class Doctre {
     }
 
     /**
-     * solidId 문자열로 엘리먼트를 생성한다. solidId에서 tagName과 majorAttrs를 자동 추출.
-     * @param {string|Array} solidId - solidId 문자열 또는 배열.
-     * @param {*} [contentData] - 자식 콘텐츠.
-     * @param {string|Object} [style={}] - 스타일.
-     * @param {Object} [attrs={}] - 일반 속성.
-     * @param {Object} [datas={}] - data-* 속성.
-     * @param {Object} [matchReplacer={}] - 토큰 치환 맵.
+     * Creates an element from a solidId string. Automatically extracts tagName and majorAttrs from solidId.
+     * @param {string|Array} solidId - solidId string or array.
+     * @param {*} [contentData] - Child content.
+     * @param {string|Object} [style={}] - Style.
+     * @param {Object} [attrs={}] - Regular attributes.
+     * @param {Object} [datas={}] - data-* attributes.
+     * @param {Object} [matchReplacer={}] - Token replacement map.
      * @returns {Element}
      */
     static createElementBy(solidId, contentData, style = {}, attrs = {}, datas = {}, matchReplacer = {}) {
@@ -209,14 +209,14 @@ class Doctre {
     }
 
     /**
-     * matchReplacer를 첫 번째 인자로 받는 createElementBy 변형.
-     * @param {Object} matchReplacer - 토큰 치환 맵.
-     * @param {string} solidId - solidId 문자열.
-     * @param {*} [contentData] - 자식 콘텐츠.
-     * @param {string|Object} [style={}] - 스타일.
-     * @param {Object} [attrs={}] - 일반 속성.
-     * @param {Object} [datas={}] - data-* 속성.
-     * @param {Object} [matchReplacerOrigin={}] - 폴백 치환 맵.
+     * createElementBy variant that takes matchReplacer as the first argument.
+     * @param {Object} matchReplacer - Token replacement map.
+     * @param {string} solidId - solidId string.
+     * @param {*} [contentData] - Child content.
+     * @param {string|Object} [style={}] - Style.
+     * @param {Object} [attrs={}] - Regular attributes.
+     * @param {Object} [datas={}] - data-* attributes.
+     * @param {Object} [matchReplacerOrigin={}] - Fallback replacement map.
      * @returns {Element}
      */
     static createElementReplacedBy(matchReplacer, solidId, contentData, style = {}, attrs = {}, datas = {}, matchReplacerOrigin = {}) {
@@ -224,9 +224,9 @@ class Doctre {
     }
 
     /**
-     * cold 배열(HCNL)로 DocumentFragment를 생성한다.
-     * @param {Array} hcnlArray - HTML Cold Node List 배열.
-     * @param {Object} [matchReplacer={}] - 토큰 치환 맵.
+     * Creates a DocumentFragment from a cold (HCNL) array.
+     * @param {Array} hcnlArray - HTML Cold Node List array.
+     * @param {Object} [matchReplacer={}] - Token replacement map.
      * @returns {DocumentFragment}
      */
     static createFragment(hcnlArray, matchReplacer = {}) {
@@ -250,17 +250,17 @@ class Doctre {
         return df;
     }
 
-    /** @type {string} 현재 User-Agent 문자열. */
+    /** @type {string} Current User-Agent string. */
     static get userAgent() { return navigator?.userAgent ?? ""; }
-    /** @type {boolean} Safari/iOS에서 개행·탭 이스케이프가 필요한지 여부. */
+    /** @type {boolean} Whether newline/tab escaping is needed for Safari/iOS. */
     static get isRequiredEscape() {
         const userAgent = this.userAgent;
         return userAgent != "" && (userAgent.includes("iPad") || userAgent.includes("iPhone") || userAgent.includes("iPod") || (userAgent.includes("Macintosh") && !userAgent.includes("Chrome") && !userAgent.includes("Firefox") && !userAgent.includes("Edge") && !userAgent.includes("Opera")));
     }
     /**
-     * Safari 호환을 위해 JSON 문자열의 개행·탭을 이스케이프한다.
-     * @param {string} jsonContent - JSON 문자열.
-     * @returns {string} 이스케이프된 문자열 (Safari 외에서는 그대로 반환).
+     * Escapes newlines and tabs in JSON strings for Safari compatibility.
+     * @param {string} jsonContent - JSON string.
+     * @returns {string} Escaped string (returned as-is on non-Safari).
      */
     static crashBroker(jsonContent) {
         if (this.isRequiredEscape) jsonContent = jsonContent.replace(/\r\n/gm, "\\r\\n").replace(/\n\r/gm, "\\n\\r").replace(/\r/gm, "\\r").replace(/\n/gm, "\\n").replace(/\t/g, "\\t");
@@ -268,9 +268,9 @@ class Doctre {
     }
 
     /**
-     * 객체에서 원시 타입(primitive) 값만 복사한다. 순환 참조 회피용.
-     * @param {Object} obj - 원본 객체.
-     * @returns {Object} 원시 값만 포함된 새 객체.
+     * Copies only primitive-type values from an object. Used to avoid circular references.
+     * @param {Object} obj - Source object.
+     * @returns {Object} A new object containing only primitive values.
      */
     static copyPrimitives(obj) {
         return Object.fromEntries(
@@ -279,12 +279,12 @@ class Doctre {
     }
 
     /**
-     * 문자열 내 `|key|` 토큰을 matchReplacer의 값으로 치환한다. 객체이면 matchReplaceObject로 위임.
-     * @param {string|Object} frostOrString - 치환 대상 문자열 또는 객체.
-     * @param {Object} [matchReplacer={}] - `{ key: value }` 치환 맵. 값은 문자열/함수/객체 가능.
-     *   - `dataPlaceholder`: 매칭되지 않는 토큰의 기본 치환값.
-     *   - `coverReplaceable`: true이면 dataPlaceholder로 모든 미매칭 토큰을 치환.
-     * @returns {string|Object} 치환된 결과.
+     * Replaces `|key|` tokens in a string with values from the matchReplacer. Delegates to matchReplaceObject for objects.
+     * @param {string|Object} frostOrString - String or object to apply replacements to.
+     * @param {Object} [matchReplacer={}] - `{ key: value }` replacement map. Values can be string/function/object.
+     *   - `dataPlaceholder`: default replacement for unmatched tokens.
+     *   - `coverReplaceable`: if true, replaces all unmatched tokens with dataPlaceholder.
+     * @returns {string|Object} The replaced result.
      */
     static matchReplace(frostOrString, matchReplacer = {}) {
         if (typeof frostOrString != "string") return this.matchReplaceObject(frostOrString, matchReplacer);
@@ -352,10 +352,10 @@ class Doctre {
     }
 
     /**
-     * 객체의 키와 값 모두에 matchReplace를 재귀 적용한다.
-     * @param {Object} object - 치환 대상 객체.
-     * @param {Object} [matchReplacer={}] - 치환 맵.
-     * @returns {Object} 치환된 새 객체.
+     * Recursively applies matchReplace to both keys and values of an object.
+     * @param {Object} object - Object to apply replacements to.
+     * @param {Object} [matchReplacer={}] - Replacement map.
+     * @returns {Object} A new object with replacements applied.
      */
     static matchReplaceObject(object, matchReplacer = {}) {
         const replaced = object.constructor();
@@ -364,9 +364,9 @@ class Doctre {
     }
 
     /**
-     * frost(JSON 문자열)를 파싱하여 DocumentFragment로 복원한다.
-     * @param {string} frost - frost 포맷 JSON 문자열.
-     * @param {Object} [matchReplacer={}] - 토큰 치환 맵.
+     * Parses a frost (JSON string) and restores it as a DocumentFragment.
+     * @param {string} frost - Frost format JSON string.
+     * @param {Object} [matchReplacer={}] - Token replacement map.
      * @returns {DocumentFragment}
      */
     static parse(frost, matchReplacer = {}) {
@@ -388,9 +388,9 @@ class Doctre {
     }
 
     /**
-     * frost(문자열) 또는 cold(배열)를 live DOM(DocumentFragment)으로 복원한다.
-     * @param {string|Array} frostOrCold - frost 문자열 또는 cold 배열.
-     * @param {Object} [matchReplacer={}] - 토큰 치환 맵.
+     * Restores frost (string) or cold (array) to a live DOM (DocumentFragment).
+     * @param {string|Array} frostOrCold - Frost string or cold array.
+     * @param {Object} [matchReplacer={}] - Token replacement map.
      * @returns {DocumentFragment}
      */
     static live(frostOrCold, matchReplacer = {}) {
@@ -399,10 +399,10 @@ class Doctre {
     }
 
     /**
-     * frost/cold를 template 엘리먼트로 감싸서 반환한다.
-     * @param {string|Array} frostOrCold - frost 또는 cold 데이터.
-     * @param {Object} [matchReplacer={}] - 토큰 치환 맵.
-     * @returns {Element} 콘텐츠를 포함한 template 엘리먼트.
+     * Wraps frost/cold in a template element and returns it.
+     * @param {string|Array} frostOrCold - Frost or cold data.
+     * @param {Object} [matchReplacer={}] - Token replacement map.
+     * @returns {Element} Template element containing the content.
      */
     static takeOut(frostOrCold, matchReplacer = {}) {
         const element = this.createElement();
@@ -412,13 +412,13 @@ class Doctre {
 
 
     /**
-     * 태그명과 주요 속성으로 solidId 문자열을 조립한다.
-     * @param {string} tagName - 태그명.
-     * @param {string} [className] - CSS 클래스 (공백 구분).
+     * Assembles a solidId string from tag name and major attributes.
+     * @param {string} tagName - Tag name.
+     * @param {string} [className] - CSS classes (space-separated).
      * @param {string} [id] - ID.
-     * @param {string} [name] - name 속성.
-     * @param {string} [type] - type 속성.
-     * @returns {string} solidId 문자열 (예: `"div.box.float#app@root$text"`).
+     * @param {string} [name] - name attribute.
+     * @param {string} [type] - type attribute.
+     * @returns {string} solidId string (e.g. `"div.box.float#app@root$text"`).
      */
     static getSolidId(tagName, className, id, name, type) {
         let solidId = tagName;
@@ -430,10 +430,10 @@ class Doctre {
     }
 
     /**
-     * DOM 엘리먼트에서 태그명과 주요 속성(class, id, name, type)을 추출한다.
-     * @param {Element} element - 대상 엘리먼트.
-     * @param {boolean} [asSolidId=false] - true이면 solidId 문자열, false이면 객체로 반환.
-     * @returns {string|Object} solidId 문자열 또는 `{ tagName, class?, id?, name?, type? }`.
+     * Extracts the tag name and major attributes (class, id, name, type) from a DOM element.
+     * @param {Element} element - Target element.
+     * @param {boolean} [asSolidId=false] - If true returns solidId string, if false returns object.
+     * @returns {string|Object} solidId string or `{ tagName, class?, id?, name?, type? }`.
      */
     static packTagAndMajorAttrs(element, asSolidId = false) {
         const tagName = element.tagName.toLowerCase();
@@ -454,8 +454,8 @@ class Doctre {
     }
 
     /**
-     * CSS style 문자열을 `{ property: value }` 객체로 파싱한다.
-     * @param {string} style - 인라인 스타일 문자열.
+     * Parses a CSS style string into a `{ property: value }` object.
+     * @param {string} style - Inline style string.
      * @returns {Object<string, string>}
      */
     static getStyleObject(style) {
@@ -472,8 +472,8 @@ class Doctre {
     }
 
     /**
-     * NamedNodeMap에서 id/name/type/class/style/data-*를 제외한 속성을 객체로 추출한다.
-     * @param {NamedNodeMap} attrs - 엘리먼트의 attributes.
+     * Extracts attributes from a NamedNodeMap, excluding id/name/type/class/style/data-*.
+     * @param {NamedNodeMap} attrs - Element's attributes.
      * @returns {Object<string, string>}
      */
     static packAttributes(attrs) {
@@ -497,8 +497,8 @@ class Doctre {
     }
 
     /**
-     * DOMStringMap(dataset)을 일반 객체로 복사한다.
-     * @param {DOMStringMap} dataset - 엘리먼트의 dataset.
+     * Copies a DOMStringMap (dataset) to a plain object.
+     * @param {DOMStringMap} dataset - Element's dataset.
      * @returns {Object<string, string>}
      */
     static getDataObject(dataset) {
@@ -509,9 +509,9 @@ class Doctre {
 
 
     /**
-     * HECP(cold 요소 배열) 끝에서 빈 항목(null, 빈 문자열, 빈 배열, 빈 객체)을 제거한다.
-     * @param {Array} hecp - cold 요소 배열 `[solidId, content, style, attrs, datas]`.
-     * @returns {Array} 트리밍된 배열 (원본 수정).
+     * Removes trailing empty entries (null, empty string, empty array, empty object) from an HECP (cold element array).
+     * @param {Array} hecp - Cold element array `[solidId, content, style, attrs, datas]`.
+     * @returns {Array} The trimmed array (mutates the original).
      */
     static trimHecp(hecp) {
         for (var i = hecp.length - 1; i > 0; i--) {
@@ -529,14 +529,14 @@ class Doctre {
     }
 
     /**
-     * DOM 엘리먼트를 cold 배열로 직렬화한다.
-     * @param {Element} element - 대상 엘리먼트.
-     * @param {boolean} [trimBobbleNode=false] - 공백만 있는 텍스트 노드 제거.
-     * @param {boolean} [trimHecp=false] - 끝 빈 항목 트리밍.
-     * @param {boolean} [styleToObject=!trimHecp] - 스타일을 객체로 변환.
-     * @param {boolean} [trimIndent=trimHecp] - 텍스트 들여쓰기 트리밍.
-     * @param {boolean} [elementAsDoctre=!trimHecp] - 자식 엘리먼트를 Doctre 인스턴스로 보존.
-     * @returns {Array} cold 배열.
+     * Serializes a DOM element into a cold array.
+     * @param {Element} element - Target element.
+     * @param {boolean} [trimBobbleNode=false] - Remove whitespace-only text nodes.
+     * @param {boolean} [trimHecp=false] - Trim trailing empty entries.
+     * @param {boolean} [styleToObject=!trimHecp] - Convert style to object.
+     * @param {boolean} [trimIndent=trimHecp] - Trim text indentation.
+     * @param {boolean} [elementAsDoctre=!trimHecp] - Preserve child elements as Doctre instances.
+     * @returns {Array} Cold array.
      */
     static frostElement(element, trimBobbleNode = false, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) {
         const frozen = [];
@@ -551,9 +551,9 @@ class Doctre {
     }
 
     /**
-     * 텍스트의 각 행 앞뒤 공백을 정리한다.
-     * @param {string} text - 원본 텍스트.
-     * @param {boolean} [trimIndent=false] - true이면 들여쓰기 완전 제거, false이면 단일 공백으로 축소.
+     * Trims leading/trailing whitespace from each line of text.
+     * @param {string} text - Source text.
+     * @param {boolean} [trimIndent=false] - If true, fully removes indentation; if false, collapses to single space.
      * @returns {string}
      */
     static trimTextIndent(text, trimIndent = false) {
@@ -567,14 +567,14 @@ class Doctre {
     }
 
     /**
-     * 단일 노드를 cold 포맷으로 직렬화한다. 노드 타입에 따라 분기.
-     * @param {Node|Doctre|Array} node - 대상 노드.
-     * @param {boolean} [trimBobbleNode=false] - 공백 텍스트 노드 제거.
-     * @param {boolean} [trimHecp=false] - 끝 빈 항목 트리밍.
-     * @param {boolean} [styleToObject=!trimHecp] - 스타일을 객체로 변환.
-     * @param {boolean} [trimIndent=trimHecp] - 텍스트 들여쓰기 트리밍.
-     * @param {boolean} [elementAsDoctre=!trimHecp] - 자식 엘리먼트를 Doctre로 보존.
-     * @returns {Array|Doctre|string} cold 배열, Doctre 인스턴스, 또는 텍스트 문자열.
+     * Serializes a single node to cold format. Branches by node type.
+     * @param {Node|Doctre|Array} node - Target node.
+     * @param {boolean} [trimBobbleNode=false] - Remove whitespace text nodes.
+     * @param {boolean} [trimHecp=false] - Trim trailing empty entries.
+     * @param {boolean} [styleToObject=!trimHecp] - Convert style to object.
+     * @param {boolean} [trimIndent=trimHecp] - Trim text indentation.
+     * @param {boolean} [elementAsDoctre=!trimHecp] - Preserve child elements as Doctre.
+     * @returns {Array|Doctre|string} Cold array, Doctre instance, or text string.
      */
     static frostNode(node, trimBobbleNode = false, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) {
         if (node instanceof Doctre) return elementAsDoctre ? node : node.frost(trimBobbleNode, trimHecp, styleToObject, trimIndent, elementAsDoctre);
@@ -588,14 +588,14 @@ class Doctre {
     }
 
     /**
-     * 노드 또는 노드 리스트를 cold 배열로 직렬화한다.
-     * @param {Node|NodeList|Doctre|string} nodeOrList - 대상 노드/리스트.
-     * @param {boolean} [trimBobbleNode=false] - 공백 텍스트 노드 제거.
-     * @param {boolean} [trimHecp=false] - 끝 빈 항목 트리밍.
-     * @param {boolean} [styleToObject=!trimHecp] - 스타일을 객체로 변환.
-     * @param {boolean} [trimIndent=trimHecp] - 텍스트 들여쓰기 트리밍.
-     * @param {boolean} [elementAsDoctre=!trimHecp] - 자식 엘리먼트를 Doctre로 보존.
-     * @returns {Array} cold 배열.
+     * Serializes a node or node list into a cold array.
+     * @param {Node|NodeList|Doctre|string} nodeOrList - Target node/list.
+     * @param {boolean} [trimBobbleNode=false] - Remove whitespace text nodes.
+     * @param {boolean} [trimHecp=false] - Trim trailing empty entries.
+     * @param {boolean} [styleToObject=!trimHecp] - Convert style to object.
+     * @param {boolean} [trimIndent=trimHecp] - Trim text indentation.
+     * @param {boolean} [elementAsDoctre=!trimHecp] - Preserve child elements as Doctre.
+     * @returns {Array} Cold array.
      */
     static coldify(nodeOrList, trimBobbleNode = false, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) {
         if (typeof nodeOrList == "string") return this.coldify([nodeOrList], trimBobbleNode, trimHecp, styleToObject, trimIndent, elementAsDoctre);
@@ -611,14 +611,14 @@ class Doctre {
     }
 
     /**
-     * 노드/리스트/cold를 frost(JSON 문자열)로 직렬화한다.
-     * @param {Node|NodeList|Array} nodeOrListOrCold - 대상.
-     * @param {boolean|number} [prettyJson=false] - true 또는 들여쓰기 수(숫자)이면 정렬된 JSON.
-     * @param {boolean} [trimBobbleNode=false] - 공백 텍스트 노드 제거.
-     * @param {boolean} [trimHecp=true] - 끝 빈 항목 트리밍.
-     * @param {boolean} [styleToObject=!trimHecp] - 스타일을 객체로 변환.
-     * @param {boolean} [trimIndent=trimHecp] - 텍스트 들여쓰기 트리밍.
-     * @returns {string} frost JSON 문자열.
+     * Serializes node/list/cold to frost (JSON string).
+     * @param {Node|NodeList|Array} nodeOrListOrCold - Target.
+     * @param {boolean|number} [prettyJson=false] - If true or a number (indent), produces pretty-printed JSON.
+     * @param {boolean} [trimBobbleNode=false] - Remove whitespace text nodes.
+     * @param {boolean} [trimHecp=true] - Trim trailing empty entries.
+     * @param {boolean} [styleToObject=!trimHecp] - Convert style to object.
+     * @param {boolean} [trimIndent=trimHecp] - Trim text indentation.
+     * @returns {string} Frost JSON string.
      */
     static stringify(nodeOrListOrCold, prettyJson = false, trimBobbleNode = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp) {
         const cold = this.coldify(nodeOrListOrCold, trimBobbleNode, trimHecp, styleToObject, trimIndent, false);
@@ -629,7 +629,7 @@ class Doctre {
 
 
     /**
-     * Node, NodeList, Element, jQuery 프로토타입에 Doctre 편의 메서드를 주입한다.
+     * Injects Doctre convenience methods into Node, NodeList, Element, and jQuery prototypes.
      *
      * **NodeList/Node**: `coldify`, `coldified`, `stringify`, `stringified`
      * **Element**: `cold`, `takeCold`, `frozen`, `takeFrozen`,
@@ -637,7 +637,7 @@ class Doctre {
      *   `freeze`(→data-frozen), `solid`(freeze+clear),
      *   `hot`(data-frozen→fragment), `worm`(hot+append), `melt`(clear+worm),
      *   `burn`(hot+delete data), `wormOut`(worm+delete), `meltOut`(clear+wormOut)
-     * **jQuery**: `coldify`, `coldified`, `stringify`, `stringified` (jQuery가 있을 때만)
+     * **jQuery**: `coldify`, `coldified`, `stringify`, `stringified` (only when jQuery is available)
      */
     static patch() {
         const attach = (cls, name, value) => Object.defineProperty(cls.prototype, name, { value, writable: true, configurable: true, enumerable: false });
@@ -682,34 +682,34 @@ class Doctre {
     }
 
 
-    /** @type {string} 태그명. */
+    /** @type {string} Tag name. */
     tagName;
-    /** @type {string[]} CSS 클래스 배열. */
+    /** @type {string[]} CSS class array. */
     classes;
     /** @type {string|undefined} ID. */
     id;
-    /** @type {string|undefined} name 속성. */
+    /** @type {string|undefined} name attribute. */
     name;
-    /** @type {string|undefined} type 속성. */
+    /** @type {string|undefined} type attribute. */
     type;
-    /** @type {Array} 자식 cold 배열 (Doctre 인스턴스 또는 문자열). */
+    /** @type {Array} Child cold array (Doctre instances or strings). */
     childDoctres;
-    /** @type {string|Object} 스타일. */
+    /** @type {string|Object} Style. */
     style;
-    /** @type {Object} 일반 속성. */
+    /** @type {Object} Regular attributes. */
     attrs;
-    /** @type {Object} data-* 속성. */
+    /** @type {Object} data-* attributes. */
     datas;
-    /** @type {Object} 기본 토큰 치환 맵. */
+    /** @type {Object} Default token replacement map. */
     matchReplacer;
 
     /**
-     * @param {string|Object|Array} [solidIdOrExtracted] - solidId 문자열, 추출 객체, 또는 cold 배열.
-     * @param {*} [contentData] - 자식 콘텐츠.
-     * @param {string|Object} [style={}] - 스타일.
-     * @param {Object} [attrs={}] - 일반 속성.
-     * @param {Object} [datas={}] - data-* 속성.
-     * @param {Object} [matchReplacer={}] - 토큰 치환 맵.
+     * @param {string|Object|Array} [solidIdOrExtracted] - solidId string, extracted object, or cold array.
+     * @param {*} [contentData] - Child content.
+     * @param {string|Object} [style={}] - Style.
+     * @param {Object} [attrs={}] - Regular attributes.
+     * @param {Object} [datas={}] - data-* attributes.
+     * @param {Object} [matchReplacer={}] - Token replacement map.
      */
     constructor(solidIdOrExtracted, contentData, style = {}, attrs = {}, datas = {}, matchReplacer = {}) {
         if (solidIdOrExtracted instanceof Array) {
@@ -742,11 +742,11 @@ class Doctre {
         this.matchReplacer = matchReplacer ?? {};
     }
 
-    /** @type {string} 공백 구분 클래스 문자열. */
+    /** @type {string} Space-separated class string. */
     get className() { return this.classes.join(" "); }
     set className(value) { this.classes = value.split(" "); }
 
-    /** @type {Object} 주요 속성 객체 `{ class, id, name, type }`. */
+    /** @type {Object} Major attributes object `{ class, id, name, type }`. */
     get majorAttrs() {
         return {
             class: this.className,
@@ -756,45 +756,45 @@ class Doctre {
         };
     }
 
-    /** @type {string} 이 인스턴스의 solidId 문자열. */
+    /** @type {string} solidId string for this instance. */
     get solidId() { return Doctre.getSolidId(this.tagName, this.className, this.id, this.name, this.type); }
 
 
-    /** @type {Element} 이 Doctre를 live DOM 엘리먼트로 생성 (기본 matchReplacer 없이). */
+    /** @type {Element} Creates a live DOM element from this Doctre (without default matchReplacer). */
     get live() { return Doctre.createElement(this.tagName, this.majorAttrs, this.childDoctres, this.style, this.attrs, this.datas); }
 
     /**
-     * matchReplacer를 적용하여 live DOM 엘리먼트를 생성한다.
-     * @param {Object} [matchReplacer] - 토큰 치환 맵. 생략 시 인스턴스 기본값 사용.
+     * Creates a live DOM element with the applied matchReplacer.
+     * @param {Object} [matchReplacer] - Token replacement map. Uses instance default if omitted.
      * @returns {Element}
      */
     fresh(matchReplacer) { return Doctre.createElement(this.tagName, this.majorAttrs, this.childDoctres, this.style, this.attrs, this.datas, matchReplacer ?? this.matchReplacer ?? {}); }
 
     /**
-     * 이 Doctre를 cold 배열로 직렬화한다.
+     * Serializes this Doctre to a cold array.
      * @param {boolean} [trimBobbleNode=false]
      * @param {boolean} [trimHecp=false]
      * @param {boolean} [styleToObject=!trimHecp]
      * @param {boolean} [trimIndent=trimHecp]
      * @param {boolean} [elementAsDoctre=!trimHecp]
-     * @returns {Array} cold 배열.
+     * @returns {Array} Cold array.
      */
     frost(trimBobbleNode = false, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) {
         const hecp = [[this.solidId, this.cold(trimBobbleNode, trimHecp, styleToObject, trimIndent, elementAsDoctre), this.style, this.attrs, this.datas]];
         return trimHecp ? Doctre.trimHecp(hecp) : hecp;
     }
 
-    /** @type {Array} 간결한(trimmed) frost — `frost(false, true, false, false)`. */
+    /** @type {Array} Compact (trimmed) frost — `frost(false, true, false, false)`. */
     get icy() { return this.frost(false, true, false, false); }
 
     /**
-     * 이 Doctre를 frost JSON 문자열로 직렬화한다.
+     * Serializes this Doctre to a frost JSON string.
      * @param {boolean|number} [prettyJson=false]
      * @param {boolean} [trimBobbleNode=false]
      * @param {boolean} [trimHecp=true]
      * @param {boolean} [styleToObject=!trimHecp]
      * @param {boolean} [trimIndent=trimHecp]
-     * @returns {string} frost JSON 문자열.
+     * @returns {string} Frost JSON string.
      */
     toString(prettyJson = false, trimBobbleNode = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp) {
         const hecp = this.frost(trimBobbleNode, trimHecp, styleToObject, trimIndent, false);
@@ -804,11 +804,11 @@ class Doctre {
 
 
 
-    /** @type {DocumentFragment} 자식 cold를 live DocumentFragment로 복원. */
+    /** @type {DocumentFragment} Restores child cold to a live DocumentFragment. */
     get chill() { return Doctre.createFragment(this.childDoctres); }
 
     /**
-     * 자식 콘텐츠를 cold 배열로 직렬화한다.
+     * Serializes child content to a cold array.
      * @param {boolean} [trimBobbleNode=false]
      * @param {boolean} [trimHecp=false]
      * @param {boolean} [styleToObject=!trimHecp]
@@ -821,7 +821,7 @@ class Doctre {
     }
 
     /**
-     * 자식 콘텐츠를 frost JSON 문자열로 직렬화한다.
+     * Serializes child content to a frost JSON string.
      * @param {boolean|number} [prettyJson=false]
      * @param {boolean} [trimBobbleNode=false]
      * @param {boolean} [trimHecp=true]
@@ -835,17 +835,17 @@ class Doctre {
 }
 
 /**
- * Array를 상속한 노드 배열. DocumentFragment나 NodeList의 노드를 배열로 보존한다.
- * Fragment는 DOM에 append되면 자식이 빠지므로, 참조를 유지하려면 NodeArray로 감싼다.
+ * Node array extending Array. Preserves nodes from DocumentFragment or NodeList as an array.
+ * Since a Fragment loses its children when appended to the DOM, use NodeArray to maintain references.
  * @class
  * @extends Array
  */
 class NodeArray extends Array {
 
     /**
-     * DocumentFragment 또는 NodeList의 노드를 NodeArray로 복사한다.
-     * @param {DocumentFragment|NodeList} fragmentOrNodeList - 원본.
-     * @param {NodeArray} [into=new NodeArray()] - 결과를 저장할 배열.
+     * Copies nodes from a DocumentFragment or NodeList into a NodeArray.
+     * @param {DocumentFragment|NodeList} fragmentOrNodeList - Source.
+     * @param {NodeArray} [into=new NodeArray()] - Array to store results into.
      * @returns {NodeArray}
      */
     static box(fragmentOrNodeList, into = new NodeArray()) {

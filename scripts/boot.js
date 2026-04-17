@@ -112,37 +112,37 @@ releaseInsetForApp();
 
 
 /**
- * Service Worker 관리 핸들러.
- * 등록·설치·대기·활성화 라이프사이클을 추적하고, 메시지 프로토콜로 캐시 관리 등을 수행한다.
- * 4-tier 캐시 전략: Application / Common / Static / Stony.
+ * Service Worker management handler.
+ * Tracks the registration/install/waiting/activation lifecycle and performs cache management via messaging protocol.
+ * 4-tier cache strategy: Application / Common / Static / Stony.
  * @type {Object}
  */
 const serviceWorkerHandler = {
-    /** @type {ServiceWorkerRegistration|null} 서비스 워커 등록 객체. */
+    /** @type {ServiceWorkerRegistration|null} Service worker registration object. */
     registeration: null,
-    /** @type {ServiceWorker|null} 설치 중인 워커. */
+    /** @type {ServiceWorker|null} Installing worker. */
     installing: null,
-    /** @type {ServiceWorker|null} 대기 중인 워커. */
+    /** @type {ServiceWorker|null} Waiting worker. */
     waiting: null,
-    /** @type {ServiceWorker|null} 활성화 중인 워커. */
+    /** @type {ServiceWorker|null} Activating worker. */
     activating: null,
-    /** @type {ServiceWorker|null} 활성화된 워커. */
+    /** @type {ServiceWorker|null} Activated worker. */
     activated: null,
-    /** @type {boolean|null} 최초 설치 여부. */
+    /** @type {boolean|null} Whether this is a fresh install. */
     isInitialSetup: null,
 
     /** @type {ServiceWorkerContainer} navigator.serviceWorker. */
     get service() { return navigator.serviceWorker; },
-    /** @type {ServiceWorker|null} 현재 컨트롤러. */
+    /** @type {ServiceWorker|null} Current controller. */
     get controller() { return this.service?.controller; },
-    /** @type {ServiceWorker|null} 가장 최신 워커 (controller → activated → activating → waiting → installing 순). */
+    /** @type {ServiceWorker|null} Latest worker (in order: controller → activated → activating → waiting → installing). */
     get worker() { return this.controller ?? this.activated ?? this.activating ?? this.waiting ?? this.installing; },
 
     /**
-     * 워커에 메시지를 전송한다.
-     * @param {ServiceWorker|null} worker - 대상 워커. null이면 현재 worker.
-     * @param {Object} message - 전송할 메시지 객체.
-     * @param {Transferable[]} [transfer] - 전송 가능 객체.
+     * Sends a message to the worker.
+     * @param {ServiceWorker|null} worker - Target worker. If null, uses current worker.
+     * @param {Object} message - Message object to send.
+     * @param {Transferable[]} [transfer] - Transferable objects.
      */
     postMessage(worker, message, transfer) {
         (worker ?? this.worker)?.postMessage(message, transfer);
@@ -170,7 +170,7 @@ const serviceWorkerHandler = {
         }
     },
 
-    /** 서비스 워커 업데이트를 확인한다. @returns {Promise<ServiceWorker|false|null|undefined>} */
+    /** Checks for service worker updates. @returns {Promise<ServiceWorker|false|null|undefined>} */
     async update() {
         if (this.registeration == null) return null;
         try {
@@ -276,12 +276,12 @@ const serviceWorkerHandler = {
     },
 
     /**
-     * 워커에 요청을 전송하고 콜백으로 응답을 받는다.
-     * @param {string} type - 요청 타입.
-     * @param {Object} [content={}] - 요청 콘텐츠.
-     * @param {Function} [onSuccess] - 성공 콜백.
-     * @param {Function} [onError] - 에러 콜백.
-     * @param {ServiceWorker} [worker=this.worker] - 대상 워커.
+     * Sends a request to the worker and receives the response via callback.
+     * @param {string} type - Request type.
+     * @param {Object} [content={}] - Request content.
+     * @param {Function} [onSuccess] - Success callback.
+     * @param {Function} [onError] - Error callback.
+     * @param {ServiceWorker} [worker=this.worker] - Target worker.
      */
     async sendRequest(type, content = {}, onSuccess, onError, worker = this.worker) {
         if (worker != null) {
@@ -292,10 +292,10 @@ const serviceWorkerHandler = {
     },
 
     /**
-     * 워커에 요청을 전송하고 Promise로 응답을 대기한다.
-     * @param {string} type - 요청 타입.
-     * @param {Object} [content={}] - 요청 콘텐츠.
-     * @param {ServiceWorker} [worker=this.worker] - 대상 워커.
+     * Sends a request to the worker and awaits the response as a Promise.
+     * @param {string} type - Request type.
+     * @param {Object} [content={}] - Request content.
+     * @param {ServiceWorker} [worker=this.worker] - Target worker.
      * @returns {Promise<*>}
      */
     sendRequestForWait(type, content = {}, worker = this.worker) {
@@ -304,17 +304,17 @@ const serviceWorkerHandler = {
         });
     },
 
-    /** 대기 중인 워커를 즉시 활성화하도록 요청한다. @param {ServiceWorker} [worker=this.waiting] */
+    /** Requests the waiting worker to activate immediately. @param {ServiceWorker} [worker=this.waiting] */
     skipWaiting(worker = this.waiting) {
         worker?.postMessage({ type: "SKIP_WAITING" });
     },
 
-    /** 활성 워커가 모든 클라이언트를 즉시 제어하도록 요청한다. @param {ServiceWorker} [worker=this.activated] */
+    /** Requests the active worker to immediately control all clients. @param {ServiceWorker} [worker=this.activated] */
     clientsClaim(worker = this.activated) {
         worker?.postMessage({ type: "CLIENTS_CLAIM" });
     },
 
-    /** Application 캐시를 삭제한다. @param {ServiceWorker} [worker] @returns {Promise<*>} */
+    /** Deletes the Application cache. @param {ServiceWorker} [worker] @returns {Promise<*>} */
     async clearCache(worker = this.worker) {
         try {
             return await this.sendRequestForWait("clearCache", {}, worker);
@@ -323,7 +323,7 @@ const serviceWorkerHandler = {
         }
     },
 
-    /** Common 캐시를 삭제한다. @param {ServiceWorker} [worker] @returns {Promise<*>} */
+    /** Deletes the Common cache. @param {ServiceWorker} [worker] @returns {Promise<*>} */
     async clearCommonCache(worker = this.worker) {
         try {
             return await this.sendRequestForWait("clearCommonCache", {}, worker);
@@ -332,7 +332,7 @@ const serviceWorkerHandler = {
         }
     },
 
-    /** Static 캐시를 삭제한다. @param {ServiceWorker} [worker] @returns {Promise<*>} */
+    /** Deletes the Static cache. @param {ServiceWorker} [worker] @returns {Promise<*>} */
     async clearStaticCache(worker = this.worker) {
         try {
             return await this.sendRequestForWait("clearStaticCache", {}, worker);
@@ -341,7 +341,7 @@ const serviceWorkerHandler = {
         }
     },
 
-    /** Stony 캐시를 삭제한다. @param {ServiceWorker} [worker] @returns {Promise<*>} */
+    /** Deletes the Stony cache. @param {ServiceWorker} [worker] @returns {Promise<*>} */
     async clearStonyCache(worker = this.worker) {
         try {
             return await this.sendRequestForWait("clearStonyCache", {}, worker);
@@ -350,7 +350,7 @@ const serviceWorkerHandler = {
         }
     },
 
-    /** 모든 캐시(Application + Common + Static + Stony)를 삭제한다. @param {ServiceWorker} [worker] @returns {Promise<*>} */
+    /** Deletes all caches (Application + Common + Static + Stony). @param {ServiceWorker} [worker] @returns {Promise<*>} */
     async clearAllCaches(worker = this.worker) {
         try {
             return await this.sendRequestForWait("clearAllCaches", {}, worker);
@@ -359,7 +359,7 @@ const serviceWorkerHandler = {
         }
     },
 
-    /** 워커의 버전 정보를 조회한다. @param {ServiceWorker} [worker] @returns {Promise<*>} */
+    /** Retrieves the worker version info. @param {ServiceWorker} [worker] @returns {Promise<*>} */
     async getVersion(worker = this.worker) {
         try {
             return await this.sendRequestForWait("getVersion", {}, worker);
@@ -368,12 +368,12 @@ const serviceWorkerHandler = {
         }
     },
 
-    /** 대기 중인 워커의 버전을 조회한다. @returns {Promise<*>} */
+    /** Retrieves the version of the waiting worker. @returns {Promise<*>} */
     getVersionWaiting() {
         return this.getVersion(this.waiting);
     },
 
-    /** Application 캐시의 항목 수를 조회한다. @param {ServiceWorker} [worker] @returns {Promise<number>} */
+    /** Retrieves the number of entries in the Application cache. @param {ServiceWorker} [worker] @returns {Promise<number>} */
     async getApplicationCount(worker = this.controller) {
         try {
             return worker != null ? await this.sendRequestForWait("getApplicationCount", {}, worker) : 0;

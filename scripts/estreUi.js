@@ -14,9 +14,9 @@
 
 
 /**
- * UI specifier constants — CSS 셀렉터 기반 UI 위젯 식별자 레지스트리.
- * EstreHandle이 DOM에서 핸들을 탐색할 때 이 값들을 specifier로 사용한다.
- * `uis.calendar`, `uis.collapsible` 등으로 접근.
+ * UI specifier constants — CSS-selector-based UI widget identifier registry.
+ * EstreHandle uses these values as specifiers when searching for handles in the DOM.
+ * Access via `uis.calendar`, `uis.collapsible`, etc.
  * @type {Object<string, string>}
  */
 const uis = {
@@ -222,9 +222,9 @@ const uis = {
 };
 
 /**
- * Element data specifier constants — `data-*` 속성명 레지스트리.
- * Active Struct 바인딩, 페이지 매니저, 핸들 등에서 DOM data 속성을 참조할 때 사용.
- * `eds.bind`, `eds.active`, `eds.exported` 등으로 접근.
+ * Element data specifier constants — `data-*` attribute name registry.
+ * Used to reference DOM data attributes in Active Struct bindings, page manager, handles, etc.
+ * Access via `eds.bind`, `eds.active`, `eds.exported`, etc.
  * @type {Object<string, string>}
  */
 const eds = {
@@ -4255,30 +4255,30 @@ class EstreArticle extends EstrePageHandle {
  * Page handler base
  */
 /**
- * 페이지 라이프사이클 콜백을 정의하는 핸들러 베이스 클래스.
- * 프로젝트에서 상속하여 onBring, onShow, onHide, onClose 등을 오버라이드한다.
+ * Base class defining page lifecycle callbacks.
+ * Subclass in your project to override onBring, onShow, onHide, onClose, etc.
  * @class
  */
 class EstrePageHandler {
 
-    /** @type {*} 이 핸들러를 제공한 프로바이더 (EstreUiCustomPageManager에서 등록). */
+    /** @type {*} The provider that registered this handler (set by EstreUiCustomPageManager). */
     #provider = null;
     get provider() { return this.#provider; }
 
-    /** @type {EstrePageHandle} 이 핸들러가 바인딩된 페이지 핸들 인스턴스. */
+    /** @type {EstrePageHandle} The page handle instance this handler is bound to. */
     #handle = null;
     /** @type {EstrePageHandle} */
     get handle() { return this.#handle; }
-    /** @type {Object|undefined} 현재 인텐트 객체. */
+    /** @type {Object|undefined} Current intent object. */
     get intent() { return this.handle.intent; }
-    /** @type {string|undefined} 인텐트의 action 필드. */
+    /** @type {string|undefined} The action field of the intent. */
     get intentAction() { return this.intent?.action; }
-    /** @type {*} 인텐트의 data 필드. */
+    /** @type {*} The data field of the intent. */
     get intentData() { return this.intent?.data; }
 
     /**
-     * @param {EstrePageHandle} handle - 바인딩될 페이지 핸들.
-     * @param {*} [provider] - 이 핸들러를 제공한 프로바이더.
+     * @param {EstrePageHandle} handle - The page handle to bind.
+     * @param {*} [provider] - The provider that registered this handler.
      */
     constructor (handle, provider) {
         this.#handle = handle;
@@ -4287,41 +4287,41 @@ class EstrePageHandler {
 
 
     /**
-     * 페이지가 처음 탐색(bring)될 때 호출. DOM 참조 캐싱 등 초기 설정에 사용.
-     * @param {EstrePageHandle} handle - 페이지 핸들.
+     * Called when the page is first navigated (brought). Use for initial setup such as DOM reference caching.
+     * @param {EstrePageHandle} handle - The page handle.
      */
     onBring(handle) {
 
     }
 
     /**
-     * 컴포넌트·컨테이너·아티클이 열릴(open) 때 호출. 이벤트 바인딩 등에 사용.
-     * @param {EstrePageHandle} handle - 페이지 핸들.
+     * Called when the component/container/article is opened. Use for event binding, etc.
+     * @param {EstrePageHandle} handle - The page handle.
      */
     onOpen(handle) {
 
     }
 
     /**
-     * 페이지가 표시(show)될 때 호출. 애니메이션 시작, 데이터 갱신 등에 사용.
-     * @param {EstrePageHandle} handle - 페이지 핸들.
+     * Called when the page is shown. Use for starting animations, refreshing data, etc.
+     * @param {EstrePageHandle} handle - The page handle.
      */
     onShow(handle) {
 
     }
 
     /**
-     * 페이지가 포커스를 받을 때 호출.
-     * @param {EstrePageHandle} handle - 페이지 핸들.
+     * Called when the page receives focus.
+     * @param {EstrePageHandle} handle - The page handle.
      */
     onFocus(handle) {
 
     }
 
     /**
-     * 페이지 새로고침(reload) 요청 시 호출. 기본 동작은 닫고 다시 bring.
-     * @param {EstrePageHandle} handle - 페이지 핸들.
-     * @returns {Promise<boolean>|boolean} 새로고침 성공 여부.
+     * Called on a reload request. Default behavior is to close and re-bring.
+     * @param {EstrePageHandle} handle - The page handle.
+     * @returns {Promise<boolean>|boolean} Whether the reload succeeded.
      */
     onReload(handle) {
         // Rebuild(close and bring) is default action
@@ -4340,9 +4340,9 @@ class EstrePageHandler {
     }
 
     /**
-     * 뒤로가기(back) 요청 시 호출. 기본 동작은 hostType과 sectionBound에 따라 닫기 시도.
-     * @param {EstrePageHandle} handle - 페이지 핸들.
-     * @returns {Promise<boolean>} 뒤로가기 처리 성공 여부.
+     * Called on a back request. Default behavior attempts to close based on hostType and sectionBound.
+     * @param {EstrePageHandle} handle - The page handle.
+     * @returns {Promise<boolean>} Whether the back action was handled.
      */
     async onBack(handle) {
         return handle.hostType != "component" ? (handle.isCanBack ? (handle.isStatic ? await handle.close() != null : await handle.close()) : false) : (
@@ -4350,26 +4350,26 @@ class EstrePageHandler {
     }
 
     /**
-     * 페이지가 숨겨질(hide) 때 호출.
-     * @param {EstrePageHandle} handle - 페이지 핸들.
-     * @param {boolean} fullyHide - 완전 숨김 여부.
+     * Called when the page is hidden.
+     * @param {EstrePageHandle} handle - The page handle.
+     * @param {boolean} fullyHide - Whether to fully hide the page.
      */
     async onHide(handle, fullyHide) {
 
     }
 
     /**
-     * 페이지가 닫힐(close) 때 호출. 리소스 정리 등에 사용.
-     * @param {EstrePageHandle} handle - 페이지 핸들.
+     * Called when the page is closed. Use for resource cleanup.
+     * @param {EstrePageHandle} handle - The page handle.
      */
     async onClose(handle) {
 
     }
 
     /**
-     * 페이지가 해제(release)될 때 호출. DOM 제거 전 최종 정리.
-     * @param {EstrePageHandle} handle - 페이지 핸들.
-     * @param {boolean|undefined} remove - true면 DOM 제거, false면 비우기.
+     * Called when the page is released. Final cleanup before DOM removal.
+     * @param {EstrePageHandle} handle - The page handle.
+     * @param {boolean|undefined} remove - true to remove from DOM, false to empty.
      */
     async onRelease(handle, remove) {
 
@@ -4870,18 +4870,19 @@ class EstreDialsDialogPageHandler extends EstreDialogPageHandler {
  * Pages profiling manager
  */
 /**
- * EstreUI 페이지 모델. PID(Page IDentifier) 문자열로 식별되며, 컴포넌트·컨테이너·아티클의 계층 구조와
- * sectionBound(main/blind/menu/overlay/header), statement(static/instant), 멀티 인스턴스 여부를 캡슐화한다.
+ * EstreUI page model. Identified by a PID (Page IDentifier) string, encapsulating the
+ * component/container/article hierarchy, sectionBound (main/blind/menu/overlay/header),
+ * statement (static/instant), and multi-instance status.
  *
- * PID 형식: `$<statement>&<sectionBound>=<component>[^][#<container>[^][@<article>[^][%<step>]]]`
+ * PID format: `$<statement>&<sectionBound>=<component>[^][#<container>[^][@<article>[^][%<step>]]]`
  * - `$s` = static, `$i` = instant
  * - `&m` = main, `&b` = blind, `&o` = overlay, `&h` = header, `&u` = menu
- * - `^` = 멀티 인스턴스
+ * - `^` = multi-instance
  * @class
  */
 class EstreUiPage {
 
-    /** @type {Object<string, typeof EstrePageHandler>} PID → 페이지 핸들러 클래스 매핑 (내장 핸들러). */
+    /** @type {Object<string, typeof EstrePageHandler>} PID → page handler class mapping (built-in handlers). */
     static #pageHandlers = {
         "$s&h=appbar": class extends EstrePageHandler {
             $appTitleBtn;
@@ -5246,20 +5247,20 @@ class EstreUiPage {
         "$s&o=operation#root@quickPanel": class extends EstrePageHandler { },
 
     };
-    /** @type {Object<string, typeof EstrePageHandler>} 커스텀 등록된 페이지 핸들러 (commit 시 #pageHandlers에 병합). */
+    /** @type {Object<string, typeof EstrePageHandler>} Custom-registered page handlers (merged into #pageHandlers on commit). */
     static #registeredPageHandlers = {};
 
-    /** @type {*} 커스텀 페이지 프로바이더 (EstreUiCustomPageManager에서 등록). */
+    /** @type {*} Custom page provider (registered by EstreUiCustomPageManager). */
     static #customPagesProvider = null;
     static get provider() { return this.#customPagesProvider; }
 
-    /** @type {boolean} commit() 호출 이후 true. */
+    /** @type {boolean} true after commit() has been called. */
     static #handlerCommited = false;
     static get handlerCommited() { return this.#handlerCommited; }
 
     /**
-     * 커스텀 페이지 프로바이더를 등록한다. 최초 1회, commit 전에만 가능.
-     * @param {*} provider - 프로바이더 객체.
+     * Registers a custom page provider. Can only be called once, before commit.
+     * @param {*} provider - The provider object.
      */
     static registerProvider(provider) {
         if (!this.#handlerCommited && this.#customPagesProvider == null) {
@@ -5268,9 +5269,9 @@ class EstreUiPage {
     }
 
     /**
-     * PID에 페이지 핸들러를 등록한다. commit 전에만 가능.
-     * @param {string} pid - 대상 PID.
-     * @param {typeof EstrePageHandler} handler - 페이지 핸들러 클래스.
+     * Registers a page handler for a PID. Can only be called before commit.
+     * @param {string} pid - Target PID.
+     * @param {typeof EstrePageHandler} handler - Page handler class.
      */
     static registerHandler(pid, handler) {
         if (!this.#handlerCommited && this.#registeredPageHandlers[pid] == null) {
@@ -5278,7 +5279,7 @@ class EstreUiPage {
         }
     }
 
-    /** 핸들러 등록을 확정한다. 이후 registerHandler() 호출은 무시된다. */
+    /** Commits handler registration. Subsequent registerHandler() calls are ignored. */
     static commit() {
         this.#handlerCommited = true;
 
@@ -5287,7 +5288,7 @@ class EstreUiPage {
 
 
     /**
-     * PID에서 statement 접두어(`$s`, `$i`)를 제거한다.
+     * Strips the statement prefix (`$s`, `$i`) from a PID.
      * @param {string} pid
      * @returns {string}
      */
@@ -5296,7 +5297,7 @@ class EstreUiPage {
     }
 
     /**
-     * PID에서 인스턴스 출처(`^` 이후)를 제거한다.
+     * Strips the instance origin (everything after `^`) from a PID.
      * @param {string} pid
      * @returns {string}
      */
@@ -5305,7 +5306,7 @@ class EstreUiPage {
     }
 
     /**
-     * PID에서 statement 접두어와 인스턴스 출처를 모두 제거한다.
+     * Strips both the statement prefix and instance origin from a PID.
      * @param {string} pid
      * @returns {string}
      */
@@ -5314,7 +5315,7 @@ class EstreUiPage {
     }
 
     /**
-     * PID에 매칭되는 핸들러 클래스를 검색한다. 완전 PID → statementless → originless → seamless 순으로 폴백.
+     * Searches for a handler class matching the PID. Falls back: full PID → statementless → originless → seamless.
      * @param {string} pid
      * @returns {typeof EstrePageHandler|undefined}
      */
@@ -5333,7 +5334,7 @@ class EstreUiPage {
     }
 
     /**
-     * PID에 매칭되는 핸들러 클래스를 반환한다.
+     * Returns the handler class matching the PID.
      * @param {string} pid
      * @returns {typeof EstrePageHandler|undefined}
      */
@@ -5342,13 +5343,13 @@ class EstreUiPage {
     }
 
 
-    /** @type {Element|null} 원본(raw) DOM 엘리먼트. */
+    /** @type {Element|null} The original (raw) DOM element. */
     #raw = null;
     get raw() { return this.#raw; }
-    /** @type {*} Doctre cold 포맷 데이터. */
+    /** @type {*} Doctre cold format data. */
     #cold = null;
     get cold() { return this.#cold; }
-    /** @type {Element|undefined} cold 데이터를 live DOM으로 복원한 결과. */
+    /** @type {Element|undefined} The cold data restored to a live DOM element. */
     get live() { return this.cold?.let(it => Doctre.live(it)); }
 
     #componentStatement = null;//static/instant
@@ -5550,11 +5551,11 @@ class EstreUiPage {
     }
 
     /**
-     * 컴포넌트 레벨 PID를 생성한다.
-     * @param {string} id - 컴포넌트 ID.
-     * @param {string} sectionBound - 섹션 바운드 ("main"|"blind"|"overlay"|"header"|"menu").
-     * @param {string} [statement] - "instant" 또는 "static".
-     * @returns {string|null} 생성된 PID, 또는 유효하지 않으면 null.
+     * Builds a component-level PID.
+     * @param {string} id - Component ID.
+     * @param {string} sectionBound - Section bound ("main"|"blind"|"overlay"|"header"|"menu").
+     * @param {string} [statement] - "instant" or "static".
+     * @returns {string|null} The generated PID, or null if invalid.
      */
     static getPidComponent(id, sectionBound, statement) {
         const stc = statement == "instant" ? "$i" : (statement == "static" ? "$s" : "");
@@ -5564,11 +5565,11 @@ class EstreUiPage {
     }
 
     /**
-     * 컨테이너 레벨 PID를 생성한다.
-     * @param {string} id - 컨테이너 ID.
-     * @param {string} componentId - 소속 컴포넌트 ID.
-     * @param {string} [sectionBound] - 섹션 바운드.
-     * @param {string} [statement] - "instant" 또는 "static".
+     * Builds a container-level PID.
+     * @param {string} id - Container ID.
+     * @param {string} componentId - Parent component ID.
+     * @param {string} [sectionBound] - Section bound.
+     * @param {string} [statement] - "instant" or "static".
      * @returns {string|undefined}
      */
     static getPidContainer(id, componentId, sectionBound, statement) {
@@ -5577,12 +5578,12 @@ class EstreUiPage {
     }
 
     /**
-     * 아티클 레벨 PID를 생성한다.
-     * @param {string} id - 아티클 ID.
-     * @param {string} containerId - 소속 컨테이너 ID.
-     * @param {string} componentId - 소속 컴포넌트 ID.
-     * @param {string} [sectionBound] - 섹션 바운드.
-     * @param {string} [statement] - "instant" 또는 "static".
+     * Builds an article-level PID.
+     * @param {string} id - Article ID.
+     * @param {string} containerId - Parent container ID.
+     * @param {string} componentId - Parent component ID.
+     * @param {string} [sectionBound] - Section bound.
+     * @param {string} [statement] - "instant" or "static".
      * @returns {string|undefined}
      */
     static getPidArticle(id, containerId, componentId, sectionBound, statement) {
@@ -5591,8 +5592,8 @@ class EstreUiPage {
     }
 
     /**
-     * DOM 엘리먼트로부터 EstreUiPage를 생성하여 등록 또는 커밋한다.
-     * @param {jQuery|Element} $element - 대상 엘리먼트.
+     * Creates an EstreUiPage from a DOM element and registers or commits it.
+     * @param {jQuery|Element} $element - Target element.
      * @returns {EstreUiPage}
      */
     static registerOrCommitFrom($element) {
@@ -5600,8 +5601,8 @@ class EstreUiPage {
     }
 
     /**
-     * EstreUiPage를 페이지 매니저에 등록하거나, 이미 존재하면 인스턴스를 추가 등록한다.
-     * @param {EstreUiPage} euiPage - 대상 페이지.
+     * Registers an EstreUiPage with the page manager, or adds an instance if already registered.
+     * @param {EstreUiPage} euiPage - Target page.
      * @returns {EstreUiPage}
      */
     static registerOrCommit(euiPage) {
@@ -5612,9 +5613,9 @@ class EstreUiPage {
     }
 
     /**
-     * DOM 엘리먼트 또는 페이지 핸들로부터 페이지 인스턴스를 등록 해제한다.
-     * @param {jQuery|Element|EstrePageHandle} $element - 대상 엘리먼트 또는 핸들.
-     * @param {string} [pid] - PID (EstrePageHandle 전달 시 자동 추출).
+     * Unregisters a page instance from a DOM element or page handle.
+     * @param {jQuery|Element|EstrePageHandle} $element - Target element or handle.
+     * @param {string} [pid] - PID (auto-extracted when an EstrePageHandle is passed).
      * @returns {boolean}
      */
     static unregisterFrom($element, pid) {
@@ -5631,8 +5632,8 @@ class EstreUiPage {
     }
 
     /**
-     * DOM 엘리먼트(section/div.container/article)로부터 EstreUiPage를 역추적 생성한다.
-     * @param {jQuery|Element|EstrePageHandle} $element - 대상 엘리먼트.
+     * Reverse-constructs an EstreUiPage from a DOM element (section/div.container/article).
+     * @param {jQuery|Element|EstrePageHandle} $element - Target element.
      * @returns {EstreUiPage|null}
      */
     static from($element) {
@@ -5670,9 +5671,9 @@ class EstreUiPage {
     constructor() {}
 
     /**
-     * 섹션 바운드를 설정한다. commit 전에만 가능.
+     * Sets the section bound. Only callable before commit.
      * @param {string} sectionBound - "main"|"blind"|"menu"|"overlay"|"header".
-     * @returns {this|false} 체이닝용 자기 자신, 또는 이미 커밋되었으면 false.
+     * @returns {this|false} this for chaining, or false if already committed.
      */
     setSectionBound(sectionBound) {
         if (this.#commited) return false;
@@ -5681,7 +5682,7 @@ class EstreUiPage {
     }
 
     /**
-     * 컴포넌트 ID를 설정한다. commit 전, 미설정 상태에서만 가능.
+     * Sets the component ID. Only callable before commit and when not yet set.
      * @param {string} componentId
      * @returns {this|false}
      */
@@ -5692,7 +5693,7 @@ class EstreUiPage {
     }
 
     /**
-     * 컨테이너 ID를 설정한다. commit 전, 미설정 상태에서만 가능.
+     * Sets the container ID. Only callable before commit and when not yet set.
      * @param {string} containerId
      * @returns {this|false}
      */
@@ -5703,7 +5704,7 @@ class EstreUiPage {
     }
 
     /**
-     * 아티클 ID를 설정한다. commit 전, 미설정 상태에서만 가능.
+     * Sets the article ID. Only callable before commit and when not yet set.
      * @param {string} articleId
      * @returns {this|false}
      */
@@ -5714,8 +5715,8 @@ class EstreUiPage {
     }
 
     /**
-     * 멀티 인스턴스 출처를 설정한다. 배열이면 [component, container, article] 순서, 아니면 hostType에 따라 배분.
-     * @param {string|string[]} [instanceOrigin] - 인스턴스 출처.
+     * Sets the multi-instance origin. If an array, order is [component, container, article]; otherwise distributed by hostType.
+     * @param {string|string[]} [instanceOrigin] - Instance origin.
      */
     setInstanceOrigin(instanceOrigin) {
         if (isArray(instanceOrigin)) {
@@ -5879,8 +5880,8 @@ class EstreUiPage {
  * Pages operation manager
  */
 /**
- * 페이지 탐색·표시·숨김·닫기를 관리하는 내부 페이지 매니저.
- * PID(Page IDentifier) 문자열로 페이지를 식별하며, `!` 접두어(managed), `*` 접두어(external) 매핑을 지원한다.
+ * Internal page manager handling page navigation, showing, hiding, and closing.
+ * Pages are identified by PID (Page IDentifier) strings, with `!` prefix (managed) and `*` prefix (external) alias mapping.
  * @class
  */
 class EstreUiPageManager {
@@ -5895,13 +5896,13 @@ class EstreUiPageManager {
 
 
     // instnace property
-    /** @type {Object<string, EstreUiPage>} PID → EstreUiPage 인스턴스 맵. */
+    /** @type {Object<string, EstreUiPage>} PID → EstreUiPage instance map. */
     #pages = {};
 
     /** @type {Object<string, EstreUiPage>} */
     get pages() { return this.#pages; }
 
-    /** @type {Object<string, string>} 내장 관리 페이지 별칭 → 실제 PID 매핑. `!alert`, `!confirm` 등으로 접근. */
+    /** @type {Object<string, string>} Built-in managed page alias → actual PID mapping. Access via `!alert`, `!confirm`, etc. */
     #managedPidMap = {
         get appbar() { return "$s&h=appbar"; },
 
@@ -5934,25 +5935,25 @@ class EstreUiPageManager {
         get quickPanel() { return "$s&o=operation#root@quickPanel"; },
     }
 
-    /** @type {Object<string, string>|null} 외부(커스텀) 페이지 별칭 → 실제 PID 매핑. `*home` 등으로 접근. EstreUiCustomPageManager.init()에서 설정. */
+    /** @type {Object<string, string>|null} External (custom) page alias → actual PID mapping. Access via `*home`, etc. Set by EstreUiCustomPageManager.init(). */
     #extPidMap = null;
     /** @type {Object<string, string>|null} */
     get extPidMap() { return this.#extPidMap; }
-    /** @param {Object<string, string>} value — 최초 1회만 설정 가능. */
+    /** @param {Object<string, string>} value — Can only be set once. */
     set extPidMap(value) {
         if (this.#extPidMap == null) this.#extPidMap = value;
     }
 
     constructor() {}
 
-    /** 초기화 훅. 서브클래스 오버라이드용. */
+    /** Initialization hook. Override in subclasses. */
     init() {
 
     }
 
     /**
-     * EstreUiPage 인스턴스를 매니저에 등록한다.
-     * @param {EstreUiPage} euiPage - 등록할 페이지 객체.
+     * Registers an EstreUiPage instance with the manager.
+     * @param {EstreUiPage} euiPage - The page object to register.
      */
     register(euiPage) {
         const pid = euiPage.pid;
@@ -5964,9 +5965,9 @@ class EstreUiPageManager {
     
 
     /**
-     * statement 접두어(`$i`, `$s`)가 생략된 PID로부터 완전한 PID를 탐색한다.
-     * @param {string|null} pid - 완전 또는 부분 PID.
-     * @returns {string|null} 매칭되는 완전한 PID, 또는 null.
+     * Finds a full PID from a PID with the statement prefix (`$i`, `$s`) omitted.
+     * @param {string|null} pid - Full or partial PID.
+     * @returns {string|null} The matching full PID, or null.
      */
     findPid(pid) {
         if (pid == null) return null;
@@ -5979,8 +5980,8 @@ class EstreUiPageManager {
     }
 
     /**
-     * PID로 페이지를 조회한다.
-     * @param {string} pid - 완전한 PID.
+     * Looks up a page by PID.
+     * @param {string} pid - Full PID.
      * @returns {EstreUiPage|undefined}
      */
     get(pid) {
@@ -5988,10 +5989,10 @@ class EstreUiPageManager {
     }
 
     /**
-     * 컴포넌트 ID로 페이지를 조회한다.
-     * @param {string} id - 컴포넌트 ID.
-     * @param {string} [sectionBound="blind"] - 섹션 바운드 ("main"|"blind"|"menu"|"overlay"|"header").
-     * @param {string} [statement] - "static" 또는 "instant".
+     * Looks up a page by component ID.
+     * @param {string} id - Component ID.
+     * @param {string} [sectionBound="blind"] - Section bound ("main"|"blind"|"menu"|"overlay"|"header").
+     * @param {string} [statement] - "static" or "instant".
      * @returns {EstreUiPage|null}
      */
     getComponent(id, sectionBound = "blind", statement) {
@@ -6001,11 +6002,11 @@ class EstreUiPageManager {
     }
 
     /**
-     * 컨테이너 ID로 페이지를 조회한다.
-     * @param {string} id - 컨테이너 ID.
-     * @param {string} componentId - 소속 컴포넌트 ID.
-     * @param {string} [sectionBound] - 섹션 바운드.
-     * @param {string} [statement] - "static" 또는 "instant".
+     * Looks up a page by container ID.
+     * @param {string} id - Container ID.
+     * @param {string} componentId - Parent component ID.
+     * @param {string} [sectionBound] - Section bound.
+     * @param {string} [statement] - "static" or "instant".
      * @returns {EstreUiPage|null}
      */
     getContainer(id, componentId, sectionBound, statement) {
@@ -6015,12 +6016,12 @@ class EstreUiPageManager {
     }
 
     /**
-     * 아티클 ID로 페이지를 조회한다.
-     * @param {string} id - 아티클 ID.
-     * @param {string} containerId - 소속 컨테이너 ID.
-     * @param {string} componentId - 소속 컴포넌트 ID.
-     * @param {string} [sectionBound] - 섹션 바운드.
-     * @param {string} [statement] - "static" 또는 "instant".
+     * Looks up a page by article ID.
+     * @param {string} id - Article ID.
+     * @param {string} containerId - Parent container ID.
+     * @param {string} componentId - Parent component ID.
+     * @param {string} [sectionBound] - Section bound.
+     * @param {string} [statement] - "static" or "instant".
      * @returns {EstreUiPage|null}
      */
     getArticle(id, containerId, componentId, sectionBound, statement) {
@@ -6030,12 +6031,12 @@ class EstreUiPageManager {
     }
 
     /**
-     * 스텝 아티클의 총 페이지 수를 반환한다.
-     * @param {string} articleStepsId - 스텝 아티클 기본 ID (예: "step").
-     * @param {string} containerId - 소속 컨테이너 ID.
-     * @param {string} componentId - 소속 컴포넌트 ID.
-     * @param {string} [sectionBound] - 섹션 바운드.
-     * @returns {number} 스텝 페이지 수.
+     * Returns the total number of step article pages.
+     * @param {string} articleStepsId - Base ID for the step articles (e.g. "step").
+     * @param {string} containerId - Parent container ID.
+     * @param {string} componentId - Parent component ID.
+     * @param {string} [sectionBound] - Section bound.
+     * @returns {number} Number of step pages.
      */
     getStepPagesLength(articleStepsId, containerId, componentId, sectionBound) {
         var pid0 = this.findPid(EstreUiPage.getPidArticle(articleStepsId + "%0", containerId, componentId, sectionBound));
@@ -6047,12 +6048,12 @@ class EstreUiPageManager {
     }
 
     /**
-     * PID로 페이지를 탐색(bring)한다. 컴포넌트·컨테이너·아티클이 없으면 생성(open)하고, 이미 있으면 표시(show)한다.
-     * `!` 접두어는 managedPidMap, `*` 접두어는 extPidMap으로 해석된다.
-     * @param {string} pid - 완전 PID, 또는 `!`/`*` 접두어 별칭.
-     * @param {Object} [intent] - 페이지 핸들러에 전달되는 인텐트 데이터.
-     * @param {string|string[]} [instanceOrigin] - 멀티 인스턴스 페이지의 인스턴스 출처.
-     * @returns {*|null|false} 대상 hostType의 처리 결과. 페이지가 없으면 null, 열 수 없으면 false.
+     * Navigates (brings) a page by PID. Creates (opens) the component/container/article if absent, or shows it if already present.
+     * `!` prefix resolves via managedPidMap, `*` prefix via extPidMap.
+     * @param {string} pid - Full PID, or `!`/`*` prefixed alias.
+     * @param {Object} [intent] - Intent data passed to the page handler.
+     * @param {string|string[]} [instanceOrigin] - Instance origin for multi-instance pages.
+     * @returns {*|null|false} Result for the target hostType. null if page not found, false if cannot open.
      */
     bringPage(pid, intent, instanceOrigin) {
         if (pid.indexOf("!") > -1) pid = this.#managedPidMap[pid.replace(/^\!/, "")];
@@ -6183,11 +6184,11 @@ class EstreUiPageManager {
     }
 
     /**
-     * 이미 존재하는 페이지를 표시(show)한다. 컴포넌트·컨테이너·아티클이 없으면 null을 반환한다.
-     * @param {string} pid - 완전 PID, 또는 `!`/`*` 접두어 별칭.
-     * @param {Object} [intent] - 페이지 핸들러에 전달되는 인텐트 데이터.
-     * @param {string|string[]} [instanceOrigin] - 멀티 인스턴스 페이지의 인스턴스 출처.
-     * @returns {*|null} 대상 hostType의 처리 결과. 페이지가 없으면 null.
+     * Shows an already-existing page. Returns null if the component/container/article does not exist.
+     * @param {string} pid - Full PID, or `!`/`*` prefixed alias.
+     * @param {Object} [intent] - Intent data passed to the page handler.
+     * @param {string|string[]} [instanceOrigin] - Instance origin for multi-instance pages.
+     * @returns {*|null} Result for the target hostType. null if page not found.
      */
     showPage(pid, intent, instanceOrigin) {
         if (pid.indexOf("!") > -1) pid = this.#managedPidMap[pid.replace(/^\!/, "")];
@@ -6261,10 +6262,10 @@ class EstreUiPageManager {
     }
 
     /**
-     * showPage를 먼저 시도하고, 실패(falsy)하면 bringPage로 폴백한다.
-     * @param {string} pid - 완전 PID, 또는 `!`/`*` 접두어 별칭.
-     * @param {Object} [intent] - 페이지 핸들러에 전달되는 인텐트 데이터.
-     * @param {string|string[]} [instanceOrigin] - 멀티 인스턴스 페이지의 인스턴스 출처.
+     * Attempts showPage first; falls back to bringPage if the result is falsy.
+     * @param {string} pid - Full PID, or `!`/`*` prefixed alias.
+     * @param {Object} [intent] - Intent data passed to the page handler.
+     * @param {string|string[]} [instanceOrigin] - Instance origin for multi-instance pages.
      * @returns {*|null|false}
      */
     showOrBringPage(pid, intent, instanceOrigin) {
@@ -6272,11 +6273,11 @@ class EstreUiPageManager {
     }
 
     /**
-     * 페이지를 숨긴다. 아티클·컨테이너·컴포넌트를 hostType에 따라 순차적으로 숨김 처리.
-     * @param {string} pid - 완전 PID, 또는 `!`/`*` 접두어 별칭.
-     * @param {boolean} [hideHost=false] - true이면 상위 호스트까지 숨긴다.
-     * @param {string|string[]|null} [instanceOrigin=null] - 멀티 인스턴스 페이지의 인스턴스 출처.
-     * @returns {*|null} 대상 hostType의 처리 결과.
+     * Hides a page. Sequentially hides the article/container/component based on hostType.
+     * @param {string} pid - Full PID, or `!`/`*` prefixed alias.
+     * @param {boolean} [hideHost=false] - If true, also hides the parent host.
+     * @param {string|string[]|null} [instanceOrigin=null] - Instance origin for multi-instance pages.
+     * @returns {*|null} Result for the target hostType.
      */
     hidePage(pid, hideHost = false, instanceOrigin = null) {
         if (pid.indexOf("!") > -1) pid = this.#managedPidMap[pid.replace(/^\!/, "")];
@@ -6326,11 +6327,11 @@ class EstreUiPageManager {
     }
 
     /**
-     * 페이지를 닫는다(비동기). 아티클·컨테이너·컴포넌트를 hostType에 따라 순차적으로 닫기 처리.
-     * @param {string} pid - 완전 PID, 또는 `!`/`*` 접두어 별칭.
-     * @param {boolean} [closeHost=false] - true이면 상위 호스트까지 닫는다.
-     * @param {string|string[]} [instanceOrigin] - 멀티 인스턴스 페이지의 인스턴스 출처.
-     * @returns {Promise<*|null>} 대상 hostType의 처리 결과.
+     * Closes a page (async). Sequentially closes the article/container/component based on hostType.
+     * @param {string} pid - Full PID, or `!`/`*` prefixed alias.
+     * @param {boolean} [closeHost=false] - If true, also closes the parent host.
+     * @param {string|string[]} [instanceOrigin] - Instance origin for multi-instance pages.
+     * @returns {Promise<*|null>} Result for the target hostType.
      */
     closePage(pid, closeHost = false, instanceOrigin) {
         return postPromise(resolve => {
@@ -6393,8 +6394,8 @@ const pageManager = new EstreUiPageManager();
 
 
 /**
- * 프로젝트별 커스텀 페이지 매니저의 기본 포맷.
- * extPidMap과 pageHandlers를 등록하고, `*` 접두어 별칭으로 페이지 탐색을 위임한다.
+ * Base format for project-specific custom page managers.
+ * Registers extPidMap and pageHandlers, delegating page navigation via `*` prefixed aliases.
  * @class
  */
 class EstreUiCustomPageManager {
@@ -6415,10 +6416,10 @@ class EstreUiCustomPageManager {
 
 
     /**
-     * 커스텀 페이지 매니저를 초기화한다. estreUi 초기화 이후에 호출해야 한다.
-     * @param {Object<string, string>} extPidMap - 별칭 → 실제 PID 매핑 (예: `{ home: "$s&m=home#root@main" }`).
-     * @param {Object<string, EstrePageHandler>} pageHandlers - 별칭 → 페이지 핸들러 인스턴스 매핑.
-     * @returns {this} 체이닝을 위한 자기 자신.
+     * Initializes the custom page manager. Must be called after estreUi initialization.
+     * @param {Object<string, string>} extPidMap - Alias → actual PID mapping (e.g. `{ home: "$s&m=home#root@main" }`).
+     * @param {Object<string, EstrePageHandler>} pageHandlers - Alias → page handler instance mapping.
+     * @returns {this} this for chaining.
      */
     init(extPidMap, pageHandlers) {
         pageManager.extPidMap = extPidMap;
@@ -6430,10 +6431,10 @@ class EstreUiCustomPageManager {
 
 
     /**
-     * 외부 별칭 ID로 페이지를 탐색(bring)한다.
-     * @param {string} id - extPidMap에 등록된 별칭.
-     * @param {Object} [intent] - 페이지 핸들러에 전달되는 인텐트 데이터.
-     * @param {string|string[]} [instanceOrigin] - 멀티 인스턴스 출처.
+     * Brings a page by external alias ID.
+     * @param {string} id - Alias registered in extPidMap.
+     * @param {Object} [intent] - Intent data passed to the page handler.
+     * @param {string|string[]} [instanceOrigin] - Multi-instance origin.
      * @returns {*|null|false}
      */
     bringPage(id, intent, instanceOrigin) {
@@ -6441,10 +6442,10 @@ class EstreUiCustomPageManager {
     }
 
     /**
-     * 외부 별칭 ID로 페이지를 표시(show)한다.
-     * @param {string} id - extPidMap에 등록된 별칭.
-     * @param {Object} [intent] - 인텐트 데이터.
-     * @param {string|string[]} [instanceOrigin] - 멀티 인스턴스 출처.
+     * Shows a page by external alias ID.
+     * @param {string} id - Alias registered in extPidMap.
+     * @param {Object} [intent] - Intent data.
+     * @param {string|string[]} [instanceOrigin] - Multi-instance origin.
      * @returns {*|null}
      */
     showPage(id, intent, instanceOrigin) {
@@ -6452,10 +6453,10 @@ class EstreUiCustomPageManager {
     }
 
     /**
-     * showPage 후 실패 시 bringPage로 폴백한다.
-     * @param {string} id - extPidMap에 등록된 별칭.
-     * @param {Object} [intent] - 인텐트 데이터.
-     * @param {string|string[]} [instanceOrigin] - 멀티 인스턴스 출처.
+     * Attempts showPage; falls back to bringPage on failure.
+     * @param {string} id - Alias registered in extPidMap.
+     * @param {Object} [intent] - Intent data.
+     * @param {string|string[]} [instanceOrigin] - Multi-instance origin.
      * @returns {*|null|false}
      */
     showOrBringPage(id, intent, instanceOrigin) {
@@ -6463,10 +6464,10 @@ class EstreUiCustomPageManager {
     }
 
     /**
-     * 외부 별칭 ID로 페이지를 숨긴다.
-     * @param {string} id - extPidMap에 등록된 별칭.
-     * @param {boolean} [hideHost=false] - 상위 호스트까지 숨길지 여부.
-     * @param {string|string[]|null} [instanceOrigin=null] - 멀티 인스턴스 출처.
+     * Hides a page by external alias ID.
+     * @param {string} id - Alias registered in extPidMap.
+     * @param {boolean} [hideHost=false] - Whether to also hide the parent host.
+     * @param {string|string[]|null} [instanceOrigin=null] - Multi-instance origin.
      * @returns {*|null}
      */
     hidePage(id, hideHost = false, instanceOrigin = null) {
@@ -6474,10 +6475,10 @@ class EstreUiCustomPageManager {
     }
 
     /**
-     * 외부 별칭 ID로 페이지를 닫는다(비동기).
-     * @param {string} id - extPidMap에 등록된 별칭.
-     * @param {boolean} [closeHost=false] - 상위 호스트까지 닫을지 여부.
-     * @param {string|string[]|null} [instanceOrigin=null] - 멀티 인스턴스 출처.
+     * Closes a page by external alias ID (async).
+     * @param {string} id - Alias registered in extPidMap.
+     * @param {boolean} [closeHost=false] - Whether to also close the parent host.
+     * @param {string|string[]|null} [instanceOrigin=null] - Multi-instance origin.
      * @returns {Promise<*|null>}
      */
     closePage(id, closeHost = false, instanceOrigin = null) {
@@ -6489,14 +6490,14 @@ class EstreUiCustomPageManager {
 
 
 /**
- * UI 핸들(위젯)의 베이스 클래스. 모든 stock/custom 핸들의 부모.
- * 정적 메서드로 핸들 등록·초기화·해제를 관리하고, 인스턴스는 DOM 엘리먼트에 바인딩된다.
+ * Base class for UI handles (widgets). Parent of all stock/custom handles.
+ * Static methods manage handle registration, initialization, and release; instances are bound to DOM elements.
  * @class
  */
 class EstreHandle {
 
     // constants
-    /** @type {Object<string, typeof EstreHandle>} 핸들 specifier → 핸들 클래스 매핑 (stock handles). */
+    /** @type {Object<string, typeof EstreHandle>} Handle specifier → handle class mapping (stock handles). */
     static #handles = {
         get [uis.unifiedCalendar]() { return EstreUnifiedCalendarHandle; },
         get [uis.dedicatedCalendar]() { return EstreDedicatedCalendarHandle; },
@@ -6535,26 +6536,26 @@ class EstreHandle {
     }
     static get handles() { return this.#handles; }
 
-    /** @type {Object<string, typeof EstreHandle>} 커스텀 등록된 핸들 클래스 (commit 시 #handles에 병합). */
+    /** @type {Object<string, typeof EstreHandle>} Custom-registered handle classes (merged into #handles on commit). */
     static #registeredHandles = {};
 
-    /** @type {boolean} commit() 호출 이후 true. 이후 핸들 등록 불가. */
+    /** @type {boolean} true after commit() has been called. No further handle registration allowed. */
     static #handleCommitted = false;
     static get handleCommited() { return this.#handleCommitted; }
 
-    /** @type {jQuery} 핸들 프로토타입 템플릿 컨테이너. */
+    /** @type {jQuery} Handle prototype template container. */
     static get $handlePrototypes() { return doc.$b.find(c.c + se + eid + "handlePrototypes"); }
 
 
     // class property
-    /** @type {Object<string, Set<EstreHandle>>} specifier → 활성 핸들 인스턴스 Set. */
+    /** @type {Object<string, Set<EstreHandle>>} specifier → active handle instance Set. */
     static #activeHandle = {};
     static get activeHandle() { return this.#activeHandle; }
 
     // class methods
     /**
-     * 핸들 이름으로 프로토타입 템플릿 엘리먼트를 조회한다.
-     * @param {string} handleName - 핸들 이름 (uis 레지스트리 키).
+     * Looks up a prototype template element by handle name.
+     * @param {string} handleName - Handle name (uis registry key).
      * @returns {Element|undefined}
      */
     static getHandlePrototype(handleName) {
@@ -6562,10 +6563,10 @@ class EstreHandle {
     }
 
     /**
-     * 커스텀 핸들 클래스를 등록한다. commit() 전에만 호출 가능.
-     * @param {string} handleName - uis 레지스트리에 등록할 이름.
-     * @param {string} handleSpecfier - CSS 셀렉터 형식의 핸들 식별자.
-     * @param {typeof EstreHandle} handleClass - 핸들 클래스.
+     * Registers a custom handle class. Can only be called before commit().
+     * @param {string} handleName - Name to register in the uis registry.
+     * @param {string} handleSpecfier - CSS-selector-format handle specifier.
+     * @param {typeof EstreHandle} handleClass - Handle class.
      */
     static registerCustomHandle(handleName, handleSpecfier, handleClass) {
         if (!this.#handleCommitted) {
@@ -6579,7 +6580,7 @@ class EstreHandle {
         } else if (window.isLogging) console.log("Cannot register handle after commit");
     }
 
-    /** 핸들 등록을 확정한다. 이후 registerCustomHandle() 호출은 무시된다. */
+    /** Commits handle registration. Subsequent registerCustomHandle() calls are ignored. */
     static commit() {
         this.#handleCommitted = true;
 
@@ -6594,9 +6595,9 @@ class EstreHandle {
     }
 
     /**
-     * 호스트 내 모든 핸들을 해제한다.
-     * @param {jQuery} $host - 호스트 jQuery 래퍼.
-     * @param {*} host - 호스트 객체 (컴포넌트/컨테이너/아티클).
+     * Releases all handles within a host.
+     * @param {jQuery} $host - Host jQuery wrapper.
+     * @param {*} host - Host object (component/container/article).
      */
     static releaseHandles($host, host) {
         for (var specifier in this.handles) {
@@ -6605,10 +6606,10 @@ class EstreHandle {
     }
 
     /**
-     * 호스트 내 특정 specifier의 핸들을 해제한다.
-     * @param {jQuery} $host - 호스트 jQuery 래퍼.
-     * @param {*} host - 호스트 객체.
-     * @param {string} specifier - 핸들 specifier.
+     * Releases handles of a specific specifier within a host.
+     * @param {jQuery} $host - Host jQuery wrapper.
+     * @param {*} host - Host object.
+     * @param {string} specifier - Handle specifier.
      */
     static releaseHandle($host, host, specifier) {
         if ($host.is(specifier)) this.unregisterHandle(host.host, host, specifier);
@@ -6617,10 +6618,10 @@ class EstreHandle {
     }
 
     /**
-     * 호스트 내 모든 핸들을 초���화한다.
-     * @param {jQuery} $host - 호���트 jQuery 래퍼.
-     * @param {*} host - �����트 객체.
-     * @param {boolean} [replace=false] - true이면 기존 핸들을 교체.
+     * Initializes all handles within a host.
+     * @param {jQuery} $host - Host jQuery wrapper.
+     * @param {*} host - Host object.
+     * @param {boolean} [replace=false] - If true, replaces existing handles.
      */
     static initHandles($host, host, replace = false) {
         for (var specifier in this.handles) {
@@ -6629,12 +6630,12 @@ class EstreHandle {
     }
 
     /**
-     * 호스트 내 특정 specifier의 핸들을 초기화한다.
-     * @param {jQuery} $host - 호��트 jQuery 래퍼.
-     * @param {*} host - 호스트 객체.
-     * @param {string} specifier - 핸들 specifier.
-     * @param {typeof EstreHandle} handleClass - 핸들 클래스.
-     * @param {boolean} [replace=false] - true이면 기존 핸들을 교체.
+     * Initializes handles of a specific specifier within a host.
+     * @param {jQuery} $host - Host jQuery wrapper.
+     * @param {*} host - Host object.
+     * @param {string} specifier - Handle specifier.
+     * @param {typeof EstreHandle} handleClass - Handle class.
+     * @param {boolean} [replace=false] - If true, replaces existing handles.
      */
     static initHandle($host, host, specifier, handleClass, replace = false) {
         if ($host.is(specifier)) this.registerHandle(host.host, host, specifier, handleClass, replace);
@@ -6643,12 +6644,12 @@ class EstreHandle {
     }
 
     /**
-     * 단일 엘리먼트에 핸들 인스턴스를 생성·등록한다.
-     * @param {Element} element - 바인딩 대상 DOM 엘리먼트.
-     * @param {*} host - 호스트 객체.
-     * @param {string} specifier - 핸들 specifier.
-     * @param {typeof EstreHandle} handleClass - 핸들 클래스.
-     * @param {boolean} [replace=false] - true이면 기존 핸들을 교체.
+     * Creates and registers a handle instance on a single element.
+     * @param {Element} element - Target DOM element to bind.
+     * @param {*} host - Host object.
+     * @param {string} specifier - Handle specifier.
+     * @param {typeof EstreHandle} handleClass - Handle class.
+     * @param {boolean} [replace=false] - If true, replaces existing handles.
      */
     static registerHandle(element, host, specifier, handleClass, replace = false) {
         if (element.handle != null) {
@@ -6667,10 +6668,10 @@ class EstreHandle {
     }
 
     /**
-     * 엘리먼트의 핸들을 해제·제거한다.
-     * @param {Element} element - 바인딩된 DOM 엘리먼트.
-     * @param {*} host - 호스트 객��.
-     * @param {string} specifier - 핸들 specifier.
+     * Releases and removes a handle from an element.
+     * @param {Element} element - Bound DOM element.
+     * @param {*} host - Host object.
+     * @param {string} specifier - Handle specifier.
      */
     static unregisterHandle(element, host, specifier) {
         host.unregisterHandle(specifier, element.handle);
@@ -6681,21 +6682,21 @@ class EstreHandle {
 
 
     // instance property
-    /** @type {*} 핸들이 소속된 호스트 객체 (컴포넌트/컨테이너/아티클). */
+    /** @type {*} The host object this handle belongs to (component/container/article). */
     host = null;
-    /** @type {Element|null} 바인딩된 DOM 엘리먼트. */
+    /** @type {Element|null} The bound DOM element. */
     bound = null;
-    /** @type {jQuery|null} bound의 jQuery ���퍼. */
+    /** @type {jQuery|null} jQuery wrapper for bound. */
     $bound = null;
-    /** @type {DOMStringMap|null} bound.dataset 참조. */
+    /** @type {DOMStringMap|null} Reference to bound.dataset. */
     data = null;
 
-    /** @type {Element|undefined} 이 핸들의 프로토타입 템플릿 엘리먼트. */
+    /** @type {Element|undefined} The prototype template element for this handle. */
     get prototypeTemplate() { return this.constructor.handleName?.let(it => EstreHandle.getHandlePrototype(it)); }
 
     /**
-     * @param {Element} bound - 바인딩 대상 DOM 엘리먼트.
-     * @param {*} host - 호스트 객체.
+     * @param {Element} bound - Target DOM element to bind.
+     * @param {*} host - Host object.
      */
     constructor(bound, host) {
         this.host = host;
@@ -6705,8 +6706,8 @@ class EstreHandle {
     }
 
     /**
-     * 핸들을 해제하고 참조를 정리한다.
-     * @param {boolean} [remove] - true면 DOM 제거, false면 비우기, undefined면 그대로 둠.
+     * Releases the handle and cleans up references.
+     * @param {boolean} [remove] - true to remove from DOM, false to empty, undefined to leave as-is.
      */
     release(remove) {
         this.host = null;
@@ -6718,14 +6719,14 @@ class EstreHandle {
         this.data = null;
     }
 
-    /** 핸들을 초기화한다. 기존 핸들이 있으면 해제 후 교체. data-set-prototype이 있으면 프로토타입 적용. */
+    /** Initializes the handle. If an existing handle is present, releases it first. Applies prototype if data-set-prototype is set. */
     init() {
         if (this.bound.handle != null) this.bound.handle.release();
         this.bound.handle = this;
         if (this.bound.dataset.setPrototype == t1) this.applyPrototype();
     }
 
-    /** 프로토타입 템플릿의 클래스·속성·자식 노드를 바인딩 엘리먼트에 적용한다. */
+    /** Applies the prototype template's classes, attributes, and child nodes to the bound element. */
     applyPrototype() {
         this.prototypeTemplate?.let(temp => {
             const bound = this.bound;

@@ -13,8 +13,8 @@
 Doctre?.patch?.();
 
 /**
- * document 접근 단축 객체 — DOM 조회, 엘리먼트 생성, Doctre 연동.
- * `doc.b` = document.body, `doc.ce()` = Doctre.createElement, `doc.l()` = Doctre.live 등.
+ * Document access shorthand object — DOM queries, element creation, Doctre integration.
+ * `doc.b` = document.body, `doc.ce()` = Doctre.createElement, `doc.l()` = Doctre.live, etc.
  * @type {Object}
  */
 const doc = {
@@ -883,19 +883,19 @@ class EUX {
 
 
 /**
- * Estre Local Styler — `##` 토큰을 부모 엘리먼트까지의 CSS 경로로 치환하여 로컬 스코프 스타일을 생성한다.
+ * Estre Local Styler — generates local-scope styles by replacing `##` tokens with the CSS path up to the parent element.
  *
- * HTML 내 `<style>` 태그에 `##`을 쓰면, 해당 스타일 태그의 위치를 기준으로 자동으로
- * 부모 → 조상 경로의 CSS 셀렉터 체인으로 치환된다. Shadow DOM 없이 스코프 스타일 효과.
+ * When `##` is used in an HTML `<style>` tag, it is automatically replaced based on the style tag's position
+ * with a parent → ancestor CSS selector chain. Achieves scoped style effect without Shadow DOM.
  * @class
  */
 class LocalStyle {
 
     /**
-     * 엘리먼트 내 스타일 텍스트의 `##`을 로컬 CSS 셀렉터 경로로 치환한다.
-     * @param {Element|null} elem - 스타일 텍스트를 포함한 엘리먼트. null이면 location에 직접 추가.
-     * @param {string} [styleText=elem.innerHTML] - 치환할 스타일 텍스트.
-     * @param {Element} [location=elem.parentElement] - 로컬 경로의 기준 엘리먼트.
+     * Replaces `##` in the element's style text with the local CSS selector path.
+     * @param {Element|null} elem - Element containing style text. If null, adds directly to location.
+     * @param {string} [styleText=elem.innerHTML] - Style text to replace.
+     * @param {Element} [location=elem.parentElement] - Base element for the local path.
      */
     static localize(elem, styleText = elem.innerHTML, location = elem.parentElement) {
         const htmlEntities = {
@@ -962,9 +962,9 @@ class LocalStyle {
     }
 
     /**
-     * 위치에 로컬 스타일을 직접 추가한다.
-     * @param {Element} location - 스타일을 삽입할 기준 엘리먼트.
-     * @param {string} localStyle - `##`을 포함한 스타일 텍스트.
+     * Directly adds a local style at the given location.
+     * @param {Element} location - Base element to insert the style at.
+     * @param {string} localStyle - Style text containing `##`.
      */
     static appendLocalize(location, localStyle) {
         this.localize(null, localStyle, location);
@@ -973,8 +973,8 @@ class LocalStyle {
 
 
 /**
- * Estre 로케일 상수 — 언어별 요일명, 월명, 날짜/시간 접두·접미어 컬렉션.
- * `EsLocale.currentLanguage`로 현재 언어를 감지하고, `EsLocale.collections`에서 해당 언어의 문자열을 조회.
+ * Estre locale constants — per-language weekday names, month names, date/time prefix/suffix collections.
+ * Detects the current language via `EsLocale.currentLanguage` and looks up locale strings from `EsLocale.collections`.
  * @class
  */
 class EsLocale {
@@ -1595,7 +1595,7 @@ const Ecal = {
         }
     },
 
-    /** 시간순 정렬 함수 */
+    /** Chronological sort function */
     byTime: (a, b) => a.time - b.time,
 
     eoo
