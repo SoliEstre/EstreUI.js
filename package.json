@@ -1,6 +1,6 @@
 {
   "name": "estreui",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "EstreUI Core Library - A comprehensive UI framework for web applications",
   "main": "scripts/estreUi.js",
   "files": [
@@ -32,7 +32,11 @@
     "mobile-ui",
     "desktop-ui",
     "web-desktop",
-    "jquery-plugin"
+    "jquery-plugin",
+    "legacy-modernization",
+    "no-build",
+    "jquery4",
+    "ai-ready"
   ],
   "author": "SoliEstre",
   "license": "MIT",
@@ -40,7 +44,7 @@
     "jquery": "^4.0.0",
     "jcodd": "^0.9.0",
     "doctre": "^1.1.1",
-    "modernism": "^0.7.0",
+    "modernism": "^0.7.1",
     "alienese": "^0.7.0"
   }
 }
