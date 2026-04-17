@@ -1,6 +1,7 @@
+<!-- lint-ignore:unindexed -->
 # estreUi.js 모듈 의존성 그래프
 
-> 로드맵 #002 1단계 산출물. estreUi.js의 11개 논리적 모듈 간 참조 관계.
+> 로드맵 [#002 모듈 분리](002-module-splitting.md)의 1단계 산출물. estreUi.js의 11개 논리적 모듈 간 참조 관계.
 
 ## 모듈 목록
 
