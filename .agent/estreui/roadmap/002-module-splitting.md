@@ -2,7 +2,7 @@
 
 - **우선순위**: 🟡 보통
 - **분류**: 아키텍처
-- **상태**: 1단계 완료 (2026-04-17)
+- **상태**: 2단계 완료 (2026-04-18)
 
 ## 배경
 
@@ -32,11 +32,22 @@
 2. 섹션 간 순환 참조가 없는지 클래스/함수 참조 추적으로 확인.
 3. 의존성 그래프 문서화.
 
-### 2단계 — 별도 파일로 추출
+### 2단계 — 별도 파일로 추출 ✅ (2026-04-18)
 
-1. 위 표에 따라 개별 파일로 분리.
-2. 단순한 연결(concatenation) 빌드 스텝(또는 ES module 번들러)으로 배포용 단일 `estreUi.js` 생성.
-3. 배포 파일은 현재 모놀리스와 동일 — 런타임 변경 제로.
+의존성 그래프에서 순환 참조가 있는 M4+M5+M6을 `estreUi-pageModel.js`로, M8+M9를 `estreUi-handles.js`로 묶어 최종 **8개 파일**로 분리했다. 빌드 스텝 없이 HTML에서 개별 `<script>` 태그로 순서대로 로드 — 모든 파일이 전역 스코프를 공유하므로 ES module 변환 불필요.
+
+| 파일 | 라인 수 | 담당 모듈 |
+| --- | --- | --- |
+| `estreUi-core.js` | 554 | M1 Core |
+| `estreUi-dialog.js` | 510 | M2 Dialog API |
+| `estreUi-notation.js` | 595 | M3 Notation & Storage |
+| `estreUi-pageModel.js` | 4316 | M4 Page Handle + M5 Page Handler + M6 Page Model |
+| `estreUi-pageManager.js` | 624 | M7 Page Manager |
+| `estreUi-handles.js` | 7242 | M8 Handle Base + M9 Stock Handles |
+| `estreUi-interaction.js` | 1373 | M10 Swipe/Draggable |
+| `estreUi-main.js` | 1667 | M11 estreStruct, estreUi 싱글턴, DOM init |
+
+검증: Tier 1 + Tier 2 테스트 140개 전부 통과 — 런타임 동작 변경 없음. 업데이트 대상: `index.html`, `scripts/serviceWorker.js` (캐시 목록), `test/setup.js`.
 
 ### 3단계 — (선택) ES module 지원
 
