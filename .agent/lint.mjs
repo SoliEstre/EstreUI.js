@@ -5,6 +5,28 @@
  * Verifies that index READMEs stay in sync with the files around them.
  * See: .agent/estreui/roadmap/005-agent-docs-lint.md
  *
+ * ─────────────────────────────────────────────────────────────────
+ * Expected layout (this script is tailored to it — see fallback below)
+ *
+ *   .agent/
+ *     estreui/
+ *       README.md               ← index for the folder
+ *       <topic>.en.md           ← two-track docs: English half
+ *       <topic>.ko.md           ← two-track docs: Korean half
+ *       review/
+ *         README.md             ← dashboard table
+ *         NNN-<slug>.md         ← one file per review item
+ *       roadmap/
+ *         README.md             ← dashboard table
+ *         NNN-<slug>.md         ← one file per roadmap item
+ *
+ * If your project uses a different docs layout, either (a) restructure to
+ * match, (b) fork this script and adjust the directory constants below, or
+ * (c) drop the script — none of the checks make sense without the indexes.
+ * When the expected directories are absent, the script exits early with a
+ * hint instead of crashing.
+ * ─────────────────────────────────────────────────────────────────
+ *
  * Checks
  *   1. Index completeness — every non-README `.md` in `.agent/estreui/` is
  *      linked from `.agent/estreui/README.md`.
@@ -38,6 +60,19 @@ const REVIEW = resolve(ESTREUI, 'review');
 const ROADMAP = resolve(ESTREUI, 'roadmap');
 
 const IGNORE_MARKER = '<!-- lint-ignore:unindexed -->';
+
+// Preflight: if the expected layout isn't present, bail out with a hint
+// rather than crashing on the first missing directory.
+for (const [label, path] of [['estreui', ESTREUI], ['review', REVIEW], ['roadmap', ROADMAP]]) {
+    try {
+        if (!statSync(path).isDirectory()) throw new Error('not a directory');
+    } catch {
+        console.error(`.agent/ docs lint — expected directory not found: ${relative(ROOT, path).replace(/\\/g, '/')}`);
+        console.error('This script assumes the .agent/estreui/{review,roadmap}/ layout documented at the top of lint.mjs.');
+        console.error(`Missing: ${label}/. Adjust the constants in this script or skip running it.`);
+        process.exit(0);
+    }
+}
 
 const findings = [];
 function fail(check, message) {
