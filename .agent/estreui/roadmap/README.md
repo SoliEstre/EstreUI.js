@@ -8,7 +8,7 @@
 | # | 제목 | 우선순위 | 분류 | 상태 | 상세 |
 | --- | --- | --- | --- | --- | --- |
 | 1 | JSDoc 타입 어노테이션 | 🔴 높음 | DX / 도구 | ✅ 완료 | [001-jsdoc-annotations.md](001-jsdoc-annotations.md) |
-| 2 | 모듈 분리 | 🟡 보통 | 아키텍처 | 계획 | [002-module-splitting.md](002-module-splitting.md) |
+| 2 | 모듈 분리 | 🟡 보통 | 아키텍처 | 1단계 완료 | [002-module-splitting.md](002-module-splitting.md) |
 | 3 | Alienese 인라인 문서화 | 🟡 보통 | DX | ✅ 완료 | [003-alienese-inline-docs.md](003-alienese-inline-docs.md) |
 | 4 | 테스트 스위트 | 🟡 보통 | 품질 | 계획 | [004-test-suite.md](004-test-suite.md) |
 | 5 | 에이전트 문서 CI 린트 | 🟢 낮음 | 도구 | 계획 | [005-agent-docs-lint.md](005-agent-docs-lint.md) |

@@ -12,6 +12,9 @@
 
 // initializing essential states
 
+// ======================================================================
+// MODULE: Core -- registries, constants, typedefs
+// ======================================================================
 
 // ──────────────────────────────────────────────
 // @typedef — reusable type shapes
@@ -549,6 +552,11 @@ const eds = {
 
 
 
+// ======================================================================
+// MODULE: Dialog API -- popup browser, toast, alert, confirm, prompt,
+//         wait/stedy/go, notification helpers
+// ======================================================================
+
 // Popup browser
 function estrePopupBrowser(options = {}, instanceOrigin) {
     return new Promise((resolve) => pageManager.bringPage("!popupBrowser", {
@@ -1046,6 +1054,11 @@ const noti = function (title, htmlContent, onTakeInteraction = (intent) => {}, m
     //<= To do implement
 }
 
+
+// ======================================================================
+// MODULE: Notation & Storage -- EstreNotationManager, AsyncStorage,
+//         NativeStorage, ES/EAS/EJS/EAJS, EstreUiParameterManager
+// ======================================================================
 
 class EstreNotationManager {
 
@@ -1629,6 +1642,11 @@ class EstreAsyncManager {
 }
 
 
+
+// ======================================================================
+// MODULE: Page Handle -- EstrePageHandle, EstrePageHostHandle,
+//         EstreComponent variants, EstreContainer, EstreArticle
+// ======================================================================
 
 /**
  * Common page handle model
@@ -4303,9 +4321,10 @@ class EstreArticle extends EstrePageHandle {
 
 
 
-/**
- * Page handler base
- */
+// ======================================================================
+// MODULE: Page Handler -- EstrePageHandler, EstreLottieAnimatedHandler,
+//         Dialog page handlers (Alert, Confirm, Prompt, Option, etc.)
+// ======================================================================
 /**
  * Base class defining page lifecycle callbacks.
  * Subclass in your project to override onBring, onShow, onHide, onClose, etc.
@@ -4917,6 +4936,11 @@ class EstreDialsDialogPageHandler extends EstreDialogPageHandler {
         handle?.intent?.onDissmiss(handle.intent?.data?.initial, itemSelectionIndexes.mock, itemSelectionValues.mock);
     }
 }
+
+
+// ======================================================================
+// MODULE: Page Model -- EstreUiPage (PID parsing, page data model)
+// ======================================================================
 
 /**
  * Pages profiling manager
@@ -5928,6 +5952,11 @@ class EstreUiPage {
 }
 
 
+// ======================================================================
+// MODULE: Page Manager -- EstreUiPageManager, EstreUiCustomPageManager
+// ======================================================================
+
+
 /**
  * Pages operation manager
  */
@@ -6540,6 +6569,11 @@ class EstreUiCustomPageManager {
 }
 
 
+// ======================================================================
+// MODULE: Handle Base -- EstreHandle, registerCustomHandle
+// ======================================================================
+
+
 
 /**
  * Base class for UI handles (widgets). Parent of all stock/custom handles.
@@ -6807,6 +6841,12 @@ class EstreHandle {
         });
     }
 }
+
+
+// ======================================================================
+// MODULE: Stock Handles -- built-in handle classes (Calendar, Scalable,
+//         Collapsible, Tab, Toggle, DynamicSection, NumKeypad, etc.)
+// ======================================================================
 
 
 
@@ -13763,6 +13803,11 @@ class EstreFixedAccessHandle extends EstreEzHidableHandle {
 
 // handlers
 
+
+// ======================================================================
+// MODULE: Interaction -- EstreSwipeHandler, EstreDraggableHandler
+// ======================================================================
+
 /**
  * Attachable swipe handler
  */
@@ -15123,6 +15168,11 @@ class EstreDraggableHandler {
         return this;
     }
 }
+
+
+// ======================================================================
+// MODULE: Main -- estreStruct, estreUi singleton, DOM initialization
+// ======================================================================
 
 
 
