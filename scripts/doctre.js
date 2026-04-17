@@ -45,6 +45,40 @@ SOFTWARE.
 // Match replace
 // ex) Doctre.parse([["|tag|.|classes|#|id|", "empty content"], "|divider|"], { tag: () => isInline ? "span" | "div", classes: "test fixed", id: getId(), divider: it => '<hr class="' + it + '" />' })
 
+// ──────────────────────────────────────────────
+// @typedef — reusable type shapes
+// ──────────────────────────────────────────────
+
+/**
+ * Extracted solidId components.
+ * @typedef {Object} DoctreSolidId
+ * @property {string} tagName - HTML tag name.
+ * @property {string} [class] - Space-separated CSS class names.
+ * @property {string} [id] - Element id.
+ * @property {string} [name] - Element name attribute.
+ * @property {string} [type] - Element type attribute.
+ */
+
+/**
+ * A single cold element entry — serialized DOM node in array form.
+ *
+ * `[solidId, contentData, style, attrs, datas]`
+ * @typedef {Array} DoctreColdElement
+ * @property {string|DoctreSolidId} 0 - solidId string or extracted object.
+ * @property {DoctreColdElement[]|string|null} [1] - Child content (cold array, text, or null).
+ * @property {string|Object} [2] - Inline style string or style object.
+ * @property {Object<string, string>} [3] - Regular HTML attributes (excluding id/name/type/class/style/data-*).
+ * @property {Object<string, string>} [4] - data-* attributes.
+ */
+
+/**
+ * Token replacement map used by Doctre.matchReplace.
+ * Keys are token names (matched as `|key|`); values are replacement strings, functions, or objects.
+ * @typedef {Object<string, string|Function|Object>} DoctreMatchReplacer
+ * @property {string} [dataPlaceholder] - Default replacement for unmatched tokens.
+ * @property {boolean} [coverReplaceable] - If true, replaces all unmatched tokens with dataPlaceholder.
+ */
+
 /**
  * Document Object Cold Taste Refrigeration Effortlessness — DOM serialization/deserialization engine.
  * Preserves and restores HTML trees using cold (array object) and frost (JSON string) formats.
@@ -123,7 +157,7 @@ class Doctre {
      * @param {string|Object} [style={}] - Style.
      * @param {Object} [attrs={}] - Regular attributes.
      * @param {Object} [datas={}] - data-* attributes.
-     * @param {Object} [matchReplacer={}] - `|key|` token replacement map.
+     * @param {DoctreMatchReplacer} [matchReplacer={}] - `|key|` token replacement map.
      * @returns {Element} The created DOM element.
      */
     static createElement(tagName = "template", majorAttrs, contentData, style = {}, attrs = {}, datas = {}, matchReplacer = {}) {
@@ -177,14 +211,14 @@ class Doctre {
 
     /**
      * createElement variant that takes matchReplacer as the first argument.
-     * @param {Object} matchReplacer - Token replacement map.
+     * @param {DoctreMatchReplacer} matchReplacer - Token replacement map.
      * @param {string} tagName - Tag name.
      * @param {string|Object} [majorAttrs] - Major attributes.
      * @param {*} [contentData] - Child content.
      * @param {string|Object} [style={}] - Style.
      * @param {Object} [attrs={}] - Regular attributes.
      * @param {Object} [datas={}] - data-* attributes.
-     * @param {Object} [matchReplacerOrigin={}] - Fallback when matchReplacer is null.
+     * @param {DoctreMatchReplacer} [matchReplacerOrigin={}] - Fallback when matchReplacer is null.
      * @returns {Element}
      */
     static createElementReplaced(matchReplacer, tagName, majorAttrs, contentData, style = {}, attrs = {}, datas = {}, matchReplacerOrigin = {}) {
@@ -198,7 +232,7 @@ class Doctre {
      * @param {string|Object} [style={}] - Style.
      * @param {Object} [attrs={}] - Regular attributes.
      * @param {Object} [datas={}] - data-* attributes.
-     * @param {Object} [matchReplacer={}] - Token replacement map.
+     * @param {DoctreMatchReplacer} [matchReplacer={}] - Token replacement map.
      * @returns {Element}
      */
     static createElementBy(solidId, contentData, style = {}, attrs = {}, datas = {}, matchReplacer = {}) {
@@ -210,13 +244,13 @@ class Doctre {
 
     /**
      * createElementBy variant that takes matchReplacer as the first argument.
-     * @param {Object} matchReplacer - Token replacement map.
+     * @param {DoctreMatchReplacer} matchReplacer - Token replacement map.
      * @param {string} solidId - solidId string.
      * @param {*} [contentData] - Child content.
      * @param {string|Object} [style={}] - Style.
      * @param {Object} [attrs={}] - Regular attributes.
      * @param {Object} [datas={}] - data-* attributes.
-     * @param {Object} [matchReplacerOrigin={}] - Fallback replacement map.
+     * @param {DoctreMatchReplacer} [matchReplacerOrigin={}] - Fallback replacement map.
      * @returns {Element}
      */
     static createElementReplacedBy(matchReplacer, solidId, contentData, style = {}, attrs = {}, datas = {}, matchReplacerOrigin = {}) {
@@ -226,7 +260,7 @@ class Doctre {
     /**
      * Creates a DocumentFragment from a cold (HCNL) array.
      * @param {Array} hcnlArray - HTML Cold Node List array.
-     * @param {Object} [matchReplacer={}] - Token replacement map.
+     * @param {DoctreMatchReplacer} [matchReplacer={}] - Token replacement map.
      * @returns {DocumentFragment}
      */
     static createFragment(hcnlArray, matchReplacer = {}) {
@@ -281,7 +315,7 @@ class Doctre {
     /**
      * Replaces `|key|` tokens in a string with values from the matchReplacer. Delegates to matchReplaceObject for objects.
      * @param {string|Object} frostOrString - String or object to apply replacements to.
-     * @param {Object} [matchReplacer={}] - `{ key: value }` replacement map. Values can be string/function/object.
+     * @param {DoctreMatchReplacer} [matchReplacer={}] - `{ key: value }` replacement map. Values can be string/function/object.
      *   - `dataPlaceholder`: default replacement for unmatched tokens.
      *   - `coverReplaceable`: if true, replaces all unmatched tokens with dataPlaceholder.
      * @returns {string|Object} The replaced result.
@@ -354,7 +388,7 @@ class Doctre {
     /**
      * Recursively applies matchReplace to both keys and values of an object.
      * @param {Object} object - Object to apply replacements to.
-     * @param {Object} [matchReplacer={}] - Replacement map.
+     * @param {DoctreMatchReplacer} [matchReplacer={}] - Replacement map.
      * @returns {Object} A new object with replacements applied.
      */
     static matchReplaceObject(object, matchReplacer = {}) {
@@ -366,7 +400,7 @@ class Doctre {
     /**
      * Parses a frost (JSON string) and restores it as a DocumentFragment.
      * @param {string} frost - Frost format JSON string.
-     * @param {Object} [matchReplacer={}] - Token replacement map.
+     * @param {DoctreMatchReplacer} [matchReplacer={}] - Token replacement map.
      * @returns {DocumentFragment}
      */
     static parse(frost, matchReplacer = {}) {
@@ -390,7 +424,7 @@ class Doctre {
     /**
      * Restores frost (string) or cold (array) to a live DOM (DocumentFragment).
      * @param {string|Array} frostOrCold - Frost string or cold array.
-     * @param {Object} [matchReplacer={}] - Token replacement map.
+     * @param {DoctreMatchReplacer} [matchReplacer={}] - Token replacement map.
      * @returns {DocumentFragment}
      */
     static live(frostOrCold, matchReplacer = {}) {
@@ -401,7 +435,7 @@ class Doctre {
     /**
      * Wraps frost/cold in a template element and returns it.
      * @param {string|Array} frostOrCold - Frost or cold data.
-     * @param {Object} [matchReplacer={}] - Token replacement map.
+     * @param {DoctreMatchReplacer} [matchReplacer={}] - Token replacement map.
      * @returns {Element} Template element containing the content.
      */
     static takeOut(frostOrCold, matchReplacer = {}) {
@@ -700,7 +734,7 @@ class Doctre {
     attrs;
     /** @type {Object} data-* attributes. */
     datas;
-    /** @type {Object} Default token replacement map. */
+    /** @type {DoctreMatchReplacer} Default token replacement map. */
     matchReplacer;
 
     /**
@@ -709,7 +743,7 @@ class Doctre {
      * @param {string|Object} [style={}] - Style.
      * @param {Object} [attrs={}] - Regular attributes.
      * @param {Object} [datas={}] - data-* attributes.
-     * @param {Object} [matchReplacer={}] - Token replacement map.
+     * @param {DoctreMatchReplacer} [matchReplacer={}] - Token replacement map.
      */
     constructor(solidIdOrExtracted, contentData, style = {}, attrs = {}, datas = {}, matchReplacer = {}) {
         if (solidIdOrExtracted instanceof Array) {
@@ -765,7 +799,7 @@ class Doctre {
 
     /**
      * Creates a live DOM element with the applied matchReplacer.
-     * @param {Object} [matchReplacer] - Token replacement map. Uses instance default if omitted.
+     * @param {DoctreMatchReplacer} [matchReplacer] - Token replacement map. Uses instance default if omitted.
      * @returns {Element}
      */
     fresh(matchReplacer) { return Doctre.createElement(this.tagName, this.majorAttrs, this.childDoctres, this.style, this.attrs, this.datas, matchReplacer ?? this.matchReplacer ?? {}); }

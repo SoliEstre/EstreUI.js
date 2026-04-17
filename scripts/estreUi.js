@@ -13,6 +13,57 @@
 // initializing essential states
 
 
+// ──────────────────────────────────────────────
+// @typedef — reusable type shapes
+// ──────────────────────────────────────────────
+
+/**
+ * Intent object passed to page handlers during navigation.
+ * Properties vary by page type; the fields below are the common base.
+ * @typedef {Object} EstreIntent
+ * @property {string} [action] - Intent action identifier.
+ * @property {*} [data] - Arbitrary payload. Shape depends on the target page.
+ * @property {EstreIntentBringOnBack} [bringOnBack] - Intent to execute when navigating back.
+ * @property {EstreIntentAction[]} [onBring] - Actions to run on bring.
+ * @property {EstreIntentAction[]} [onOpen] - Actions to run on open.
+ * @property {EstreIntentAction[]} [onShow] - Actions to run on show.
+ * @property {EstreIntentAction[]} [onFocus] - Actions to run on focus.
+ * @property {EstreIntentAction[]} [onIntentUpdated] - Actions to run on intent update.
+ * @property {EstreIntentAction[]} [onBlur] - Actions to run on blur.
+ * @property {EstreIntentAction[]} [onHide] - Actions to run on hide.
+ * @property {EstreIntentAction[]} [onClose] - Actions to run on close.
+ * @property {EstreIntentAction[]} [onRelease] - Actions to run on release.
+ * @property {Function} [onDissmiss] - Callback when dismissed (dialog pages).
+ * @property {Function} [onOk] - Confirm callback (alert dialog).
+ * @property {Function} [onPositive] - Positive callback (confirm dialog).
+ * @property {Function} [onNegative] - Negative callback (confirm dialog).
+ * @property {Function} [onNeutral] - Neutral callback (confirm dialog).
+ * @property {Function} [onConfirm] - Confirm callback (prompt/selection/dials dialog).
+ * @property {Function} [onAnother] - Another-action callback (selection/dials dialog).
+ * @property {Function} [onSelected] - Option selected callback (option dialog).
+ * @property {Function} [onSelect] - Item select callback (selection/dials dialog).
+ * @property {Function} [resolver] - Promise resolver for programmatic intent completion.
+ */
+
+/**
+ * Back-navigation intent embedded in an EstreIntent.
+ * @typedef {Object} EstreIntentBringOnBack
+ * @property {string} pid - PID to navigate to on back.
+ * @property {string} [hostType] - Host type scope ("component"|"container"|"article").
+ */
+
+/**
+ * Declarative lifecycle action entry within an EstreIntent.
+ * @typedef {Object} EstreIntentAction
+ * @property {string} from - Host type that triggers this action ("component"|"container"|"article").
+ * @property {string} action - Action identifier (e.g. "autoClose", "closePage").
+ * @property {boolean} [disabled] - If true, this action is skipped.
+ * @property {string} [host] - Target host type for autoClose.
+ * @property {number|string} [time] - Delay in ms for autoClose.
+ * @property {string} [targetPid] - Target PID for closePage.
+ */
+
+
 /**
  * UI specifier constants — CSS-selector-based UI widget identifier registry.
  * EstreHandle uses these values as specifiers when searching for handles in the DOM.
@@ -4269,7 +4320,7 @@ class EstrePageHandler {
     #handle = null;
     /** @type {EstrePageHandle} */
     get handle() { return this.#handle; }
-    /** @type {Object|undefined} Current intent object. */
+    /** @type {EstreIntent|undefined} Current intent object. */
     get intent() { return this.handle.intent; }
     /** @type {string|undefined} The action field of the intent. */
     get intentAction() { return this.intent?.action; }
@@ -6051,7 +6102,7 @@ class EstreUiPageManager {
      * Navigates (brings) a page by PID. Creates (opens) the component/container/article if absent, or shows it if already present.
      * `!` prefix resolves via managedPidMap, `*` prefix via extPidMap.
      * @param {string} pid - Full PID, or `!`/`*` prefixed alias.
-     * @param {Object} [intent] - Intent data passed to the page handler.
+     * @param {EstreIntent} [intent] - Intent data passed to the page handler.
      * @param {string|string[]} [instanceOrigin] - Instance origin for multi-instance pages.
      * @returns {*|null|false} Result for the target hostType. null if page not found, false if cannot open.
      */
@@ -6186,7 +6237,7 @@ class EstreUiPageManager {
     /**
      * Shows an already-existing page. Returns null if the component/container/article does not exist.
      * @param {string} pid - Full PID, or `!`/`*` prefixed alias.
-     * @param {Object} [intent] - Intent data passed to the page handler.
+     * @param {EstreIntent} [intent] - Intent data passed to the page handler.
      * @param {string|string[]} [instanceOrigin] - Instance origin for multi-instance pages.
      * @returns {*|null} Result for the target hostType. null if page not found.
      */
@@ -6264,7 +6315,7 @@ class EstreUiPageManager {
     /**
      * Attempts showPage first; falls back to bringPage if the result is falsy.
      * @param {string} pid - Full PID, or `!`/`*` prefixed alias.
-     * @param {Object} [intent] - Intent data passed to the page handler.
+     * @param {EstreIntent} [intent] - Intent data passed to the page handler.
      * @param {string|string[]} [instanceOrigin] - Instance origin for multi-instance pages.
      * @returns {*|null|false}
      */
@@ -6433,7 +6484,7 @@ class EstreUiCustomPageManager {
     /**
      * Brings a page by external alias ID.
      * @param {string} id - Alias registered in extPidMap.
-     * @param {Object} [intent] - Intent data passed to the page handler.
+     * @param {EstreIntent} [intent] - Intent data passed to the page handler.
      * @param {string|string[]} [instanceOrigin] - Multi-instance origin.
      * @returns {*|null|false}
      */
@@ -6444,7 +6495,7 @@ class EstreUiCustomPageManager {
     /**
      * Shows a page by external alias ID.
      * @param {string} id - Alias registered in extPidMap.
-     * @param {Object} [intent] - Intent data.
+     * @param {EstreIntent} [intent] - Intent data.
      * @param {string|string[]} [instanceOrigin] - Multi-instance origin.
      * @returns {*|null}
      */
@@ -6455,7 +6506,7 @@ class EstreUiCustomPageManager {
     /**
      * Attempts showPage; falls back to bringPage on failure.
      * @param {string} id - Alias registered in extPidMap.
-     * @param {Object} [intent] - Intent data.
+     * @param {EstreIntent} [intent] - Intent data.
      * @param {string|string[]} [instanceOrigin] - Multi-instance origin.
      * @returns {*|null|false}
      */
