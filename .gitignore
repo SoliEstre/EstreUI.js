@@ -1,4 +1,5 @@
 /asset works
+node_modules/
 *.ai
 *.psd
 *.zip

@@ -65,6 +65,12 @@ Every topic is provided as a parallel pair of files:
 | --- | --- | --- | --- | --- |
 | Doctre — template serialization engine | [doctre.en.md](doctre.en.md) | [doctre.ko.md](doctre.ko.md) | ✅ | Cold/frost format, solidId, `Doctre.patch()` prototype extensions (solid/hot/melt/worm/freeze/burn), `matchReplace` token interpolation, `NodeArray`. |
 
+### 7. Testing
+
+| Topic | EN | KO | Status | Notes |
+| --- | --- | --- | --- | --- |
+| Testing guide (Vitest + jsdom setup) | [testing-guide.en.md](testing-guide.en.md) | [testing-guide.ko.md](testing-guide.ko.md) | ✅ | Script loader pattern (`new Function()`), test tiers, gotchas, how to extend. |
+
 ## Review & Improvements
 
 The [review/](review/) subfolder tracks bugs, typos, and improvement suggestions discovered during source analysis. See the [review dashboard](review/README.md) for the full list with resolution status.
@@ -152,6 +158,12 @@ The [roadmap/](roadmap/) subfolder tracks planned improvements for EstreUI.js �
 | 토픽 | EN | KO | 상태 | 비고 |
 | --- | --- | --- | --- | --- |
 | Doctre — 템플릿 직렬화 엔진 | [doctre.en.md](doctre.en.md) | [doctre.ko.md](doctre.ko.md) | ✅ | Cold/frost 포맷, solidId, `Doctre.patch()` 프로토타입 확장 (solid/hot/melt/worm/freeze/burn), `matchReplace` 토큰 보간, `NodeArray`. |
+
+### 7. 테스팅
+
+| 토픽 | EN | KO | 상태 | 비고 |
+| --- | --- | --- | --- | --- |
+| 테스트 가이드 (Vitest + jsdom 설정) | [testing-guide.en.md](testing-guide.en.md) | [testing-guide.ko.md](testing-guide.ko.md) | ✅ | 스크립트 로더 패턴 (`new Function()`), 테스트 티어, 주의사항, 확장 방법. |
 
 ## 리뷰 & 개선
 
