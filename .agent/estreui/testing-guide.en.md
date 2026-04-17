@@ -40,7 +40,7 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
     test: {
         environment: 'jsdom',
-        setupFiles: ['./test/setup.js'],
+        setupFiles: ['./test/estreui/setup.js'],
         include: ['test/**/*.test.js'],
     },
 });
@@ -52,9 +52,9 @@ Key points:
 | --- | --- |
 | `environment: 'jsdom'` | Provides `document`, `Element`, `NodeList`, etc. — required because EstreUI depends heavily on DOM APIs. |
 | `setupFiles` | Runs the script loader before every test file, making all EstreUI globals available. |
-| `include` | Limits test discovery to the `test/` folder. |
+| `include` | Limits test discovery to the `test/` folder. Framework tests go under `test/estreui/`; app-specific tests belong in `test/project/`. |
 
-## 3. Script loader (`test/setup.js`)
+## 3. Script loader (`test/estreui/setup.js`)
 
 This is the central piece. It concatenates all EstreUI source files into a single `new Function()` body so that top-level `const` declarations share one scope — exactly like they do in the browser.
 
@@ -62,15 +62,24 @@ This is the central piece. It concatenates all EstreUI source files into a singl
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
-const scriptsDir = resolve(import.meta.dirname, '..', 'scripts');
+// test/estreui/setup.js climbs one extra level to reach the project root's scripts/
+const scriptsDir = resolve(import.meta.dirname, '..', '..', 'scripts');
 
-// Must match the <script> load order in index.html
+// Must match the <script> load order in index.html.
+// (EstreUI.js ships as 8 module files — see roadmap #002.)
 const loadOrder = [
     'modernism.js',
     'alienese.js',
     'doctre.js',
     'estreU0EEOZ.js',
-    'estreUi.js',
+    'estreUi-core.js',
+    'estreUi-dialog.js',
+    'estreUi-notation.js',
+    'estreUi-pageModel.js',
+    'estreUi-pageManager.js',
+    'estreUi-handles.js',
+    'estreUi-interaction.js',
+    'estreUi-main.js',
 ];
 
 const sources = loadOrder.map(name => {
@@ -132,9 +141,9 @@ Tests that exercise functions which don't touch DOM nodes. These are the simples
 
 | Test target | File |
 | --- | --- |
-| `nne()`, `noe()`, primitive aliases, type checks | `alienese-helpers.test.js` |
-| `Doctre.matchReplace`, `crashBroker`, `copyPrimitives` | `doctre-match-replace.test.js` |
-| PID parsing (`getPidComponent`, strippers, setters) | `pid-parsing.test.js` |
+| `nne()`, `noe()`, primitive aliases, type checks | `test/estreui/alienese-helpers.test.js` |
+| `Doctre.matchReplace`, `crashBroker`, `copyPrimitives` | `test/estreui/doctre-match-replace.test.js` |
+| PID parsing (`getPidComponent`, strippers, setters) | `test/estreui/pid-parsing.test.js` |
 
 ### Tier 2 — DOM interaction (jsdom)
 
@@ -193,9 +202,23 @@ npm test
 npm run test:watch
 
 # Run a specific file
-npx vitest run test/alienese-helpers.test.js
+npx vitest run test/estreui/alienese-helpers.test.js
 ```
 
 ## 7. Adding scripts to the loader
 
-If you add a new script file to EstreUI (e.g., a plugin or extension), add it to the `loadOrder` array in `test/setup.js` in the same position it appears in the HTML `<script>` tags. Then add any new global identifiers to the `return` block.
+If you add a new script file to EstreUI (e.g., a plugin or extension), add it to the `loadOrder` array in `test/estreui/setup.js` in the same position it appears in the HTML `<script>` tags. Then add any new global identifiers to the `return` block.
+
+## 8. Folder layout
+
+```
+test/
+  estreui/          # Framework (EstreUI.js) tests — shipped with upstream
+    setup.js
+    *.test.js
+  project/          # App-specific tests — excluded from upstream (create as needed)
+    setup.js
+    *.test.js
+```
+
+Framework tests must not contain project-specific identifiers (domain names, API paths, brand constants) because they are shipped alongside upstream [SoliEstre/EstreUI.js](https://github.com/SoliEstre/EstreUI.js). Keep app-specific tests in their own subfolder (`test/project/`) to maintain the boundary explicitly.
