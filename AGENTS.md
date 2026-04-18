@@ -45,6 +45,7 @@
 5. **참조는 마크다운 링크로.** 본 프로젝트 파일을 참조할 때는 `[filename.ext](relative/path)` 형식(절대경로 금지, 역슬래시 금지). 특정 라인은 `#Lnn` 앵커를 덧붙입니다.
 6. **업스트림 소스 확인.** EstreUI.js 관련 사실을 서술할 땐, 로컬 `scripts/estreUi.js` 등은 로컬 수정이 있을 수 있으므로 의심스러우면 [SoliEstre/EstreUI.js](https://github.com/SoliEstre/EstreUI.js) 의 main 브랜치를 기준으로 검증합니다.
 7. **업스트림/로컬 구분.** 어떤 파일이 업스트림인지 로컬 확장인지 판단이 필요할 때는 [.agent/project/upstream-vs-local.md](.agent/project/upstream-vs-local.md) 를 먼저 읽습니다.
+8. **`.agent/` 수정 시 lint 실행.** `.agent/` 하위 문서를 추가·이름변경·삭제·구조 변경했다면 커밋 전에 `npm run lint:docs` 를 실행해 clean 을 확인합니다. 린트가 깨진 상태로 커밋하지 않습니다. 검사 항목(인덱스 완전성, 죽은 링크, 투 트랙 쌍, 리뷰·로드맵 대시보드 정합성) 은 [.agent/lint.mjs](.agent/lint.mjs) 헤더 주석 참조.
 
 ---
 

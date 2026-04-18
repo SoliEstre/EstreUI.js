@@ -49,11 +49,62 @@
 
 검증: Tier 1 + Tier 2 테스트 140개 전부 통과 — 런타임 동작 변경 없음. 업데이트 대상: `index.html`, `scripts/serviceWorker.js` (캐시 목록), `test/setup.js`.
 
-### 3단계 — (선택) ES module 지원
+### 3단계 — 모듈 소비자 지원 (이정표: 소비자 요구 대기)
 
-1. 각 모듈 파일에 `export` 문 추가.
-2. ES module 진입점(`estreUi.esm.js`)을 기존 연결 버전과 함께 제공.
-3. node 스캐폴딩([EstreUI-for-node](https://github.com/SoliEstre/EstreUI-for-node)) 사용 프로젝트에서 모듈 개별 import 가능.
+현재 모든 소비자(브라우저 HTML, Vitest setup) 는 전역 스코프 기반으로 심볼을 참조한다 — `require`/`import` 로 EstreUI.js 를 쓰는 경로가 **아예 존재하지 않음**. 따라서 어떤 모듈 시스템을 미리 추가해도 소비자가 없어 죽은 코드가 된다.
+
+3단계는 착수 시점이 아니라 **이정표(decision milestone)** 로 둔다. 다음 중 하나라도 발생하면 진행:
+
+- [EstreUI-for-node](https://github.com/SoliEstre/EstreUI-for-node) 이 개별 모듈 import 방식으로 재편됨.
+- npm 패키지 배포 계획이 구체화됨.
+- 외부 기여자·다운스트림에서 module import 요구가 발생함.
+
+착수 시점엔 아래 두 단계로 나눠 점진적으로 진행한다.
+
+#### 3a — CJS 듀얼 패턴 (저비용 경로, 먼저 진행)
+
+각 모듈 파일 끝에 CommonJS 가드 블록을 추가. `jcodd.js` 와 동일 패턴.
+
+```js
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+    module.exports = { EstreUiPage, eds, uis, /* 필요 심볼 */ };
+}
+```
+
+커버 범위:
+
+- ✅ 기존 브라우저 `<script>` 로드 그대로 유지 (`const` 최상위 바인딩은 classic script 전역 스코프에 그대로 남음).
+- ✅ Node `require('./estreUi-core.js')` 로 개별 모듈 접근.
+- ✅ Node `import ... from` (Node 의 CJS↔ESM interop 경유, default import).
+- ❌ 브라우저 `<script type="module">` + named `import`.
+- ❌ 개별 심볼 tree-shaking.
+
+빌드 스텝 불필요. 파일당 10줄 가드만 추가하며 기존 전역 사용과 충돌하지 않는다. [EstreUI-for-node](https://github.com/SoliEstre/EstreUI-for-node) 수준의 Node 연동에는 이 범위로 충분.
+
+#### 3b — 풀 ESM 지원 (빌드 스텝 도입 필요, 요구 발생 시)
+
+브라우저 ESM·tree-shaking·named import 가 필요할 때만. `export` 는 정적 구문이라 classic `<script>` 와 한 파일에서 공존 불가 → **빌드 파이프라인(Rollup/esbuild) 도입이 불가피**하다.
+
+지속 비용(참고):
+
+- 빌드 툴링 설정·CI 통합·산출물 버전 관리.
+- 파일 간 cross-reference 를 전부 명시적 `import` 로 전환하는 대규모 리팩터 (현재 2단계 분리는 "전역 스코프 공유" 전제).
+- `new Function()` 기반 테스트 setup 재설계.
+- classic·ESM 두 산출물 간 리그레션 교차 검증.
+- 문서·샘플 2벌 유지.
+
+따라서 3b 는 외부 ESM 소비자 요구가 위 비용을 정당화할 때 착수. 3a 범위로 커버되는 요구에는 진행하지 않는다.
+
+## 연계 작업 — `EstreUI-for-node` 워크스페이스
+
+별도 저장소([EstreUI-for-node](https://github.com/SoliEstre/EstreUI-for-node)) 에서 수행할 작업 — 본 저장소 범위 밖이지만 방향을 기록해 둔다.
+
+1. 현재 EstreUI.js 로딩 방식 점검: 전역 스크립트 주입인지, 모듈 import 인지.
+2. 3a 가 반영된 뒤에는 `require()` / default `import` 로 개별 모듈 접근 가능 → 필요 심볼만 가져오는 스캐폴딩 템플릿으로 갱신.
+3. 3b 가 도입되면 ESM named import 기반 템플릿으로 전환하고 tree-shaking 이익을 확인.
+4. 버전 동기화: 본 저장소 릴리스 태그를 EstreUI-for-node `package.json` 에 peer/실의존으로 명시.
+
+이 연계 작업이 **시작 요건**으로 선행되거나, 본 저장소 3a 반영과 동시 진행될 때 CJS 듀얼 패턴의 투자가 의미를 가진다.
 
 ## 제약
 
@@ -64,3 +115,5 @@
 ## 의존성
 
 - 2단계는 JSDoc 어노테이션(#001)이 선행되면 효과적 — 타입 정보가 분리 시 암묵적 결합 확인에 도움.
+- 3a: module import 소비자(node workspace 또는 외부 패키지) 가 출현하는 시점에 진행.
+- 3b: 3a 사용 경험 축적 + 브라우저 ESM/tree-shaking 요구가 발생하고 빌드 비용을 정당화할 때 진행.
