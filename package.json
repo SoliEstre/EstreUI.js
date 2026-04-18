@@ -1,6 +1,6 @@
 {
   "name": "estreui",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "EstreUI Core Library - A comprehensive UI framework for web applications",
   "main": "scripts/estreUi.js",
   "files": [
@@ -40,6 +40,14 @@
   ],
   "author": "SoliEstre",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SoliEstre/EstreUI.js.git"
+  },
+  "homepage": "https://estreui.mpsolutions.kr",
+  "bugs": {
+    "url": "https://github.com/SoliEstre/EstreUI.js/issues"
+  },
   "dependencies": {
     "jquery": "^4.0.0",
     "jcodd": "^0.9.0",
