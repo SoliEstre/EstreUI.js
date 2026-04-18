@@ -30,7 +30,7 @@ SOFTWARE.
 // 
 // Cold(array object) assigning of HTML Tree for make to JSON string.
 // 
-// v1.1.1 / release 2026.02.20
+// v1.1.2 / release 2026.04.18
 // 
 // cold = [] - Cold HTML child node list
 // cold[0] - Tag name, classes, id, name, type = "tag.class1.class2#id@name$type" : string

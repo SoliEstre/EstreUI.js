@@ -31,7 +31,7 @@ SOFTWARE.
 // Collections of bypass for process codes takes be inline,
 // and monkey patching like as modern languages.
 // 
-// v0.7.1    / release 2026.03.31
+// v0.7.2    / release 2026.04.18
 // 
 // Author: Estre Soliette
 // Established: 2025.01.05

@@ -1,6 +1,6 @@
 {
   "name": "estreui",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "EstreUI Core Library - A comprehensive UI framework for web applications",
   "main": "scripts/estreUi.js",
   "files": [
@@ -43,8 +43,8 @@
   "dependencies": {
     "jquery": "^4.0.0",
     "jcodd": "^0.9.0",
-    "doctre": "^1.1.1",
-    "modernism": "^0.7.1",
-    "alienese": "^0.7.0"
+    "doctre": "^1.1.2",
+    "modernism": "^0.7.2",
+    "alienese": "^0.7.2"
   }
 }
