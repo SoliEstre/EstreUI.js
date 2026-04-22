@@ -14,6 +14,8 @@
 | 5 | `bringPage`/`showPage` switch fall-through 의도성 불명확 | 🟢 가독성 | navigation | `estreUi.js` L5893 | live 2026-04-16 | [005-bringpage-switch-fallthrough.md](005-bringpage-switch-fallthrough.md) |
 | 6 | export fetch 재시도 — 백오프 없음 | 🟢 개선 | bootstrap | `estreUi.js` L14907-14981 | live 2026-04-16 | [006-export-fetch-no-backoff.md](006-export-fetch-no-backoff.md) |
 | 7 | `LocalStyle` `##` 정규식 — 연속 `##` 에지 케이스 | 🟢 에지케이스 | markup | `estreU0EEOZ.js` L941 | live 2026-04-16 | [007-localstyle-regex-edge.md](007-localstyle-regex-edge.md) |
+| 8 | `#isHiding` / `#isClosing` 플래그가 리셋되지 않음 | 🔴 버그 | lifecycle | `estreUi-pageModel.js` L103-106, L356, L380 | live 2026-04-22 | [008-hiding-closing-flags-not-reset.md](008-hiding-closing-flags-not-reset.md) |
+| 9 | 재포커스 시 포커스 앵커가 없으면 첫 포커서블로 떨어짐 | 🟡 개선 | lifecycle / focus | `estreUi-pageManager.js` L538-565, `estreUi-pageModel.js` L423-438 | — | [009-autofocus-refocus-no-anchor.md](009-autofocus-refocus-no-anchor.md) |
 
 ## 심각도 범례
 

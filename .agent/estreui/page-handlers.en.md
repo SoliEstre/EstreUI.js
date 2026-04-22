@@ -32,6 +32,17 @@ class CatalogDetailPage extends EstrePageHandler {
         // Pause timers, detach scroll listeners.
     }
 
+    onFocus(handle, isFirstFocus) {
+        // Page has taken active focus. Fires after onShow, and on window/tab return.
+        // isFirstFocus=true on the very first focus of this page instance.
+        // Return true to skip the framework's default autoFocus (in-page DOM focus).
+    }
+
+    onBlur(handle, isFinalBlur) {
+        // Page has lost active focus. Fires before onHide, and on window/tab leave.
+        // isFinalBlur mirrors handle.isClosing — true on the last blur before close.
+    }
+
     onClose(handle) {
         // The page is going away for good (will be released next).
         // Persist edit-in-progress, fire analytics, etc.
@@ -58,25 +69,66 @@ class CatalogDetailPage extends EstrePageHandler {
 ## Full lifecycle order
 
 ```
-              ┌─────────────────────────────────────┐
-              │                                     │
-bringPage ──► onBring ──► onOpen ──► onShow ──► (live)
-                          (once)                    │
-                                                    ▼
-                                (re-bring with same PID)
-                                  onIntentUpdated  │
-                                                    ▼
-                              hide ─► onHide ─► (background)
-                                                    │
-                                                    ▼
-                              show ─► onShow ◄──────┘
-                                                    │
-                                                    ▼
-                              close ─► onClose ──► onRelease
-                                       (once)
+              ┌───────────────────────────────────────────────┐
+              │                                               │
+bringPage ──► onBring ──► onOpen ──► onShow ──► onFocus ──► (active)
+                          (once)                               │
+                                                               ▼
+                                          window/app focus toggle
+                                          onBlur ◄─► onFocus
+                                                               │
+                                                               ▼
+                                  hide ─► onBlur ─► onHide ─► (background)
+                                                               │
+                                                               ▼
+                                  show ─► onShow ─► onFocus ◄──┘
+                                                               │
+                                                               ▼
+                          close ─► onBlur ─► onHide ─► onClose ──► onRelease
+                                                      (once)
 ```
 
-`onOpen` and `onClose` fire exactly once per instance lifetime. `onShow` / `onHide` may pair multiple times in between when the page goes to background and back. `onApplied` is bound to data-binding completion and may fire multiple times if the bound model is re-applied.
+`onOpen` and `onClose` fire exactly once per instance lifetime. `onShow` / `onHide` may pair multiple times in between when the page goes to background and back; while visible, `onFocus` / `onBlur` may toggle on window focus / tab visibility changes without touching `onShow` / `onHide`. `onApplied` is bound to data-binding completion and may fire multiple times if the bound model is re-applied.
+
+## Focus lifecycle
+
+Where `onShow` / `onHide` govern **screen presence**, `onFocus` / `onBlur` govern whether the page currently holds **active focus**. A visible page can still lack focus if another tab or app is active.
+
+### Fire timing
+
+- `onFocus` — dispatched after `onShow` completes, and again on every window `focus` / `visibilitychange` → visible.
+- `onBlur` — dispatched before `onHide` starts, and on every window `blur` / `visibilitychange` → hidden.
+
+Repeated calls are idempotent thanks to the handle's `isFocused` guard.
+
+### Arguments
+
+| Arg | Meaning |
+| --- | --- |
+| `isFirstFocus` | True only on the first `onFocus` after `onOpen`. Static pages reset it on re-open. |
+| `isFinalBlur` | True on the final blur along a close path — equivalent to `handle.isClosing`, so prefer reading `handle.isClosing` instead of wiring the extra argument. |
+
+### Return-value contract
+
+Returning `true` from `onFocus` **skips the framework's default autoFocus** (the in-page DOM focus move). Use this when the handler owns its own focus policy.
+
+```js
+onFocus(handle, isFirstFocus) {
+    if (isFirstFocus) this.$customInput.focus();
+    else this.$defaultField.focus();
+    return true;  // skip default autoFocus
+}
+```
+
+When the return is falsy, the default autoFocus fires with the following priority:
+
+1. `handle.lastFocusedElement` — restore the previously focused element (subsequent focuses only).
+2. An element marked `[data-autofocus]`.
+3. The first focusable element (`input`, `textarea`, `select`, `button`, `[tabindex]:not([tabindex="-1"])`).
+
+### `lastFocusedElement` tracking
+
+The framework records in-page focus moves via a document-level `focusin` listener. In addition, right after the handler returns `true`, `document.activeElement` is snapshotted into `lastFocusedElement` if it lives inside the page `host` — so an element the handler focused manually is also eligible for later restoration. The slot is cleared in `onClose`.
 
 ## The `handle` argument
 

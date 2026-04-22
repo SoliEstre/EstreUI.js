@@ -521,6 +521,48 @@ class EstreUiPageManager {
             });
         });
     }
+
+    /**
+     * Default auto-focus policy for a newly-focused page handle.
+     * Priority:
+     *   1. On repeat focus, restore `handle.lastFocusedElement` if still in the DOM.
+     *   2. First `[data-autofocus]` element inside the host.
+     *   3. First tab-reachable focusable element inside the host.
+     *   4. Otherwise no-op.
+     * Invoked from `pageHandle.onFocus()` when `handler.onFocus` does not return true.
+     * Projects can override on an `EstreUiCustomPageManager` subclass if a different policy is needed.
+     * @param {EstrePageHandle} handle - The page handle receiving focus.
+     * @param {boolean} isFirstFocus - True on the first focus after onOpen; false on subsequent focuses.
+     * @returns {boolean} Whether a focus() call succeeded.
+     */
+    autoFocus(handle, isFirstFocus) {
+        const host = handle?.host;
+        if (host == null) return false;
+
+        if (!isFirstFocus) {
+            const last = handle.lastFocusedElement;
+            if (last != null && host.contains(last) && document.body.contains(last)) {
+                last.focus();
+                if (document.activeElement === last) return true;
+            }
+        }
+
+        const markedTarget = host.querySelector("[data-autofocus]");
+        if (markedTarget != null && !markedTarget.hasAttribute("disabled") && !markedTarget.hidden) {
+            markedTarget.focus();
+            if (document.activeElement === markedTarget) return true;
+        }
+
+        const candidates = host.querySelectorAll(
+            'input:not([disabled]),textarea:not([disabled]),select:not([disabled]),button:not([disabled]),[tabindex]:not([tabindex="-1"])'
+        );
+        for (const el of candidates) {
+            if (el.hidden) continue;
+            el.focus();
+            if (document.activeElement === el) return true;
+        }
+        return false;
+    }
 }
 
 const pageManager = new EstreUiPageManager();

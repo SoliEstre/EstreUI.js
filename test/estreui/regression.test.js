@@ -2,7 +2,7 @@ import { describe, test, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
-// Regression tests for review items #001–#007.
+// Regression tests for review items #001–#008.
 // Each describe block corresponds to one reviewed defect. Tests here are
 // intended to fail if the fix is ever reverted.
 // See: .agent/estreui/review/ for the defect write-ups.
@@ -260,5 +260,37 @@ describe('#007 regression — LocalStyle.localize ## replacement', () => {
         const out = localizedText('## &gt; .leaf { color: red; }');
         expect(out).not.toMatch(/&gt;/);
         expect(out).toMatch(/>/);
+    });
+});
+
+
+// ── #008 — #isHiding / #isClosing flags never reset ────────────
+//
+// Defect: `#isHiding` was set in `hide()` and `#isClosing` in `close()`
+// but neither was ever set back to false. For static pages cycling
+// through show/hide/show/hide, the second hide's guard
+// `(!this.isHiding && this.isShowing)` would fail and the call became
+// a no-op. `isClosing` could also leak `true` across reuse, corrupting
+// the bringOnBack branch in `onHide` and the `isFinalBlur` semantics
+// planned for roadmap #006.
+// Fix: reset `#isHiding = false` at the end of `onHide()` and reset
+// `#isClosing = false` at the end of `close()`'s post-onClose chain.
+
+describe('#008 regression — lifecycle flags reset', () => {
+
+    const pageModelSrc = readScript('estreUi-pageModel.js');
+
+    test('onHide resets #isHiding to false before returning', () => {
+        const onHide = pageModelSrc.match(/async onHide\(fullyHide\)\s*\{[\s\S]*?^    \}/m);
+        expect(onHide).not.toBeNull();
+        const body = onHide[0];
+        expect(body).toMatch(/this\.#isHiding\s*=\s*false/);
+    });
+
+    test('close resets #isClosing after the onClose chain', () => {
+        const close = pageModelSrc.match(/^    close\(isTermination = false, isOnRelease = false\)\s*\{[\s\S]*?^    \}/m);
+        expect(close).not.toBeNull();
+        const body = close[0];
+        expect(body).toMatch(/this\.#isClosing\s*=\s*false/);
     });
 });

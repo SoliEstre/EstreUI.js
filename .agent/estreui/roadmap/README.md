@@ -12,6 +12,7 @@
 | 3 | Alienese 인라인 문서화 | 🟡 보통 | DX | ✅ 완료 | [003-alienese-inline-docs.md](003-alienese-inline-docs.md) |
 | 4 | 테스트 스위트 | 🟡 보통 | 품질 | ✅ 완료 | [004-test-suite.md](004-test-suite.md) |
 | 5 | 에이전트 문서 CI 린트 | 🟢 낮음 | 도구 | ✅ 완료 | [005-agent-docs-lint.md](005-agent-docs-lint.md) |
+| 6 | 포커스 라이프사이클 완성 | 🟡 보통 | 라이프사이클 / 접근성 | ✅ 완료 | [006-focus-lifecycle-completion.md](006-focus-lifecycle-completion.md) |
 
 ## 우선순위 범례
 

@@ -99,6 +99,8 @@ class EstrePageHandle {
     get isShowing() { return this.isOpened && this.#isShowing; }
     #isFocused = false;
     get isFocused() { return this.isShowing && this.#isFocused; }
+    #everFocused = false;
+    get everFocused() { return this.#everFocused; }
 
     #isHiding = false;
     get isHiding() { return this.#isHiding; }
@@ -122,6 +124,8 @@ class EstrePageHandle {
 
     #isProcessing = f;
     get isProcessing() { return this.#isProcessing; }
+
+    lastFocusedElement = null;
 
     get mainArticle() { return this; }
 
@@ -381,7 +385,9 @@ class EstrePageHandle {
             const task = this.hide();
             return postAsyncQueue(async _ => {
                 await task;
-                return await this.onClose(isTermination, isOnRelease);
+                const result = await this.onClose(isTermination, isOnRelease);
+                this.#isClosing = false;
+                return result;
             });
         } else return false;
     }
@@ -416,10 +422,18 @@ class EstrePageHandle {
 
     onFocus() {
         if (!this.isFocused) {
+            const isFirstFocus = !this.#everFocused;
             if (window.isDebug) console.log("[onFocus] " + this.sectionBound + " " + this.hostType + " " + this.pid);//, this.host);
             this.#isFocused = true;
-            if (this.handler?.onFocus != null) this.handler.onFocus(this);
+            this.#everFocused = true;
+            const handled = this.handler?.onFocus?.(this, isFirstFocus);
             if (this.intent?.onFocus != null) for (var item of this.intent.onFocus) if (item.from == this.hostType && !item.disabled) this.processAction(item);
+            if (handled === true) {
+                // Snapshot activeElement so a later refocus (e.g. background→foreground)
+                // can restore whatever the handler focused, even if focusin didn't record it.
+                const ae = document.activeElement;
+                if (ae != null && ae !== document.body && this.host?.contains(ae)) this.lastFocusedElement = ae;
+            } else pageManager.autoFocus?.(this, isFirstFocus);
             return true;
         } else return false;
     }
@@ -451,7 +465,7 @@ class EstrePageHandle {
             this.#isFocused = false;
             if (window.isDebug) console.log("[onBlur] " + this.sectionBound + " " + this.hostType + " " + this.pid);//, this.host);
             if (this.intent?.onBlur != null) for (var item of this.intent.onBlur) if (item.from == this.hostType && !item.disabled) await this.processAction(item);
-            if (this.handler?.onBlur != null) await this.handler.onBlur(this);
+            await this.handler?.onBlur?.(this, this.isClosing);
             return true;
         } else return false;
     }
@@ -474,6 +488,7 @@ class EstrePageHandle {
                     postQueue(_ => pageManager.bringPage(pid));
                 }
             }
+            this.#isHiding = false;
             return true;
         } else return false;
     }
@@ -481,6 +496,8 @@ class EstrePageHandle {
     async onClose(isTermination = false, isOnRelease = false) {
         if (this.isOpened && (isOnRelease || !this.isStatic)) {
             this.#isOpened = false;
+            this.#everFocused = false;
+            this.lastFocusedElement = null;
             if (window.isDebug) console.log("[onClose] " + this.sectionBound + " " + this.hostType + " " + this.pid);//, this.host);
             if (this.intent?.onClose != null) for (var item of this.intent.onClose) if (item.from == this.hostType && !item.disabled) await this.processAction(item);
             if (this.handler?.onClose != null) await this.handler.onClose(this);
@@ -2975,6 +2992,7 @@ class EstreAlertDialogPageHandler extends EstreDialogPageHandler {
 
     onFocus(handle) {
         this.$confirm.focus();
+        return true;
     }
 }
 
@@ -3022,6 +3040,7 @@ class EstreConfirmDialogPageHandler extends EstreDialogPageHandler {
 
     onFocus(handle) {
         this.$negative.focus();
+        return true;
     }
 }
 
@@ -3081,6 +3100,7 @@ class EstrePromptDialogPageHandler extends EstreDialogPageHandler {
 
     onFocus(handle) {
         this.$input.focus();
+        return true;
     }
 }
 
@@ -3110,6 +3130,7 @@ class EstreOptionDialogPageHandler extends EstreDialogPageHandler {
 
     onFocus(handle) {
         this.$optionItems[0]?.focus();
+        return true;
     }
 }
 
@@ -3213,6 +3234,7 @@ class EstreSelectionDialogPageHandler extends EstreDialogPageHandler {
 
     onFocus(handle) {
         this.$confirm.focus();
+        return true;
     }
 
     checkValidSelectAction(handle, handler, index, value, checked) {
@@ -3291,6 +3313,7 @@ class EstreDialsDialogPageHandler extends EstreDialogPageHandler {
 
     onFocus(handle) {
         this.$confirm.focus();
+        return true;
     }
 
     onClose(handle) {

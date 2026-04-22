@@ -32,6 +32,17 @@ class CatalogDetailPage extends EstrePageHandler {
         // 타이머·스크롤 리스너 일시 정지.
     }
 
+    onFocus(handle, isFirstFocus) {
+        // 페이지가 활성 포커스를 받는 시점. onShow 이후 또는 창/앱 복귀 시.
+        // isFirstFocus=true 는 이 페이지 인스턴스의 최초 포커스.
+        // return true 로 기본 autoFocus(페이지 내 DOM 포커스 이동)를 스킵.
+    }
+
+    onBlur(handle, isFinalBlur) {
+        // 페이지가 포커스를 잃는 시점. onHide 직전 또는 창/앱 이탈 시.
+        // isFinalBlur 는 handle.isClosing 과 동치 — 닫힘 경로상 최종 blur 식별용.
+    }
+
     onClose(handle) {
         // 영구 종료 직전(다음에 onRelease).
         // 임시 저장, 분석 이벤트 발사 등.
@@ -58,25 +69,66 @@ class CatalogDetailPage extends EstrePageHandler {
 ## 전체 라이프사이클
 
 ```
-              ┌─────────────────────────────────────┐
-              │                                     │
-bringPage ──► onBring ──► onOpen ──► onShow ──► (살아있음)
-                          (1회)                     │
-                                                    ▼
-                                (같은 PID 재호출)
-                                  onIntentUpdated  │
-                                                    ▼
-                              hide ─► onHide ─► (백그라운드)
-                                                    │
-                                                    ▼
-                              show ─► onShow ◄──────┘
-                                                    │
-                                                    ▼
-                              close ─► onClose ──► onRelease
-                                       (1회)
+              ┌─────────────────────────────────────────────┐
+              │                                             │
+bringPage ──► onBring ──► onOpen ──► onShow ──► onFocus ──► (활성)
+                          (1회)                              │
+                                                             ▼
+                                         창/앱 포커스 토글
+                                         onBlur ◄─► onFocus
+                                                             │
+                                                             ▼
+                                  hide ─► onBlur ─► onHide ─► (백그라운드)
+                                                             │
+                                                             ▼
+                                  show ─► onShow ─► onFocus ◄┘
+                                                             │
+                                                             ▼
+                          close ─► onBlur ─► onHide ─► onClose ──► onRelease
+                                                     (1회)
 ```
 
-`onOpen`, `onClose` 는 인스턴스 생애에 정확히 1번. 그 사이에 백그라운드/포그라운드를 오가며 `onShow`/`onHide` 는 여러 번 짝지어 발생합니다. `onApplied` 는 데이터 바인딩 완료에 묶여 있어 모델이 재적용되면 여러 번 발생할 수 있습니다.
+`onOpen`, `onClose` 는 인스턴스 생애에 정확히 1번. 그 사이에 백그라운드/포그라운드를 오가며 `onShow`/`onHide` 는 여러 번 짝지어 발생하고, 화면 유지 중에도 창 포커스·앱 visibility 가 바뀌면 `onFocus`/`onBlur` 만 토글됩니다. `onApplied` 는 데이터 바인딩 완료에 묶여 있어 모델이 재적용되면 여러 번 발생할 수 있습니다.
+
+## 포커스 라이프사이클
+
+`onShow` / `onHide` 가 페이지의 **화면 존재** 를 관리한다면, `onFocus` / `onBlur` 는 페이지가 **활성 포커스** 를 가지는지를 관리합니다. 화면에 보이더라도 다른 탭·앱이 활성화되어 있으면 포커스는 없습니다.
+
+### 발화 시점
+
+- `onFocus` — `onShow` 완료 후 자동 호출. 이후에도 창 `focus` 이벤트나 `visibilitychange` → visible 전환 시 반복 발화.
+- `onBlur` — `onHide` 시작 전에 먼저 호출. 창 `blur` · `visibilitychange` → hidden 전환 시에도 발화.
+
+중복 발화는 핸들의 `isFocused` 가드로 멱등 보장됩니다.
+
+### 인자
+
+| 인자 | 의미 |
+| --- | --- |
+| `isFirstFocus` | 이 페이지 인스턴스 생애 중 최초 포커스 여부. `onOpen` 이후 첫 `onFocus` 일 때만 `true`. 정적 페이지는 재오픈 시 다시 `true` 로 리셋. |
+| `isFinalBlur` | 닫힘 경로상 최종 blur 여부. `handle.isClosing` 과 동치 — 별도 인자 대신 `handle.isClosing` 참조 권장. |
+
+### 반환 계약
+
+`onFocus` 가 `true` 를 반환하면 프레임워크 기본 `autoFocus` (페이지 내 DOM 포커스 이동) 가 **스킵** 됩니다. 핸들러가 자체 포커스 정책을 가질 때 사용.
+
+```js
+onFocus(handle, isFirstFocus) {
+    if (isFirstFocus) this.$customInput.focus();
+    else this.$defaultField.focus();
+    return true;  // 기본 autoFocus 건너뛰기
+}
+```
+
+반환값 없거나 `false` 면 기본 autoFocus 가 다음 우선순위로 동작:
+
+1. `handle.lastFocusedElement` — 마지막 포커스 요소 복원 (재포커스 때만).
+2. `[data-autofocus]` 마킹된 요소.
+3. 첫 포커서블 요소 (`input`, `textarea`, `select`, `button`, `[tabindex]:not([tabindex="-1"])`).
+
+### `lastFocusedElement` 추적
+
+프레임워크는 `document` 레벨 `focusin` 리스너로 현재 최상위 페이지 내 포커스 이동을 자동 기록합니다. 추가로 핸들러가 `return true` 한 직후 `document.activeElement` 가 페이지 `host` 안에 있으면 함께 스냅샷해, 핸들러가 수동으로 포커스한 대상도 재포커스 시 복원 대상에 포함됩니다. `onClose` 시점에 자동 해제.
 
 ## `handle` 인자
 

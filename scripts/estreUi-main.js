@@ -387,6 +387,27 @@ const estreUi = {
                 this.onBlur();
             });
 
+            // C (roadmap #006) — visibilitychange routes to onFocus/onBlur.
+            // More reliable on mobile browsers than window focus/blur, especially
+            // on Android WebView where native focus changes may not surface as JS events.
+            // Idempotent via the pageHandle.isFocused guard, so duplication with
+            // window focus/blur is harmless.
+            document.addEventListener("visibilitychange", () => {
+                if (window.isDebug) console.log(`[visibilitychange] state=${document.visibilityState} hasFocus=${document.hasFocus()}`);
+                if (document.visibilityState === "visible") this.onFocus();
+                else this.onBlur();
+            });
+
+            // A (roadmap #006) — track lastFocusedElement on the topmost showing handle.
+            // focusin bubbles (unlike blur), so a single document-level capture covers
+            // every page. Used by phase B's autoFocus to restore the prior focus point.
+            document.addEventListener("focusin", (e) => {
+                const topHandle = this.showingTopArticle ?? this.mainCurrentOnTop;
+                if (topHandle != null && topHandle.host?.contains(e.target)) {
+                    topHandle.lastFocusedElement = e.target;
+                }
+            }, true);
+
             if (setOnReady) this.checkOnReady();
         });
     },
@@ -1575,12 +1596,15 @@ const estreUi = {
 
 
     async onFocus() {
-        // <= to do implement
-        // this.focus();
+        const top = this.showingTopArticle ?? this.mainCurrentOnTop;
+        if (window.isDebug) console.log(`[estreUi.onFocus] visibility=${document.visibilityState} hasFocus=${document.hasFocus()} top=${top?.pid ?? "(none)"}`);
+        top?.focus();
     },
-    
+
     async onBlur() {
-        // <= to do implement
+        const top = this.showingTopArticle ?? this.mainCurrentOnTop;
+        if (window.isDebug) console.log(`[estreUi.onBlur] visibility=${document.visibilityState} hasFocus=${document.hasFocus()} top=${top?.pid ?? "(none)"}`);
+        await top?.blur();
     },
 
 

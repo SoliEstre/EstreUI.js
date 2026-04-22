@@ -1,4 +1,6 @@
 import { describe, test, expect } from 'vitest';
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
 
 // ── bringPage / showPage / closePage — PID alias resolution ─────
 //
@@ -215,5 +217,211 @@ describe('EstreUiPageManager — page registry lookups', () => {
         mgr.register(p2);
 
         expect(mgr.get(p1.pid)).toBe(p1);
+    });
+});
+
+
+// ── Roadmap #006 phase A — focus tracking groundwork ───────────
+//
+// Verifies that the page handle exposes a `lastFocusedElement` slot
+// and that estreUi-main.js wires up a document-level focusin listener
+// to record into it. Behavioral verification of the listener requires a
+// fully-mounted estreUi.init(), which is out of scope here; we instead
+// check for the wiring at the source level.
+
+describe('Roadmap #006 phase A — lastFocusedElement tracking', () => {
+
+    const scriptsDir = resolve(import.meta.dirname, '..', '..', 'scripts');
+    const readScript = name => readFileSync(resolve(scriptsDir, name), 'utf8');
+
+    test('estreUi-main.js installs a document focusin listener with capture', () => {
+        const src = readScript('estreUi-main.js');
+        expect(src).toMatch(/document\.addEventListener\(\s*["']focusin["'][\s\S]*?,\s*true\s*\)/);
+    });
+
+    test('focusin listener records lastFocusedElement on the topmost handle', () => {
+        const src = readScript('estreUi-main.js');
+        const block = src.match(/document\.addEventListener\(\s*["']focusin["'][\s\S]{0,400}?,\s*true\s*\)/);
+        expect(block).not.toBeNull();
+        const body = block[0];
+        expect(body).toMatch(/showingTopArticle/);
+        expect(body).toMatch(/lastFocusedElement\s*=\s*e\.target/);
+    });
+
+    test('onClose clears lastFocusedElement to release the DOM reference', () => {
+        const src = readScript('estreUi-pageModel.js');
+        const onClose = src.match(/async onClose\(isTermination = false, isOnRelease = false\)\s*\{[\s\S]*?^    \}/m);
+        expect(onClose).not.toBeNull();
+        expect(onClose[0]).toMatch(/this\.lastFocusedElement\s*=\s*null/);
+    });
+});
+
+
+// ── Roadmap #006 phase B — autoFocus + handler return contract ─
+
+describe('Roadmap #006 phase B — pageManager.autoFocus priority', () => {
+
+    function buildHost(html) {
+        document.body.innerHTML = '';
+        const host = document.createElement('div');
+        host.innerHTML = html;
+        document.body.appendChild(host);
+        return host;
+    }
+
+    test('autoFocus picks first [data-autofocus] on first focus', () => {
+        const host = buildHost(`
+            <input class="a">
+            <input class="b" data-autofocus>
+            <input class="c" data-autofocus>
+        `);
+        const handle = { host, lastFocusedElement: null };
+        const ok = pageManager.autoFocus(handle, true);
+        expect(ok).toBe(true);
+        expect(document.activeElement).toBe(host.querySelector('.b'));
+    });
+
+    test('autoFocus restores lastFocusedElement on subsequent focus', () => {
+        const host = buildHost(`
+            <input class="a">
+            <input class="b" data-autofocus>
+            <input class="c">
+        `);
+        const last = host.querySelector('.c');
+        const handle = { host, lastFocusedElement: last };
+        const ok = pageManager.autoFocus(handle, false);
+        expect(ok).toBe(true);
+        expect(document.activeElement).toBe(last);
+    });
+
+    test('autoFocus skips lastFocusedElement on first focus (data-autofocus wins)', () => {
+        const host = buildHost(`
+            <input class="a">
+            <input class="b" data-autofocus>
+            <input class="c">
+        `);
+        const handle = { host, lastFocusedElement: host.querySelector('.c') };
+        pageManager.autoFocus(handle, true);
+        expect(document.activeElement).toBe(host.querySelector('.b'));
+    });
+
+    test('autoFocus falls back to first focusable when no data-autofocus is present', () => {
+        const host = buildHost(`
+            <span>not focusable</span>
+            <input class="first">
+            <input class="second">
+        `);
+        const handle = { host, lastFocusedElement: null };
+        const ok = pageManager.autoFocus(handle, true);
+        expect(ok).toBe(true);
+        expect(document.activeElement).toBe(host.querySelector('.first'));
+    });
+
+    test('autoFocus skips disabled and hidden elements', () => {
+        const host = buildHost(`
+            <input class="d" disabled>
+            <input class="h" hidden>
+            <input class="ok">
+        `);
+        const handle = { host, lastFocusedElement: null };
+        pageManager.autoFocus(handle, true);
+        expect(document.activeElement).toBe(host.querySelector('.ok'));
+    });
+
+    test('autoFocus returns false when host has no focusable element', () => {
+        const host = buildHost(`<span>nothing</span>`);
+        const handle = { host, lastFocusedElement: null };
+        const ok = pageManager.autoFocus(handle, true);
+        expect(ok).toBe(false);
+    });
+
+    test('autoFocus returns false when handle has no host', () => {
+        expect(pageManager.autoFocus({ host: null }, true)).toBe(false);
+        expect(pageManager.autoFocus(null, true)).toBe(false);
+    });
+});
+
+
+describe('Roadmap #006 phase B — handler return-value contract', () => {
+
+    const scriptsDir = resolve(import.meta.dirname, '..', '..', 'scripts');
+    const readScript = name => readFileSync(resolve(scriptsDir, name), 'utf8');
+
+    test('pageHandle.onFocus passes isFirstFocus and routes through handler then autoFocus', () => {
+        const src = readScript('estreUi-pageModel.js');
+        const onFocus = src.match(/^    onFocus\(\)\s*\{[\s\S]*?^    \}/m);
+        expect(onFocus).not.toBeNull();
+        const body = onFocus[0];
+        expect(body).toMatch(/isFirstFocus\s*=\s*!this\.#everFocused/);
+        expect(body).toMatch(/this\.handler\?\.onFocus\?\.\(this,\s*isFirstFocus\)/);
+        expect(body).toMatch(/handled\s*===\s*true/);
+        expect(body).toMatch(/pageManager\.autoFocus\?\.\(this,\s*isFirstFocus\)/);
+    });
+
+    test('pageHandle.onFocus snapshots activeElement into lastFocusedElement when handler returns true', () => {
+        const src = readScript('estreUi-pageModel.js');
+        const onFocus = src.match(/^    onFocus\(\)\s*\{[\s\S]*?^    \}/m);
+        expect(onFocus).not.toBeNull();
+        const body = onFocus[0];
+        expect(body).toMatch(/document\.activeElement/);
+        expect(body).toMatch(/this\.host\?\.contains\(ae\)/);
+        expect(body).toMatch(/this\.lastFocusedElement\s*=\s*ae/);
+    });
+
+    test('pageHandle.onBlur passes this.isClosing as the isFinalBlur arg', () => {
+        const src = readScript('estreUi-pageModel.js');
+        const onBlur = src.match(/^    async onBlur\(\)\s*\{[\s\S]*?^    \}/m);
+        expect(onBlur).not.toBeNull();
+        expect(onBlur[0]).toMatch(/this\.handler\?\.onBlur\?\.\(this,\s*this\.isClosing\)/);
+    });
+
+    test('onClose resets #everFocused so re-opened static pages see isFirstFocus again', () => {
+        const src = readScript('estreUi-pageModel.js');
+        const onClose = src.match(/async onClose\(isTermination = false, isOnRelease = false\)\s*\{[\s\S]*?^    \}/m);
+        expect(onClose).not.toBeNull();
+        expect(onClose[0]).toMatch(/this\.#everFocused\s*=\s*false/);
+    });
+
+    test('dialog handlers return true from onFocus to opt out of autoFocus', () => {
+        const src = readScript('estreUi-pageModel.js');
+        // Six dialog handlers all use return true after $element.focus()
+        const dialogReturns = src.match(/this\.\$\w+(?:\[0\])?\??\.focus\(\);\s*return true;/g) || [];
+        expect(dialogReturns.length).toBeGreaterThanOrEqual(6);
+    });
+});
+
+
+// ── Roadmap #006 phase C — top-level focus + visibilitychange ──
+
+describe('Roadmap #006 phase C — estreUi.onFocus / onBlur wiring', () => {
+
+    const scriptsDir = resolve(import.meta.dirname, '..', '..', 'scripts');
+    const readScript = name => readFileSync(resolve(scriptsDir, name), 'utf8');
+
+    test('estreUi.onFocus routes to the topmost handle.focus()', () => {
+        const src = readScript('estreUi-main.js');
+        const onFocus = src.match(/^    async onFocus\(\)\s*\{[\s\S]*?^    \},/m);
+        expect(onFocus).not.toBeNull();
+        const body = onFocus[0];
+        expect(body).toMatch(/showingTopArticle\s*\?\?\s*this\.mainCurrentOnTop/);
+        expect(body).toMatch(/top\?\.focus\(\)/);
+    });
+
+    test('estreUi.onBlur awaits the topmost handle.blur()', () => {
+        const src = readScript('estreUi-main.js');
+        const onBlur = src.match(/^    async onBlur\(\)\s*\{[\s\S]*?^    \},/m);
+        expect(onBlur).not.toBeNull();
+        const body = onBlur[0];
+        expect(body).toMatch(/await top\?\.blur\(\)/);
+    });
+
+    test('visibilitychange listener routes to onFocus/onBlur', () => {
+        const src = readScript('estreUi-main.js');
+        const block = src.match(/document\.addEventListener\(\s*["']visibilitychange["'][\s\S]{0,400}?\}\s*\)/);
+        expect(block).not.toBeNull();
+        const body = block[0];
+        expect(body).toMatch(/document\.visibilityState\s*===\s*["']visible["']/);
+        expect(body).toMatch(/this\.onFocus\(\)/);
+        expect(body).toMatch(/this\.onBlur\(\)/);
     });
 });
