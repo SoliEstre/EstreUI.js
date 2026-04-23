@@ -283,6 +283,7 @@ const estreUi = {
             this.setPanelSwipeHandler();
             this.scheduleOverwatchPanelClock();
             this.initOverwatchPanelHandles();
+            this.updateDarkModeToggleWidgets();
             return this.initStaticPanels(subTerm);
         }
 
