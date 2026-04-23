@@ -141,11 +141,16 @@ nav#overwatchPanel > .dynamic_section_block > .block_item { width: 100%; flex-sh
 nav#overwatchPanel > section#panelGrabArea { flex-grow: 0; flex-shrink: 0; height: 42px; background-color: transparent; opacity: 0; transition-duration: 0.3s; }
 nav#overwatchPanel > section#panelGrabArea > div.handle { --width: 64px; --height: 4px; display: block; width: var(--width); height: var(--height); margin: 10px auto 0; border-radius: calc(var(--height) / 2); background-color: var(--color-boundary-lightside); }
 nav#overwatchPanel > section#panelGrabArea > div.pad { flex-grow: 1; }
+/* panelOutCover fills the space below the 42px grab zone to block underlying UI when the panel is opened.
+   It is inert (no click/swipe handler) — only the grab strip above closes the panel. */
+nav#overwatchPanel > section#panelOutCover { flex-grow: 1; opacity: 0; transition-duration: 0.3s; }
 
 nav#overwatchPanel[data-opened="1"] > header#panelHeader,
 nav#overwatchPanel[data-opened="1"] > .dynamic_section_host,
 nav#overwatchPanel[data-opened="1"] > .dynamic_section_block { transform: translateY(0); }
-nav#overwatchPanel[data-opened="1"] > section#panelGrabArea { opacity: 1; background-color: rgb(var(--cadm) / 20%); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
+nav#overwatchPanel[data-opened="1"] > section#panelGrabArea,
+nav#overwatchPanel[data-opened="1"] > section#panelOutCover { opacity: 1; background-color: rgb(var(--cadm) / 20%); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
+nav#overwatchPanel[data-opened="1"] > section#panelOutCover { pointer-events: auto; }
 
 nav#overwatchPanel[data-on-grab="1"] > header#panelHeader,
 nav#overwatchPanel[data-on-grab="1"] > .dynamic_section_host,
