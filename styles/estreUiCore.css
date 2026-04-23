@@ -142,7 +142,17 @@ nav#overwatchPanel[data-opened="1"] > section#panelGrabArea { opacity: 1; backgr
 
 nav#overwatchPanel[data-on-grab="1"] > header#panelHeader,
 nav#overwatchPanel[data-on-grab="1"] > .dynamic_section_host,
-nav#overwatchPanel[data-on-grab="1"] > .dynamic_section_block { transition-delay: 0s; transition-duration: 0s; transform: translateY(var(--grab-y)); }
+nav#overwatchPanel[data-on-grab="1"] > .dynamic_section_block { transition-delay: 0s; transition-duration: 0s; }
+nav#overwatchPanel[data-on-grab="1"]:not([data-opened="1"]) > header#panelHeader { transform: translateY(calc(-100% + max(var(--grab-y), 0px))); }
+nav#overwatchPanel[data-on-grab="1"]:not([data-opened="1"]) > .dynamic_section_host { transform: translateY(calc(-100% - var(--panel-block-height) + max(var(--grab-y), 0px))); }
+nav#overwatchPanel[data-on-grab="1"]:not([data-opened="1"]) > .dynamic_section_block { transform: translateY(calc(-100vh - var(--panel-block-height) + max(var(--grab-y), 0px))); }
+nav#overwatchPanel[data-opened="1"][data-on-grab="1"] > header#panelHeader,
+nav#overwatchPanel[data-opened="1"][data-on-grab="1"] > .dynamic_section_host,
+nav#overwatchPanel[data-opened="1"][data-on-grab="1"] > .dynamic_section_block { transform: translateY(min(var(--grab-y), 0px)); }
+
+/* Top swipe trigger strip. Sits above fixedTop (z-index 130) so the downward swipe can fire while the panel is closed. */
+section#panelTrigger { position: fixed; z-index: 135; top: 0; left: 0; right: 0; height: calc(var(--top-pad) + 12px); user-select: none; pointer-events: auto; background-color: transparent; }
+nav#overwatchPanel[data-opened="1"] ~ section#panelTrigger { pointer-events: none; }
 
 /* root tabs (bottom) */
 footer#fixedBottom { position: fixed; display: flex; flex-direction: row; flex-wrap: nowrap; z-index: 110; bottom: 0; left: 0; right: 0; height: var(--rootbar-height); margin: 0; padding-bottom: var(--bottom-safe-pad); justify-content: center; background-color: var(--color-boundary-foggy-o66); backdrop-filter: var(--basic-backdrop-blur); -webkit-backdrop-filter: var(--basic-backdrop-blur); justify-content: center; user-select: none; }

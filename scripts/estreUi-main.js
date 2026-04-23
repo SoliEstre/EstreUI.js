@@ -116,6 +116,7 @@ const estreUi = {
     $panelClock: null,
     $panelDate: null,
     $panelGrabArea: null,
+    $panelTrigger: null,
 
     $fixedTop: null,
     get $headerSections() { return this.$fixedTop.find(c.c + se); },
@@ -136,6 +137,8 @@ const estreUi = {
 
     //handles
     menuSwipeHandler: null,
+    panelOpenSwipeHandler: null,
+    panelCloseSwipeHandler: null,
     darkModeMql: null,
 
     //properties
@@ -214,6 +217,7 @@ const estreUi = {
         this.$mainMenu = $("nav#mainMenu");
 
         this.$overwatchPanel = $("nav#overwatchPanel");
+        this.$panelTrigger = $("section#panelTrigger");
 
         this.$fixedTop = $("header#fixedTop");
 
@@ -274,6 +278,7 @@ const estreUi = {
             this.$panelGrabArea = this.$overwatchPanel.find("section#panelGrabArea");
 
             this.$panelGrabArea.click(this.overwatchPanelGrabAreaOnclick);
+            this.setPanelSwipeHandler();
             return this.initStaticPanels(subTerm);
         }
 
@@ -618,6 +623,37 @@ const estreUi = {
 
     releaseMenuSwipeHandler() {
         if (this.menuSwipeHandler != null) this.menuSwipeHandler.release();
+    },
+
+
+    //overwatchPanel
+    setPanelSwipeHandler() {
+        if (this.$overwatchPanel.length < 1) return;
+        this.releasePanelSwipeHandler();
+        const ui = this;
+        if (this.$panelTrigger.length > 0) {
+            this.panelOpenSwipeHandler = new EstreSwipeHandler(this.$panelTrigger[0]).unuseX()
+                .setResponseBound(this.$overwatchPanel)
+                .setOnUp(function(grabX, grabY, handled, canceled, directed) {
+                    if (handled && grabY > 0 && !ui.isOpenOverwatchPanel) {
+                        setTimeout(_ => ui.openOverwatchPanel(), 0);
+                    }
+                });
+        }
+        if (this.$panelGrabArea.length > 0) {
+            this.panelCloseSwipeHandler = new EstreSwipeHandler(this.$panelGrabArea[0]).unuseX()
+                .setResponseBound(this.$overwatchPanel)
+                .setOnUp(function(grabX, grabY, handled, canceled, directed) {
+                    if (handled && grabY < 0 && ui.isOpenOverwatchPanel) {
+                        setTimeout(_ => ui.closeOverwatchPanel(), 0);
+                    }
+                });
+        }
+    },
+
+    releasePanelSwipeHandler() {
+        if (this.panelOpenSwipeHandler != null) { this.panelOpenSwipeHandler.release(); this.panelOpenSwipeHandler = null; }
+        if (this.panelCloseSwipeHandler != null) { this.panelCloseSwipeHandler.release(); this.panelCloseSwipeHandler = null; }
     },
 
     mainMenuBtnOnClick(e) {
