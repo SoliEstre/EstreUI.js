@@ -282,6 +282,7 @@ const estreUi = {
             this.$panelGrabArea.click(this.overwatchPanelGrabAreaOnclick);
             this.setPanelSwipeHandler();
             this.scheduleOverwatchPanelClock();
+            this.initOverwatchPanelHandles();
             return this.initStaticPanels(subTerm);
         }
 
@@ -714,6 +715,17 @@ const estreUi = {
     releasePanelSwipeHandler() {
         if (this.panelOpenSwipeHandler != null) { this.panelOpenSwipeHandler.release(); this.panelOpenSwipeHandler = null; }
         if (this.panelCloseSwipeHandler != null) { this.panelCloseSwipeHandler.release(); this.panelCloseSwipeHandler = null; }
+    },
+
+    // The .dynamic_section_block inside overwatchPanel lives outside any <article>,
+    // so the standard article-scoped handle init never reaches it. Attach the handle
+    // here with the panel itself acting as a minimal host.
+    initOverwatchPanelHandles() {
+        if (this.$overwatchPanel.length < 1) return;
+        const $block = this.$panelBlock;
+        if ($block == null || $block.length < 1) return;
+        const host = { $host: this.$overwatchPanel };
+        new EstreDynamicSectionBlockHandle($block[0], host).init();
     },
 
     setOverwatchPanelClock() {
