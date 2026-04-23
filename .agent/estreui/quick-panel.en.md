@@ -2,7 +2,7 @@
 
 > Parallel: [quick-panel.ko.md](quick-panel.ko.md)
 
-EstreUI ships a top-drop **Quick Panel** — the framework's only built-in surface for fast global toggles (dark mode today; access to other singleton preferences later). The DOM identifier is `nav#overwatchPanel` and the visible section inside it is `section#quickPanel`; a second sibling `section#timeline` slot is reserved but unimplemented.
+EstreUI ships a top-drop **Quick Panel** — the framework's only built-in surface for fast global toggles (dark mode today; access to other singleton preferences later). The DOM identifier is `nav#overwatchPanel` and inside it two sibling sections are visible: `section#quickPanel` and `section#timeline`.
 
 The panel is an Android-style drop-from-top sheet: hidden at the top, swipe down from the very top edge to open, swipe up or tap the grab area to close. An optional host-placed button may also call the toggle API directly.
 
@@ -142,7 +142,7 @@ Full-section registration (adding a third `block_item` alongside quickPanel/time
 
 ## Timeline
 
-`section#timeline` is a reserved slot. Its markup is stable so host projects / future framework versions can drop content in without changing the shell. No framework code currently writes into it.
+`section#timeline` is filled by `EstreTimelineView` at boot (`initOverwatchPanelTimeline()` in `estreUi-main.js`). It shows a date-grouped, swipe-to-delete list of dismissed notification banners, backed by `EstreTimelineStore` — see [timeline.en.md](timeline.en.md) for the store schema and view API.
 
 ## See also
 

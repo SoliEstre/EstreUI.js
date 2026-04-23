@@ -2,7 +2,7 @@
 
 > 병행: [quick-panel.en.md](quick-panel.en.md)
 
-EstreUI 는 상단 드롭다운형 **퀵패널** — 빠른 전역 토글(현재: 다크 모드, 추후: 기타 싱글턴 설정) 을 모으는 프레임워크 유일의 기본 UI — 을 제공한다. DOM 식별자는 `nav#overwatchPanel` 이며 내부에 표시되는 섹션은 `section#quickPanel` 이다. 형제 슬롯 `section#timeline` 은 예약되어 있으나 아직 구현되지 않았다.
+EstreUI 는 상단 드롭다운형 **퀵패널** — 빠른 전역 토글(현재: 다크 모드, 추후: 기타 싱글턴 설정) 을 모으는 프레임워크 유일의 기본 UI — 을 제공한다. DOM 식별자는 `nav#overwatchPanel` 이며 내부에는 표시 섹션 두 개 — `section#quickPanel` 과 `section#timeline` — 가 나란히 있다.
 
 안드로이드식으로 상단 바깥에 숨어 있다가, 화면 최상단 가장자리에서 아래로 스와이프하면 열리고, 위로 스와이프하거나 하단 grab 영역을 탭하면 닫힌다. 호스트 프로젝트가 자체 버튼을 배치해 토글 API 를 직접 호출해도 된다.
 
@@ -142,7 +142,7 @@ estreUi.registerOverwatchPanelTile({
 
 ## 타임라인
 
-`section#timeline` 은 예약 슬롯이다. 마크업은 안정적으로 유지되므로 호스트 프로젝트나 향후 프레임워크 버전이 셸을 건드리지 않고 내용을 추가할 수 있다. 현재 프레임워크 코드는 이 슬롯에 아무것도 쓰지 않는다.
+`section#timeline` 은 부팅 시 `EstreTimelineView` 가 채운다 (`estreUi-main.js` 의 `initOverwatchPanelTimeline()`). 해제된 알림 배너를 날짜별로 묶어 보여주고, 스와이프로 삭제할 수 있다. `EstreTimelineStore` 가 백엔드 — 스토어 스키마와 뷰 API 는 [timeline.ko.md](timeline.ko.md) 참고.
 
 ## 참조
 
