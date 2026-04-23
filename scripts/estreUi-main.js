@@ -102,6 +102,15 @@ const estreUi = {
     $menuArea: null,
     $grabArea: null,
 
+    $overwatchPanel: null,
+    get $panelSections() { return this.$panelBlock?.find(c.c + se + uis.blockItem) ?? $(); },
+    $panelHeader: null,
+    $panelHost: null,
+    $panelBlock: null,
+    $panelClock: null,
+    $panelDate: null,
+    $panelGrabArea: null,
+
     $fixedTop: null,
     get $headerSections() { return this.$fixedTop.find(c.c + se); },
     $appbar: null,
@@ -196,6 +205,8 @@ const estreUi = {
 
         this.$mainMenu = $("nav#mainMenu");
 
+        this.$overwatchPanel = $("nav#overwatchPanel");
+
         this.$fixedTop = $("header#fixedTop");
 
         this.$fixedBottom = $("#fixedBottom");
@@ -244,6 +255,17 @@ const estreUi = {
 
             this.$grabArea.click(this.mainMenuGrabAreaOnclick);
             return this.initStaticMenus(subTerm);
+        }
+
+        const onLoadedOverwatchPanel = subTerm => {
+            this.$panelHeader = this.$overwatchPanel.find("header#panelHeader");
+            this.$panelHost = this.$overwatchPanel.find(uis.dynamicSectionHost);
+            this.$panelBlock = this.$overwatchPanel.find(uis.dynamicSectionBlock);
+            this.$panelClock = this.$panelHeader.find("#panelClock");
+            this.$panelDate = this.$panelHeader.find("#panelDate");
+            this.$panelGrabArea = this.$overwatchPanel.find("section#panelGrabArea");
+            // Panel section registration, toggle API, swipe, clock and dark-mode toggle wire in later commits.
+            return null;
         }
 
 
@@ -325,6 +347,18 @@ const estreUi = {
                 .then(() => loadExportedMainMenu(subTerm, attempt + 1));
         });
 
+        let loadExportedOverwatchPanel;
+        loadExportedOverwatchPanel = (subTerm, attempt = 0) => loadExported("overwatchPanel.html").then(htmlContent => {
+            this.$overwatchPanel.prepend(htmlContent);
+            return onLoadedOverwatchPanel(subTerm);
+        }).catch(error => {
+            const delay = Math.min(1000 * Math.pow(2, attempt), 30000);
+            console.error("There has been a problem with your fetch operation for overwatchPanel: ", error);
+            console.log(`Retrying to load overwatchPanel in ${delay}ms...`);
+            return postPromise(resolve => setTimeout(resolve, delay))
+                .then(() => loadExportedOverwatchPanel(subTerm, attempt + 1));
+        });
+
         let loadExportedStockHandlePrototypes;
         loadExportedStockHandlePrototypes = (_, attempt = 0) => loadExported("stockHandlePrototypes.html").then(htmlContent => {
             this.$handlePrototypes.prepend(htmlContent);
@@ -382,6 +416,7 @@ const estreUi = {
             await Promise.all(mainLoader);
 
             await (this.$mainMenu.attr(eds.exported) == t1 ? loadExportedMainMenu(subTerm) : onLoadedMainMenu(subTerm));
+            await (this.$overwatchPanel.attr(eds.exported) == t1 ? loadExportedOverwatchPanel(subTerm) : onLoadedOverwatchPanel(subTerm));
 
             this.initSessionManager();
 
