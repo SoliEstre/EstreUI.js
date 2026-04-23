@@ -14,6 +14,7 @@
 | 5 | 에이전트 문서 CI 린트 | 🟢 낮음 | 도구 | ✅ 완료 | [005-agent-docs-lint.md](005-agent-docs-lint.md) |
 | 6 | 포커스 라이프사이클 완성 | 🟡 보통 | 라이프사이클 / 접근성 | ✅ 완료 | [006-focus-lifecycle-completion.md](006-focus-lifecycle-completion.md) |
 | 7 | 다크 모드 스캐폴드 | 🟡 보통 | 테마 / CSS | ✅ 완료 | [007-dark-mode-scaffold.md](007-dark-mode-scaffold.md) |
+| 8 | 퀵패널 | 🟡 보통 | 컴포넌트 | 계획 | [008-quick-panel.md](008-quick-panel.md) |
 
 ## 우선순위 범례
 
