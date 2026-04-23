@@ -11,7 +11,12 @@
             <section class="block_item" id="quickPanel" data-id="quickPanel" data-static="1">
                 <div class="container" data-container-id="root" data-static="1">
                     <article data-article-id="main" data-static="1">
-                        <!-- Quick panel contents populated in a later commit (dark mode toggle, host-registered sections). -->
+                        <div class="quick_tiles">
+                            <button id="darkModeToggle" class="quick_tile" type="button" data-dark-mode-state="auto" onclick="estreUi.cycleDarkMode();">
+                                <span class="tile_icon" aria-hidden="true">&#x1F313;</span>
+                                <span class="tile_label">Auto</span>
+                            </button>
+                        </div>
                     </article>
                 </div>
             </section>

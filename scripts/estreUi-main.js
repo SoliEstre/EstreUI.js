@@ -603,6 +603,31 @@ const estreUi = {
         const active = (pref == null) ? (this.darkModeMql?.matches ?? false) : pref;
         if (active) document.body.dataset.darkMode = "1";
         else delete document.body.dataset.darkMode;
+        this.updateDarkModeToggleWidgets();
+    },
+
+    // Cycle auto -> light -> dark -> auto (single-button 3-state control)
+    cycleDarkMode() {
+        const pref = this.darkMode;
+        if (pref == null) this.setDarkMode(false);
+        else if (pref === false) this.setDarkMode(true);
+        else this.setDarkMode(null);
+        return this.darkMode;
+    },
+
+    updateDarkModeToggleWidgets() {
+        const $widgets = $("#darkModeToggle");
+        if ($widgets.length < 1) return;
+        const pref = this.darkMode;
+        const state = (pref == null) ? "auto" : (pref ? "dark" : "light");
+        const icon = state == "light" ? "\u2600\uFE0F" : (state == "dark" ? "\u263D" : "\u{1F313}");
+        const label = state.charAt(0).toUpperCase() + state.slice(1);
+        $widgets.each(function() {
+            const $w = $(this);
+            $w.attr("data-dark-mode-state", state);
+            $w.find(".tile_icon").text(icon);
+            $w.find(".tile_label").text(label);
+        });
     },
 
 

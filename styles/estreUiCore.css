@@ -156,6 +156,14 @@ nav#overwatchPanel[data-opened="1"][data-on-grab="1"] > .dynamic_section_block {
 section#panelTrigger { position: fixed; z-index: 135; top: 0; left: 0; right: 0; height: calc(var(--top-pad) + 12px); user-select: none; pointer-events: auto; background-color: transparent; }
 nav#overwatchPanel[data-opened="1"] ~ section#panelTrigger { pointer-events: none; }
 
+/* Quick panel tiles */
+.quick_tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; padding: 8px var(--basic-ui-inset-h); }
+.quick_tile { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 12px 8px; border-radius: 12px; border: 1px solid rgb(var(--cadm) / 20%); background-color: rgba(var(--cabr) / 30%); cursor: pointer; user-select: none; }
+.quick_tile > .tile_icon { font-size: 1.5rem; line-height: 1; }
+.quick_tile > .tile_label { font-size: 0.75rem; }
+#darkModeToggle[data-dark-mode-state="light"] { background-color: rgba(var(--cabr) / 50%); }
+#darkModeToggle[data-dark-mode-state="dark"] { background-color: rgba(var(--cadm) / 50%); }
+
 /* root tabs (bottom) */
 footer#fixedBottom { position: fixed; display: flex; flex-direction: row; flex-wrap: nowrap; z-index: 110; bottom: 0; left: 0; right: 0; height: var(--rootbar-height); margin: 0; padding-bottom: var(--bottom-safe-pad); justify-content: center; background-color: var(--color-boundary-foggy-o66); backdrop-filter: var(--basic-backdrop-blur); -webkit-backdrop-filter: var(--basic-backdrop-blur); justify-content: center; user-select: none; }
 footer#fixedBottom nav { position: relative; display: flex; flex-direction: row; flex-wrap: nowrap; height: var(--rootbar-height); flex-grow: 1; flex-shrink: 1; user-select: none; }
