@@ -31,13 +31,19 @@
 - `post(options)` → Promise 반환, 큐 push 후 `postHandler()` 호출.
 - 각 배너는 개별 `showTime` 보유 (기본값 `note()` 보다 길게 — 예: 4500ms).
 - 자동 타임아웃 또는 위 스와이프 / 탭 인터랙션 시 `checkOut(intent)` → 다음 dequeue.
-- pageManager 통합: 기존 `!popNote` 처럼 `!popNoti` 페이지 핸들러 슬롯 추가 검토.
+- pageManager 통합: `!popNoti` 페이지 핸들러 슬롯은 이미 빈 `class extends EstrePageHandler { }` 로 등록되어 있음 — alias [estreUi-pageManager.js:65](../../../scripts/estreUi-pageManager.js#L65), 핸들러 [estreUi-pageModel.js:3726](../../../scripts/estreUi-pageModel.js#L3726). 본 phase 는 [#3727~#3753 popNote 핸들러](../../../scripts/estreUi-pageModel.js#L3727-L3753) 의 `onBring / onOpen / onClose` 패턴을 모방해 이 빈 슬롯을 채운다.
 
 ### `options` 스키마 — 푸시 포맷 공통 분모
 
 - 공통 흡수 키(세 포맷 교집합 우선): `title`, `body` (=FCM `body` / APNs `alert.body` / OneSignal `contents`), `subtitle`, `icon`, `largeIcon` (=`image` / FCM `image`), `data`, `url` (=click action), `buttons[]`.
 - EstreUI 고유 옵션은 별도 네임스페이스(예: `ui: { showTime, interactive, textColor, ... }`) 에 둬서 키 충돌 방지.
 - 어댑터 함수: `noti.fromFcm(payload)`, `noti.fromApns(payload)`, `noti.fromOneSignal(payload)` — raw payload → `noti()` 호출 매핑 util.
+
+### 공개 시그니처 — positional 확장 규칙
+
+- 기존 stub `noti(title, htmlContent, onTakeInteraction, mainIconSrc, subIconSrc)` 의 positional 배치를 베이스로 유지. 앞쪽 인자는 호출 빈도 우선(frequency-first) — `noti(title)` / `noti(title, body)` 가 주 사용 패턴.
+- 신규 필드(subtitle, buttons, data, url, …) 는 **뒤쪽에 추가** 하거나 뒤쪽 `options` 오브젝트로 모은다. 앞쪽 순서는 건드리지 않음.
+- object-first overload 가 필요하면 1번째 인자가 object 인지로 분기 (`typeof title === "object" && title !== null`) — 단일 호출 지점 유지.
 
 ### 진입점 통일 검토
 
@@ -48,7 +54,7 @@
 
 ### A — 설계
 
-컨테이너 구조 (fixed banner + stacked / single slot), 큐/핸들러 파일 배치, options 스키마 확정, pageManager 슬롯 사용 여부, timeline(#010) 과 공유할 데이터 스키마 윤곽.
+컨테이너 구조 (fixed banner, single slot — 동시 노출 없이 순차), 큐/매니저 파일 배치, `options` 스키마 + positional 시그니처 확장 범위 확정, `!popNoti` 슬롯 핸들러 구성 (template DOM 배치 방식 · `intent.data` 스키마), timeline(#010) 과 공유할 데이터 스키마 윤곽.
 
 ### B — 구현
 
