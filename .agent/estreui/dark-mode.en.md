@@ -38,7 +38,7 @@ estreUi.isDarkMode;
 | `applyDarkMode()` | method | Re-evaluates and writes `body[data-dark-mode]`. Called internally; rarely needed externally. |
 | `setupDarkMode()` | method | Boot-time wiring (called from `estreUi.init()`). Registers the `prefers-color-scheme` listener and applies the initial state. |
 
-> The framework's own toggle UI for these APIs is scoped to the Quick Panel — see [roadmap #008](roadmap/008-quick-panel.md). Host projects may place additional toggles of their own, but they should call `setDarkMode` rather than manipulate the body attribute directly.
+> The framework's own toggle UI for these APIs is scoped to the Quick Panel — see [quick-panel.en.md](quick-panel.en.md). `estreUi.cycleDarkMode()` rotates **auto → light → dark → auto** and is what the built-in `#darkModeToggle` tile calls. Host projects may place additional toggles of their own: either reuse the `id="darkModeToggle"` markup (they will sync automatically via `updateDarkModeToggleWidgets`) or call `setDarkMode` / `cycleDarkMode` directly — do not manipulate the body attribute by hand.
 
 ## Storage
 

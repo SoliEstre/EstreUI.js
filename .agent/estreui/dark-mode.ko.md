@@ -38,7 +38,7 @@ estreUi.isDarkMode;
 | `applyDarkMode()` | 메서드 | 재평가하여 `body[data-dark-mode]` 에 기록. 내부 호출용 — 외부에서 거의 부를 일 없음. |
 | `setupDarkMode()` | 메서드 | 부트 시 결선(`estreUi.init()` 에서 호출). `prefers-color-scheme` 리스너 등록 + 초기 적용. |
 
-> 이 API 에 대한 프레임워크 자체 토글 UI 는 퀵패널에서만 제공합니다 — [로드맵 #008](roadmap/008-quick-panel.md) 참조. 도입 프로젝트가 자체 토글을 별도로 둘 수는 있으나, body 어트리뷰트를 직접 조작하지 말고 `setDarkMode` 를 호출해야 합니다.
+> 이 API 에 대한 프레임워크 자체 토글 UI 는 퀵패널에서만 제공합니다 — [quick-panel.ko.md](quick-panel.ko.md) 참조. `estreUi.cycleDarkMode()` 가 **auto → light → dark → auto** 로 순환하며 기본 `#darkModeToggle` 타일이 호출하는 메서드입니다. 도입 프로젝트가 자체 토글을 추가로 두려면, `id="darkModeToggle"` 마크업을 재사용하거나(그러면 `updateDarkModeToggleWidgets` 가 자동으로 동기화) `setDarkMode` / `cycleDarkMode` 를 직접 호출하세요 — body 어트리뷰트를 직접 조작하지는 마세요.
 
 ## 저장소
 
