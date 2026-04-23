@@ -125,7 +125,7 @@ nav#mainMenu[data-opened="1"] > section#grabArea div.pad { backdrop-filter: unse
 }
 
 /* overwatchPanel (drops from top) */
-nav#overwatchPanel { --grab-y: 0px; --panel-block-height: 70vh; position: fixed; z-index: 120; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; pointer-events: none; user-select: none; }
+nav#overwatchPanel { --grab-y: 0px; --panel-block-height: calc(100vh - var(--top-pad) - 42px - var(--bottom-safe-pad)); position: fixed; z-index: 120; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; pointer-events: none; user-select: none; }
 nav#overwatchPanel > header#panelHeader,
 nav#overwatchPanel > .dynamic_section_host,
 nav#overwatchPanel > .dynamic_section_block,
@@ -136,21 +136,16 @@ nav#overwatchPanel > header#panelHeader > #panelDate { font-size: 0.875rem; opac
 nav#overwatchPanel > .dynamic_section_host { display: flex; flex-flow: row nowrap; flex-shrink: 0; padding-inline: var(--basic-ui-inset-h); color: var(--color-text-lightest); background-color: rgba(var(--cabr) / 60%); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transform: translateY(calc(-100% - var(--panel-block-height))); transition-duration: 0.3s; }
 nav#overwatchPanel > .dynamic_section_host > .host_item { flex-grow: 1; padding: 8px 0 7px; border-bottom: solid 1px var(--color-boundary-o10); font-size: 1rem; font-weight: 500; text-align: center; line-height: 1.5em; cursor: pointer; transition-duration: 0.2s; }
 nav#overwatchPanel > .dynamic_section_host > .host_item[data-showing="1"] { padding-bottom: 6px; border-bottom: solid 2px var(--color-indicator-bold); color: var(--color-text-darker); }
-nav#overwatchPanel > .dynamic_section_block { display: flex; flex-flow: row nowrap; flex-shrink: 1; height: var(--panel-block-height); max-height: calc(100vh - var(--top-pad) - var(--bottom-pad)); overflow-x: overlay; scrollbar-width: none; scroll-behavior: smooth; scroll-snap-type: x mandatory; background-color: rgba(var(--cabr) / 40%); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transform: translateY(calc(-100vh - var(--panel-block-height))); transition-duration: 0.3s; }
+nav#overwatchPanel > .dynamic_section_block { display: flex; flex-flow: row nowrap; flex-shrink: 1; height: var(--panel-block-height); max-height: calc(100vh - var(--top-pad) - 42px - var(--bottom-safe-pad)); overflow-x: overlay; scrollbar-width: none; scroll-behavior: smooth; scroll-snap-type: x mandatory; background-color: rgba(var(--cabr) / 40%); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transform: translateY(calc(-100vh - var(--panel-block-height))); transition-duration: 0.3s; }
 nav#overwatchPanel > .dynamic_section_block > .block_item { width: 100%; flex-shrink: 0; overflow-y: auto; scroll-snap-align: start; }
 nav#overwatchPanel > section#panelGrabArea { flex-grow: 0; flex-shrink: 0; height: 42px; background-color: transparent; opacity: 0; transition-duration: 0.3s; }
 nav#overwatchPanel > section#panelGrabArea > div.handle { --width: 64px; --height: 4px; display: block; width: var(--width); height: var(--height); margin: 10px auto 0; border-radius: calc(var(--height) / 2); background-color: var(--color-boundary-lightside); }
 nav#overwatchPanel > section#panelGrabArea > div.pad { flex-grow: 1; }
-/* panelOutCover fills the space below the 42px grab zone to block underlying UI when the panel is opened.
-   It is inert (no click/swipe handler) — only the grab strip above closes the panel. */
-nav#overwatchPanel > section#panelOutCover { flex-grow: 1; opacity: 0; transition-duration: 0.3s; }
 
 nav#overwatchPanel[data-opened="1"] > header#panelHeader,
 nav#overwatchPanel[data-opened="1"] > .dynamic_section_host,
 nav#overwatchPanel[data-opened="1"] > .dynamic_section_block { transform: translateY(0); }
-nav#overwatchPanel[data-opened="1"] > section#panelGrabArea,
-nav#overwatchPanel[data-opened="1"] > section#panelOutCover { opacity: 1; background-color: rgb(var(--cadm) / 20%); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
-nav#overwatchPanel[data-opened="1"] > section#panelOutCover { pointer-events: auto; }
+nav#overwatchPanel[data-opened="1"] > section#panelGrabArea { opacity: 1; background-color: rgb(var(--cadm) / 20%); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
 
 nav#overwatchPanel[data-on-grab="1"] > header#panelHeader,
 nav#overwatchPanel[data-on-grab="1"] > .dynamic_section_host,
