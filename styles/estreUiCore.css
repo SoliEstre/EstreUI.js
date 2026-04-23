@@ -138,7 +138,9 @@ nav#overwatchPanel > .dynamic_section_host > .host_item { flex-grow: 1; padding:
 nav#overwatchPanel > .dynamic_section_host > .host_item[data-showing="1"] { padding-bottom: 6px; border-bottom: solid 2px var(--color-indicator-bold); color: var(--color-text-darker); }
 nav#overwatchPanel > .dynamic_section_block { display: flex; flex-flow: row nowrap; flex-shrink: 1; height: var(--panel-block-height); max-height: calc(100vh - var(--top-pad) - var(--bottom-pad)); overflow-x: overlay; scrollbar-width: none; scroll-behavior: smooth; scroll-snap-type: x mandatory; background-color: rgba(var(--cabr) / 40%); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transform: translateY(calc(-100vh - var(--panel-block-height))); transition-duration: 0.3s; }
 nav#overwatchPanel > .dynamic_section_block > .block_item { width: 100%; flex-shrink: 0; overflow-y: auto; scroll-snap-align: start; }
-nav#overwatchPanel > section#panelGrabArea { flex-grow: 1; background-color: transparent; opacity: 0; transition-duration: 0.3s; }
+nav#overwatchPanel > section#panelGrabArea { flex-grow: 0; flex-shrink: 0; height: 42px; background-color: transparent; opacity: 0; transition-duration: 0.3s; }
+nav#overwatchPanel > section#panelGrabArea > div.handle { --width: 64px; --height: 4px; display: block; width: var(--width); height: var(--height); margin: 10px auto 0; border-radius: calc(var(--height) / 2); background-color: var(--color-boundary-lightside); }
+nav#overwatchPanel > section#panelGrabArea > div.pad { flex-grow: 1; }
 
 nav#overwatchPanel[data-opened="1"] > header#panelHeader,
 nav#overwatchPanel[data-opened="1"] > .dynamic_section_host,
@@ -155,8 +157,10 @@ nav#overwatchPanel[data-opened="1"][data-on-grab="1"] > header#panelHeader,
 nav#overwatchPanel[data-opened="1"][data-on-grab="1"] > .dynamic_section_host,
 nav#overwatchPanel[data-opened="1"][data-on-grab="1"] > .dynamic_section_block { transform: translateY(min(var(--grab-y), 0px)); }
 
-/* Top swipe trigger strip. Sits above fixedTop (z-index 130) so the downward swipe can fire while the panel is closed. */
-section#panelTrigger { position: fixed; z-index: 135; top: 0; left: 0; right: 0; height: calc(var(--top-pad) + 12px); user-select: none; pointer-events: auto; background-color: transparent; }
+/* Top swipe trigger strip. Sits above fixedTop (z-index 130) so the downward swipe can fire while the panel is closed.
+   Height stays inside the safe area (status bar / notch) plus a small 8px bleed into fixedTop so the strip
+   does not cover tappable fixedTop controls. */
+section#panelTrigger { position: fixed; z-index: 135; top: 0; left: 0; right: 0; height: calc(var(--top-safe-pad) + 8px); user-select: none; pointer-events: auto; background-color: transparent; }
 nav#overwatchPanel[data-opened="1"] ~ section#panelTrigger { pointer-events: none; }
 
 /* Quick panel tiles */
