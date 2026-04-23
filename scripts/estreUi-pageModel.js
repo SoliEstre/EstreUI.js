@@ -3723,7 +3723,77 @@ class EstreUiPage {
 
         },
 
-        "$i&o=notification#noti@noti^": class extends EstrePageHandler { },
+        "$i&o=notification#noti@noti^": class extends EstrePageHandler {
+            $postBlock;
+            $mainIconPlace;
+            $subIconPlace;
+            $titleLine;
+            $subtitleLine;
+            $contentLine;
+            swipeHandler;
+            #closeTimer;
+
+            onBring(handle) {
+                const $host = handle.$host;
+                this.$postBlock = $host.find(".post_block");
+                this.$mainIconPlace = this.$postBlock.children(".icon_place");
+                this.$titleLine = this.$postBlock.find("> .content_place > .title_line");
+                this.$subtitleLine = this.$postBlock.find("> .content_place > .subtitle_line");
+                this.$contentLine = this.$postBlock.find("> .content_place > .content_area > .content_place");
+                this.$subIconPlace = this.$postBlock.find("> .content_place > .content_area > .icon_place");
+
+                const data = handle.intent?.data ?? {};
+                this.$mainIconPlace.toggle(data.largeIconSrc != null && data.largeIconSrc !== "");
+                this.$subIconPlace.toggle(data.iconSrc != null && data.iconSrc !== "");
+                this.$titleLine.toggle(data.contentTitle != null && data.contentTitle !== "");
+                this.$subtitleLine.toggle(data.subtitle != null && data.subtitle !== "");
+                this.$contentLine.toggle(data.content != null && data.content !== "");
+
+                EstreNotificationManager.current = handle.intent;
+                if (window.isVerbosely) console.log("pushed", handle.intent);
+            }
+
+            onOpen(handle) {
+                this.$postBlock.click((e) => {
+                    e.preventDefault();
+
+                    if (window.isVerbosely) console.log("clicked: ", handle.intent);
+                    handle.intent?.onTakeInteraction?.(handle.intent);
+                    handle.close();
+
+                    return false;
+                });
+
+                this.swipeHandler = new EstreSwipeHandler(this.$postBlock)
+                    .setStopPropagation()
+                    .setPreventDefault()
+                    .unuseX()
+                    .setThresholdY(1)
+                    .setDropStrayed(false)
+                    .setResponseBound(this.$postBlock)
+                    .setOnUp(function (grabX, grabY, handled, canceled, directed) {
+                        if (!handled) return;
+                        if (this.handledDirection === "up" && Math.abs(grabY) > 20) {
+                            handle.close();
+                        } else if (this.handledDirection === "down" && Math.abs(grabY) > 40) {
+                            handle.intent?.onTakeInteraction?.(handle.intent);
+                            handle.close();
+                        }
+                    });
+
+                const showTime = handle.intent?.data?.showTime ?? EstreNotificationManager.defaultShowTime;
+                this.#closeTimer = setTimeout(_ => handle.close(), showTime);
+                if (window.isVerbosely) console.log("showing: ", handle.intent);
+            }
+
+            onClose(handle) {
+                if (this.#closeTimer != null) {
+                    clearTimeout(this.#closeTimer);
+                    this.#closeTimer = null;
+                }
+                EstreNotificationManager.checkOut(handle.intent);
+            }
+        },
         "$i&o=notification#note@note^": class extends EstrePageHandler {
             $postBlock;
 

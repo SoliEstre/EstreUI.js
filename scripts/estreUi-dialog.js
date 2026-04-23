@@ -502,10 +502,7 @@ const arrived = function (instanceOrigin) {
 }
 
 
-
-const noti = function (title, htmlContent, onTakeInteraction = (intent) => {}, mainIconSrc, subIconSrc) {
-    //<= To do implement
-}
+// noti() moved to estreUi-notification.js (roadmap #009).
 
 
 // ======================================================================

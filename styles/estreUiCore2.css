@@ -290,7 +290,21 @@ nav#managedOverlay > section#notification > div.container > article { position: 
 nav#managedOverlay > section#notification > div.container > article:not(:is([data-on-top^="1"], [data-on-top^="0"])) { display: none; }
 nav#managedOverlay > section#notification > div.container > article:not([data-on-top="1"]) { opacity: 0; }
 nav#managedOverlay > section#notification > div.container[data-container-id="noti"] { top: var(--top-pad); }
-nav#managedOverlay > section#notification > div.container[data-container-id="noti"] > article { top: 32px; }
+nav#managedOverlay > section#notification > div.container[data-container-id="noti"] > article { top: 0; transition-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94); transition-duration: 0.45s; will-change: transform, opacity; }
+nav#managedOverlay > section#notification > div.container[data-container-id="noti"] > article:is([data-on-top^="1"], [data-on-top^="0"]) { }
+nav#managedOverlay > section#notification > div.container[data-container-id="noti"] > article[data-on-top="1"] { top: 12px; transform: translateY(0); }
+nav#managedOverlay > section#notification > div.container[data-container-id="noti"] > article[data-on-top="0"] { top: 12px; transform: translateY(calc(-100% - var(--top-pad) - 12px)); }
+nav#managedOverlay > section#notification > div.container[data-container-id="noti"] > article > .post_block { display: flex; align-items: center; gap: 10px; padding: 10px 14px; max-width: calc(100vw - var(--left-pad) - var(--right-pad) - 16px); min-width: min(320px, calc(100vw - var(--left-pad) - var(--right-pad) - 16px)); box-sizing: border-box; border-radius: 18px; background-color: var(--bg-color); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); box-shadow: 0 6px 16px 0 rgb(var(--ca) / 30%); cursor: pointer; }
+nav#managedOverlay > section#notification > div.container[data-container-id="noti"] > article > .post_block:not([data-interactive]) { cursor: default; }
+nav#managedOverlay > section#notification > div.container[data-container-id="noti"] > article > .post_block > .icon_place { flex: 0 0 auto; width: 38px; height: 38px; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+nav#managedOverlay > section#notification > div.container[data-container-id="noti"] > article > .post_block > .icon_place > img { width: 100%; height: 100%; object-fit: cover; }
+nav#managedOverlay > section#notification > div.container[data-container-id="noti"] > article > .post_block > .content_place { flex: 1 1 auto; min-width: 0; --color: var(--color-text); --size: 0.9375rem; --weight: 400; }
+nav#managedOverlay > section#notification > div.container[data-container-id="noti"] > article > .post_block > .content_place > .title_line { font-size: 0.9375rem; font-weight: 600; color: var(--color-text); line-height: 1.25em; }
+nav#managedOverlay > section#notification > div.container[data-container-id="noti"] > article > .post_block > .content_place > .subtitle_line { font-size: 0.8125rem; font-weight: 400; color: rgb(var(--ca) / 70%); line-height: 1.25em; margin-top: 1px; }
+nav#managedOverlay > section#notification > div.container[data-container-id="noti"] > article > .post_block > .content_place > .content_area { display: flex; gap: 8px; align-items: flex-start; margin-top: 3px; }
+nav#managedOverlay > section#notification > div.container[data-container-id="noti"] > article > .post_block > .content_place > .content_area > .content_place { flex: 1 1 auto; min-width: 0; color: var(--color); font-size: var(--size); font-weight: var(--weight); line-height: 1.3em; word-break: break-word; }
+nav#managedOverlay > section#notification > div.container[data-container-id="noti"] > article > .post_block > .content_place > .content_area > .icon_place { flex: 0 0 auto; width: 20px; height: 20px; border-radius: 4px; overflow: hidden; }
+nav#managedOverlay > section#notification > div.container[data-container-id="noti"] > article > .post_block > .content_place > .content_area > .icon_place > img { width: 100%; height: 100%; object-fit: cover; }
 nav#managedOverlay > section#notification > div.container[data-container-id="note"] { bottom: var(--bottom-pad); }
 nav#managedOverlay > section#notification > div.container[data-container-id="note"] > article { bottom: 0; }
 nav#managedOverlay > section#notification > div.container[data-container-id="note"] > article:is([data-on-top^="1"], [data-on-top="0"]) { }
