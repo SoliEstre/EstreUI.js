@@ -615,6 +615,38 @@ const estreUi = {
         return this.darkMode;
     },
 
+    /**
+     * Register a tile in the quickPanel section of overwatchPanel.
+     * Host projects call this after estreUi.init to append custom toggles/shortcuts.
+     *
+     * @param {Object} config
+     * @param {string} config.id unique DOM id for the tile
+     * @param {string} [config.icon] short glyph or emoji shown in the .tile_icon span
+     * @param {string} [config.label] text label shown in the .tile_label span
+     * @param {Function} [config.onClick] click handler; receives the jQuery event
+     * @returns {HTMLElement|null} the tile element, or null if quickPanel is not ready / id collides
+     */
+    registerOverwatchPanelTile(config) {
+        if (config == null || config.id == null) return null;
+        const $tiles = this.$overwatchPanel?.find("#quickPanel .quick_tiles");
+        if ($tiles == null || $tiles.length < 1) return null;
+        if ($tiles.find("#" + config.id).length > 0) return null;
+        const $tile = $("<button>").addClass("quick_tile").attr("type", "button").attr("id", config.id);
+        $tile.append($("<span>").addClass("tile_icon").attr("aria-hidden", "true").text(config.icon ?? ""));
+        $tile.append($("<span>").addClass("tile_label").text(config.label ?? ""));
+        if (typeof config.onClick == "function") $tile.on("click", config.onClick);
+        $tiles.append($tile);
+        return $tile[0];
+    },
+
+    unregisterOverwatchPanelTile(id) {
+        if (id == null) return false;
+        const $tile = this.$overwatchPanel?.find("#quickPanel .quick_tiles #" + id);
+        if ($tile == null || $tile.length < 1) return false;
+        $tile.off("click").remove();
+        return true;
+    },
+
     updateDarkModeToggleWidgets() {
         const $widgets = $("#darkModeToggle");
         if ($widgets.length < 1) return;
