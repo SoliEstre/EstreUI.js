@@ -1397,6 +1397,7 @@ class EstreComponent extends EstrePageHostHandle {
             case "menu":
             case "overlay":
             case "header":
+            case "panel":
                 return false;
         }
     }
@@ -1789,6 +1790,53 @@ class EstreMenuComponent extends EstreComponent {
             return estreUi.closeMenuArea(this.id, this.instanceOrigin, isTermination);
         } else return super.close(false, isTermination);
     }
+}
+
+
+
+/**
+ * Component page handle for overwatchPanel sections (quickPanel, timeline).
+ * Sections live inside the panel's dynamic_section_block and switch by horizontal scroll-snap;
+ * opening or closing the whole panel is a shell-level operation on estreUi.
+ */
+class EstrePanelComponent extends EstreComponent {
+    // constants
+    get sectionBound() { return "panel"; };
+
+    // class property
+    static components = {};
+    static componentList = [];
+
+
+    constructor(component, instanceOrigin) {
+        super(component, instanceOrigin);
+    }
+
+    release(remove) {
+        return super.release(remove);
+    }
+
+    init(intent) {
+        super.init(intent);
+        return this;
+    }
+
+    register() {
+        return EstrePanelComponent.register(this);
+    }
+
+    unregister() {
+        EstrePanelComponent.unregister(this);
+    }
+
+    show(isRequest = true, setFocus = true) {
+        if (isRequest) {
+            return estreUi.showOverwatchPanelSection(this.id);
+        } else super.show(false, setFocus);
+    }
+
+    // close() falls through to super — dismissing an individual panel section is not meaningful;
+    // call estreUi.closeOverwatchPanel() to close the shell.
 }
 
 
@@ -4208,7 +4256,7 @@ class EstreUiPage {
         if (this.#sectionBound == null) {
             const $componentHost = $component.closest("main, nav, header, footer");
             const hostId = $componentHost.attr("id");
-            const sectionBound = hostId == "staticDoc" ? "main" : (hostId == "instantDoc" ? "blind" : (hostId == "managedOverlay" ? "overlay" : (hostId == "mainMenu" ? "menu" : (hostId == "fixedTop" ? "header" : null))));
+            const sectionBound = hostId == "staticDoc" ? "main" : (hostId == "instantDoc" ? "blind" : (hostId == "managedOverlay" ? "overlay" : (hostId == "mainMenu" ? "menu" : (hostId == "fixedTop" ? "header" : (hostId == "overwatchPanel" ? "panel" : null)))));
             this.setSectionBound(sectionBound);
         }
 

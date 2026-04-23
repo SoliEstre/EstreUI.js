@@ -31,6 +31,11 @@ const estreUi = {
     menuSectionList: [],
     get menuArea() { return this.menuSections["menuArea"]; },
 
+    panelSections: {},
+    panelSectionList: [],
+    get quickPanel() { return this.panelSections["quickPanel"]; },
+    get timeline() { return this.panelSections["timeline"]; },
+
     headerSections: {},
     headerSectionList: [],
     get appbar() { return this.headerSections["appbar"]; },
@@ -41,6 +46,7 @@ const estreUi = {
     blindedCurrentOnTop: null,
     mainCurrentOnTop: null,
     menuCurrentOnTop: null,
+    panelCurrentOnTop: null,
     headerCurrentOnTop: null,
 
     //static getter
@@ -176,6 +182,8 @@ const estreUi = {
     //getter and setter
     get isOpenMainMenu() { return this.$mainMenu.attr(eds.opened) == t1; },
 
+    get isOpenOverwatchPanel() { return this.$overwatchPanel.attr(eds.opened) == t1; },
+
     get darkMode() {
         const stored = localStorage.getItem("estreUi.darkMode");
         if (stored == "1") return true;
@@ -264,8 +272,9 @@ const estreUi = {
             this.$panelClock = this.$panelHeader.find("#panelClock");
             this.$panelDate = this.$panelHeader.find("#panelDate");
             this.$panelGrabArea = this.$overwatchPanel.find("section#panelGrabArea");
-            // Panel section registration, toggle API, swipe, clock and dark-mode toggle wire in later commits.
-            return null;
+
+            this.$panelGrabArea.click(this.overwatchPanelGrabAreaOnclick);
+            return this.initStaticPanels(subTerm);
         }
 
 
@@ -619,6 +628,10 @@ const estreUi = {
         estreUi.closeMainMenu();
     },
 
+    overwatchPanelGrabAreaOnclick(e) {
+        estreUi.closeOverwatchPanel();
+    },
+
     toggleMainMenuButton() {
         if (this.isOpenMainMenu) return this.closeMainMenu();
         else return this.openMainMenu();
@@ -664,6 +677,53 @@ const estreUi = {
 
     getMainMenuLottie() {
         return this.$mainMenuBtnLottie[0]?.getLottie?.();
+    },
+
+
+    //overwatchPanel
+    toggleOverwatchPanel(sectionId) {
+        if (this.isOpenOverwatchPanel) return this.closeOverwatchPanel();
+        else return this.openOverwatchPanel(sectionId);
+    },
+
+    openOverwatchPanel(sectionId) {
+        if (!this.isOpenOverwatchPanel) {
+            this.$overwatchPanel.attr(eds.opened, t1);
+            if (sectionId != null) this.showOverwatchPanelSection(sectionId);
+            else {
+                const $top = this.$panelSections.filter(asv(eds.onTop, t1));
+                const panelCurrentTop = $top[$top.length - 1]?.pageHandle;
+                if (panelCurrentTop != null) {
+                    this.panelCurrentOnTop = panelCurrentTop;
+                    panelCurrentTop.show(false);
+                }
+            }
+            return true;
+        } else if (sectionId != null) {
+            this.showOverwatchPanelSection(sectionId);
+            return true;
+        } else return false;
+    },
+
+    closeOverwatchPanel() {
+        if (this.isOpenOverwatchPanel) {
+            this.$overwatchPanel.attr(eds.opened, "");
+            this.panelCurrentOnTop?.onHide();
+            return true;
+        } else return false;
+    },
+
+    showOverwatchPanelSection(id) {
+        const $target = this.$panelSections.filter(eid + id);
+        if ($target.length < 1) return false;
+        const targetEl = $target[$target.length - 1];
+        targetEl.scrollIntoView({ behavior: "smooth", block: "start", inline: "start" });
+        const targetComponent = targetEl.pageHandle;
+        if (targetComponent != null) {
+            targetComponent.show(false);
+            this.panelCurrentOnTop = targetComponent;
+        }
+        return true;
     },
 
 
@@ -1467,6 +1527,45 @@ const estreUi = {
         }
         component.init(intent);
         // if (component.isOnTop) component.show(false);
+        return component;
+    },
+
+    async initStaticPanels(term = 0) {
+        const $pss = this.$panelSections;
+
+        const delayer = (delay = term) => postPromise(resolve => setTimeout(resolve, delay));
+        for (var i=0; i<$pss.length; i++) {
+            this.initStaticPanel($pss[i], null, u, true);
+            await delayer();
+        }
+
+        let $top = this.$panelSections.filter(asv(eds.onTop, t1));
+        if ($top.length < 1) $top = this.$panelSections.filter(eid + "quickPanel");
+        if ($top.length < 1) $top = this.$panelSections;
+        if ($top.length > 0) {
+            const targetComponent = $top[$top.length - 1].pageHandle;
+            targetComponent?.show(false);
+            this.panelCurrentOnTop = targetComponent;
+        }
+    },
+
+    releaseStaticPanel(component) {
+        if (component == null) return;
+        const instanceId = component.instanceId;
+        component.release(component.isStatic ? null : true);
+        if (this.panelSections[instanceId] != null) delete this.panelSections[instanceId];
+        const index = this.panelSectionList.indexOf(component);
+        if (index > -1) this.panelSectionList.splice(index, 1);
+    },
+
+    initStaticPanel(bound, intent = null, instanceOrigin, init = false) {
+        this.releaseStaticPanel(bound.pageHandle);
+        const component = new EstrePanelComponent(bound, instanceOrigin);
+        if (!init || component.isStatic) {
+            this.panelSections[component.instanceId] = component;
+            this.panelSectionList.push(component);
+        }
+        component.init(intent);
         return component;
     },
 
