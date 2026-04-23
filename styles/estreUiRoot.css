@@ -486,5 +486,77 @@ body {
 body[data-dark-mode="1"] {
 
     /* adaptive color (dark) */
+    /*
+       Baseline `--color-black` ~ `--color-grayscale-*` ~ `--color-white` palette
+       is intentionally inherited from light mode. Only the *semantic* color sets
+       below (text / boundary / point / adaptive) flip here.
+
+       Brand-singleton colors (`--color-focused`, `--color-emphasis*`,
+       holiday/sunday/saturday/today/selected-day/important-day) and the
+       boundary opacity ramps (`--color-boundary-o*`, `--color-boundary-foggy-o*`)
+       are intentionally not overridden — the opacity ramps follow `--cbdm`/`--cbbr`
+       automatically via `var()`, and brand colors keep their identity hue.
+    */
+
+    --color-text-darker: #FFF;       --ctdr: 255 255 255;
+    --color-text-darken: #EEE;       --ctdn: 238 238 238;
+    --color-text-dark: #DDD;         --ctd: 221 221 221;
+    --color-text: #CCC;              --ct: 204 204 204;
+    --color-text-light: #BBB;        --ctl: 187 187 187;
+    --color-text-lighten: #AAA;      --ctln: 170 170 170;
+    --color-text-lighter: #999;      --ctlr: 153 153 153;
+    --color-text-lightness: #888;    --ctls: 136 136 136;
+    --color-text-lightest: #777;     --ctlt: 119 119 119;
+    --color-text-pale: #666;         --ctp: 102 102 102;
+    --color-text-palen: #555;        --ctpn: 85 85 85;
+    --color-text-paler: #444;        --ctpr: 68 68 68;
+    --color-text-paleness: #333;     --ctps: 51 51 51;
+    --color-text-palest: #222;       --ctpt: 34 34 34;
+    --color-text-faint: #111;        --ctf: 17 17 17;
+    --color-text-inverse: #000;      --cai: 0 0 0;
+    --color-anti-text: #000;         --cat: 0 0 0;
+
+    --color-boundary-dim: var(--color-white);                       --cbdm: var(--cwht);
+    --color-boundary-dimmy: var(--color-pseudo-white);              --cbdmy: var(--cpwht);
+    --color-boundary-deepdark: var(--color-alomst-white);           --cbdd: var(--cawht);
+    --color-boundary-darkest: var(--color-grayscale-lightest);      --cbdt: var(--cglt);
+    --color-boundary-darkside: var(--color-grayscale-lightside);    --cbdd: var(--cgld);
+    --color-boundary-darkly: var(--color-grayscale-lightly);        --cbdy: var(--cgly);
+    --color-boundary-darkness: var(--color-grayscale-lightness);    --cbds: var(--cgls);
+    --color-boundary-darker: var(--color-grayscale-lighter);        --cbdr: var(--cglr);
+    --color-boundary-darken: var(--color-grayscale-lighten);        --cbdn: var(--cgln);
+    --color-boundary-darkish: var(--color-grayscale-lightish);      --cbdh: var(--cglh);
+    --color-boundary-dark: var(--color-grayscale-light);            --cbd: var(--cgl);
+    --color-boundary-light: var(--color-grayscale-dark);            --cbl: var(--cgd);
+    --color-boundary-lightish: var(--color-grayscale-darkish);      --cblh: var(--cgdh);
+    --color-boundary-lighten: var(--color-grayscale-darken);        --cbln: var(--cgdn);
+    --color-boundary-lighter: var(--color-grayscale-darker);        --cblr: var(--cgdr);
+    --color-boundary-lightness: var(--color-grayscale-darkness);    --cbls: var(--cgds);
+    --color-boundary-lightly: var(--color-grayscale-darkly);        --cbly: var(--cgdy);
+    --color-boundary-lightside: var(--color-grayscale-darkside);    --cbld: var(--cgdd);
+    --color-boundary-lightest: var(--color-grayscale-darkest);      --cblt: var(--cgdt);
+    --color-boundary-highlight: var(--color-almost-black);          --cbhl: var(--cablk);
+    --color-boundary-brighty: var(--color-pseudo-black);            --cbbry: var(--cpblk);
+    --color-boundary-bright: var(--color-black);                    --cbbr: var(--cblk);
+
+    --color-point-dim: var(--color-white);                  --cpdm: var(--cwht);
+    --color-point-dark: var(--color-grayscale-lighter);     --cpd: var(--cglr);
+    --color-point: var(--color-grayscale-dark);             --cp: var(--cgd);
+    --color-point-light: var(--color-grayscale-darker);     --cpl: var(--cgdr);
+    --color-point-bright: var(--color-black);               --cpbr: var(--cblk);
+
+    --color-point-sub-dim: var(--color-white);                  --cpsdm: var(--cwht);
+    --color-point-sub-dark: var(--color-grayscale-lighter);     --cpsd: var(--cglr);
+    --color-point-sub: var(--color-grayscale-dark);             --cps: var(--cgd);
+    --color-point-sub-light: var(--color-grayscale-darker);     --cpsl: var(--cgdr);
+    --color-point-sub-bright: var(--color-black);               --cpsbr: var(--cblk);
+
+    --color-adaptive-dimmest: var(--color-white);                   --cadmt: var(--cwht);
+    --color-adaptive-dim: var(--color-pseudo-white);                --cadm: var(--cpwht);
+    --color-adaptive-dark: var(--color-grayscale-lighter);          --cad: var(--cglr);
+    --color-adaptive: var(--color-grayscale-darken);                --ca: var(--cgdn);
+    --color-adaptive-light: var(--color-grayscale-darkness);        --cal: var(--cgds);
+    --color-adaptive-bright: var(--color-pseudo-black);             --cabr: var(--cpblk);
+    --color-adaptive-brightest: var(--color-black);                 --cabrt: var(--cblk);
 
 }

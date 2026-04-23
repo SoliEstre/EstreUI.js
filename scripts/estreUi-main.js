@@ -121,6 +121,7 @@ const estreUi = {
 
     //handles
     menuSwipeHandler: null,
+    darkModeMql: null,
 
     //properties
     euiState: "exit",
@@ -166,6 +167,14 @@ const estreUi = {
     //getter and setter
     get isOpenMainMenu() { return this.$mainMenu.attr(eds.opened) == t1; },
 
+    get darkMode() {
+        const stored = localStorage.getItem("estreUi.darkMode");
+        if (stored == "1") return true;
+        if (stored == "0") return false;
+        return null;
+    },
+    get isDarkMode() { return document.body.dataset.darkMode == t1; },
+
 
 
     //links (object redirection)
@@ -198,6 +207,7 @@ const estreUi = {
         this.setReload();
         this.setBackNavigation();
         this.setMenuSwipeHandler();
+        this.setupDarkMode();
 
 
         const onLoadedFixedBottom = async _ => {
@@ -509,6 +519,38 @@ const estreUi = {
         // note("[" + history.length + "] replaced - " + euiState + " / [" + offset + "] "  + currentTopPid);
 
         return true;
+    },
+
+
+    //dark mode
+    setupDarkMode() {
+        if (window.matchMedia) {
+            this.darkModeMql = window.matchMedia("(prefers-color-scheme: dark)");
+            const onChange = _ => { if (this.darkMode == null) this.applyDarkMode(); };
+            if (this.darkModeMql.addEventListener) this.darkModeMql.addEventListener("change", onChange);
+            else this.darkModeMql.addListener(onChange);
+        }
+        this.applyDarkMode();
+    },
+
+    setDarkMode(value) {
+        let pref;
+        if (value == null) pref = null;
+        else if (value === false || value === 0 || value === "0") pref = false;
+        else pref = true;
+
+        if (pref == null) localStorage.removeItem("estreUi.darkMode");
+        else localStorage.setItem("estreUi.darkMode", pref ? "1" : "0");
+
+        this.applyDarkMode();
+        return this.isDarkMode;
+    },
+
+    applyDarkMode() {
+        const pref = this.darkMode;
+        const active = (pref == null) ? (this.darkModeMql?.matches ?? false) : pref;
+        if (active) document.body.dataset.darkMode = "1";
+        else delete document.body.dataset.darkMode;
     },
 
 
