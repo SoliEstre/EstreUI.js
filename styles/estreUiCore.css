@@ -130,7 +130,9 @@ nav#overwatchPanel > header#panelHeader,
 nav#overwatchPanel > .dynamic_section_host,
 nav#overwatchPanel > .dynamic_section_block,
 nav#overwatchPanel > section#panelGrabArea { pointer-events: auto; }
-nav#overwatchPanel > header#panelHeader { padding-top: var(--top-pad); padding-inline: var(--basic-ui-inset-h); flex-shrink: 0; background-color: rgba(var(--cabr) / 60%); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transform: translateY(-100%); transition-duration: 0.3s; }
+nav#overwatchPanel > header#panelHeader { display: flex; flex-direction: row; align-items: baseline; gap: 0.5em; padding: calc(var(--top-pad) + 4px) var(--basic-ui-inset-h) 4px; flex-shrink: 0; background-color: rgba(var(--cabr) / 60%); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transform: translateY(-100%); transition-duration: 0.3s; }
+nav#overwatchPanel > header#panelHeader > #panelClock { font-size: 1.125rem; font-weight: 600; }
+nav#overwatchPanel > header#panelHeader > #panelDate { font-size: 0.875rem; opacity: 0.75; }
 nav#overwatchPanel > .dynamic_section_host { flex-shrink: 0; background-color: rgba(var(--cabr) / 60%); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transform: translateY(calc(-100% - var(--panel-block-height))); transition-duration: 0.3s; }
 nav#overwatchPanel > .dynamic_section_block { flex-shrink: 1; height: var(--panel-block-height); max-height: calc(100vh - var(--top-pad) - var(--bottom-pad)); background-color: rgba(var(--cabr) / 40%); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transform: translateY(calc(-100vh - var(--panel-block-height))); transition-duration: 0.3s; }
 nav#overwatchPanel > section#panelGrabArea { flex-grow: 1; background-color: transparent; opacity: 0; transition-duration: 0.3s; }

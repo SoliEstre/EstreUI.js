@@ -139,6 +139,8 @@ const estreUi = {
     menuSwipeHandler: null,
     panelOpenSwipeHandler: null,
     panelCloseSwipeHandler: null,
+    panelClockTimeoutId: null,
+    panelClockIntervalId: null,
     darkModeMql: null,
 
     //properties
@@ -279,6 +281,7 @@ const estreUi = {
 
             this.$panelGrabArea.click(this.overwatchPanelGrabAreaOnclick);
             this.setPanelSwipeHandler();
+            this.scheduleOverwatchPanelClock();
             return this.initStaticPanels(subTerm);
         }
 
@@ -654,6 +657,36 @@ const estreUi = {
     releasePanelSwipeHandler() {
         if (this.panelOpenSwipeHandler != null) { this.panelOpenSwipeHandler.release(); this.panelOpenSwipeHandler = null; }
         if (this.panelCloseSwipeHandler != null) { this.panelCloseSwipeHandler.release(); this.panelCloseSwipeHandler = null; }
+    },
+
+    setOverwatchPanelClock() {
+        if (this.$panelClock == null) return;
+        const now = new Date();
+        if (this.$panelClock.length > 0) {
+            const hh = String(now.getHours()).padStart(2, "0");
+            const mm = String(now.getMinutes()).padStart(2, "0");
+            this.$panelClock.text(hh + ":" + mm);
+        }
+        if (this.$panelDate.length > 0) {
+            const fmt = new Intl.DateTimeFormat(undefined, { weekday: "short", month: "short", day: "numeric" });
+            this.$panelDate.text(fmt.format(now));
+        }
+    },
+
+    scheduleOverwatchPanelClock() {
+        this.releaseOverwatchPanelClock();
+        this.setOverwatchPanelClock();
+        const now = new Date();
+        const msToNext = 60000 - (now.getSeconds() * 1000 + now.getMilliseconds());
+        this.panelClockTimeoutId = setTimeout(_ => {
+            this.setOverwatchPanelClock();
+            this.panelClockIntervalId = setInterval(_ => this.setOverwatchPanelClock(), 60000);
+        }, msToNext);
+    },
+
+    releaseOverwatchPanelClock() {
+        if (this.panelClockTimeoutId != null) { clearTimeout(this.panelClockTimeoutId); this.panelClockTimeoutId = null; }
+        if (this.panelClockIntervalId != null) { clearInterval(this.panelClockIntervalId); this.panelClockIntervalId = null; }
     },
 
     mainMenuBtnOnClick(e) {
