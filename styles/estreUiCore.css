@@ -171,6 +171,23 @@ nav#overwatchPanel[data-opened="1"] ~ section#panelTrigger { pointer-events: non
 #darkModeToggle[data-dark-mode-state="light"] { background-color: rgba(var(--cabr) / 50%); }
 #darkModeToggle[data-dark-mode-state="dark"] { background-color: rgba(var(--cadm) / 50%); }
 
+/* Timeline (overwatchPanel #timeline) — roadmap #010. Reuses .post_block visuals from estreUiCore2.css. */
+nav#overwatchPanel #timeline { --bg-color: rgb(var(--cabr) / 70%); padding: 8px var(--basic-ui-inset-h) calc(8px + var(--bottom-safe-pad)); }
+nav#overwatchPanel #timeline > .timeline_host { display: flex; flex-flow: column nowrap; gap: 10px; }
+nav#overwatchPanel #timeline .timeline_group { display: flex; flex-flow: column nowrap; gap: 6px; }
+nav#overwatchPanel #timeline .timeline_group_header { padding: 4px 4px 2px; font-size: 0.75rem; font-weight: 600; color: rgb(var(--ca) / 70%); letter-spacing: 0.02em; text-transform: uppercase; }
+nav#overwatchPanel #timeline .timeline_item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; box-sizing: border-box; border-radius: 14px; background-color: var(--bg-color); backdrop-filter: var(--basic-backdrop-blur); -webkit-backdrop-filter: var(--basic-backdrop-blur); box-shadow: 1px 2px 4px 1px rgb(var(--ca) / 18%); cursor: pointer; user-select: none; }
+nav#overwatchPanel #timeline .timeline_item > .icon_place { flex: 0 0 auto; width: 38px; height: 38px; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+nav#overwatchPanel #timeline .timeline_item > .icon_place > img { width: 100%; height: 100%; object-fit: cover; }
+nav#overwatchPanel #timeline .timeline_item > .content_place { flex: 1 1 auto; min-width: 0; --color: var(--color-text); --size: 0.9375rem; --weight: 400; }
+nav#overwatchPanel #timeline .timeline_item > .content_place > .title_line { font-size: 0.9375rem; font-weight: 600; color: var(--color-text); line-height: 1.25em; }
+nav#overwatchPanel #timeline .timeline_item > .content_place > .subtitle_line { font-size: 0.8125rem; font-weight: 400; color: rgb(var(--ca) / 70%); line-height: 1.25em; margin-top: 1px; }
+nav#overwatchPanel #timeline .timeline_item > .content_place > .content_area { display: flex; gap: 8px; align-items: flex-start; margin-top: 3px; }
+nav#overwatchPanel #timeline .timeline_item > .content_place > .content_area > .content_place { flex: 1 1 auto; min-width: 0; color: var(--color); font-size: var(--size); font-weight: var(--weight); line-height: 1.3em; word-break: break-word; }
+nav#overwatchPanel #timeline .timeline_item > .content_place > .content_area > .icon_place { flex: 0 0 auto; width: 20px; height: 20px; border-radius: 4px; overflow: hidden; }
+nav#overwatchPanel #timeline .timeline_item > .content_place > .content_area > .icon_place > img { width: 100%; height: 100%; object-fit: cover; }
+nav#overwatchPanel #timeline .timeline_empty { padding: 32px 16px; text-align: center; font-size: 0.875rem; color: rgb(var(--ca) / 60%); }
+
 /* root tabs (bottom) */
 footer#fixedBottom { position: fixed; display: flex; flex-direction: row; flex-wrap: nowrap; z-index: 110; bottom: 0; left: 0; right: 0; height: var(--rootbar-height); margin: 0; padding-bottom: var(--bottom-safe-pad); justify-content: center; background-color: var(--color-boundary-foggy-o66); backdrop-filter: var(--basic-backdrop-blur); -webkit-backdrop-filter: var(--basic-backdrop-blur); justify-content: center; user-select: none; }
 footer#fixedBottom nav { position: relative; display: flex; flex-direction: row; flex-wrap: nowrap; height: var(--rootbar-height); flex-grow: 1; flex-shrink: 1; user-select: none; }

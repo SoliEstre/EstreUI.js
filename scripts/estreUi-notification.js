@@ -65,6 +65,21 @@ class EstreNotificationManager {
             if (window.isDebug) console.log(this.#page + " checked out: ", intent);
             postQueue(_ => this.postHandler());
         }
+        if (typeof EstreTimelineStore !== "undefined") {
+            const d = intent.data;
+            EstreTimelineStore.append({
+                postedAt: d.posted,
+                title: d.contentTitle,
+                body: d.content,
+                subtitle: d.subtitle,
+                iconSrc: d.iconSrc,
+                largeIconSrc: d.largeIconSrc,
+                url: d.url,
+                payload: d.payload,
+                bgColor: d.bgColor,
+                textColor: d.textColor,
+            });
+        }
         intent.resolver?.(intent);
     }
 
@@ -212,6 +227,201 @@ noti.fromOneSignal = function (payload) {
         url: payload.url,
         data: payload.data ?? payload.additionalData,
     });
+}
+
+
+/**
+ * Persistent history for dismissed notification banners (roadmap #010).
+ * Backed by ECLS (localStorage, JSON). Retains up to maxEntries for ttlMs.
+ */
+class EstreTimelineStore {
+
+    static #key = "timelineEntries";
+    static maxEntries = 100;
+    static ttlMs = 7 * 24 * 60 * 60 * 1000;
+
+    static #listeners = new Set();
+
+    /** @returns {Array<object>} entries newest-first, TTL-pruned. */
+    static load() {
+        const raw = ECLS.get(this.#key, []);
+        if (!Array.isArray(raw)) return [];
+        const now = Date.now();
+        return raw.filter(it => it != null && (now - (it.postedAt ?? 0)) < this.ttlMs);
+    }
+
+    static save(entries) {
+        ECLS.set(this.#key, entries);
+    }
+
+    /**
+     * Append an entry (newest-first). Assigns id/postedAt if missing. Enforces cap + TTL.
+     * @param {object} entry
+     */
+    static append(entry) {
+        if (entry == null) return;
+        const now = Date.now();
+        const normalized = { ...entry,
+            id: entry.id ?? String(entry.postedAt ?? now),
+            postedAt: entry.postedAt ?? now,
+        };
+        const entries = this.load().filter(it => it.id !== normalized.id);
+        entries.unshift(normalized);
+        if (entries.length > this.maxEntries) entries.length = this.maxEntries;
+        this.save(entries);
+        this.#emit();
+    }
+
+    static remove(id) {
+        const entries = this.load().filter(it => it.id !== id);
+        this.save(entries);
+        this.#emit();
+    }
+
+    static clear() {
+        this.save([]);
+        this.#emit();
+    }
+
+    /**
+     * Subscribe to store changes. Callback receives the current entries array.
+     * @param {Function} cb
+     * @returns {Function} unsubscribe
+     */
+    static subscribe(cb) {
+        this.#listeners.add(cb);
+        return () => this.#listeners.delete(cb);
+    }
+
+    static #emit() {
+        const entries = this.load();
+        for (const cb of this.#listeners) {
+            try { cb(entries); } catch (ex) { if (window.isLogging) console.error(ex); }
+        }
+    }
+}
+
+
+/**
+ * Renders EstreTimelineStore entries into a host element (e.g. overwatchPanel #timeline).
+ * Groups by date bucket (Today / Yesterday / Older), item visuals share banner styles.
+ */
+class EstreTimelineView {
+
+    #$host;
+    #unsubscribe;
+
+    /**
+     * @param {Element|JQuery} host - Container element for the list.
+     */
+    constructor(host) {
+        this.#$host = host instanceof jQuery ? host : $(host);
+        this.#$host.addClass("timeline_host");
+        this.render(EstreTimelineStore.load());
+        this.#unsubscribe = EstreTimelineStore.subscribe((entries) => this.render(entries));
+    }
+
+    destroy() {
+        this.#unsubscribe?.();
+        this.#$host.empty();
+        this.#$host.removeClass("timeline_host");
+    }
+
+    render(entries) {
+        const $host = this.#$host;
+        $host.empty();
+
+        if (!entries || entries.length === 0) {
+            $host.append('<div class="timeline_empty">No notifications</div>');
+            return;
+        }
+
+        const groups = this.#groupByDate(entries);
+        for (const group of groups) {
+            const $group = $('<div class="timeline_group"></div>');
+            $group.append($('<div class="timeline_group_header"></div>').text(group.label));
+            for (const entry of group.entries) {
+                $group.append(this.#buildItem(entry));
+            }
+            $host.append($group);
+        }
+    }
+
+    #groupByDate(entries) {
+        const now = new Date();
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        const startOfYesterday = startOfToday - 24 * 60 * 60 * 1000;
+
+        const today = [], yesterday = [], older = [];
+        for (const entry of entries) {
+            const t = entry.postedAt ?? 0;
+            if (t >= startOfToday) today.push(entry);
+            else if (t >= startOfYesterday) yesterday.push(entry);
+            else older.push(entry);
+        }
+
+        const groups = [];
+        if (today.length) groups.push({ label: "Today", entries: today });
+        if (yesterday.length) groups.push({ label: "Yesterday", entries: yesterday });
+        if (older.length) groups.push({ label: "Older", entries: older });
+        return groups;
+    }
+
+    #buildItem(entry) {
+        const $item = $('<div class="h_icon_set post_block timeline_item"></div>');
+        $item.attr("data-id", entry.id);
+        if (entry.bgColor) $item.css("--bg-color", entry.bgColor);
+
+        if (entry.largeIconSrc) {
+            const $mainIcon = $('<div class="icon_place"></div>');
+            $mainIcon.append($('<img />').attr("src", entry.largeIconSrc));
+            $item.append($mainIcon);
+        }
+
+        const $content = $('<div class="content_place"></div>');
+        if (entry.title) $content.append($('<div class="title_line"></div>').append($('<span></span>').text(entry.title)));
+        if (entry.subtitle) $content.append($('<div class="subtitle_line"></div>').append($('<span></span>').text(entry.subtitle)));
+        if (entry.body || entry.iconSrc) {
+            const $area = $('<div class="content_area"></div>');
+            if (entry.body) {
+                const $body = $('<div class="content_place"></div>').html(entry.body);
+                if (entry.textColor) $body.css("--color", entry.textColor);
+                $area.append($body);
+            }
+            if (entry.iconSrc) {
+                const $subIcon = $('<div class="icon_place"></div>');
+                $subIcon.append($('<img />').attr("src", entry.iconSrc));
+                $area.append($subIcon);
+            }
+            $content.append($area);
+        }
+        $item.append($content);
+
+        $item.on("click", (e) => {
+            e.preventDefault();
+            if (entry.url) {
+                window.open(entry.url, "_blank", "noopener");
+            }
+        });
+
+        // Left-swipe delete
+        if (typeof EstreSwipeHandler !== "undefined") {
+            new EstreSwipeHandler($item)
+                .setStopPropagation()
+                .unuseY()
+                .setThresholdX(1)
+                .setDropStrayed(false)
+                .setResponseBound($item)
+                .setOnUp(function (grabX, grabY, handled, canceled, directed) {
+                    if (!handled) return;
+                    if (this.handledDirection === "left" && Math.abs(grabX) > 80) {
+                        EstreTimelineStore.remove(entry.id);
+                    }
+                });
+        }
+
+        return $item;
+    }
 }
 
 

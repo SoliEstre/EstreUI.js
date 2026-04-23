@@ -283,6 +283,7 @@ const estreUi = {
             this.setPanelSwipeHandler();
             this.scheduleOverwatchPanelClock();
             this.initOverwatchPanelHandles();
+            this.initOverwatchPanelTimeline();
             this.updateDarkModeToggleWidgets();
             return this.initStaticPanels(subTerm);
         }
@@ -727,6 +728,16 @@ const estreUi = {
         if ($block == null || $block.length < 1) return;
         const host = { $host: this.$overwatchPanel };
         new EstreDynamicSectionBlockHandle($block[0], host).init();
+    },
+
+    // Mounts EstreTimelineView onto overwatchPanel #timeline slot (roadmap #010).
+    // Timeline persists entries left by checkOut()ed noti banners.
+    initOverwatchPanelTimeline() {
+        if (typeof EstreTimelineView === "undefined") return;
+        if (this.$overwatchPanel == null || this.$overwatchPanel.length < 1) return;
+        const $timeline = this.$overwatchPanel.find("#timeline");
+        if ($timeline.length < 1) return;
+        this.timelineView = new EstreTimelineView($timeline);
     },
 
     setOverwatchPanelClock() {
