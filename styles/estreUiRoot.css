@@ -498,10 +498,13 @@ body[data-dark-mode="1"] {
        below (text / boundary / point / adaptive) flip here.
 
        Brand-singleton colors (`--color-focused`, `--color-emphasis*`,
-       holiday/sunday/saturday/today/selected-day/important-day) and the
-       boundary opacity ramps (`--color-boundary-o*`, `--color-boundary-foggy-o*`)
-       are intentionally not overridden — the opacity ramps follow `--cbdm`/`--cbbr`
-       automatically via `var()`, and brand colors keep their identity hue.
+       holiday/sunday/saturday/today/selected-day/important-day) keep their
+       identity hue and are not overridden.
+
+       The boundary opacity ramps (`--color-boundary-o*`, `--color-boundary-foggy-o*`)
+       must be re-declared below: CSS custom-property `var()` substitution happens
+       eagerly at the declaring scope, so ramps declared only at `:root` bake in
+       the light-mode `--cbdm`/`--cbbr` values and do not follow the dark override.
     */
 
     --color-text-darker: #FFF;       --ctdr: 255 255 255;
@@ -546,6 +549,60 @@ body[data-dark-mode="1"] {
     --color-boundary-brighty: var(--color-pseudo-black);            --cbbry: var(--cpblk);
     --color-boundary-brightly: var(--color-barely-black);           --cbbrly: var(--cbblk);
     --color-boundary-bright: var(--color-black);                    --cbbr: var(--cblk);
+
+    --color-boundary-o1: rgba(var(--cbdm) / 1%);
+    --color-boundary-o3: rgba(var(--cbdm) / 3%);
+    --color-boundary-o5: rgba(var(--cbdm) / 5%);
+    --color-boundary-o7: rgba(var(--cbdm) / 7%);
+    --color-boundary-o10: rgba(var(--cbdm) / 10%);
+    --color-boundary-o15: rgba(var(--cbdm) / 15%);
+    --color-boundary-o20: rgba(var(--cbdm) / 20%);
+    --color-boundary-o25: rgba(var(--cbdm) / 25%);
+    --color-boundary-o30: rgba(var(--cbdm) / 30%);
+    --color-boundary-o35: rgba(var(--cbdm) / 35%);
+    --color-boundary-o40: rgba(var(--cbdm) / 40%);
+    --color-boundary-o45: rgba(var(--cbdm) / 45%);
+    --color-boundary-o50: rgba(var(--cbdm) / 50%);
+    --color-boundary-o55: rgba(var(--cbdm) / 55%);
+    --color-boundary-o60: rgba(var(--cbdm) / 60%);
+    --color-boundary-o65: rgba(var(--cbdm) / 65%);
+    --color-boundary-o70: rgba(var(--cbdm) / 70%);
+    --color-boundary-o75: rgba(var(--cbdm) / 75%);
+    --color-boundary-o80: rgba(var(--cbdm) / 80%);
+    --color-boundary-o85: rgba(var(--cbdm) / 85%);
+    --color-boundary-o90: rgba(var(--cbdm) / 90%);
+    --color-boundary-o93: rgba(var(--cbdm) / 93%);
+    --color-boundary-o95: rgba(var(--cbdm) / 95%);
+    --color-boundary-o97: rgba(var(--cbdm) / 97%);
+    --color-boundary-o99: rgba(var(--cbdm) / 99%);
+
+    --color-boundary-foggy-o1: rgba(var(--cbbr) / 1%);
+    --color-boundary-foggy-o3: rgba(var(--cbbr) / 3%);
+    --color-boundary-foggy-o5: rgba(var(--cbbr) / 5%);
+    --color-boundary-foggy-o7: rgba(var(--cbbr) / 7%);
+    --color-boundary-foggy-o10: rgba(var(--cbbr) / 10%);
+    --color-boundary-foggy-o15: rgba(var(--cbbr) / 15%);
+    --color-boundary-foggy-o20: rgba(var(--cbbr) / 20%);
+    --color-boundary-foggy-o25: rgba(var(--cbbr) / 25%);
+    --color-boundary-foggy-o30: rgba(var(--cbbr) / 30%);
+    --color-boundary-foggy-o33: rgba(var(--cbbr) / 33.333%);
+    --color-boundary-foggy-o35: rgba(var(--cbbr) / 35%);
+    --color-boundary-foggy-o40: rgba(var(--cbbr) / 40%);
+    --color-boundary-foggy-o45: rgba(var(--cbbr) / 45%);
+    --color-boundary-foggy-o50: rgba(var(--cbbr) / 50%);
+    --color-boundary-foggy-o55: rgba(var(--cbbr) / 55%);
+    --color-boundary-foggy-o60: rgba(var(--cbbr) / 60%);
+    --color-boundary-foggy-o65: rgba(var(--cbbr) / 65%);
+    --color-boundary-foggy-o66: rgba(var(--cbbr) / 66.666%);
+    --color-boundary-foggy-o70: rgba(var(--cbbr) / 70%);
+    --color-boundary-foggy-o75: rgba(var(--cbbr) / 75%);
+    --color-boundary-foggy-o80: rgba(var(--cbbr) / 80%);
+    --color-boundary-foggy-o85: rgba(var(--cbbr) / 85%);
+    --color-boundary-foggy-o90: rgba(var(--cbbr) / 90%);
+    --color-boundary-foggy-o93: rgba(var(--cbbr) / 93%);
+    --color-boundary-foggy-o95: rgba(var(--cbbr) / 95%);
+    --color-boundary-foggy-o97: rgba(var(--cbbr) / 97%);
+    --color-boundary-foggy-o99: rgba(var(--cbbr) / 99%);
 
     --color-point-dim: var(--color-white);                  --cpdm: var(--cwht);
     --color-point-dark: var(--color-grayscale-lighter);     --cpd: var(--cglr);

@@ -97,6 +97,22 @@
 </head>
 
 <body class="vfv_scroll">
+    <!--
+        Dark mode pre-paint coupling (opt-in): uncomment to write
+        body[data-dark-mode] before the splash paints, avoiding FOLM
+        (flash of light mode) on dark-locked sessions. Adjust the
+        storage key and auto-mode policy to match your project.
+    -->
+    <!--
+    <script>
+        (function () {
+            const stored = localStorage.getItem("estreUi.darkMode");
+            const dark = stored === "1"
+                || (stored == null && window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches);
+            if (dark) document.body.dataset.darkMode = "1";
+        })();
+    </script>
+    -->
     <main id="splashRoot" style="z-index: 500; ">
         <section id="splash" data-on-top="0">
             <div class="container" data-container-id="root">

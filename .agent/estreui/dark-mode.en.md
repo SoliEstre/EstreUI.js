@@ -8,10 +8,10 @@ EstreUI ships a small dark-mode scaffold built around a single body attribute (`
 
 The override block lives in [styles/estreUiRoot.css](../../styles/estreUiRoot.css) at the bottom of the `:root` block, gated by `body[data-dark-mode="1"]`. The principle is symmetric flip on top of an unchanged grayscale axis:
 
-- **Inherited (not overridden)** — the baseline palette `--color-black` / `--color-grayscale-*` / `--color-white` (and their `--cblk` / `--cg*` / `--cwht` aliases). Brand-singleton colors (`--color-focused`, `--color-emphasis*`, holiday/sunday/today/etc.) keep their identity hue. Boundary opacity ramps (`--color-boundary-o*`, `--color-boundary-foggy-o*`) automatically follow `--cbdm` / `--cbbr` via `var()`, so they need no separate override.
-- **Flipped** — `--color-text-*` (16-step ramp, inverse hex), `--color-boundary-*` (paired flips: `dim ↔ bright`, `dark ↔ light`, etc.), `--color-point*`, `--color-point-sub*`, `--color-adaptive-*`. Each entry comes in dual form: full name (`--color-boundary-dim`) and alienese alias (`--cbdm`).
+- **Inherited (not overridden)** — the baseline palette `--color-black` / `--color-grayscale-*` / `--color-white` (and their `--cblk` / `--cg*` / `--cwht` aliases). Brand-singleton colors (`--color-focused`, `--color-emphasis*`, holiday/sunday/today/etc.) keep their identity hue.
+- **Flipped** — `--color-text-*` (16-step ramp, inverse hex), `--color-boundary-*` (paired flips: `dim ↔ bright`, `dark ↔ light`, etc.), `--color-boundary-o*` and `--color-boundary-foggy-o*` (opacity ramps, re-declared in full — see below), `--color-point*`, `--color-point-sub*`, `--color-adaptive-*`. Each entry comes in dual form: full name (`--color-boundary-dim`) and alienese alias (`--cbdm`).
 
-Boundary entries flip by re-pointing the `--color-boundary-*` family at the *opposite* end of the grayscale axis — `dim` becomes `var(--color-white)`, `bright` becomes `var(--color-black)`, and so on. Because `--cbdm` / `--cbbr` are the anchors that the opacity ramps reference, the rest of the boundary ramp follows for free.
+Boundary entries flip by re-pointing the `--color-boundary-*` family at the *opposite* end of the grayscale axis — `dim` becomes `var(--color-white)`, `bright` becomes `var(--color-black)`, and so on. The opacity ramps `--color-boundary-o*` / `--color-boundary-foggy-o*` are declared as `rgba(var(--cbdm) / N%)` / `rgba(var(--cbbr) / N%)`, but CSS custom-property `var()` substitution is eager at the declaring scope — a ramp declared only at `:root` freezes its computed value using `:root`'s `--cbdm` / `--cbbr`, and descendants inherit that frozen literal. So overriding just `--cbdm` / `--cbbr` at body scope does *not* cascade into the ramps. The dark block re-declares every ramp entry (25 `-o*` steps + 27 `-foggy-o*` steps) using the same formula, so they re-resolve against the dark-scope `--cbdm` / `--cbbr`.
 
 ## API
 
@@ -64,24 +64,47 @@ The preference is persisted under `localStorage["estreUi.darkMode"]`:
 
 The two layers couple differently to first paint by design:
 
-- **CSS layer (deterministic)** — once `body[data-dark-mode="1"]` is set, every semantic token resolves to its dark form. If the host project routes its splash background through a flippable token (e.g. `--common-bg-color`), the splash itself shows up dark with no further work.
+- **CSS layer (deterministic)** — once `body[data-dark-mode="1"]` is set, every lazy-loaded semantic token resolves to its dark form. Eager-loaded init stylesheets are a separate concern — they run before the token palette is available and must declare splash-critical colors with concrete literals (see [Splash colors](#splash-colors-eager-init-overrides) below).
 - **JS layer (opt-in toggle)** — `setupDarkMode()` runs inside `$(document).ready()`, so the body attribute is written *after* first paint. A dark-locked session therefore flashes light briefly before settling into dark (FOLM — flash of light mode).
 
-To eliminate FOLM, host projects add a small inline pre-script immediately after the `<body>` opening tag, before any rendered children:
+To eliminate FOLM, a small inline pre-script must run immediately after the `<body>` opening tag, before any rendered children. The framework ships one commented-out inside [index.html](../../index.html) as a ready-to-paste starter:
 
 ```html
 <body>
+  <!--
   <script>
-    const stored = localStorage.getItem("estreUi.darkMode");
-    const dark = stored === "1" ||
-      (stored == null && matchMedia("(prefers-color-scheme: dark)").matches);
-    if (dark) document.body.dataset.darkMode = "1";
+    (function () {
+      const stored = localStorage.getItem("estreUi.darkMode");
+      const dark = stored === "1"
+        || (stored == null && window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches);
+      if (dark) document.body.dataset.darkMode = "1";
+    })();
   </script>
+  -->
   ...
 </body>
 ```
 
-EstreUI itself does not ship this pre-script. The selector targets `<body>` (a no-op if injected from `<head>`), the storage key (`"estreUi.darkMode"`) and auto-mode policy are host-project decisions, and pre-paint coupling has to be inlined into the host HTML rather than loaded as a module. Splash-screen coupling is therefore an opt-in on the host project, not a framework responsibility.
+The script is commented by default because pre-paint coupling has to be inlined into the host HTML (not a module import), and the storage key (`"estreUi.darkMode"`) and auto-mode policy are host-project decisions. To opt in, host projects uncomment the block and adjust the key / policy to match their project. The `<body>` selector is load-bearing — injecting the same script from `<head>` would be a no-op.
+
+## Splash colors (eager-init overrides)
+
+The framework's own eager stylesheet ([estreUiInitialize.css](../../styles/estreUiInitialize.css)) loads before [estreUiRoot.css](../../styles/estreUiRoot.css), which is marked `<meta link="lazy">` and arrives asynchronously. During that pre-lazy-load window the `--color-*` token palette is not yet defined, so any rule in `estreUiInitialize.css` that references `var(--color-white)`, `var(--color-black)`, etc. resolves to the guaranteed-invalid value — and the consuming property falls back (e.g. `background-color` → `transparent`). The splash then shows through to whatever half-initialized UI is behind it.
+
+To stay robust, `estreUiInitialize.css` declares its own `--common-bg-color` with concrete hex literals for both modes — `#CCC` for light and `#222` for dark. The dark fallback only takes visible effect when the FOLM pre-script has run, since otherwise `body[data-dark-mode="1"]` is not set at first paint and the light value applies.
+
+Host projects that want a project-owned splash tone (brand color, logo-friendly tint) override `--common-bg-color` in their own non-lazy initialize stylesheet:
+
+1. Keep the FOLM pre-script (uncommented) so `body[data-dark-mode="1"]` is present at first paint.
+2. Add a project-owned non-lazy initialize stylesheet, loaded eagerly in the same `<head>` pass as `estreUiInitialize.css` (plain `<link rel="stylesheet">`, not `<meta link="lazy">`).
+3. Inside that stylesheet, declare both the light and dark splash colors with hex literals:
+
+   ```css
+   body                        { --common-bg-color: #FFF; }
+   body[data-dark-mode="1"]    { --common-bg-color: #111; }
+   ```
+
+Concrete literals (not `var(--color-white)`) are required because the eager stylesheet runs before the token palette has loaded. Once the lazy palette arrives, downstream lazy stylesheets may use the token system normally.
 
 ## Adding new dark-mode-aware colors
 

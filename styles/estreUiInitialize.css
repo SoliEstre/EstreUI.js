@@ -55,7 +55,8 @@ body {
 
     color: var(--color-text);
 
-    --common-bg-color: var(--color-grayscale-lightness);
+    /* Concrete hex literal: this stylesheet loads eagerly, before the lazy-loaded estreUiRoot.css defines --color-* tokens, so var(--color-*) here would resolve to the guaranteed-invalid value and background-color would fall back to transparent. Host projects that want a project-owned splash tone override --common-bg-color in their own non-lazy initialize stylesheet. */
+    --common-bg-color: #CCC;
     background-color: var(--common-bg-color);
 
     font-size: 16px;
@@ -63,6 +64,9 @@ body {
 body[data-dark-mode="1"] {
 
     /* adaptive color (dark) */
+
+    /* Dark-mode splash fallback. Only takes effect in sessions that opt into FOLM pre-paint coupling (see index.html); otherwise the dark attribute lands after first paint and the light value above is what the splash shows. */
+    --common-bg-color: #222;
 
 }
 

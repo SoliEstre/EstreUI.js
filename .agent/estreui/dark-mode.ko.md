@@ -8,10 +8,10 @@ EstreUI 는 단일 body 어트리뷰트(`body[data-dark-mode="1"]`) 와 `estreUi
 
 오버라이드 블록은 [styles/estreUiRoot.css](../../styles/estreUiRoot.css) 의 `:root` 블록 하단, `body[data-dark-mode="1"]` 안에 있습니다. 원칙은 변하지 않는 그레이스케일 축 위에 시맨틱 셋만 대칭적으로 뒤집는 것입니다.
 
-- **상속(오버라이드 안 함)** — 베이스라인 팔레트 `--color-black` / `--color-grayscale-*` / `--color-white` (그리고 `--cblk` / `--cg*` / `--cwht` 별칭). 브랜드 단일색(`--color-focused`, `--color-emphasis*`, holiday/sunday/today 등) 도 정체성 유지를 위해 그대로 둡니다. 경계 불투명 램프(`--color-boundary-o*`, `--color-boundary-foggy-o*`) 는 `var()` 로 `--cbdm` / `--cbbr` 를 자동 추종하므로 별도 오버라이드가 불필요합니다.
-- **뒤집힘** — `--color-text-*` (16단계 램프, 역순 hex), `--color-boundary-*` (대칭쌍 뒤집기: `dim ↔ bright`, `dark ↔ light` 등), `--color-point*`, `--color-point-sub*`, `--color-adaptive-*`. 모든 항목은 풀네임(`--color-boundary-dim`) 과 alienese 별칭(`--cbdm`) 을 짝으로 갖습니다.
+- **상속(오버라이드 안 함)** — 베이스라인 팔레트 `--color-black` / `--color-grayscale-*` / `--color-white` (그리고 `--cblk` / `--cg*` / `--cwht` 별칭). 브랜드 단일색(`--color-focused`, `--color-emphasis*`, holiday/sunday/today 등) 도 정체성 유지를 위해 그대로 둡니다.
+- **뒤집힘** — `--color-text-*` (16단계 램프, 역순 hex), `--color-boundary-*` (대칭쌍 뒤집기: `dim ↔ bright`, `dark ↔ light` 등), `--color-boundary-o*` 와 `--color-boundary-foggy-o*` (불투명 램프, 다크 블록에서 전량 재선언 — 아래 참고), `--color-point*`, `--color-point-sub*`, `--color-adaptive-*`. 모든 항목은 풀네임(`--color-boundary-dim`) 과 alienese 별칭(`--cbdm`) 을 짝으로 갖습니다.
 
-경계 항목은 `--color-boundary-*` 패밀리를 그레이스케일 축의 *반대편* 으로 다시 가리켜 뒤집습니다 — `dim` 은 `var(--color-white)`, `bright` 는 `var(--color-black)` 로. `--cbdm` / `--cbbr` 가 불투명 램프의 앵커이므로 나머지 경계 램프는 자동으로 따라옵니다.
+경계 항목은 `--color-boundary-*` 패밀리를 그레이스케일 축의 *반대편* 으로 다시 가리켜 뒤집습니다 — `dim` 은 `var(--color-white)`, `bright` 는 `var(--color-black)` 로. 불투명 램프 `--color-boundary-o*` / `--color-boundary-foggy-o*` 는 `rgba(var(--cbdm) / N%)` / `rgba(var(--cbbr) / N%)` 공식으로 선언되는데, CSS 커스텀 프로퍼티의 `var()` 치환은 **선언 스코프에서 즉시 해결** 됩니다. 즉 `:root` 에서 선언된 램프는 `:root` 의 `--cbdm` / `--cbbr` 값으로 computed value 가 굳어지고, 자손은 그 리터럴을 상속할 뿐입니다. body 스코프에서 `--cbdm` / `--cbbr` 만 바꿔봐야 이미 굳은 램프에는 전파되지 않습니다. 그래서 다크 블록은 모든 램프 엔트리(`-o*` 25 단계 + `-foggy-o*` 27 단계) 를 같은 공식으로 다시 선언해, 다크 스코프의 `--cbdm` / `--cbbr` 값으로 재치환되도록 합니다.
 
 ## API
 
@@ -64,24 +64,47 @@ estreUi.isDarkMode;
 
 두 레이어는 첫 페인트에 *의도적으로 다른 강도로* 결합됩니다.
 
-- **CSS 레이어 (결정론적)** — `body[data-dark-mode="1"]` 만 박혀 있으면 모든 시맨틱 토큰이 자동으로 다크 형태로 정렬됩니다. 도입 프로젝트가 스플래시 배경을 뒤집힘 가능한 토큰(예: `--common-bg-color`) 으로 라우팅해 두면, 스플래시도 추가 작업 없이 즉시 다크로 뜹니다.
+- **CSS 레이어 (결정론적)** — `body[data-dark-mode="1"]` 만 박혀 있으면 *지연 로드되는* 시맨틱 토큰은 모두 다크 형태로 정렬됩니다. 즉시 로드되는 초기화 스타일시트는 별개 이슈로, 토큰 팔레트가 도착하기 전에 실행되므로 스플래시 핵심 색상은 리터럴로 선언해야 합니다 (아래 [스플래시 색](#스플래시-색-즉시-init-오버라이드) 참고).
 - **JS 레이어 (옵트인 토글)** — `setupDarkMode()` 가 `$(document).ready()` 안에서 실행되므로 body 어트리뷰트는 첫 페인트 *이후* 에 쓰입니다. 다크 잠금 세션은 라이트로 잠깐 깜빡인 뒤 다크로 자리잡습니다 (FOLM — flash of light mode).
 
-FOLM 을 제거하려면 도입 프로젝트가 `<body>` 여는 태그 직후, 렌더 자식이 등장하기 전에 소형 인라인 사전 스크립트를 둡니다.
+FOLM 을 제거하려면 `<body>` 여는 태그 직후, 렌더 자식이 등장하기 전에 소형 인라인 사전 스크립트가 실행돼야 합니다. 프레임워크는 이 스크립트를 [index.html](../../index.html) 안에 주석 처리된 채로 함께 제공합니다 — 바로 붙여쓸 수 있는 스타터.
 
 ```html
 <body>
+  <!--
   <script>
-    const stored = localStorage.getItem("estreUi.darkMode");
-    const dark = stored === "1" ||
-      (stored == null && matchMedia("(prefers-color-scheme: dark)").matches);
-    if (dark) document.body.dataset.darkMode = "1";
+    (function () {
+      const stored = localStorage.getItem("estreUi.darkMode");
+      const dark = stored === "1"
+        || (stored == null && window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches);
+      if (dark) document.body.dataset.darkMode = "1";
+    })();
   </script>
+  -->
   ...
 </body>
 ```
 
-EstreUI 본체는 이 사전 스크립트를 포함하지 않습니다. 셀렉터가 `<body>` 를 겨냥하므로 `<head>` 단계 주입은 무효이고, 저장 키(`"estreUi.darkMode"`) 와 자동 모드 정책은 도입 프로젝트의 결정 사안이며, 사전 페인트 결합은 모듈 로드가 아니라 호스트 HTML 인라인이어야 작동합니다. 스플래시 결합은 따라서 프레임워크 책임이 아니라 **도입 프로젝트의 옵트인** 입니다.
+기본이 주석인 이유: 사전 페인트 결합은 모듈 로드가 아니라 호스트 HTML 인라인이어야 작동하고, 저장 키(`"estreUi.darkMode"`) 와 자동 모드 정책은 도입 프로젝트가 결정할 몫이기 때문입니다. 옵트인하려면 주석만 해제하고, 프로젝트에서 다른 키를 쓴다면 그 부분만 맞추면 됩니다. 셀렉터가 `<body>` 를 겨냥하므로 `<head>` 단계 주입은 무효라는 점은 변함없습니다.
+
+## 스플래시 색 (즉시 init 오버라이드)
+
+프레임워크의 즉시 로드 스타일시트 [estreUiInitialize.css](../../styles/estreUiInitialize.css) 는 `<meta link="lazy">` 로 비동기 도착하는 [estreUiRoot.css](../../styles/estreUiRoot.css) 보다 먼저 로드됩니다. 그 사전-지연로드 구간에는 `--color-*` 토큰 팔레트가 아직 정의되지 않았으므로, `estreUiInitialize.css` 안에서 `var(--color-white)` / `var(--color-black)` 등을 참조하는 규칙은 guaranteed-invalid 로 떨어지고, 소비 속성은 fallback (예: `background-color` → `transparent`) 으로 내려갑니다. 그러면 스플래시가 뒤쪽의 반쯤 초기화된 UI 를 그대로 비춰버립니다.
+
+견고성을 위해 `estreUiInitialize.css` 는 `--common-bg-color` 기본값을 라이트(`#CCC`) / 다크(`#222`) 양쪽 모두 리터럴 hex 로 선언합니다. 다크 기본값은 FOLM 사전 스크립트가 실행된 세션에서만 실제로 보입니다 — 사전 스크립트가 없으면 첫 페인트 시점에 `body[data-dark-mode="1"]` 가 아직 없어 라이트 값이 적용되기 때문.
+
+프로젝트 전용 스플래시 톤(브랜드 컬러, 로고 톤) 이 필요한 도입 프로젝트는 `--common-bg-color` 를 자체 비-lazy 초기화 스타일시트에서 오버라이드합니다.
+
+1. FOLM 사전 스크립트의 주석을 해제해 첫 페인트 시점에 `body[data-dark-mode="1"]` 가 존재하도록 합니다.
+2. 프로젝트 전용 *비-lazy* 초기화 스타일시트를 추가하고, `estreUiInitialize.css` 와 같은 `<head>` 패스에서 즉시 로드(`<meta link="lazy">` 가 아닌 일반 `<link rel="stylesheet">`) 합니다.
+3. 해당 스타일시트 안에서 라이트와 다크 스플래시 색을 hex 리터럴로 선언합니다.
+
+   ```css
+   body                        { --common-bg-color: #FFF; }
+   body[data-dark-mode="1"]    { --common-bg-color: #111; }
+   ```
+
+리터럴(`var(--color-white)` 가 아닌)이 필수인 이유: 이 즉시 스타일시트는 토큰 팔레트가 로드되기 전에 실행됩니다. 지연 팔레트가 도착한 뒤의 지연 스타일시트들은 토큰 시스템을 평소대로 써도 됩니다.
 
 ## 새 다크 모드 대응 색 추가하기
 
