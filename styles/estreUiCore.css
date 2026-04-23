@@ -125,7 +125,7 @@ nav#mainMenu[data-opened="1"] > section#grabArea div.pad { backdrop-filter: unse
 }
 
 /* root tabs (bottom) */
-footer#fixedBottom { position: fixed; display: flex; flex-direction: row; flex-wrap: nowrap; z-index: 110; bottom: 0; left: 0; right: 0; height: var(--rootbar-height); margin: 0; padding-bottom: var(--bottom-safe-pad); justify-content: center; background-color: rgb(var(--cwht) / 66.666%); backdrop-filter: var(--basic-backdrop-blur); -webkit-backdrop-filter: var(--basic-backdrop-blur); justify-content: center; user-select: none; }
+footer#fixedBottom { position: fixed; display: flex; flex-direction: row; flex-wrap: nowrap; z-index: 110; bottom: 0; left: 0; right: 0; height: var(--rootbar-height); margin: 0; padding-bottom: var(--bottom-safe-pad); justify-content: center; background-color: var(--color-boundary-foggy-o66); backdrop-filter: var(--basic-backdrop-blur); -webkit-backdrop-filter: var(--basic-backdrop-blur); justify-content: center; user-select: none; }
 footer#fixedBottom nav { position: relative; display: flex; flex-direction: row; flex-wrap: nowrap; height: var(--rootbar-height); flex-grow: 1; flex-shrink: 1; user-select: none; }
 footer#fixedBottom nav:not(#rootbar) { max-width: 0; }
 footer#fixedBottom nav:first-child { justify-content: flex-end; }
