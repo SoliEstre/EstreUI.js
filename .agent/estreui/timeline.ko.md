@@ -69,7 +69,9 @@ view.destroy();  // 구독 해제, 호스트 비움
 ```
 .timeline_host
 ├── .timeline_group (날짜 버킷 단위: Today / Yesterday / Older)
-│   ├── .timeline_group_header     "TODAY"
+│   ├── .timeline_group_header
+│   │   ├── .timeline_group_label       "Today"
+│   │   └── button.timeline_clear_all   "Clear All"  (최상단 그룹만)
 │   ├── .h_icon_set.post_block.timeline_item
 │   │   ├── .icon_place > img       (largeIcon — 왼쪽)
 │   │   └── .content_place
@@ -89,9 +91,13 @@ view.destroy();  // 구독 해제, 호스트 비움
 아이템별:
 
 - **탭** → `url` 이 저장돼 있으면 `window.open(entry.url, "_blank", "noopener")`.
-- **좌 스와이프 > 80 px** → `EstreTimelineStore.remove(entry.id)` — 다음 렌더에서 사라진다.
+- **좌→우 스와이프 > 80 px** → `EstreTimelineStore.remove(entry.id)` — 아이템이 우측으로 슬라이드 + 페이드 아웃되고 다음 렌더에서 사라진다. 방향은 의도적으로 상위의 가로 scroll-snap (퀵패널 전환) **반대** — 두 제스처가 충돌하지 않도록. 스와이프 핸들러는 `setPreventDefault()` 를 걸지 않아 패널 위 세로 스크롤은 그대로 동작.
 
-두 핸들러 모두 `.setStopPropagation()` 을 건 `EstreSwipeHandler` — 상단 패널의 열기/닫기 제스처와 충돌하지 않는다.
+**Clear All** — 최상단(가장 최근) 그룹 헤더 우측에 `button.timeline_clear_all` 이 붙는다. 클릭 시 `#clearAllWithCascade()` 실행 — 화면에 보이는 모든 `.timeline_item` 에 엇갈린 `--exit-delay` (50 ms 간격, 400 ms 상한) 와 `timeline_item_exit` 클래스가 붙어 연쇄 슬라이드+페이드 애니메이션이 재생되고, 마지막 exit 가 끝난 뒤 (`maxDelay + 300 ms`) `EstreTimelineStore.clear()` 가 발화.
+
+**신규 아이템 enter 애니메이션** — `append()` 뒤 다시 렌더될 때, 이전 렌더에 없던 id 의 아이템은 `timeline_item_enter` 클래스를 받는다 (최초 렌더 시에는 초기 리스트가 통째로 애니메이션 되지 않도록 스킵). `timeline-item-enter` 키프레임이 미묘한 scale-in + 페이드를 돌려 새로 도착한 알림이 "방금 도달했다"는 인상을 주되 방향성을 암시하지는 않는다.
+
+스와이프/탭 핸들러 모두 `.setStopPropagation()` 을 건 `EstreSwipeHandler` — 상단 패널의 열기/닫기 제스처와 충돌하지 않는다.
 
 ## overwatchPanel 마운트
 

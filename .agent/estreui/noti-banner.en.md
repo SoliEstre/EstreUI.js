@@ -54,13 +54,27 @@ noti.fromOneSignal(payload); // expects { headings, contents, ... }
 
 Banners go through `EstreNotificationManager` (static singleton, mirrors `EstreNotationManager`):
 
-- `post(options)` — pushes onto `#queue`, returns a Promise.
+- `post(options)` — pushes onto `#queue`, returns a Promise. If the overwatchPanel timeline is currently visible (`isOpenOverwatchPanel` + the timeline host item on-screen), `post()` short-circuits: the entry is appended to `EstreTimelineStore` directly and no banner is shown, mirroring iOS's "don't drop a banner over your own Notification Center" rule.
 - `postHandler()` — dequeues if the slot is idle, calls `pageManager.bringPage("!popNoti", ...)`.
-- `checkOut(intent)` — auto-timeout / swipe-up / tap, resolves the Promise, appends to `EstreTimelineStore`, triggers the next dequeue.
+- `beginCheckOut(intent)` — called at close-**start** (see queue parallelism below). Releases the queue slot, resolves the Promise, appends to `EstreTimelineStore`, and triggers the next dequeue. Flags the intent with `_earlyCheckedOut` so the later `checkOut()` pass is a noop.
+- `checkOut(intent)` — the lifecycle's `onClose` callback. Idempotent: if the intent was already early-checked-out, returns without re-appending or re-queuing.
 
-The `!popNoti` page handler lives in [scripts/estreUi-pageModel.js](../../scripts/estreUi-pageModel.js) and mirrors the `popNote` handler one block above: `onBring` caches DOM refs and primes the template slots, `onOpen` starts the auto-dismiss timer and wires swipe, `onClose` calls `checkOut`.
+The `!popNoti` page handler lives in [scripts/estreUi-pageModel.js](../../scripts/estreUi-pageModel.js) and mirrors the `popNote` handler one block above: `onBring` caches DOM refs and primes the template slots, `onOpen` starts the auto-dismiss timer and wires swipe, `onClose` calls `checkOut`. The handler additionally implements `onIntentUpdated` to support in-place content swap when the queue hands off to the next banner without closing the article (see next section).
 
 Default `showTime` is `4500ms` (longer than `note()`'s default, since banners carry more text).
+
+## Queue parallelism — overlapping exit/enter
+
+When a banner dismisses and another entry is already waiting in the queue, the two animations overlap instead of playing back-to-back:
+
+1. On dismiss (timer / swipe-up / tap), the handler clones `.post_block` into a detached **ghost** positioned absolutely at the same spot, hides the live block (`visibility: hidden`), and adds the `banner_ghost_exit` class — a CSS animation that slides + fades the ghost upward and auto-removes it after ~550 ms.
+2. The handler calls `beginCheckOut(intent)` which dequeues the next entry immediately — not at the end of the exit animation.
+3. `pageManager.bringPage` on the same `!popNoti` target finds the article still open, so it calls `pushIntent` + `show(false)` on the existing article. `pushIntent` fires `onIntentUpdated` on the handler.
+4. `onIntentUpdated` unhides `.post_block`, rewrites the template slots from the new intent, and retriggers the `banner_incoming` animation (class remove → forced reflow → re-add) — slides + fades the incoming content down into place.
+
+Single-banner dismiss (queue empty) keeps the original path: `handle.close()` runs the page system's native hide transition.
+
+`position: relative; z-index: 1` on `.post_block` + `z-index: 0` on `.banner_ghost_exit` ensure the incoming banner paints **above** the outgoing ghost during the crossfade.
 
 ## Gestures
 
@@ -77,6 +91,7 @@ Built on `EstreSwipeHandler` (shared with panel sheets / timeline items):
 - Background — `rgb(var(--cabr) / 70%)` + `backdrop-filter: var(--basic-backdrop-blur)` (common blur token).
 - Radius — `18px`. Shadow — `1px 4px 8px 2px rgb(var(--ca) / 25%)` (matches `note()` shadow for visual parity).
 - Transition — `cubic-bezier(0.25, 0.46, 0.45, 0.94)` 450 ms. Enter slides from above, exit slides back up.
+- Queue handover — `banner_incoming` (enter) and `banner_ghost_exit` (exit) keyframes reuse the same curve/duration so the overlapping animations feel like a single continuous motion.
 
 Dark mode is automatic via `--cabr` / `--ca` tokens — no explicit dark rules needed.
 

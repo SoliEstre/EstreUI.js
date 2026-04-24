@@ -69,7 +69,9 @@ Render tree:
 ```
 .timeline_host
 ├── .timeline_group (per date bucket: Today / Yesterday / Older)
-│   ├── .timeline_group_header     "TODAY"
+│   ├── .timeline_group_header
+│   │   ├── .timeline_group_label       "Today"
+│   │   └── button.timeline_clear_all   "Clear All"  (first group only)
 │   ├── .h_icon_set.post_block.timeline_item
 │   │   ├── .icon_place > img       (largeIcon — left)
 │   │   └── .content_place
@@ -89,9 +91,13 @@ Item visuals intentionally reuse `.post_block` structure from the noti banner �
 Per-item:
 
 - **Tap** → `window.open(entry.url, "_blank", "noopener")` when a `url` was stored.
-- **Left swipe > 80 px** → `EstreTimelineStore.remove(entry.id)` — the item disappears on the next render.
+- **Left→right swipe > 80 px** → `EstreTimelineStore.remove(entry.id)` — the item slides right and fades out, then disappears on the next render. Direction is intentionally **opposite** to the parent's horizontal scroll-snap (quick panel switch), so the two gestures don't collide. The swipe handler omits `setPreventDefault()` so native vertical scrolling on the panel still works.
 
-Both handlers use `EstreSwipeHandler` with `.setStopPropagation()` so they don't fight the panel's open/close gesture above.
+**Clear All** — the first (most recent) group header carries a `button.timeline_clear_all` on the right side. Click runs `#clearAllWithCascade()`: every visible `.timeline_item` receives a staggered `--exit-delay` (50 ms step, capped at 400 ms) and the `timeline_item_exit` class, producing a cascading slide-right-and-fade; `EstreTimelineStore.clear()` fires once the last exit finishes (`maxDelay + 300 ms`).
+
+**New-item enter animation** — on re-render after `append()`, items whose id wasn't present on the previous render get the `timeline_item_enter` class (skipped on first render to avoid animating the initial list). The `timeline-item-enter` keyframe does a subtle scale-in + fade so newly-arrived notifications read as "just landed" without implying directionality.
+
+Both swipe and tap handlers use `EstreSwipeHandler` with `.setStopPropagation()` so they don't fight the panel's open/close gesture above.
 
 ## overwatchPanel mount
 

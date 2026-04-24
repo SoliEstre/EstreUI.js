@@ -54,13 +54,27 @@ noti.fromOneSignal(payload); // { headings, contents, ... } 를 기대
 
 배너는 `EstreNotificationManager` (static 싱글톤, `EstreNotationManager` 미러) 를 통과한다:
 
-- `post(options)` — `#queue` 에 push, Promise 반환.
+- `post(options)` — `#queue` 에 push, Promise 반환. overwatchPanel 의 타임라인이 현재 보이는 중이면 (`isOpenOverwatchPanel` + 타임라인 host item 이 화면상) `post()` 는 배너를 띄우지 않고 곧바로 `EstreTimelineStore` 에 append 해서 단락 처리한다 — iOS 의 "알림 센터 위에 배너를 덮어쓰지 않는다" 규칙과 동일.
 - `postHandler()` — 슬롯이 비어 있으면 dequeue 해서 `pageManager.bringPage("!popNoti", ...)` 호출.
-- `checkOut(intent)` — 자동 타임아웃 / 위 스와이프 / 탭, Promise resolve, `EstreTimelineStore` 에 append, 다음 dequeue 트리거.
+- `beginCheckOut(intent)` — close **시작 시점** 에 호출 (아래 큐 병렬화 참고). 큐 슬롯을 즉시 해제하고, Promise resolve, `EstreTimelineStore` 에 append, 다음 dequeue 트리거. intent 에 `_earlyCheckedOut` 플래그를 달아 두어 이후 `checkOut()` 호출이 noop 이 되도록 한다.
+- `checkOut(intent)` — 라이프사이클 `onClose` 콜백. 멱등 — intent 가 이미 early-checked-out 상태라면 재-append / 재-큐잉 없이 바로 반환.
 
-`!popNoti` 페이지 핸들러는 [scripts/estreUi-pageModel.js](../../scripts/estreUi-pageModel.js) 에 있고 바로 위 `popNote` 핸들러와 같은 구조: `onBring` 에서 DOM ref 캐시 + 템플릿 슬롯 준비, `onOpen` 에서 자동 해제 타이머 시작 + 스와이프 와이어링, `onClose` 에서 `checkOut` 호출.
+`!popNoti` 페이지 핸들러는 [scripts/estreUi-pageModel.js](../../scripts/estreUi-pageModel.js) 에 있고 바로 위 `popNote` 핸들러와 같은 구조: `onBring` 에서 DOM ref 캐시 + 템플릿 슬롯 준비, `onOpen` 에서 자동 해제 타이머 시작 + 스와이프 와이어링, `onClose` 에서 `checkOut` 호출. 추가로 `onIntentUpdated` 를 구현해 article 를 닫지 않고 다음 배너로 콘텐츠를 교체하는 큐 핸드오프를 지원한다 (다음 절 참고).
 
 기본 `showTime` 은 `4500ms` (배너는 텍스트가 더 많으니 `note()` 의 기본보다 길게).
+
+## 큐 병렬화 — 퇴장/등장 오버랩
+
+배너가 해제되는 시점에 다음 엔트리가 큐에 이미 대기 중이라면, 두 애니메이션은 연속 재생 대신 오버랩해서 재생된다:
+
+1. 해제 트리거 (타이머 / 위 스와이프 / 탭) 시 핸들러가 `.post_block` 을 복제해 같은 자리에 absolute 로 띄운 **ghost** 를 만들고, 실제 블록은 `visibility: hidden` 으로 숨긴 뒤 ghost 에 `banner_ghost_exit` 클래스를 건다 — CSS 애니메이션이 ghost 를 위로 슬라이드 + 페이드 아웃 시키고 ~550 ms 뒤 자동 제거.
+2. 핸들러가 `beginCheckOut(intent)` 를 호출해 다음 엔트리를 **즉시** dequeue — 퇴장 애니메이션이 끝날 때까지 기다리지 않는다.
+3. 같은 `!popNoti` 대상에 `pageManager.bringPage` 가 진입하면 article 이 여전히 열려 있으므로 `pushIntent` + `show(false)` 가 호출된다. `pushIntent` 가 핸들러의 `onIntentUpdated` 를 발화.
+4. `onIntentUpdated` 는 `.post_block` 을 다시 표시하고, 새 intent 에서 템플릿 슬롯을 다시 쓰고, `banner_incoming` 애니메이션을 재시작 (class 제거 → 강제 reflow → 다시 추가) — 들어오는 콘텐츠가 위에서 아래로 슬라이드 + 페이드 인.
+
+단일 배너 해제 (큐 비어 있음) 는 원래 경로를 그대로 — `handle.close()` 가 페이지 시스템의 native hide 트랜지션을 돌린다.
+
+`.post_block` 의 `position: relative; z-index: 1` + `.banner_ghost_exit` 의 `z-index: 0` 으로 들어오는 배너가 나가는 ghost **위** 레이어로 그려진다.
 
 ## 제스처
 
