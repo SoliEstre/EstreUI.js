@@ -245,3 +245,43 @@ When adapting the SW for a new project:
 4. **`STONY_FILES_TO_CACHE`** — Large, rarely-changing assets (emoji fonts, extra font families).
 5. **`CHECK_ALWAYS_NEWER_FILE_LIST`** — Files that should always try network first.
 6. **`HOST`** — Production hostname for debug flag auto-detection.
+
+---
+
+## 8. New-Asset Registration Checklist (at Release Time)
+
+**Principle**: whenever a new HTML template, JS module, or CSS file is added to the framework or the app, also register it in one of `serviceWorker.js`'s file-list arrays — in the same commit if possible, otherwise no later than the next release commit. If registration is missed, the PWA **installs without that asset for cold-offline clients**, and the resulting breakage is silent — no runtime error, only "reproduces on some navigation paths" symptoms that delay debugging.
+
+### Registration Matrix
+
+| Asset kind | Array to add to | `index.html` counterpart |
+| --- | --- | --- |
+| New export HTML template (new section slot) | `INSTALLATION_FILE_LIST` | `<link rel="preload" as="fetch" type="text/html" href="./foo.html">` |
+| New JS module (`scripts/estreUi-*.js`, framework layer) | `COMMON_FILES_TO_CACHE` | `<script defer type="text/javascript" src="./scripts/foo.js">` |
+| New CSS file (`styles/estreUi*.css`) | `COMMON_FILES_TO_CACHE` | `<link rel="stylesheet" href="./styles/foo.css">` |
+| New image / font / vector | `STATIC_FILES_TO_CACHE` or `STONY_FILES_TO_CACHE` | pick tier by size & change frequency |
+| App-specific export / CSS / JS | `FILES_TO_CACHE` (project version cache) | wherever the app loads it |
+
+### Quick Verification
+
+Just before the release, cross-diff the load lines in `index.html` against the SW arrays:
+
+```bash
+# Local HTML / JS / CSS that index.html loads
+grep -oE '\./[a-zA-Z_-]+\.html'          index.html | sort -u
+grep -oE '\./scripts/[a-zA-Z0-9_-]+\.js' index.html | sort -u
+grep -oE '\./styles/[a-zA-Z0-9_-]+\.css' index.html | sort -u
+
+# Diff against the corresponding array constants in serviceWorker.js — any gap is a missing registration
+```
+
+### Historical Cases
+
+- **v1.3.0** — [roadmap #008 Quick Panel](roadmap/008-quick-panel.md) added a new `overwatchPanel.html`. It was wired into the `index.html` preload list but missed `INSTALLATION_FILE_LIST`. Caught during hub-side release review and folded into the release commit (`5a2a702`).
+- **v1.4.0** — [roadmap #009 noti banner](roadmap/009-noti-banner.md) introduced `scripts/estreUi-notification.js` as a new file. The `<script>` tag in `index.html` was added but `COMMON_FILES_TO_CACHE` was not updated. Same pattern. Fixed in the release commit.
+
+Both follow the identical shape — **a new file made it into `index.html` load points but not into the SW cache lists**. Root cause is the habit of not touching `serviceWorker.js` during feature commits. Running the quick verification above once per release prevents recurrence.
+
+### Shape of the Release Atomic Commit
+
+The standard release commit (`chore: release vX.Y.Z`) minimally touches `package.json` + `serviceWorker.js` (version marker + cache-name date). If the verification above surfaces a missing registration, **include the array-list additions in the same commit** — the release commit must be self-consistent with the asset set of that version, so do not split the fix into a follow-up.

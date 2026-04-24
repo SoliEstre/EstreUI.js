@@ -245,3 +245,43 @@ const version = await serviceWorkerHandler.sendRequestForWait("getVersion");
 4. **`STONY_FILES_TO_CACHE`** — 대용량, 거의 변경 없는 자산 (이모지 폰트, 추가 폰트 패밀리).
 5. **`CHECK_ALWAYS_NEWER_FILE_LIST`** — 항상 네트워크 우선으로 가져올 파일.
 6. **`HOST`** — 프로덕션 호스트명 (디버그 플래그 자동 감지용).
+
+---
+
+## 8. 신규 자산 등록 체크리스트 (릴리스 시)
+
+**원칙**: 프레임워크 또는 앱에 새 HTML 템플릿·JS 모듈·CSS 파일이 추가되면, 같은 커밋(또는 늦어도 다음 릴리스 커밋) 에서 `serviceWorker.js` 의 파일 목록 배열에도 등록한다. 등록이 누락되면 PWA **콜드 오프라인 시 해당 자산이 빠진 채 설치**돼 기능이 조용히 깨진다 — 런타임 에러가 아니라 "특정 경로에서만 재현되는" 성격이라 디버깅이 늦어진다.
+
+### 등록 대상 매트릭스
+
+| 자산 유형 | 추가할 배열 | `index.html` 쪽 짝 |
+| --- | --- | --- |
+| 새 export HTML 템플릿 (새 섹션 슬롯) | `INSTALLATION_FILE_LIST` | `<link rel="preload" as="fetch" type="text/html" href="./foo.html">` |
+| 새 JS 모듈 (`scripts/estreUi-*.js` 등 프레임워크 레이어) | `COMMON_FILES_TO_CACHE` | `<script defer type="text/javascript" src="./scripts/foo.js">` |
+| 새 CSS 파일 (`styles/estreUi*.css`) | `COMMON_FILES_TO_CACHE` | `<link rel="stylesheet" href="./styles/foo.css">` |
+| 새 이미지·폰트·벡터 | `STATIC_FILES_TO_CACHE` 또는 `STONY_FILES_TO_CACHE` | 크기·변경 빈도로 계층 결정 |
+| 앱 전용 export / CSS / JS | `FILES_TO_CACHE` (프로젝트 버전 캐시) | 각 앱의 해당 로드 지점 |
+
+### 빠른 검증
+
+릴리스 직전 `index.html` 의 로드 줄과 SW 목록을 교차 비교:
+
+```bash
+# index.html 이 로드하는 로컬 HTML / JS / CSS 추출
+grep -oE '\./[a-zA-Z_-]+\.html'          index.html | sort -u
+grep -oE '\./scripts/[a-zA-Z0-9_-]+\.js' index.html | sort -u
+grep -oE '\./styles/[a-zA-Z0-9_-]+\.css' index.html | sort -u
+
+# serviceWorker.js 의 각 배열 상수와 diff — 차이가 있으면 누락
+```
+
+### 지나간 사례
+
+- **v1.3.0** — [roadmap #008 퀵패널](roadmap/008-quick-panel.md) 작업에서 새로 만든 `overwatchPanel.html` 이 `index.html` preload 까지는 반영됐으나 `INSTALLATION_FILE_LIST` 에 빠져 있었음. 허브 릴리스 검토 중 발견돼 릴리스 커밋에 같이 포함해 보정 (`5a2a702`).
+- **v1.4.0** — [roadmap #009 noti 배너](roadmap/009-noti-banner.md) 작업에서 새 파일 `scripts/estreUi-notification.js` 가 `index.html` `<script>` 까지는 반영됐으나 `COMMON_FILES_TO_CACHE` 에 빠져 있었음. 동일 패턴. 릴리스 커밋에 포함해 보정.
+
+두 건 모두 동일 구조 — **신규 파일이 `index.html` 로드 지점까지는 들어갔지만 SW 캐시 목록에는 누락**. 기능 구현 커밋에서 SW 는 건드리지 않는 습관이 원인. 릴리스 시 위 "빠른 검증" 한 번으로 재발 방지 가능.
+
+### 릴리스 원자 커밋 구성
+
+표준 릴리스 커밋(`chore: release vX.Y.Z`) 의 최소 구성은 `package.json` + `serviceWorker.js`(버전 마커 + 캐시 이름 날짜 갱신) 두 파일. 위 검증에서 누락이 발견되면 **같은 커밋에 파일 목록 배열 추가**도 포함 — 릴리스 커밋이 해당 버전의 자산 목록과 일관되어야 하므로 별도 follow-up 으로 분리하지 않는다.
