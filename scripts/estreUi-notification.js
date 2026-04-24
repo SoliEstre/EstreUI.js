@@ -476,10 +476,12 @@ class EstreTimelineView {
             }
         });
 
-        // Left-swipe delete
+        // Right→left swipe to delete. touch-action: pan-y on the item (in CSS) keeps this
+        // swipe off the parent's horizontal scroll-snap (which drives the quick panel switch).
         if (typeof EstreSwipeHandler !== "undefined") {
             new EstreSwipeHandler($item)
                 .setStopPropagation()
+                .setPreventDefault()
                 .unuseY()
                 .setThresholdX(1)
                 .setDropStrayed(false)
