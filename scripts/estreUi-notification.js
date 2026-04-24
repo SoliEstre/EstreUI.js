@@ -378,9 +378,21 @@ class EstreTimelineView {
         const isFirstRender = lastIds.size === 0;
 
         const groups = this.#groupByDate(entries);
-        for (const group of groups) {
+        for (let gi = 0; gi < groups.length; gi++) {
+            const group = groups[gi];
             const $group = $('<div class="timeline_group"></div>');
-            $group.append($('<div class="timeline_group_header"></div>').text(group.label));
+            const $header = $('<div class="timeline_group_header"></div>');
+            $header.append($('<span class="timeline_group_label"></span>').text(group.label));
+            if (gi === 0) {
+                const $btn = $('<button type="button" class="timeline_clear_all">Clear All</button>');
+                $btn.on("click", (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.#clearAllWithCascade();
+                });
+                $header.append($btn);
+            }
+            $group.append($header);
             for (const entry of group.entries) {
                 const isNew = !isFirstRender && !lastIds.has(entry.id);
                 $group.append(this.#buildItem(entry, isNew));
@@ -389,6 +401,21 @@ class EstreTimelineView {
         }
 
         this.#lastIds = currentIds;
+    }
+
+    #clearAllWithCascade() {
+        const $items = this.#$host.find(".timeline_item");
+        if ($items.length === 0) {
+            EstreTimelineStore.clear();
+            return;
+        }
+        const stagger = 50;
+        const maxDelay = 400;
+        $items.each(function (i) {
+            const delay = Math.min(i * stagger, maxDelay);
+            $(this).css("--exit-delay", delay + "ms").addClass("timeline_item_exit");
+        });
+        setTimeout(() => EstreTimelineStore.clear(), maxDelay + 300);
     }
 
     #groupByDate(entries) {
@@ -449,7 +476,7 @@ class EstreTimelineView {
             }
         });
 
-        // Right-swipe delete
+        // Left-swipe delete
         if (typeof EstreSwipeHandler !== "undefined") {
             new EstreSwipeHandler($item)
                 .setStopPropagation()
@@ -459,8 +486,9 @@ class EstreTimelineView {
                 .setResponseBound($item)
                 .setOnUp(function (grabX, grabY, handled, canceled, directed) {
                     if (!handled) return;
-                    if (this.handledDirection === "right" && grabX > 80) {
-                        EstreTimelineStore.remove(entry.id);
+                    if (this.handledDirection === "left" && grabX < -80) {
+                        $item.css("--exit-delay", "0ms").addClass("timeline_item_exit");
+                        setTimeout(() => EstreTimelineStore.remove(entry.id), 300);
                     }
                 });
         }
