@@ -150,9 +150,9 @@ nav#overwatchPanel[data-opened="1"] > section#panelGrabArea { opacity: 1; backgr
 nav#overwatchPanel[data-on-grab="1"] > header#panelHeader,
 nav#overwatchPanel[data-on-grab="1"] > .dynamic_section_host,
 nav#overwatchPanel[data-on-grab="1"] > .dynamic_section_block { transition-delay: 0s; transition-duration: 0s; }
-nav#overwatchPanel[data-on-grab="1"]:not([data-opened="1"]) > header#panelHeader { transform: translateY(calc(-100% + max(var(--grab-y), 0px))); }
-nav#overwatchPanel[data-on-grab="1"]:not([data-opened="1"]) > .dynamic_section_host { transform: translateY(calc(-100% - var(--panel-block-height) + max(var(--grab-y), 0px))); }
-nav#overwatchPanel[data-on-grab="1"]:not([data-opened="1"]) > .dynamic_section_block { transform: translateY(calc(-100vh - var(--panel-block-height) + max(var(--grab-y), 0px))); }
+nav#overwatchPanel[data-on-grab="1"]:not([data-opened="1"]) > header#panelHeader { transform: translateY(calc(-100% + min(max(var(--grab-y), 0px), 100%))); }
+nav#overwatchPanel[data-on-grab="1"]:not([data-opened="1"]) > .dynamic_section_host { transform: translateY(calc(-100% - var(--panel-block-height) + min(max(var(--grab-y), 0px), calc(100% + var(--panel-block-height))))); }
+nav#overwatchPanel[data-on-grab="1"]:not([data-opened="1"]) > .dynamic_section_block { transform: translateY(calc(-100vh - var(--panel-block-height) + min(max(var(--grab-y), 0px), calc(100vh + var(--panel-block-height))))); }
 nav#overwatchPanel[data-opened="1"][data-on-grab="1"] > header#panelHeader,
 nav#overwatchPanel[data-opened="1"][data-on-grab="1"] > .dynamic_section_host,
 nav#overwatchPanel[data-opened="1"][data-on-grab="1"] > .dynamic_section_block { transform: translateY(min(var(--grab-y), 0px)); }
