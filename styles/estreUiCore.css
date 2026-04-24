@@ -129,7 +129,11 @@ nav#overwatchPanel { --grab-y: 0px; --panel-block-height: calc(100vh - var(--top
 nav#overwatchPanel > header#panelHeader,
 nav#overwatchPanel > .dynamic_section_host,
 nav#overwatchPanel > .dynamic_section_block,
-nav#overwatchPanel > section#panelGrabArea { pointer-events: auto; }
+nav#overwatchPanel > section#panelGrabArea { position: relative; pointer-events: auto; }
+nav#overwatchPanel > header#panelHeader { z-index: 4; }
+nav#overwatchPanel > .dynamic_section_host { z-index: 3; }
+nav#overwatchPanel > .dynamic_section_block { z-index: 2; }
+nav#overwatchPanel > section#panelGrabArea { z-index: 1; }
 nav#overwatchPanel > header#panelHeader { display: flex; flex-direction: row; align-items: baseline; gap: 0.5em; padding: calc(var(--top-pad) + 4px) var(--basic-ui-inset-h) 4px; flex-shrink: 0; background-color: rgba(var(--cabr) / 60%); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transform: translateY(-100%); transition-duration: 0.3s; }
 nav#overwatchPanel > header#panelHeader > #panelClock { font-size: 1.125rem; font-weight: 600; }
 nav#overwatchPanel > header#panelHeader > #panelDate { font-size: 0.875rem; opacity: 0.75; }
