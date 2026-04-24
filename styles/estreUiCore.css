@@ -157,6 +157,13 @@ nav#overwatchPanel[data-opened="1"][data-on-grab="1"] > header#panelHeader,
 nav#overwatchPanel[data-opened="1"][data-on-grab="1"] > .dynamic_section_host,
 nav#overwatchPanel[data-opened="1"][data-on-grab="1"] > .dynamic_section_block { transform: translateY(min(var(--grab-y), 0px)); }
 
+/* Tablet+ (≥740 wide) — surface both block_items side-by-side instead of tab swipe. */
+@media all and (min-width: 740px) {
+    nav#overwatchPanel > .dynamic_section_host { display: none; }
+    nav#overwatchPanel > .dynamic_section_block { scroll-snap-type: none; overflow-x: hidden; }
+    nav#overwatchPanel > .dynamic_section_block > .block_item { width: auto; flex: 1 1 0; min-width: 0; }
+}
+
 /* Top swipe trigger strip. Sits above fixedTop (z-index 130) so the downward swipe can fire while the panel is closed.
    Height stays inside the safe area (status bar / notch) plus a small 8px bleed into fixedTop so the strip
    does not cover tappable fixedTop controls. */
@@ -172,7 +179,7 @@ nav#overwatchPanel[data-opened="1"] ~ section#panelTrigger { pointer-events: non
 #darkModeToggle[data-dark-mode-state="dark"] { background-color: rgba(var(--cadm) / 50%); }
 
 /* Timeline (overwatchPanel #timeline) — roadmap #010. Reuses .post_block visuals from estreUiCore2.css. */
-nav#overwatchPanel #timeline { --bg-color: rgb(var(--cabr) / 70%); padding: 8px var(--basic-ui-inset-h) calc(8px + var(--bottom-safe-pad)); }
+nav#overwatchPanel #timeline { --bg-color: rgb(var(--cabr) / 70%); box-sizing: border-box; padding: 8px var(--basic-ui-inset-h) calc(8px + var(--bottom-safe-pad)); }
 nav#overwatchPanel #timeline > .timeline_host { display: flex; flex-flow: column nowrap; gap: 10px; }
 nav#overwatchPanel #timeline .timeline_group { display: flex; flex-flow: column nowrap; gap: 6px; }
 nav#overwatchPanel #timeline .timeline_group_header { padding: 4px 4px 2px; font-size: 0.75rem; font-weight: 600; color: rgb(var(--ca) / 70%); letter-spacing: 0.02em; text-transform: uppercase; }
