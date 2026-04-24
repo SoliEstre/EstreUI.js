@@ -3732,6 +3732,63 @@ class EstreUiPage {
             $contentLine;
             swipeHandler;
             #closeTimer;
+            #closing = false;
+
+            #applyIntentToBlock(intent) {
+                const data = intent?.data ?? {};
+                this.$mainIconPlace.toggle(data.largeIconSrc != null && data.largeIconSrc !== "");
+                this.$subIconPlace.toggle(data.iconSrc != null && data.iconSrc !== "");
+                this.$titleLine.toggle(data.contentTitle != null && data.contentTitle !== "");
+                this.$subtitleLine.toggle(data.subtitle != null && data.subtitle !== "");
+                this.$contentLine.toggle(data.content != null && data.content !== "");
+            }
+
+            #resetCloseTimer(handle) {
+                if (this.#closeTimer != null) {
+                    clearTimeout(this.#closeTimer);
+                    this.#closeTimer = null;
+                }
+                const showTime = handle.intent?.data?.showTime ?? EstreNotificationManager.defaultShowTime;
+                this.#closeTimer = setTimeout(_ => this.#beginClose(handle), showTime);
+            }
+
+            #beginClose(handle) {
+                if (this.#closing) return;
+                this.#closing = true;
+                if (this.#closeTimer != null) {
+                    clearTimeout(this.#closeTimer);
+                    this.#closeTimer = null;
+                }
+
+                if (!EstreNotificationManager.hasQueued) {
+                    handle.close();
+                    return;
+                }
+
+                const $block = this.$postBlock;
+                const blockEl = $block[0];
+                if (blockEl == null) { handle.close(); return; }
+                const $article = $block.parent();
+                const articleEl = $article[0];
+                const rect = blockEl.getBoundingClientRect();
+                const articleRect = articleEl.getBoundingClientRect();
+                const $ghost = $block.clone(false).removeClass("banner_incoming");
+                $ghost.addClass("banner_ghost_exit");
+                $ghost.css({
+                    position: "absolute",
+                    left: (rect.left - articleRect.left) + "px",
+                    top: (rect.top - articleRect.top) + "px",
+                    width: rect.width + "px",
+                    margin: 0,
+                    pointerEvents: "none",
+                });
+                $article.append($ghost);
+                setTimeout(() => $ghost.remove(), 550);
+
+                $block.css({ visibility: "hidden", pointerEvents: "none" });
+
+                EstreNotificationManager.beginCheckOut(handle.intent);
+            }
 
             onBring(handle) {
                 const $host = handle.$host;
@@ -3742,28 +3799,25 @@ class EstreUiPage {
                 this.$contentLine = this.$postBlock.find("> .content_place > .content_area > .content_place");
                 this.$subIconPlace = this.$postBlock.find("> .content_place > .content_area > .icon_place");
 
-                const data = handle.intent?.data ?? {};
-                this.$mainIconPlace.toggle(data.largeIconSrc != null && data.largeIconSrc !== "");
-                this.$subIconPlace.toggle(data.iconSrc != null && data.iconSrc !== "");
-                this.$titleLine.toggle(data.contentTitle != null && data.contentTitle !== "");
-                this.$subtitleLine.toggle(data.subtitle != null && data.subtitle !== "");
-                this.$contentLine.toggle(data.content != null && data.content !== "");
+                this.#applyIntentToBlock(handle.intent);
 
                 EstreNotificationManager.current = handle.intent;
                 if (window.isVerbosely) console.log("pushed", handle.intent);
             }
 
             onOpen(handle) {
+                this.#closing = false;
                 this.$postBlock.click((e) => {
                     e.preventDefault();
 
                     if (window.isVerbosely) console.log("clicked: ", handle.intent);
                     handle.intent?.onTakeInteraction?.(handle.intent);
-                    handle.close();
+                    this.#beginClose(handle);
 
                     return false;
                 });
 
+                const self = this;
                 this.swipeHandler = new EstreSwipeHandler(this.$postBlock)
                     .setStopPropagation()
                     .setPreventDefault()
@@ -3774,16 +3828,32 @@ class EstreUiPage {
                     .setOnUp(function (grabX, grabY, handled, canceled, directed) {
                         if (!handled) return;
                         if (this.handledDirection === "up" && Math.abs(grabY) > 20) {
-                            handle.close();
+                            self.#beginClose(handle);
                         } else if (this.handledDirection === "down" && Math.abs(grabY) > 40) {
                             handle.intent?.onTakeInteraction?.(handle.intent);
-                            handle.close();
+                            self.#beginClose(handle);
                         }
                     });
 
-                const showTime = handle.intent?.data?.showTime ?? EstreNotificationManager.defaultShowTime;
-                this.#closeTimer = setTimeout(_ => handle.close(), showTime);
+                this.#resetCloseTimer(handle);
                 if (window.isVerbosely) console.log("showing: ", handle.intent);
+            }
+
+            onIntentUpdated(handle, intent) {
+                // Queue-chain handover: previous banner's exit is playing on a
+                // detached ghost clone; this article reuses the same DOM with
+                // fresh content + a restart-triggered enter animation.
+                this.#closing = false;
+                if (intent?.data != null) this.#applyIntentToBlock(intent);
+                EstreNotificationManager.current = handle.intent;
+
+                const $block = this.$postBlock;
+                $block.css({ visibility: "", pointerEvents: "" });
+                $block.removeClass("banner_incoming");
+                void $block[0]?.offsetWidth;
+                $block.addClass("banner_incoming");
+
+                this.#resetCloseTimer(handle);
             }
 
             onClose(handle) {

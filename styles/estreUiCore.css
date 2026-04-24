@@ -190,7 +190,7 @@ nav#overwatchPanel #timeline .timeline_group_header { display: flex; align-items
 nav#overwatchPanel #timeline .timeline_group_header > .timeline_group_label { flex: 1 1 auto; min-width: 0; }
 nav#overwatchPanel #timeline .timeline_clear_all { flex: 0 0 auto; margin-left: 8px; padding: 3px 10px; border: none; border-radius: 10px; background-color: rgb(var(--ca) / 10%); color: rgb(var(--ca) / 80%); font: inherit; letter-spacing: inherit; text-transform: inherit; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
 nav#overwatchPanel #timeline .timeline_clear_all:active { background-color: rgb(var(--ca) / 25%); }
-nav#overwatchPanel #timeline .timeline_item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; box-sizing: border-box; border-radius: 14px; background-color: var(--bg-color); backdrop-filter: var(--basic-backdrop-blur); -webkit-backdrop-filter: var(--basic-backdrop-blur); box-shadow: 1px 2px 4px 1px rgb(var(--ca) / 18%); cursor: pointer; user-select: none; touch-action: pan-y; }
+nav#overwatchPanel #timeline .timeline_item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; box-sizing: border-box; border-radius: 14px; background-color: var(--bg-color); backdrop-filter: var(--basic-backdrop-blur); -webkit-backdrop-filter: var(--basic-backdrop-blur); box-shadow: 1px 2px 4px 1px rgb(var(--ca) / 18%); cursor: pointer; user-select: none; }
 nav#overwatchPanel #timeline .timeline_item > .icon_place { flex: 0 0 auto; width: 38px; height: 38px; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
 nav#overwatchPanel #timeline .timeline_item > .icon_place > img { width: 100%; height: 100%; object-fit: cover; }
 nav#overwatchPanel #timeline .timeline_item > .content_place { flex: 1 1 auto; min-width: 0; --color: var(--color-text); --size: 0.9375rem; --weight: 400; }
@@ -210,7 +210,7 @@ nav#overwatchPanel #timeline .timeline_item.timeline_item_enter { animation: tim
 nav#overwatchPanel #timeline .timeline_item.timeline_item_exit { animation: timeline-item-exit 0.3s ease-in both; animation-delay: var(--exit-delay, 0ms); pointer-events: none; }
 @keyframes timeline-item-exit {
     0%   { opacity: 1; transform: translateX(0); }
-    100% { opacity: 0; transform: translateX(-60px); }
+    100% { opacity: 0; transform: translateX(60px); }
 }
 
 /* root tabs (bottom) */

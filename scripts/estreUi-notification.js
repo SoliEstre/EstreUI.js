@@ -91,7 +91,44 @@ class EstreNotificationManager {
         }
     }
 
+    /** True when at least one banner is waiting to be brought. */
+    static get hasQueued() { return this.#queue.length > 0; }
+
+    /**
+     * Release the queue lock at close-start so the next banner can begin its
+     * enter animation in parallel with the outgoing banner's exit animation.
+     * Does the timeline-append + resolver work; checkOut() becomes a noop
+     * afterwards via the `_earlyCheckedOut` flag.
+     */
+    static beginCheckOut(intent) {
+        if (intent == null || intent._earlyCheckedOut) return;
+        if (intent.data.posted != null && this.postHandle == intent.data.posted) {
+            if (this.current == intent) this.current = null;
+            this.postHandle = null;
+            if (typeof EstreTimelineStore !== "undefined") {
+                const d = intent.data;
+                EstreTimelineStore.append({
+                    postedAt: d.posted,
+                    title: d.contentTitle,
+                    body: d.content,
+                    subtitle: d.subtitle,
+                    iconSrc: d.iconSrc,
+                    largeIconSrc: d.largeIconSrc,
+                    url: d.url,
+                    payload: d.payload,
+                    bgColor: d.bgColor,
+                    textColor: d.textColor,
+                });
+            }
+            intent._earlyCheckedOut = true;
+            intent.resolver?.(intent);
+            if (window.isDebug) console.log(this.#page + " early checked out: ", intent);
+            postQueue(_ => this.postHandler());
+        }
+    }
+
     static checkOut(intent) {
+        if (intent?._earlyCheckedOut) return;
         if (intent.data.posted != null && this.postHandle == intent.data.posted) {
             if (this.current == intent) {
                 this.current = null;
@@ -476,19 +513,18 @@ class EstreTimelineView {
             }
         });
 
-        // Right→left swipe to delete. touch-action: pan-y on the item (in CSS) keeps this
-        // swipe off the parent's horizontal scroll-snap (which drives the quick panel switch).
+        // Left→right swipe to delete. Opposite direction to the parent's horizontal
+        // scroll-snap (quick panel switch), so the two gestures don't collide.
         if (typeof EstreSwipeHandler !== "undefined") {
             new EstreSwipeHandler($item)
                 .setStopPropagation()
-                .setPreventDefault()
                 .unuseY()
                 .setThresholdX(1)
                 .setDropStrayed(false)
                 .setResponseBound($item)
                 .setOnUp(function (grabX, grabY, handled, canceled, directed) {
                     if (!handled) return;
-                    if (this.handledDirection === "left" && grabX < -80) {
+                    if (this.handledDirection === "right" && grabX > 80) {
                         $item.css("--exit-delay", "0ms").addClass("timeline_item_exit");
                         setTimeout(() => EstreTimelineStore.remove(entry.id), 300);
                     }
