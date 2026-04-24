@@ -449,7 +449,7 @@ class EstreTimelineView {
             }
         });
 
-        // Left-swipe delete
+        // Right-swipe delete
         if (typeof EstreSwipeHandler !== "undefined") {
             new EstreSwipeHandler($item)
                 .setStopPropagation()
@@ -459,7 +459,7 @@ class EstreTimelineView {
                 .setResponseBound($item)
                 .setOnUp(function (grabX, grabY, handled, canceled, directed) {
                     if (!handled) return;
-                    if (this.handledDirection === "left" && Math.abs(grabX) > 80) {
+                    if (this.handledDirection === "right" && grabX > 80) {
                         EstreTimelineStore.remove(entry.id);
                     }
                 });
