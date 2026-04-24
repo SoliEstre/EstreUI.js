@@ -35,6 +35,10 @@ class EstreNotificationManager {
      */
     static post(options) {
         if (options != null && typeof options === "object") {
+            if (this.#isTimelineVisible()) {
+                this.#appendToTimelineDirect(options);
+                return Promise.resolve(null);
+            }
             return new Promise((resolve) => {
                 const it = new EstreNotificationManager(options, resolve);
                 this.#queue.push(it);
@@ -42,6 +46,37 @@ class EstreNotificationManager {
                 postQueue(_ => this.postHandler());
             });
         }
+    }
+
+    /**
+     * True when the overwatchPanel is open and the timeline section is currently showing.
+     * In that case banner posts are diverted into the timeline list directly (iOS behavior).
+     * @returns {boolean}
+     */
+    static #isTimelineVisible() {
+        if (typeof estreUi === "undefined" || !estreUi.isOpenOverwatchPanel) return false;
+        if (typeof EstreTimelineStore === "undefined") return false;
+        return estreUi.$overwatchPanel.find('.host_item[data-showing="1"][data-id="timeline"]').length > 0;
+    }
+
+    /**
+     * Build a timeline entry directly from noti options and append to the store.
+     * Mirrors the shape used in checkOut().
+     */
+    static #appendToTimelineDirect(options) {
+        const ui = options.ui ?? {};
+        EstreTimelineStore.append({
+            postedAt: Date.now(),
+            title: options.title,
+            body: options.body,
+            subtitle: options.subtitle,
+            iconSrc: options.icon,
+            largeIconSrc: options.largeIcon,
+            url: options.url,
+            payload: options.data,
+            bgColor: ui.bgColor,
+            textColor: ui.textColor,
+        });
     }
 
     static postHandler() {
@@ -310,6 +345,7 @@ class EstreTimelineView {
 
     #$host;
     #unsubscribe;
+    #lastIds = new Set();
 
     /**
      * @param {Element|JQuery} host - Container element for the list.
@@ -332,19 +368,27 @@ class EstreTimelineView {
         $host.empty();
 
         if (!entries || entries.length === 0) {
+            this.#lastIds = new Set();
             $host.append('<div class="timeline_empty">No notifications</div>');
             return;
         }
+
+        const currentIds = new Set(entries.map(e => e.id));
+        const lastIds = this.#lastIds;
+        const isFirstRender = lastIds.size === 0;
 
         const groups = this.#groupByDate(entries);
         for (const group of groups) {
             const $group = $('<div class="timeline_group"></div>');
             $group.append($('<div class="timeline_group_header"></div>').text(group.label));
             for (const entry of group.entries) {
-                $group.append(this.#buildItem(entry));
+                const isNew = !isFirstRender && !lastIds.has(entry.id);
+                $group.append(this.#buildItem(entry, isNew));
             }
             $host.append($group);
         }
+
+        this.#lastIds = currentIds;
     }
 
     #groupByDate(entries) {
@@ -367,10 +411,11 @@ class EstreTimelineView {
         return groups;
     }
 
-    #buildItem(entry) {
+    #buildItem(entry, isNew = false) {
         const $item = $('<div class="h_icon_set post_block timeline_item"></div>');
         $item.attr("data-id", entry.id);
         if (entry.bgColor) $item.css("--bg-color", entry.bgColor);
+        if (isNew) $item.addClass("timeline_item_enter");
 
         if (entry.largeIconSrc) {
             const $mainIcon = $('<div class="icon_place"></div>');

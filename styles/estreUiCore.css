@@ -194,6 +194,12 @@ nav#overwatchPanel #timeline .timeline_item > .content_place > .content_area > .
 nav#overwatchPanel #timeline .timeline_item > .content_place > .content_area > .icon_place { flex: 0 0 auto; width: 20px; height: 20px; border-radius: 4px; overflow: hidden; }
 nav#overwatchPanel #timeline .timeline_item > .content_place > .content_area > .icon_place > img { width: 100%; height: 100%; object-fit: cover; }
 nav#overwatchPanel #timeline .timeline_empty { padding: 32px 16px; text-align: center; font-size: 0.875rem; color: rgb(var(--ca) / 60%); }
+nav#overwatchPanel #timeline .timeline_item.timeline_item_enter { animation: timeline-item-enter 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both; transform-origin: top center; }
+@keyframes timeline-item-enter {
+    0%   { opacity: 0; transform: translateY(-14px) scale(0.96); }
+    60%  { opacity: 1; }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
 
 /* root tabs (bottom) */
 footer#fixedBottom { position: fixed; display: flex; flex-direction: row; flex-wrap: nowrap; z-index: 110; bottom: 0; left: 0; right: 0; height: var(--rootbar-height); margin: 0; padding-bottom: var(--bottom-safe-pad); justify-content: center; background-color: var(--color-boundary-foggy-o66); backdrop-filter: var(--basic-backdrop-blur); -webkit-backdrop-filter: var(--basic-backdrop-blur); justify-content: center; user-select: none; }
