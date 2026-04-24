@@ -1,4 +1,4 @@
-const INSTALLATION_VERSION_NAME = "1.3.0-r20260421";
+const INSTALLATION_VERSION_NAME = "1.4.0-r20260424";
 // ^^ Use for check new update "Native application(webview) version(or Android/iOS version combo) - PWA release version"
 // ex) "1.0.1/1.0.0-r20251101k"
 
@@ -22,7 +22,7 @@ const INSTALLATION_FILE_LIST = [
 
 
 // Common files cache - Be changes some time but, well not changed very often
-const CACHE_NAME_COMMON_FILES = "common-files-cache-v1-20260421";
+const CACHE_NAME_COMMON_FILES = "common-files-cache-v1-20260424";
 
 const COMMON_FILES_TO_CACHE = [
     "./",
@@ -51,6 +51,7 @@ const COMMON_FILES_TO_CACHE = [
     "./scripts/estreUi-core.js",
     "./scripts/estreUi-dialog.js",
     "./scripts/estreUi-notation.js",
+    "./scripts/estreUi-notification.js",
     "./scripts/estreUi-pageModel.js",
     "./scripts/estreUi-pageManager.js",
     "./scripts/estreUi-handles.js",
