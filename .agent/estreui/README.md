@@ -95,6 +95,10 @@ The [review/](review/) subfolder tracks bugs, typos, and improvement suggestions
 
 The [roadmap/](roadmap/) subfolder tracks planned improvements for EstreUI.js — JSDoc annotations, module splitting, test suite, and more. See the [roadmap dashboard](roadmap/README.md) for priorities and progress.
 
+## Open implementation markers
+
+In-source TODO markers and deferred implementation slots (`// <= ...`, `// 추후...`) are inventoried in [open-implementation-markers.en.md](open-implementation-markers.en.md) / [open-implementation-markers.ko.md](open-implementation-markers.ko.md). Use it as a punch list when picking up loose ends; remove resolved entries in the same commit.
+
 ## How to add a new topic
 
 1. Pick a slug (kebab-case), e.g. `active-struct`.
@@ -204,6 +208,10 @@ The [roadmap/](roadmap/) subfolder tracks planned improvements for EstreUI.js �
 ## 로드맵
 
 [roadmap/](roadmap/) 하위 폴더에서 EstreUI.js의 향후 개선 계획 — JSDoc 어노테이션, 모듈 분리, 테스트 스위트 등 — 을 추적합니다. 우선순위와 진행 상태는 [로드맵 대시보드](roadmap/README.md) 참고.
+
+## 미구현 마커
+
+소스 내 TODO 마커와 보류된 구현 자리 (`// <= ...`, `// 추후...`) 는 [open-implementation-markers.en.md](open-implementation-markers.en.md) / [open-implementation-markers.ko.md](open-implementation-markers.ko.md) 에 정리해 둡니다. loose ends 정리 시 punch list 로 활용하고, 해소한 항목은 같은 커밋에서 본 문서에서도 제거합니다.
 
 ## 새 토픽 추가 방법
 
