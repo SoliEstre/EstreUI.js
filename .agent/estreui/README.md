@@ -99,6 +99,10 @@ The [roadmap/](roadmap/) subfolder tracks planned improvements for EstreUI.js �
 
 In-source TODO markers and deferred implementation slots (`// <= ...`, `// 추후...`) are inventoried in [open-implementation-markers.en.md](open-implementation-markers.en.md) / [open-implementation-markers.ko.md](open-implementation-markers.ko.md). Use it as a punch list when picking up loose ends; remove resolved entries in the same commit.
 
+## Legacy design rationale
+
+Superseded design sketches that were once in source — code paths an earlier author commented out as "currently not using" instead of deleting — are moved into [legacy-design-rationale.en.md](legacy-design-rationale.en.md) / [legacy-design-rationale.ko.md](legacy-design-rationale.ko.md), paired with the *why*. Different from open markers: these are paths intentionally set aside, not deferred work.
+
 ## How to add a new topic
 
 1. Pick a slug (kebab-case), e.g. `active-struct`.
@@ -212,6 +216,10 @@ In-source TODO markers and deferred implementation slots (`// <= ...`, `// 추�
 ## 미구현 마커
 
 소스 내 TODO 마커와 보류된 구현 자리 (`// <= ...`, `// 추후...`) 는 [open-implementation-markers.en.md](open-implementation-markers.en.md) / [open-implementation-markers.ko.md](open-implementation-markers.ko.md) 에 정리해 둡니다. loose ends 정리 시 punch list 로 활용하고, 해소한 항목은 같은 커밋에서 본 문서에서도 제거합니다.
+
+## 옛 디자인 근거
+
+소스에 한때 있었던 대체된 디자인 스케치 — 이전 작성자가 삭제 대신 "currently not using" 으로 주석 처리해 둔 코드 경로 — 는 [legacy-design-rationale.en.md](legacy-design-rationale.en.md) / [legacy-design-rationale.ko.md](legacy-design-rationale.ko.md) 로 옮기고 *왜* 와 함께 보관합니다. open markers 와는 결이 다릅니다 — 이쪽은 의도적으로 옆으로 치워진 경로지 보류된 미완성 작업이 아닙니다.
 
 ## 새 토픽 추가 방법
 
