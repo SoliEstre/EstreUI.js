@@ -17,7 +17,7 @@
 | 8 | 퀵패널 | 🟡 보통 | 컴포넌트 | ✅ 완료 | [008-quick-panel.md](008-quick-panel.md) |
 | 9 | noti() 배너 | 🟡 보통 | 컴포넌트 | ✅ 완료 | [009-noti-banner.md](009-noti-banner.md) |
 | 10 | timeline (overwatchPanel 내) | 🟡 보통 | 컴포넌트 | ✅ 완료 | [010-timeline.md](010-timeline.md) |
-| 11 | 외부 임베드용 Back Handler Hook API | 🟡 보통 | navigation / 외부 통합 | 📋 제안 | [011-back-handler-hook.md](011-back-handler-hook.md) |
+| 11 | 외부 임베드용 Back Handler Hook API | 🟡 보통 | navigation / 외부 통합 | ✅ 완료 | [011-back-handler-hook.md](011-back-handler-hook.md) |
 
 ## 우선순위 범례
 
