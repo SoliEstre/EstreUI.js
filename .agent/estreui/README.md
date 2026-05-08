@@ -58,6 +58,7 @@ Every topic is provided as a parallel pair of files:
 | Topic | EN | KO | Status | Notes |
 | --- | --- | --- | --- | --- |
 | Navigation API (consolidated) | [navigation-api.en.md](navigation-api.en.md) | [navigation-api.ko.md](navigation-api.ko.md) | ✅ | `bringPage`/`showPage`/`closePage`/`hidePage`, intent, root tabs, `switchRootTab`, container operations, declarative links, back navigation. |
+| Back navigation — `estreUi.back()` + external handler stack | [back-navigation.en.md](back-navigation.en.md) | [back-navigation.ko.md](back-navigation.ko.md) | ✅ | `pushBackHandler`/`popBackHandler`/`clearAllExternalBackHandlers`, LIFO traversal, async handler contract, embed integration patterns. |
 
 ### 6. Template Engine
 
@@ -176,6 +177,7 @@ Superseded design sketches that were once in source — code paths an earlier au
 | 토픽 | EN | KO | 상태 | 비고 |
 | --- | --- | --- | --- | --- |
 | 네비게이션 API (통합) | [navigation-api.en.md](navigation-api.en.md) | [navigation-api.ko.md](navigation-api.ko.md) | ✅ | `bringPage`/`showPage`/`closePage`/`hidePage`, 인텐트, 루트 탭, `switchRootTab`, 컨테이너 동작, 선언적 링크, 뒤로 가기 네비게이션. |
+| Back navigation — `estreUi.back()` + 외부 handler stack | [back-navigation.en.md](back-navigation.en.md) | [back-navigation.ko.md](back-navigation.ko.md) | ✅ | `pushBackHandler`/`popBackHandler`/`clearAllExternalBackHandlers`, LIFO traverse, async handler 계약, 임베드 통합 패턴. |
 
 ### 6. 템플릿 엔진
 

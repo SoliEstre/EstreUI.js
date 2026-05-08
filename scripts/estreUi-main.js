@@ -49,6 +49,12 @@ const estreUi = {
     panelCurrentOnTop: null,
     headerCurrentOnTop: null,
 
+    // External back handler stack — host-mounted external embeds register navigation
+    // steps here so native back input flows through them before EstreUI's section
+    // stack. Roadmap #011 / push-pop API.
+    externalBackStack: [],
+    nextBackHandlerToken: 1,
+
     //static getter
     get currentTopComponent() {
         return this.blindedCurrentOnTop ?? (this.isOpenMainMenu ? this.menuCurrentOnTop : null) ?? this.mainCurrentOnTop;
@@ -1770,12 +1776,72 @@ const estreUi = {
     },
 
     async onBack() {
+        // External handler stack first (LIFO). Each entry can absorb the back
+        // input by returning truthy; falsy lets the next entry (and finally the
+        // EstreUI section stack below) try. Errors are isolated and logged.
+        for (let i = this.externalBackStack.length - 1; i >= 0; i--) {
+            try {
+                if (await this.externalBackStack[i].handler()) return true;
+            } catch (e) {
+                if (window.isLogging) console.warn("[estreUi] external back handler error", e);
+            }
+        }
         if (await this.onBackOverlay()) return true;
         if (onBackWhile()) return true;
         if (this.isOpenMainMenu) {
             return await this.onBackMenu() || await this.closeMainMenu();
         }
         return await this.onBackBlinded() || await this.onBackMain();
+    },
+
+    /**
+     * Register a back handler from a host-mounted external embed.
+     *
+     * Handlers are consumed LIFO — the most recent push runs first on the next
+     * `back()` / popstate. Returning `true` (or a Promise resolving truthy)
+     * stops the chain and absorbs the back input; returning a falsy value lets
+     * the previous entry (or the EstreUI section stack) try.
+     *
+     * Re-entry is fine: the same `handler` may be pushed multiple times; each
+     * push gets a separate token and counts as a separate stack entry.
+     *
+     * @param {() => boolean | Promise<boolean>} handler
+     * @returns {number | null} Token for `popBackHandler`, or `null` if `handler` is invalid.
+     */
+    pushBackHandler(handler) {
+        if (typeof handler !== "function") {
+            if (window.isLogging) console.warn("[estreUi] pushBackHandler — handler must be a function");
+            return null;
+        }
+        const token = this.nextBackHandlerToken++;
+        this.externalBackStack.push({ token, handler });
+        return token;
+    },
+
+    /**
+     * Remove a previously pushed handler. Out-of-order pop is allowed —
+     * tokens identify entries independently of their stack position.
+     *
+     * @param {number} token
+     * @returns {boolean} `true` if an entry was removed, `false` if the token was unknown.
+     */
+    popBackHandler(token) {
+        const idx = this.externalBackStack.findIndex(it => it.token === token);
+        if (idx < 0) {
+            if (window.isLogging) console.warn("[estreUi] popBackHandler — token not found:", token);
+            return false;
+        }
+        this.externalBackStack.splice(idx, 1);
+        return true;
+    },
+
+    /**
+     * Drop every external back handler — fallback cleanup for embed teardown
+     * paths that cannot match tokens individually. Embeds should prefer paired
+     * push/pop and reach for this only as a safety net.
+     */
+    clearAllExternalBackHandlers() {
+        this.externalBackStack.length = 0;
     },
 
     async onCloseContainer() {
