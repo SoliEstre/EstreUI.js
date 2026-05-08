@@ -1770,9 +1770,12 @@ const estreUi = {
     },
 
     async onBack() {
-        return await this.onBackOverlay() || onBackWhile() ||
-            this.isOpenMainMenu ? await this.onBackMenu() || await this.closeMainMenu() : false ||
-            await this.onBackBlinded() || await this.onBackMain();
+        if (await this.onBackOverlay()) return true;
+        if (onBackWhile()) return true;
+        if (this.isOpenMainMenu) {
+            return await this.onBackMenu() || await this.closeMainMenu();
+        }
+        return await this.onBackBlinded() || await this.onBackMain();
     },
 
     async onCloseContainer() {
