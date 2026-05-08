@@ -2009,3 +2009,9 @@ const estreUi = {
     eoo: eoo
 }
 
+// Expose estreUi on window so ES-module-realm host integrations (external embeds
+// loaded as <script type="module">) can reach the public API. Same-realm classic
+// scripts already see the lexical const; this line only adds the cross-realm
+// surface. See review #011.
+window.estreUi = estreUi;
+

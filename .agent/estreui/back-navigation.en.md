@@ -16,6 +16,8 @@ estreUi.back()         // alias — equivalent to estreUi.onBack()
 estreUi.onBack()       // async, returns Promise<boolean>; true = absorbed, false = host should default
 ```
 
+> **Module-realm embeds use `window.estreUi`.** EstreUI is declared as a top-level `const` in a classic script. Same-realm classic scripts share the lexical scope and reach `estreUi` directly, but ES-module embeds (`<script type="module">`) live in a separate realm and only see the `window.estreUi` surface. The exposure is wired explicitly in `estreUi-main.js` (review #011) — module-realm code reads `window.estreUi.pushBackHandler` and friends.
+
 Inside `onBack` the order is fixed:
 
 ```

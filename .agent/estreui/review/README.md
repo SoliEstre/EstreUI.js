@@ -17,6 +17,7 @@
 | 8 | `#isHiding` / `#isClosing` 플래그가 리셋되지 않음 | 🔴 버그 | lifecycle | `estreUi-pageModel.js` L103-106, L356, L380 | live 2026-04-22 | [008-hiding-closing-flags-not-reset.md](008-hiding-closing-flags-not-reset.md) |
 | 9 | 재포커스 시 포커스 앵커가 없으면 첫 포커서블로 떨어짐 | 🟡 개선 | lifecycle / focus | `estreUi-pageManager.js` L538-565, `estreUi-pageModel.js` L423-438 | — | [009-autofocus-refocus-no-anchor.md](009-autofocus-refocus-no-anchor.md) |
 | 10 | `onBack` 의 `\|\|` / `?:` 우선순위 버그 (overlay 결과가 condition 으로만 사용됨) | 🔴 버그 | navigation | `estreUi-main.js` L1772-1776 | live 2026-05-08 | [010-onback-precedence-bug.md](010-onback-precedence-bug.md) |
+| 11 | `estreUi` 가 `window` 에 노출되지 않음 (module realm 임베드 차단) | 🔴 버그 | host-integration | `estreUi-main.js` L18, L2010 | live 2026-05-08 | [011-estreui-not-on-window.md](011-estreui-not-on-window.md) |
 
 ## 심각도 범례
 

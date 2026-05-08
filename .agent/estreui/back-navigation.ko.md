@@ -16,6 +16,8 @@ estreUi.back()         // alias — estreUi.onBack() 과 동일
 estreUi.onBack()       // async, Promise<boolean> 반환; true = 흡수됨, false = 호스트가 기본 처리
 ```
 
+> **Module-realm 임베드는 `window.estreUi` 사용.** EstreUI 는 classic script 의 top-level `const` 로 선언된다. 같은 realm 의 classic script 들은 lexical scope 를 공유해 `estreUi` 직접 접근 가능하지만, ES module 임베드 (`<script type="module">`) 는 별도 realm 이라 `window.estreUi` 표면만 보인다. `estreUi-main.js` 에 노출이 명시되어 있다 (review #011) — module-realm 코드는 `window.estreUi.pushBackHandler` 등을 읽는다.
+
 `onBack` 안의 순서는 고정:
 
 ```
