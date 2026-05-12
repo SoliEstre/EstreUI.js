@@ -5,6 +5,3 @@ node_modules/
 *.zip
 *.7z
 *.pem
-
-# Hub-driven temporary spike workspaces (PM 007 EstreUV.js spike, etc.)
-/spike-test/
