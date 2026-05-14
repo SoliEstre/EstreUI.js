@@ -203,6 +203,40 @@ const estreUi = {
     },
     get isDarkMode() { return document.body.dataset.darkMode == t1; },
 
+    // Cover bar — desktop-class viewport with a pointing device that can hover.
+    // Static environment check; matches the media query that gates the cover
+    // bar UI surface in CSS. See roadmap entry (forthcoming) for the wider
+    // host-integration design.
+    get isWideHoverViewport() {
+        return matchMedia("(min-width: 1025px) and (min-height: 769px) and (hover: hover) and (pointer: fine)").matches;
+    },
+
+    // Cover bar — whether the rootbar is currently in its extended layout, i.e.,
+    // the non-rootbar nav siblings under fixedBottom (`customFixedSections`,
+    // `instantSections`) take flex-grow:1 per estreUiCore.css's `@media all and
+    // (min-height: 700px) and (min-width: 740px)` block, AND the cover-bar
+    // controller is initialized. Combines static media-query state with dynamic
+    // bootstrap state.
+    get rootBarExtended() {
+        if (this.coverBarController == null) return false;
+        const $nav = this.$fixedBottom?.find("nav:not(#rootbar)").first();
+        if ($nav == null || $nav.length === 0) return false;
+        return getComputedStyle($nav[0]).flexGrow === "1";
+    },
+
+    // Cover bar — composite readiness: the environment supports the bar (wide
+    // viewport with hover) AND the rootbar is in its extended layout with a
+    // controller already initialized. Cover entries should only be pushed
+    // when this returns true; the controller itself is idempotent against
+    // pushes that arrive while still false.
+    get isInstantBarReady() {
+        return this.isWideHoverViewport && this.rootBarExtended;
+    },
+
+    // Placeholder for the cover-bar controller introduced in Phase 1C. Held at
+    // null so rootBarExtended can short-circuit before initialization.
+    coverBarController: null,
+
 
 
     //links (object redirection)
