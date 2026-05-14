@@ -82,6 +82,7 @@ const wrapper = new Function(`
         EstrePageHandler,
         EstrePageHandle,
         EstreHandle,
+        EstreCoverBarController,
         pageManager,
         estreUi,
     };

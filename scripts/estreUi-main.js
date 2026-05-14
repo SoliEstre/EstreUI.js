@@ -279,6 +279,7 @@ const estreUi = {
             this.$tabsbar = this.$fixedBottom.find(".tabsbar");
             this.$rootbar = this.$fixedBottom.find("nav#rootbar");
             this.initRootbar();
+            this.initCoverBar();
         }
 
         const onLoadedFixedTop = subTerm => {
@@ -931,6 +932,15 @@ const estreUi = {
         }
 
         this.$rootTabs.filter(ax(eds.tabId)).click(this.rootTabOnClick);
+    },
+
+    // Cover bar — instantiates the controller bound to the loaded fixedBottom
+    // markup. Idempotent: subsequent calls noop, so reload paths are safe.
+    // Phase 1C-2/1C-3 add lifecycle hooks and entry rendering on top of this.
+    initCoverBar() {
+        if (this.coverBarController != null) return;
+        if (this.$fixedBottom == null || this.$fixedBottom.length === 0) return;
+        this.coverBarController = new EstreCoverBarController(this.$fixedBottom);
     },
 
     showExactAppbar(component, container, article) {
@@ -2042,6 +2052,32 @@ const estreUi = {
 
     eoo: eoo
 }
+
+/**
+ * Cover bar controller — owns the bottom-bar entry list that mirrors opt-in
+ * pages (instantDoc / managedOverlay sections marked with `data-cover-mount`)
+ * and, in Phase 3, external-embed windows registered via the public push API.
+ *
+ * Phase 1C-1 scope: scaffolding only — area refs cached, entry CRUD comes in
+ * 1C-2 and entry rendering in 1C-3. The controller is instantiated by
+ * estreUi.initCoverBar() during fixedBottom load (see onLoadedFixedBottom).
+ */
+class EstreCoverBarController {
+
+    #$instantSections = null;
+    #$customFixedSections = null;
+    #entries = [];
+
+    constructor($fixedBottom) {
+        this.#$instantSections = $fixedBottom.find("nav#instantSections");
+        this.#$customFixedSections = $fixedBottom.find("nav#customFixedSections");
+    }
+
+    get $instantSections() { return this.#$instantSections; }
+    get $customFixedSections() { return this.#$customFixedSections; }
+    get entries() { return this.#entries; }
+}
+
 
 // Expose estreUi on window so ES-module-realm host integrations (external embeds
 // loaded as <script type="module">) can reach the public API. Same-realm classic
