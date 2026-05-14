@@ -392,6 +392,8 @@ const eds = {
     showing: "data-showing",
     length: "data-length",
     title: "data-title",
+    icon: "data-icon",
+    coverMount: "data-cover-mount",
     for: "data-for",
     name: "data-name",
     ally: "data-ally",

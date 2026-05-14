@@ -45,6 +45,44 @@ class EstrePageHandle {
 
     get title() { return this.$host?.attr(eds.title); }
 
+    /**
+     * Cover-bar entry label override. Falls back to `title` (= `data-title`) when unset.
+     * Set via `setCoverTitle(value)`; pass `undefined` to clear the override.
+     * @type {string|undefined}
+     */
+    #coverTitle = undefined;
+    get coverTitle() { return this.#coverTitle ?? this.title; }
+    setCoverTitle(value) {
+        this.#coverTitle = value;
+        // Phase 1C: notify cover-bar controller for live entry update.
+    }
+
+    /**
+     * Cover-bar entry icon override. Distinguishes "unset" (falls back to
+     * `data-icon`) from explicit set values via #isCoverIconSet — `undefined`,
+     * `null`, `""`, `"none"`, and an arbitrary URL are all distinct outcomes
+     * the bar's fallback branch interprets in Phase 1C.
+     * @type {string|null|undefined}
+     */
+    #coverIcon = undefined;
+    #isCoverIconSet = false;
+    get coverIcon() {
+        if (this.#isCoverIconSet) return this.#coverIcon;
+        return this.$host?.attr(eds.icon);
+    }
+    setCoverIcon(value) {
+        this.#coverIcon = value;
+        this.#isCoverIconSet = true;
+        // Phase 1C: notify cover-bar controller for live entry update.
+    }
+
+    /**
+     * Opt-in flag for cover-bar mounting. `data-cover-mount="1"` on the page
+     * section enables this; sub-class handlers can override the getter for
+     * programmatic opt-in (Phase 1C will also expose a constructor option).
+     */
+    get coverMount() { return this.$host?.attr(eds.coverMount) == t1; }
+
     #appbarLeft = null;
     #appbarRight = null;
     #appbarCenter = null;
@@ -2773,6 +2811,17 @@ class EstrePageHandler {
     get intentAction() { return this.intent?.action; }
     /** @type {*} The data field of the intent. */
     get intentData() { return this.intent?.data; }
+
+    /** Cover-bar entry label — see EstrePageHandle.coverTitle. */
+    get coverTitle() { return this.handle?.coverTitle; }
+    /** Cover-bar entry icon — see EstrePageHandle.coverIcon. */
+    get coverIcon() { return this.handle?.coverIcon; }
+    /** Cover-bar opt-in flag — see EstrePageHandle.coverMount. */
+    get coverMount() { return this.handle?.coverMount ?? false; }
+    /** Updates the cover-bar entry label for this handler's page. */
+    setCoverTitle(value) { return this.handle?.setCoverTitle(value); }
+    /** Updates the cover-bar entry icon for this handler's page. See EstrePageHandle.coverIcon for unset/empty/"none"/URL semantics. */
+    setCoverIcon(value) { return this.handle?.setCoverIcon(value); }
 
     /**
      * @param {EstrePageHandle} handle - The page handle to bind.
