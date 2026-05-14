@@ -215,10 +215,10 @@ const estreUi = {
     // the non-rootbar nav siblings under fixedBottom (`customFixedSections`,
     // `instantSections`) take flex-grow:1 per estreUiCore.css's `@media all and
     // (min-height: 700px) and (min-width: 740px)` block, AND the cover-bar
-    // controller is initialized. Combines static media-query state with dynamic
+    // handle is initialized. Combines static media-query state with dynamic
     // bootstrap state.
     get rootBarExtended() {
-        if (this.coverBarController == null) return false;
+        if (this.coverBarHandle == null) return false;
         const $nav = this.$fixedBottom?.find("nav:not(#rootbar)").first();
         if ($nav == null || $nav.length === 0) return false;
         return getComputedStyle($nav[0]).flexGrow === "1";
@@ -226,16 +226,18 @@ const estreUi = {
 
     // Cover bar — composite readiness: the environment supports the bar (wide
     // viewport with hover) AND the rootbar is in its extended layout with a
-    // controller already initialized. Cover entries should only be pushed
-    // when this returns true; the controller itself is idempotent against
-    // pushes that arrive while still false.
+    // handle already initialized. Cover entries should only be pushed when
+    // this returns true; the handle itself is idempotent against pushes that
+    // arrive while still false.
     get isInstantBarReady() {
         return this.isWideHoverViewport && this.rootBarExtended;
     },
 
-    // Placeholder for the cover-bar controller introduced in Phase 1C. Held at
-    // null so rootBarExtended can short-circuit before initialization.
-    coverBarController: null,
+    // Placeholder for the cover-bar handle introduced in Phase 1C. Held at null
+    // so rootBarExtended can short-circuit before initialization. Naming follows
+    // EstreUI's stock handle convention (EstreHandle, EstreSwipeHandler, etc.)
+    // even though the cover bar isn't DOM-attached the same way.
+    coverBarHandle: null,
 
 
 
@@ -934,13 +936,13 @@ const estreUi = {
         this.$rootTabs.filter(ax(eds.tabId)).click(this.rootTabOnClick);
     },
 
-    // Cover bar — instantiates the controller bound to the loaded fixedBottom
+    // Cover bar — instantiates the handle bound to the loaded fixedBottom
     // markup. Idempotent: subsequent calls noop, so reload paths are safe.
     // Phase 1C-2/1C-3 add lifecycle hooks and entry rendering on top of this.
     initCoverBar() {
-        if (this.coverBarController != null) return;
+        if (this.coverBarHandle != null) return;
         if (this.$fixedBottom == null || this.$fixedBottom.length === 0) return;
-        this.coverBarController = new EstreCoverBarController(this.$fixedBottom);
+        this.coverBarHandle = new EstreCoverBarHandle(this.$fixedBottom);
     },
 
     showExactAppbar(component, container, article) {
@@ -2054,15 +2056,19 @@ const estreUi = {
 }
 
 /**
- * Cover bar controller — owns the bottom-bar entry list that mirrors opt-in
- * pages (instantDoc / managedOverlay sections marked with `data-cover-mount`)
- * and, in Phase 3, external-embed windows registered via the public push API.
+ * Cover bar handle — owns the bottom-bar entry list that mirrors opt-in pages
+ * (instantDoc / managedOverlay sections marked with `data-cover-mount`) and,
+ * in Phase 3, external-embed windows registered via the public push API.
+ *
+ * Named with the `Handle` suffix to align with EstreUI's stock handle
+ * convention (EstreHandle, EstreSwipeHandler, etc.) even though this one
+ * isn't DOM-element-attached — it manages the bar surface as a single owner.
  *
  * Phase 1C-1 scope: scaffolding only — area refs cached, entry CRUD comes in
- * 1C-2 and entry rendering in 1C-3. The controller is instantiated by
+ * 1C-2 and entry rendering in 1C-3. The handle is instantiated by
  * estreUi.initCoverBar() during fixedBottom load (see onLoadedFixedBottom).
  */
-class EstreCoverBarController {
+class EstreCoverBarHandle {
 
     #$instantSections = null;
     #$customFixedSections = null;
