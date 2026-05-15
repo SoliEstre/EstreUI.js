@@ -244,8 +244,30 @@ footer#fixedBottom nav:not(#rootbar) { width: -moz-available; width: -webkit-fil
 footer#fixedBottom nav:not(#rootbar):first-child { padding-left: var(--left-pad); }
 footer#fixedBottom nav:not(#rootbar):last-child { padding-right: var(--right-pad); }
 }
-footer#fixedBottom nav#customFixedSections { }
-footer#fixedBottom nav#instantSections { }
+footer#fixedBottom nav#customFixedSections { display: flex; flex-flow: row nowrap; align-items: stretch; gap: 4px; overflow: hidden; }
+footer#fixedBottom nav#instantSections { display: flex; flex-flow: row nowrap; align-items: stretch; justify-content: flex-end; gap: 4px; overflow: hidden; }
+
+/* Cover bar entries — see EstreCoverBarHandle. One button per opt-in page or
+ * external embed window. Visual states are driven by data-active / data-minimized
+ * so the controller can flip them with attr() without touching class lists. */
+footer#fixedBottom nav#customFixedSections .cover_entry,
+footer#fixedBottom nav#instantSections .cover_entry {
+    display: inline-flex; flex-flow: row nowrap; align-items: center; gap: 6px;
+    padding: 4px 10px; min-width: 0;
+    border-radius: 8px;
+    color: var(--color-text-pale, rgb(var(--ca) / 70%));
+    background-color: transparent;
+    cursor: pointer;
+    transition-duration: 0.15s;
+    transition-property: background-color, color, opacity;
+}
+footer#fixedBottom nav .cover_entry:hover { background-color: rgb(var(--ca) / 8%); }
+footer#fixedBottom nav .cover_entry[data-active="1"] { color: var(--color-text-darker, rgb(var(--ca) / 95%)); background-color: rgb(var(--ca) / 12%); }
+footer#fixedBottom nav .cover_entry[data-minimized="1"] { opacity: 0.55; }
+footer#fixedBottom nav .cover_entry[data-minimized="1"][data-active="1"] { opacity: 0.8; }
+footer#fixedBottom nav .cover_entry > .cover_icon { display: inline-flex; flex-shrink: 0; width: 18px; height: 18px; align-items: center; justify-content: center; }
+footer#fixedBottom nav .cover_entry > .cover_icon > img { width: 100%; height: 100%; }
+footer#fixedBottom nav .cover_entry > label { flex-shrink: 1; min-width: 0; max-width: 14em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.875rem; line-height: 1.25rem; cursor: inherit; }
 
 
 /* session manager */

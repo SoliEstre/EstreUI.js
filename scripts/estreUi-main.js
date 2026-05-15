@@ -2087,8 +2087,7 @@ class EstreCoverBarHandle {
     get activeToken() { return this.#activeToken; }
 
     /**
-     * Register a new cover-bar entry. State-level only in 1C-2; DOM rendering
-     * lands in 1C-3 (the entry object reserves a $element field for that).
+     * Register a new cover-bar entry and render its DOM into `instantSections`.
      * @param {object} data
      * @param {EstrePageHandle} [data.pageHandle] — page bound to this entry (null for external embeds in Phase 3)
      * @param {string} [data.sectionBound] — main / blind / overlay etc., drives the default icon
@@ -2098,7 +2097,7 @@ class EstreCoverBarHandle {
      */
     pushEntry(data) {
         const token = this.#nextToken++;
-        this.#entries.push({
+        const entry = {
             token,
             pageHandle: data.pageHandle ?? null,
             sectionBound: data.sectionBound ?? null,
@@ -2106,7 +2105,9 @@ class EstreCoverBarHandle {
             icon: data.icon,
             minimized: false,
             $element: null,
-        });
+        };
+        this.#entries.push(entry);
+        this.#renderEntry(entry);
         return token;
     }
 
@@ -2122,7 +2123,13 @@ class EstreCoverBarHandle {
 
     setActiveByToken(token) {
         if (this.#entries.findIndex(e => e.token === token) < 0) return false;
+        if (this.#activeToken != null && this.#activeToken !== token) {
+            const prev = this.#entries.find(e => e.token === this.#activeToken);
+            prev?.$element?.attr("data-active", "");
+        }
         this.#activeToken = token;
+        const entry = this.#entries.find(e => e.token === token);
+        entry?.$element?.attr("data-active", "1");
         return true;
     }
 
@@ -2130,20 +2137,78 @@ class EstreCoverBarHandle {
         const entry = this.#entries.find(e => e.token === token);
         if (entry == null) return false;
         entry.minimized = !!minimized;
+        entry.$element?.attr("data-minimized", entry.minimized ? "1" : "");
         return true;
     }
 
     updateEntry(token, partial) {
         const entry = this.#entries.find(e => e.token === token);
         if (entry == null) return false;
-        if ("title" in partial) entry.title = partial.title;
-        if ("icon" in partial) entry.icon = partial.icon;
+        if ("title" in partial) {
+            entry.title = partial.title;
+            entry.$element?.find("> label").text(entry.title ?? "");
+        }
+        if ("icon" in partial) {
+            entry.icon = partial.icon;
+            this.#refreshEntryIcon(entry);
+        }
         return true;
     }
 
     /** Lookup entry by token. Returns the live object — callers should treat it as read-only. */
     findEntry(token) {
         return this.#entries.find(e => e.token === token) ?? null;
+    }
+
+    /**
+     * Resolve the icon URL for an entry per the cover-icon fallback rules:
+     *   - icon === undefined → unset → sectionBound default
+     *   - icon === ""        → explicit blank → sectionBound default
+     *   - icon === "none"    → text-only (returns null)
+     *   - icon === null      → text-only (returns null)
+     *   - icon === "<url>"   → that URL
+     */
+    #resolveIconUrl(entry) {
+        const icon = entry.icon;
+        if (icon === "none" || icon === null) return null;
+        if (icon === "" || icon === undefined) return this.#defaultIconForSection(entry.sectionBound);
+        return icon;
+    }
+
+    #defaultIconForSection(sectionBound) {
+        if (sectionBound === "main") return "./vectors/cover-icon-default-static.svg";
+        if (sectionBound === "blind") return "./vectors/cover-icon-default-instant.svg";
+        if (sectionBound === "overlay") return "./vectors/cover-icon-default-overlay.svg";
+        return null;
+    }
+
+    #renderEntry(entry) {
+        if (this.#$instantSections == null || this.#$instantSections.length === 0) return;
+        const $btn = $('<button type="button" class="clean cover_entry"></button>');
+        $btn.attr("data-cover-token", entry.token);
+        if (entry.sectionBound != null) $btn.attr("data-section-bound", entry.sectionBound);
+
+        const iconUrl = this.#resolveIconUrl(entry);
+        if (iconUrl != null) {
+            const $icon = $('<span class="cover_icon"></span>');
+            $icon.append($('<img alt="" />').attr("src", iconUrl));
+            $btn.append($icon);
+        }
+
+        $btn.append($('<label></label>').text(entry.title ?? ""));
+
+        entry.$element = $btn;
+        this.#$instantSections.append($btn);
+    }
+
+    #refreshEntryIcon(entry) {
+        if (entry.$element == null) return;
+        entry.$element.find("> .cover_icon").remove();
+        const iconUrl = this.#resolveIconUrl(entry);
+        if (iconUrl == null) return;
+        const $icon = $('<span class="cover_icon"></span>');
+        $icon.append($('<img alt="" />').attr("src", iconUrl));
+        entry.$element.prepend($icon);
     }
 }
 
