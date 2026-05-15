@@ -219,9 +219,10 @@ const estreUi = {
     // bootstrap state.
     get rootBarExtended() {
         if (this.coverBarHandle == null) return false;
-        const $nav = this.$fixedBottom?.find("nav:not(#rootbar)").first();
-        if ($nav == null || $nav.length === 0) return false;
-        return getComputedStyle($nav[0]).flexGrow === "1";
+        const fb = this.$fixedBottom?.[0] ?? this.$fixedBottom;
+        const nav = fb?.querySelector?.("nav:not(#rootbar)");
+        if (nav == null) return false;
+        return getComputedStyle(nav).flexGrow === "1";
     },
 
     // Cover bar — composite readiness: the environment supports the bar (wide
@@ -2070,19 +2071,28 @@ const estreUi = {
  */
 class EstreCoverBarHandle {
 
-    #$instantSections = null;
-    #$customFixedSections = null;
+    #instantSections = null;
+    #customFixedSections = null;
     #entries = [];
     #nextToken = 1;
     #activeToken = null;
 
     constructor($fixedBottom) {
-        this.#$instantSections = $fixedBottom.find("nav#instantSections");
-        this.#$customFixedSections = $fixedBottom.find("nav#customFixedSections");
+        // Accept either a jQuery wrapper or a native element; the cover bar is
+        // intentionally jQuery-agnostic internally so it stays usable under the
+        // estreU0EEOZ jQuery fallback (jsdom test environment) as well as the
+        // real jQuery in browsers.
+        const fb = $fixedBottom?.[0] ?? $fixedBottom;
+        this.#instantSections = fb?.querySelector?.("nav#instantSections") ?? null;
+        this.#customFixedSections = fb?.querySelector?.("nav#customFixedSections") ?? null;
     }
 
-    get $instantSections() { return this.#$instantSections; }
-    get $customFixedSections() { return this.#$customFixedSections; }
+    get instantSections() { return this.#instantSections; }
+    get customFixedSections() { return this.#customFixedSections; }
+    /** @deprecated jQuery-flavoured getter kept for legacy callers; prefer `instantSections`. */
+    get $instantSections() { return this.#instantSections == null ? null : $(this.#instantSections); }
+    /** @deprecated jQuery-flavoured getter kept for legacy callers; prefer `customFixedSections`. */
+    get $customFixedSections() { return this.#customFixedSections == null ? null : $(this.#customFixedSections); }
     get entries() { return this.#entries; }
     get activeToken() { return this.#activeToken; }
 
@@ -2104,7 +2114,7 @@ class EstreCoverBarHandle {
             title: data.title ?? null,
             icon: data.icon,
             minimized: false,
-            $element: null,
+            element: null,
         };
         this.#entries.push(entry);
         this.#renderEntry(entry);
@@ -2115,7 +2125,7 @@ class EstreCoverBarHandle {
         const idx = this.#entries.findIndex(e => e.token === token);
         if (idx < 0) return false;
         const entry = this.#entries[idx];
-        entry.$element?.remove();
+        entry.element?.remove();
         this.#entries.splice(idx, 1);
         if (this.#activeToken === token) this.#activeToken = null;
         return true;
@@ -2125,11 +2135,11 @@ class EstreCoverBarHandle {
         if (this.#entries.findIndex(e => e.token === token) < 0) return false;
         if (this.#activeToken != null && this.#activeToken !== token) {
             const prev = this.#entries.find(e => e.token === this.#activeToken);
-            prev?.$element?.attr("data-active", "");
+            prev?.element?.setAttribute("data-active", "");
         }
         this.#activeToken = token;
         const entry = this.#entries.find(e => e.token === token);
-        entry?.$element?.attr("data-active", "1");
+        entry?.element?.setAttribute("data-active", "1");
         return true;
     }
 
@@ -2137,7 +2147,7 @@ class EstreCoverBarHandle {
         const entry = this.#entries.find(e => e.token === token);
         if (entry == null) return false;
         entry.minimized = !!minimized;
-        entry.$element?.attr("data-minimized", entry.minimized ? "1" : "");
+        entry.element?.setAttribute("data-minimized", entry.minimized ? "1" : "");
         return true;
     }
 
@@ -2146,7 +2156,8 @@ class EstreCoverBarHandle {
         if (entry == null) return false;
         if ("title" in partial) {
             entry.title = partial.title;
-            entry.$element?.find("> label").text(entry.title ?? "");
+            const label = entry.element?.querySelector(":scope > label");
+            if (label != null) label.textContent = entry.title ?? "";
         }
         if ("icon" in partial) {
             entry.icon = partial.icon;
@@ -2183,32 +2194,71 @@ class EstreCoverBarHandle {
     }
 
     #renderEntry(entry) {
-        if (this.#$instantSections == null || this.#$instantSections.length === 0) return;
-        const $btn = $('<button type="button" class="clean cover_entry"></button>');
-        $btn.attr("data-cover-token", entry.token);
-        if (entry.sectionBound != null) $btn.attr("data-section-bound", entry.sectionBound);
+        if (this.#instantSections == null) return;
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "clean cover_entry";
+        btn.setAttribute("data-cover-token", entry.token);
+        if (entry.sectionBound != null) btn.setAttribute("data-section-bound", entry.sectionBound);
 
         const iconUrl = this.#resolveIconUrl(entry);
         if (iconUrl != null) {
-            const $icon = $('<span class="cover_icon"></span>');
-            $icon.append($('<img alt="" />').attr("src", iconUrl));
-            $btn.append($icon);
+            const span = document.createElement("span");
+            span.className = "cover_icon";
+            const img = document.createElement("img");
+            img.alt = "";
+            img.src = iconUrl;
+            span.appendChild(img);
+            btn.appendChild(span);
         }
 
-        $btn.append($('<label></label>').text(entry.title ?? ""));
+        const label = document.createElement("label");
+        label.textContent = entry.title ?? "";
+        btn.appendChild(label);
 
-        entry.$element = $btn;
-        this.#$instantSections.append($btn);
+        const self = this;
+        btn.addEventListener("click", () => self.#onEntryClicked(entry.token));
+
+        entry.element = btn;
+        this.#instantSections.appendChild(btn);
+    }
+
+    /**
+     * Cover-bar entry click handler. Routes to one of two outcomes based on
+     * the current entry state, mirroring how task-switcher-style docks behave:
+     *
+     *   - active & visible  → hide (minimize the page)
+     *   - inactive          → show + focus (raise to active)
+     *   - minimized         → show + focus (restore + raise)
+     *
+     * When entry.pageHandle is null (Phase 3 external-embed entry) the click
+     * is a noop here — Phase 3 routes through a separate registered callback
+     * the embed owns.
+     */
+    #onEntryClicked(token) {
+        const entry = this.#entries.find(e => e.token === token);
+        if (entry == null) return;
+        const handle = entry.pageHandle;
+        if (handle == null) return;
+        if (this.#activeToken === token && !entry.minimized) {
+            handle.hide();
+        } else {
+            handle.show(true, true);
+        }
     }
 
     #refreshEntryIcon(entry) {
-        if (entry.$element == null) return;
-        entry.$element.find("> .cover_icon").remove();
+        if (entry.element == null) return;
+        entry.element.querySelector(":scope > .cover_icon")?.remove();
         const iconUrl = this.#resolveIconUrl(entry);
         if (iconUrl == null) return;
-        const $icon = $('<span class="cover_icon"></span>');
-        $icon.append($('<img alt="" />').attr("src", iconUrl));
-        entry.$element.prepend($icon);
+        const span = document.createElement("span");
+        span.className = "cover_icon";
+        const img = document.createElement("img");
+        img.alt = "";
+        img.src = iconUrl;
+        span.appendChild(img);
+        entry.element.insertBefore(span, entry.element.firstChild);
     }
 }
 
