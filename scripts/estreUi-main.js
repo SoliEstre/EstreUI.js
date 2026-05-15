@@ -1894,6 +1894,100 @@ const estreUi = {
         this.externalBackStack.length = 0;
     },
 
+
+    // ─── instantSections — external embed hook (cover bar, Phase 3) ───
+    //
+    // Light-DOM-mounted embeds (mango-class talk, future docked tools…) can
+    // surface their own windows in the right-side cover bar (instantSections)
+    // using these four wrappers. Internally they delegate to the singleton
+    // EstreCoverBarHandle managed by initCoverBar(); each push returns a
+    // monotone positive integer token. The user's intent is reported back
+    // through the per-entry `onAction(action)` callback, where `action` is
+    // one of "focus" / "minimize" / "restore" / "close". The embed owns the
+    // actual window transition — the bar only routes intent.
+
+    /**
+     * Register an external cover-bar entry. Returns a token; pass it back to
+     * `updateInstantSectionEntry` / `removeInstantSectionEntry` /
+     * `setInstantSectionActiveByToken`.
+     *
+     * With `closable: true` an ✕ button is rendered on the entry; clicking
+     * it fires `onAction("close")`. The embed is responsible for the actual
+     * close (so async confirm / server roundtrip can run first) and must
+     * call `removeInstantSectionEntry` once the close completes.
+     *
+     * @param {object} data
+     * @param {string} [data.title]
+     * @param {string|null|undefined} [data.icon] — empty / undefined → sectionBound default, "none" / null → text-only, "<url>" → that URL
+     * @param {string} [data.sectionBound] — "main" | "blind" | "overlay", drives the default icon
+     * @param {(action: "focus"|"minimize"|"restore"|"close") => void} [data.onAction]
+     * @param {boolean} [data.closable] — render an ✕ that fires onAction("close")
+     * @returns {number|null} token, or `null` if the cover bar isn't initialised
+     */
+    pushInstantSectionEntry(data) {
+        if (this.coverBarHandle == null) {
+            if (window.isLogging) console.warn("[estreUi] pushInstantSectionEntry — coverBarHandle not initialised");
+            return null;
+        }
+        return this.coverBarHandle.pushEntry({
+            title: data?.title,
+            icon: data?.icon,
+            sectionBound: data?.sectionBound,
+            onAction: data?.onAction,
+            closable: data?.closable,
+        });
+    },
+
+    /**
+     * Patch an existing external entry. `partial` may carry any of `title`,
+     * `icon`, `onAction`, `closable`. Returns false if the token is unknown
+     * or the cover bar isn't initialised.
+     *
+     * @param {number} token
+     * @param {object} partial
+     * @returns {boolean}
+     */
+    updateInstantSectionEntry(token, partial) {
+        return this.coverBarHandle?.updateEntry(token, partial) ?? false;
+    },
+
+    /**
+     * Remove an external entry. The bar detaches the DOM and forgets the
+     * state; `activeToken` is cleared if the removed entry was active.
+     *
+     * @param {number} token
+     * @returns {boolean}
+     */
+    removeInstantSectionEntry(token) {
+        return this.coverBarHandle?.removeEntry(token) ?? false;
+    },
+
+    /**
+     * Mark an external entry active (visually highlighted on the bar).
+     * Call this from the embed when its window gains focus through some
+     * other path than a bar click — e.g., the user clicked inside the
+     * embed itself.
+     *
+     * @param {number} token
+     * @returns {boolean}
+     */
+    setInstantSectionActiveByToken(token) {
+        return this.coverBarHandle?.setActiveByToken(token) ?? false;
+    },
+
+    /**
+     * Mark an external entry minimized / restored. Call this from the embed
+     * when its window's visibility changes through a path other than a bar
+     * click — e.g., the embed exposed its own minimize control.
+     *
+     * @param {number} token
+     * @param {boolean} minimized
+     * @returns {boolean}
+     */
+    setInstantSectionMinimizedByToken(token, minimized) {
+        return this.coverBarHandle?.setMinimizedByToken(token, minimized) ?? false;
+    },
+
     async onCloseContainer() {
         return this.isOpenMainMenu ? await this.menuCurrentOnTop?.onCloseContainer() ?? false : false ||
             await this.mainCurrentOnTop?.onCloseContainer();
@@ -2175,6 +2269,12 @@ class EstreCoverBarHandle {
             sectionBound: data.sectionBound ?? null,
             title: data.title ?? null,
             icon: data.icon,
+            // External-embed wiring (Phase 3). pageHandle and onAction are
+            // mutually exclusive at the click-routing level: when pageHandle
+            // is set, clicks call show/hide on it; otherwise onAction fires
+            // with one of "focus" / "minimize" / "restore" / "close".
+            onAction: typeof data.onAction === "function" ? data.onAction : null,
+            closable: data.closable === true,
             minimized: false,
             element: null,
         };
@@ -2226,6 +2326,13 @@ class EstreCoverBarHandle {
         if ("icon" in partial) {
             entry.icon = partial.icon;
             this.#refreshEntryIcon(entry);
+        }
+        if ("onAction" in partial) {
+            entry.onAction = typeof partial.onAction === "function" ? partial.onAction : null;
+        }
+        if ("closable" in partial) {
+            entry.closable = partial.closable === true;
+            this.#refreshEntryClose(entry);
         }
         this.#recomputeOverflow();
         return true;
@@ -2286,29 +2393,69 @@ class EstreCoverBarHandle {
 
         entry.element = btn;
         this.#instantSections.appendChild(btn);
+        if (entry.closable) this.#refreshEntryClose(entry);
     }
 
     /**
-     * Cover-bar entry click handler. Routes to one of two outcomes based on
-     * the current entry state, mirroring how task-switcher-style docks behave:
+     * Add / remove the close ✕ on an entry to match `entry.closable`. Idempotent
+     * so it can be called from #renderEntry (initial paint) and updateEntry
+     * (state change). The ✕ click fires onAction("close") only — the embed is
+     * responsible for the actual close (so an async confirm / server roundtrip
+     * can run first) and must call removeInstantSectionEntry afterwards.
+     */
+    #refreshEntryClose(entry) {
+        if (entry.element == null) return;
+        const existing = entry.element.querySelector(":scope > .cover_entry_close");
+        if (!entry.closable) {
+            existing?.remove();
+            return;
+        }
+        if (existing != null) return;
+        const close = document.createElement("span");
+        close.className = "cover_entry_close";
+        close.setAttribute("role", "button");
+        close.setAttribute("aria-label", "Close");
+        close.textContent = "✕";
+        close.addEventListener("click", (event) => {
+            event.stopPropagation();
+            if (typeof entry.onAction === "function") entry.onAction("close");
+        });
+        entry.element.appendChild(close);
+    }
+
+    /**
+     * Cover-bar entry click handler. Routes to one of two surfaces based on
+     * whether the entry has a page handle or an external onAction callback.
+     * The state-to-intent mapping is the same in both branches — it mirrors
+     * how task-switcher-style docks behave:
      *
-     *   - active & visible  → hide (minimize the page)
-     *   - inactive          → show + focus (raise to active)
-     *   - minimized         → show + focus (restore + raise)
+     *   - active & visible  → hide / "minimize"
+     *   - inactive          → show + focus / "focus"
+     *   - active & minimized → show + focus / "restore"
      *
-     * When entry.pageHandle is null (Phase 3 external-embed entry) the click
-     * is a noop here — Phase 3 routes through a separate registered callback
-     * the embed owns.
+     * For internal page entries the handle's own show/hide is invoked. For
+     * external embed entries (Phase 3) the registered onAction callback is
+     * fired with the corresponding action token; the embed owns the actual
+     * focus/minimize/restore transition. Entries with neither route configured
+     * noop on click.
      */
     #onEntryClicked(token) {
         const entry = this.#entries.find(e => e.token === token);
         if (entry == null) return;
-        const handle = entry.pageHandle;
-        if (handle == null) return;
-        if (this.#activeToken === token && !entry.minimized) {
-            handle.hide();
-        } else {
-            handle.show(true, true);
+        if (entry.pageHandle != null) {
+            if (this.#activeToken === token && !entry.minimized) {
+                entry.pageHandle.hide();
+            } else {
+                entry.pageHandle.show(true, true);
+            }
+            return;
+        }
+        if (typeof entry.onAction === "function") {
+            let action;
+            if (this.#activeToken === token && !entry.minimized) action = "minimize";
+            else if (this.#activeToken === token && entry.minimized) action = "restore";
+            else action = "focus";
+            entry.onAction(action);
         }
     }
 
@@ -2480,6 +2627,18 @@ class EstreCoverBarHandle {
                 self.#closeDropdown();
                 self.#onEntryClicked(entry.token);
             });
+            if (entry.closable) {
+                const close = document.createElement("span");
+                close.className = "cover_entry_close";
+                close.setAttribute("role", "button");
+                close.setAttribute("aria-label", "Close");
+                close.textContent = "✕";
+                close.addEventListener("click", (event) => {
+                    event.stopPropagation();
+                    if (typeof entry.onAction === "function") entry.onAction("close");
+                });
+                row.appendChild(close);
+            }
             element.appendChild(row);
         }
     }

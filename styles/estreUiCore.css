@@ -290,6 +290,30 @@ footer#fixedBottom nav .cover_entry > label,
 div#topLayer .cover_overflow_dropdown .cover_entry > label { flex-shrink: 1; min-width: 0; max-width: 14em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.875rem; line-height: 1.25rem; cursor: inherit; }
 footer#fixedBottom nav .cover_entry[data-overflowed="1"] { display: none; }
 
+/* Per-entry close ✕ — rendered when the entry was pushed with closable:true
+ * (Phase 3 external embed hook). Lives inside the entry button as a span so
+ * the click handler can stopPropagation and route to onAction("close") without
+ * the surrounding row registering as a focus/minimize click. The embed is
+ * responsible for actually removing the entry; the ✕ only signals intent. */
+footer#fixedBottom nav .cover_entry > .cover_entry_close,
+div#topLayer .cover_overflow_dropdown .cover_entry > .cover_entry_close {
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    width: 18px; height: 18px;
+    margin-left: 2px;
+    border-radius: 50%;
+    color: var(--color-text-pale, rgb(var(--ca) / 50%));
+    font-size: 0.75rem; line-height: 1;
+    cursor: pointer;
+    transition-duration: 0.15s;
+    transition-property: background-color, color;
+}
+footer#fixedBottom nav .cover_entry > .cover_entry_close:hover,
+div#topLayer .cover_overflow_dropdown .cover_entry > .cover_entry_close:hover {
+    background-color: rgb(var(--ca) / 15%);
+    color: var(--color-text-darker, rgb(var(--ca) / 95%));
+}
+
 /* Overflow sentinel — narrow ⌃ button at the leading edge of each area
  * (right-aligned bars' clipped side). Visibility flips via the `hidden`
  * attribute from #recomputeOverflow. data-opened mirrors the dropdown's
