@@ -187,3 +187,231 @@ describe('EstreCoverBarHandle — click routing', () => {
         expect(calls).toEqual([]);
     });
 });
+
+
+// ── EstreCoverBarHandle — overflow measurement + dropdown ─────────────
+//
+// jsdom does not lay out CSS, so scrollWidth / clientWidth are always 0
+// out of the box. Each suite stubs both as computed getters that fake a
+// fixed per-entry width and treat the sentinel's reserved width as part
+// of the budget — so the handle's "hide one until it fits" loop walks
+// realistically.
+
+function makeFixedBottomWithTopLayer() {
+    document.body.innerHTML = `
+        <footer id="fixedBottom">
+            <nav id="customFixedSections"></nav>
+            <nav id="rootbar"></nav>
+            <nav id="instantSections"></nav>
+        </footer>
+        <div id="topLayer"></div>
+    `;
+    return {
+        fixedBottom: document.getElementById('fixedBottom'),
+        topLayer: document.getElementById('topLayer'),
+    };
+}
+
+function stubAreaOverflow(area, entryWidth, sentinelWidth, clientWidth) {
+    Object.defineProperty(area, 'scrollWidth', {
+        configurable: true,
+        get() {
+            const visible = area.querySelectorAll(
+                '.cover_entry:not([data-overflowed="1"])'
+            ).length;
+            const sent = area.querySelector('.cover_overflow_sentinel');
+            const sentOn = sent != null && !sent.hidden;
+            return visible * entryWidth + (sentOn ? sentinelWidth : 0);
+        },
+    });
+    Object.defineProperty(area, 'clientWidth', {
+        configurable: true,
+        get: () => clientWidth,
+    });
+}
+
+describe('EstreCoverBarHandle — overflow measurement', () => {
+
+    let handle;
+    let instant;
+    let sentinel;
+    beforeEach(() => {
+        const { fixedBottom, topLayer } = makeFixedBottomWithTopLayer();
+        handle = new EstreCoverBarHandle(fixedBottom, topLayer);
+        instant = handle.instantSections;
+        sentinel = instant.querySelector('.cover_overflow_sentinel');
+        // 100 px per entry, 30 px sentinel, 250 px wide nav.
+        //   2 entries → 200 ≤ 250  → no overflow
+        //   3 entries → 300 > 250  → overflow; sentinel(30) + 2 entries(200) = 230 ≤ 250
+        stubAreaOverflow(instant, 100, 30, 250);
+    });
+
+    test('constructor appends a hidden sentinel into instantSections', () => {
+        expect(sentinel).not.toBeNull();
+        expect(sentinel.hidden).toBe(true);
+        expect(sentinel.getAttribute('data-area')).toBe('instant');
+    });
+
+    test('sentinel stays hidden when entries fit', () => {
+        handle.pushEntry({ title: 'A' });
+        handle.pushEntry({ title: 'B' });
+        expect(sentinel.hidden).toBe(true);
+        expect(instant.querySelectorAll('[data-overflowed="1"]').length).toBe(0);
+    });
+
+    test('sentinel reveals + oldest entries get data-overflowed when too many', () => {
+        const a = handle.pushEntry({ title: 'A' });
+        const b = handle.pushEntry({ title: 'B' });
+        const c = handle.pushEntry({ title: 'C' });
+        const d = handle.pushEntry({ title: 'D' });
+        expect(sentinel.hidden).toBe(false);
+        // Sentinel(30) + 2 visible entries(200) = 230 ≤ 250 → 2 entries hidden.
+        // For instantSections (flex-end) we hide from the leading edge first.
+        expect(instant.querySelector(`[data-cover-token="${a}"]`).getAttribute('data-overflowed')).toBe('1');
+        expect(instant.querySelector(`[data-cover-token="${b}"]`).getAttribute('data-overflowed')).toBe('1');
+        expect(instant.querySelector(`[data-cover-token="${c}"]`).getAttribute('data-overflowed')).toBeNull();
+        expect(instant.querySelector(`[data-cover-token="${d}"]`).getAttribute('data-overflowed')).toBeNull();
+    });
+
+    test('removeEntry triggers recompute — sentinel re-hides once everything fits', () => {
+        const a = handle.pushEntry({ title: 'A' });
+        const b = handle.pushEntry({ title: 'B' });
+        handle.pushEntry({ title: 'C' });
+        handle.pushEntry({ title: 'D' });
+        expect(sentinel.hidden).toBe(false);
+        handle.removeEntry(a);
+        handle.removeEntry(b);
+        expect(sentinel.hidden).toBe(true);
+        expect(instant.querySelectorAll('[data-overflowed="1"]').length).toBe(0);
+    });
+
+    test('handle constructed without topLayer still measures overflow safely', () => {
+        document.body.innerHTML = `
+            <footer id="fixedBottom">
+                <nav id="customFixedSections"></nav>
+                <nav id="rootbar"></nav>
+                <nav id="instantSections"></nav>
+            </footer>
+        `;
+        const h = new EstreCoverBarHandle(document.getElementById('fixedBottom'));
+        const inst = h.instantSections;
+        stubAreaOverflow(inst, 100, 30, 250);
+        h.pushEntry({ title: 'A' });
+        h.pushEntry({ title: 'B' });
+        h.pushEntry({ title: 'C' });
+        // Sentinel reveals; opening a dropdown is just a no-op when topLayer is null.
+        expect(inst.querySelector('.cover_overflow_sentinel').hidden).toBe(false);
+    });
+});
+
+describe('EstreCoverBarHandle — overflow dropdown', () => {
+
+    let handle;
+    let instant;
+    let topLayer;
+    let sentinel;
+    beforeEach(() => {
+        const fb = makeFixedBottomWithTopLayer();
+        handle = new EstreCoverBarHandle(fb.fixedBottom, fb.topLayer);
+        instant = handle.instantSections;
+        topLayer = fb.topLayer;
+        sentinel = instant.querySelector('.cover_overflow_sentinel');
+        stubAreaOverflow(instant, 100, 30, 250);
+    });
+
+    test('clicking sentinel mounts a dropdown into topLayer with overflowed rows', () => {
+        const a = handle.pushEntry({ title: 'A' });
+        const b = handle.pushEntry({ title: 'B' });
+        handle.pushEntry({ title: 'C' });
+        handle.pushEntry({ title: 'D' });
+        sentinel.click();
+        const dropdown = topLayer.querySelector('.cover_overflow_dropdown');
+        expect(dropdown).not.toBeNull();
+        expect(dropdown.getAttribute('data-area')).toBe('instant');
+        const rows = dropdown.querySelectorAll('.cover_entry');
+        expect(rows.length).toBe(2);
+        expect(rows[0].getAttribute('data-cover-token')).toBe(String(a));
+        expect(rows[1].getAttribute('data-cover-token')).toBe(String(b));
+        expect(sentinel.getAttribute('data-opened')).toBe('1');
+    });
+
+    test('clicking the sentinel again toggles it closed', () => {
+        handle.pushEntry({ title: 'A' });
+        handle.pushEntry({ title: 'B' });
+        handle.pushEntry({ title: 'C' });
+        handle.pushEntry({ title: 'D' });
+        sentinel.click();
+        expect(topLayer.querySelector('.cover_overflow_dropdown')).not.toBeNull();
+        sentinel.click();
+        expect(topLayer.querySelector('.cover_overflow_dropdown')).toBeNull();
+        expect(sentinel.getAttribute('data-opened')).toBeNull();
+    });
+
+    test('outside pointerdown closes the dropdown', () => {
+        handle.pushEntry({ title: 'A' });
+        handle.pushEntry({ title: 'B' });
+        handle.pushEntry({ title: 'C' });
+        handle.pushEntry({ title: 'D' });
+        sentinel.click();
+        document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+        expect(topLayer.querySelector('.cover_overflow_dropdown')).toBeNull();
+    });
+
+    test('pointerdown INSIDE the dropdown does not close it', () => {
+        handle.pushEntry({ title: 'A' });
+        handle.pushEntry({ title: 'B' });
+        handle.pushEntry({ title: 'C' });
+        handle.pushEntry({ title: 'D' });
+        sentinel.click();
+        const dropdown = topLayer.querySelector('.cover_overflow_dropdown');
+        dropdown.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+        expect(topLayer.querySelector('.cover_overflow_dropdown')).not.toBeNull();
+    });
+
+    test('Escape closes the dropdown', () => {
+        handle.pushEntry({ title: 'A' });
+        handle.pushEntry({ title: 'B' });
+        handle.pushEntry({ title: 'C' });
+        handle.pushEntry({ title: 'D' });
+        sentinel.click();
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+        expect(topLayer.querySelector('.cover_overflow_dropdown')).toBeNull();
+    });
+
+    test('dropdown row routes the click through #onEntryClicked + closes itself', () => {
+        const calls = [];
+        const pageHandle = {
+            show: (...args) => { calls.push(['show', ...args]); },
+            hide: () => { calls.push(['hide']); },
+        };
+        const a = handle.pushEntry({ pageHandle, title: 'A' });
+        handle.pushEntry({ title: 'B' });
+        handle.pushEntry({ title: 'C' });
+        handle.pushEntry({ title: 'D' });
+        sentinel.click();
+        const row = topLayer.querySelector(
+            `.cover_overflow_dropdown [data-cover-token="${a}"]`
+        );
+        row.click();
+        expect(calls).toEqual([['show', true, true]]);
+        expect(topLayer.querySelector('.cover_overflow_dropdown')).toBeNull();
+    });
+
+    test('opening with no topLayer is a safe no-op', () => {
+        document.body.innerHTML = `
+            <footer id="fixedBottom">
+                <nav id="customFixedSections"></nav>
+                <nav id="rootbar"></nav>
+                <nav id="instantSections"></nav>
+            </footer>
+        `;
+        const h = new EstreCoverBarHandle(document.getElementById('fixedBottom'));
+        const inst = h.instantSections;
+        const sent = inst.querySelector('.cover_overflow_sentinel');
+        stubAreaOverflow(inst, 100, 30, 250);
+        h.pushEntry({ title: 'A' });
+        h.pushEntry({ title: 'B' });
+        h.pushEntry({ title: 'C' });
+        expect(() => sent.click()).not.toThrow();
+    });
+});

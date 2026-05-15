@@ -2077,9 +2077,15 @@ class EstreCoverBarHandle {
     #instantSections = null;
     #customFixedSections = null;
     #topLayer = null;
+    #instantSentinel = null;
+    #customFixedSentinel = null;
+    #resizeObserver = null;
     #entries = [];
     #nextToken = 1;
     #activeToken = null;
+    #openDropdown = null;
+    #onDocumentPointerDown = null;
+    #onDocumentKeydown = null;
 
     constructor($fixedBottom, $topLayer) {
         // Accept either a jQuery wrapper or a native element; the cover bar is
@@ -2094,6 +2100,52 @@ class EstreCoverBarHandle {
         // renders entries; overflow dropdowns simply do not appear.
         const tl = $topLayer?.[0] ?? $topLayer;
         this.#topLayer = tl ?? null;
+
+        // Overflow sentinels — a ⌃-caret button at the leading edge of each
+        // area. Always appended once; visibility flips via the `hidden` attr
+        // as #recomputeOverflow measures area space against entry width.
+        // instantSections is right-aligned (justify-content: flex-end) so
+        // the sentinel ends up at the left edge of the visible cluster —
+        // i.e., it points at the overflowed (clipped) side. The sentinel
+        // is prepended so newly pushed entries (appended) always render to
+        // its trailing side.
+        if (this.#instantSections != null) {
+            this.#instantSentinel = this.#createSentinel("instant");
+            this.#instantSections.appendChild(this.#instantSentinel);
+        }
+        if (this.#customFixedSections != null) {
+            this.#customFixedSentinel = this.#createSentinel("custom-fixed");
+            this.#customFixedSections.appendChild(this.#customFixedSentinel);
+        }
+
+        // ResizeObserver watches both areas so overflow recomputes when the
+        // host viewport changes or the bar's siblings adjust. Falls back to a
+        // no-op if the API isn't available (rare; jsdom recent versions ship
+        // ResizeObserver). Push/remove/update paths call #recomputeOverflow
+        // directly so the bar stays in sync even without observer events.
+        if (typeof ResizeObserver !== "undefined") {
+            this.#resizeObserver = new ResizeObserver(() => this.#recomputeOverflow());
+            if (this.#instantSections != null) this.#resizeObserver.observe(this.#instantSections);
+            if (this.#customFixedSections != null) this.#resizeObserver.observe(this.#customFixedSections);
+        }
+
+        // Global listeners — close the overflow dropdown on outside click or
+        // Escape. Capture phase so an embed cannot swallow the pointerdown
+        // before we see it (the dropdown lives in #topLayer and the user's
+        // intent in clicking anywhere else is unambiguously "dismiss").
+        const self = this;
+        this.#onDocumentPointerDown = (event) => {
+            if (self.#openDropdown == null) return;
+            const path = typeof event.composedPath === "function" ? event.composedPath() : [];
+            if (path.includes(self.#openDropdown.element)) return;
+            if (path.includes(self.#openDropdown.sentinel)) return;
+            self.#closeDropdown();
+        };
+        this.#onDocumentKeydown = (event) => {
+            if (event.key === "Escape" && self.#openDropdown != null) self.#closeDropdown();
+        };
+        document.addEventListener("pointerdown", this.#onDocumentPointerDown, true);
+        document.addEventListener("keydown", this.#onDocumentKeydown);
     }
 
     get instantSections() { return this.#instantSections; }
@@ -2128,6 +2180,7 @@ class EstreCoverBarHandle {
         };
         this.#entries.push(entry);
         this.#renderEntry(entry);
+        this.#recomputeOverflow();
         return token;
     }
 
@@ -2138,6 +2191,7 @@ class EstreCoverBarHandle {
         entry.element?.remove();
         this.#entries.splice(idx, 1);
         if (this.#activeToken === token) this.#activeToken = null;
+        this.#recomputeOverflow();
         return true;
     }
 
@@ -2173,6 +2227,7 @@ class EstreCoverBarHandle {
             entry.icon = partial.icon;
             this.#refreshEntryIcon(entry);
         }
+        this.#recomputeOverflow();
         return true;
     }
 
@@ -2269,6 +2324,187 @@ class EstreCoverBarHandle {
         img.src = iconUrl;
         span.appendChild(img);
         entry.element.insertBefore(span, entry.element.firstChild);
+    }
+
+    /**
+     * Create the per-area overflow sentinel button. Hidden by default; the
+     * recompute pass flips `hidden` based on whether entries fit. Clicking
+     * toggles the area's overflow dropdown (Phase 2C).
+     */
+    #createSentinel(areaKey) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "clean cover_overflow_sentinel";
+        btn.setAttribute("data-area", areaKey);
+        btn.setAttribute("aria-label", "Show overflowed entries");
+        btn.textContent = "⌃"; // ⌃ — Up Arrowhead (narrow caret)
+        btn.hidden = true;
+        const self = this;
+        btn.addEventListener("click", (event) => {
+            event.stopPropagation();
+            self.#toggleDropdown(areaKey);
+        });
+        return btn;
+    }
+
+    /**
+     * Re-evaluate overflow for both areas. Cheap: short loop guided by
+     * `area.scrollWidth > area.clientWidth`. Called from push / remove /
+     * update / ResizeObserver. Hidden entries (data-overflowed="1") drop
+     * out of layout via CSS, so subsequent measurements reflect the new
+     * width budget.
+     */
+    #recomputeOverflow() {
+        this.#recomputeAreaOverflow(this.#instantSections, this.#instantSentinel, "leading");
+        this.#recomputeAreaOverflow(this.#customFixedSections, this.#customFixedSentinel, "trailing");
+        if (this.#openDropdown != null) this.#refreshOpenDropdown();
+    }
+
+    /**
+     * Hide entries one at a time from the chosen end until the cluster fits.
+     *   - leading  → hide from index 0 forward  (oldest first, suited to
+     *                flex-end areas where the leading edge is clipped)
+     *   - trailing → hide from index N-1 backward (newest first, suited to
+     *                flex-start areas where the trailing edge is clipped)
+     */
+    #recomputeAreaOverflow(area, sentinel, hideFrom) {
+        if (area == null || sentinel == null) return;
+        const entries = this.#entriesForArea(area);
+        for (const e of entries) e.element?.removeAttribute("data-overflowed");
+        sentinel.hidden = true;
+        if (entries.length === 0) return;
+        if (area.scrollWidth <= area.clientWidth) return;
+
+        // Reveal the sentinel so its width counts toward the budget; then
+        // hide entries until the remaining cluster fits alongside it.
+        sentinel.hidden = false;
+        const indices = hideFrom === "leading"
+            ? entries.map((_, i) => i)
+            : entries.map((_, i) => entries.length - 1 - i);
+        for (const i of indices) {
+            if (area.scrollWidth <= area.clientWidth) return;
+            entries[i].element?.setAttribute("data-overflowed", "1");
+        }
+    }
+
+    /** Currently only `instantSections` hosts cover-bar entries. customFixedSections
+     *  is reserved for future user-pinned items (see PM/002 task ledger §Phase 4+). */
+    #entriesForArea(area) {
+        if (area === this.#instantSections) return this.#entries;
+        return [];
+    }
+
+    /**
+     * Open / close / toggle the overflow dropdown for an area. Single open
+     * dropdown at a time; opening one while another is open swaps them.
+     * No-op when the top-layer host slot is missing.
+     */
+    #toggleDropdown(areaKey) {
+        if (this.#openDropdown != null && this.#openDropdown.areaKey === areaKey) {
+            this.#closeDropdown();
+            return;
+        }
+        this.#openDropdown != null && this.#closeDropdown();
+        this.#openDropdown = this.#openDropdownFor(areaKey);
+    }
+
+    #openDropdownFor(areaKey) {
+        if (this.#topLayer == null) return null;
+        const sentinel = areaKey === "instant" ? this.#instantSentinel : this.#customFixedSentinel;
+        const area = areaKey === "instant" ? this.#instantSections : this.#customFixedSections;
+        if (sentinel == null || area == null) return null;
+
+        const dropdown = document.createElement("div");
+        dropdown.className = "cover_overflow_dropdown";
+        dropdown.setAttribute("data-area", areaKey);
+        this.#topLayer.appendChild(dropdown);
+        sentinel.setAttribute("data-opened", "1");
+
+        const state = { areaKey, sentinel, area, element: dropdown };
+        // Render and position after attaching so size can be measured.
+        this.#renderDropdownRows(state);
+        this.#positionDropdown(state);
+        return state;
+    }
+
+    #closeDropdown() {
+        if (this.#openDropdown == null) return;
+        this.#openDropdown.element.remove();
+        this.#openDropdown.sentinel?.removeAttribute("data-opened");
+        this.#openDropdown = null;
+    }
+
+    /** Re-render rows + re-position the open dropdown. Called when the set
+     *  of overflowed entries changes (e.g. resize) while it's open. */
+    #refreshOpenDropdown() {
+        if (this.#openDropdown == null) return;
+        // If the sentinel went away (everything fits again), drop the dropdown.
+        if (this.#openDropdown.sentinel?.hidden) {
+            this.#closeDropdown();
+            return;
+        }
+        this.#renderDropdownRows(this.#openDropdown);
+        this.#positionDropdown(this.#openDropdown);
+    }
+
+    #renderDropdownRows(state) {
+        const { element, area } = state;
+        element.replaceChildren();
+        const entries = this.#entriesForArea(area).filter(e => e.element?.getAttribute("data-overflowed") === "1");
+        for (const entry of entries) {
+            const row = document.createElement("button");
+            row.type = "button";
+            row.className = "clean cover_entry";
+            row.setAttribute("data-cover-token", entry.token);
+            if (entry.sectionBound != null) row.setAttribute("data-section-bound", entry.sectionBound);
+            if (this.#activeToken === entry.token) row.setAttribute("data-active", "1");
+            if (entry.minimized) row.setAttribute("data-minimized", "1");
+
+            const iconUrl = this.#resolveIconUrl(entry);
+            if (iconUrl != null) {
+                const span = document.createElement("span");
+                span.className = "cover_icon";
+                const img = document.createElement("img");
+                img.alt = "";
+                img.src = iconUrl;
+                span.appendChild(img);
+                row.appendChild(span);
+            }
+            const label = document.createElement("label");
+            label.textContent = entry.title ?? "";
+            row.appendChild(label);
+
+            const self = this;
+            row.addEventListener("click", (event) => {
+                event.stopPropagation();
+                self.#closeDropdown();
+                self.#onEntryClicked(entry.token);
+            });
+            element.appendChild(row);
+        }
+    }
+
+    #positionDropdown(state) {
+        const { element, sentinel, areaKey } = state;
+        const rect = sentinel.getBoundingClientRect();
+        // Anchor above the sentinel — fixedBottom sits at the screen base, so
+        // the dropdown opens upward. Use `bottom` rather than `top` so the
+        // dropdown grows up from the anchor as more rows are added.
+        const gap = 6;
+        element.style.bottom = `${Math.max(0, window.innerHeight - rect.top + gap)}px`;
+        element.style.top = "auto";
+        if (areaKey === "instant") {
+            // Right-align to the area's right edge so the dropdown stays
+            // within the host margin even when the sentinel itself sits
+            // anywhere along the bar's leading edge.
+            const areaRect = state.area.getBoundingClientRect();
+            element.style.right = `${Math.max(0, window.innerWidth - areaRect.right)}px`;
+            element.style.left = "auto";
+        } else {
+            const areaRect = state.area.getBoundingClientRect();
+            element.style.left = `${Math.max(0, areaRect.left)}px`;
+            element.style.right = "auto";
+        }
     }
 }
 
