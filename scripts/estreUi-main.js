@@ -2073,6 +2073,8 @@ class EstreCoverBarHandle {
     #$instantSections = null;
     #$customFixedSections = null;
     #entries = [];
+    #nextToken = 1;
+    #activeToken = null;
 
     constructor($fixedBottom) {
         this.#$instantSections = $fixedBottom.find("nav#instantSections");
@@ -2082,6 +2084,67 @@ class EstreCoverBarHandle {
     get $instantSections() { return this.#$instantSections; }
     get $customFixedSections() { return this.#$customFixedSections; }
     get entries() { return this.#entries; }
+    get activeToken() { return this.#activeToken; }
+
+    /**
+     * Register a new cover-bar entry. State-level only in 1C-2; DOM rendering
+     * lands in 1C-3 (the entry object reserves a $element field for that).
+     * @param {object} data
+     * @param {EstrePageHandle} [data.pageHandle] — page bound to this entry (null for external embeds in Phase 3)
+     * @param {string} [data.sectionBound] — main / blind / overlay etc., drives the default icon
+     * @param {string} [data.title]
+     * @param {string|null|undefined} [data.icon]
+     * @returns {number} token
+     */
+    pushEntry(data) {
+        const token = this.#nextToken++;
+        this.#entries.push({
+            token,
+            pageHandle: data.pageHandle ?? null,
+            sectionBound: data.sectionBound ?? null,
+            title: data.title ?? null,
+            icon: data.icon,
+            minimized: false,
+            $element: null,
+        });
+        return token;
+    }
+
+    removeEntry(token) {
+        const idx = this.#entries.findIndex(e => e.token === token);
+        if (idx < 0) return false;
+        const entry = this.#entries[idx];
+        entry.$element?.remove();
+        this.#entries.splice(idx, 1);
+        if (this.#activeToken === token) this.#activeToken = null;
+        return true;
+    }
+
+    setActiveByToken(token) {
+        if (this.#entries.findIndex(e => e.token === token) < 0) return false;
+        this.#activeToken = token;
+        return true;
+    }
+
+    setMinimizedByToken(token, minimized) {
+        const entry = this.#entries.find(e => e.token === token);
+        if (entry == null) return false;
+        entry.minimized = !!minimized;
+        return true;
+    }
+
+    updateEntry(token, partial) {
+        const entry = this.#entries.find(e => e.token === token);
+        if (entry == null) return false;
+        if ("title" in partial) entry.title = partial.title;
+        if ("icon" in partial) entry.icon = partial.icon;
+        return true;
+    }
+
+    /** Lookup entry by token. Returns the live object — callers should treat it as read-only. */
+    findEntry(token) {
+        return this.#entries.find(e => e.token === token) ?? null;
+    }
 }
 
 

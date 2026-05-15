@@ -54,7 +54,9 @@ class EstrePageHandle {
     get coverTitle() { return this.#coverTitle ?? this.title; }
     setCoverTitle(value) {
         this.#coverTitle = value;
-        // Phase 1C: notify cover-bar controller for live entry update.
+        if (this.#coverEntryToken != null) {
+            estreUi.coverBarHandle?.updateEntry(this.#coverEntryToken, { title: this.coverTitle });
+        }
     }
 
     /**
@@ -73,7 +75,9 @@ class EstrePageHandle {
     setCoverIcon(value) {
         this.#coverIcon = value;
         this.#isCoverIconSet = true;
-        // Phase 1C: notify cover-bar controller for live entry update.
+        if (this.#coverEntryToken != null) {
+            estreUi.coverBarHandle?.updateEntry(this.#coverEntryToken, { icon: this.coverIcon });
+        }
     }
 
     /**
@@ -82,6 +86,38 @@ class EstrePageHandle {
      * programmatic opt-in (Phase 1C will also expose a constructor option).
      */
     get coverMount() { return this.$host?.attr(eds.coverMount) == t1; }
+
+    /**
+     * Token returned by `estreUi.coverBarHandle.pushEntry()` when this handle's
+     * page was registered in the cover bar. `null` whenever no entry is live
+     * (page closed / cover bar not ready / coverMount opt-out).
+     */
+    #coverEntryToken = null;
+    get coverEntryToken() { return this.#coverEntryToken; }
+
+    /**
+     * Internal — push an entry for this handle into the cover bar when opt-in
+     * is set and the bar is ready. Re-entry-safe: noop if already registered.
+     */
+    #registerCoverEntry() {
+        if (this.#coverEntryToken != null) return;
+        if (!this.coverMount) return;
+        const handle = estreUi.coverBarHandle;
+        if (handle == null) return;
+        this.#coverEntryToken = handle.pushEntry({
+            pageHandle: this,
+            sectionBound: this.sectionBound,
+            title: this.coverTitle,
+            icon: this.coverIcon,
+        });
+    }
+
+    /** Internal — remove this handle's cover-bar entry, if any. */
+    #releaseCoverEntry() {
+        if (this.#coverEntryToken == null) return;
+        estreUi.coverBarHandle?.removeEntry(this.#coverEntryToken);
+        this.#coverEntryToken = null;
+    }
 
     #appbarLeft = null;
     #appbarRight = null;
@@ -441,6 +477,7 @@ class EstrePageHandle {
         if (!this.isOpened) {
             if (window.isDebug) console.log("[onOpen] " + this.sectionBound + " " + this.hostType + " " + this.pid);//, this.host);
             this.#isOpened = true;
+            this.#registerCoverEntry();
             if (this.handler?.onOpen != null) this.handler.onOpen(this);
             if (this.intent?.onOpen != null) for (var item of this.intent.onOpen) if (item.from == this.hostType && !item.disabled) this.processAction(item);
             return true;
@@ -452,6 +489,7 @@ class EstrePageHandle {
             if (window.isVerbosely) console.log("[onShow] " + this.sectionBound + " " + this.hostType + " " + this.pid, this.host);
             else if (window.isDebug) console.log("[onShow] " + this.sectionBound + " " + this.hostType + " " + this.pid);
             this.#isShowing = true;
+            if (this.#coverEntryToken != null) estreUi.coverBarHandle?.setMinimizedByToken(this.#coverEntryToken, false);
             if (this.handler?.onShow != null) this.handler.onShow(this);
             if (this.intent?.onShow != null) for (var item of this.intent.onShow) if (item.from == this.hostType && !item.disabled) this.processAction(item);
             return true;
@@ -464,6 +502,7 @@ class EstrePageHandle {
             if (window.isDebug) console.log("[onFocus] " + this.sectionBound + " " + this.hostType + " " + this.pid);//, this.host);
             this.#isFocused = true;
             this.#everFocused = true;
+            if (this.#coverEntryToken != null) estreUi.coverBarHandle?.setActiveByToken(this.#coverEntryToken);
             const handled = this.handler?.onFocus?.(this, isFirstFocus);
             if (this.intent?.onFocus != null) for (var item of this.intent.onFocus) if (item.from == this.hostType && !item.disabled) this.processAction(item);
             if (handled === true) {
@@ -513,6 +552,7 @@ class EstrePageHandle {
             this.#isShowing = false;
             if (window.isVerbosely) console.log("[onHide] " + this.sectionBound + " " + this.hostType + " " + this.pid, this.host);
             else if (window.isDebug) console.log("[onHide] " + this.sectionBound + " " + this.hostType + " " + this.pid);
+            if (this.#coverEntryToken != null) estreUi.coverBarHandle?.setMinimizedByToken(this.#coverEntryToken, true);
             if (this.intent?.onHide != null) for (var item of this.intent.onHide) if (item.from == this.hostType && !item.disabled) await this.processAction(item);
             if (this.handler?.onHide != null) await this.handler.onHide(this, fullyHide);
             if (this.intent?.bringOnBack != null && this.intent.bringOnBack.pid != n) {
@@ -537,6 +577,7 @@ class EstrePageHandle {
             this.#everFocused = false;
             this.lastFocusedElement = null;
             if (window.isDebug) console.log("[onClose] " + this.sectionBound + " " + this.hostType + " " + this.pid);//, this.host);
+            this.#releaseCoverEntry();
             if (this.intent?.onClose != null) for (var item of this.intent.onClose) if (item.from == this.hostType && !item.disabled) await this.processAction(item);
             if (this.handler?.onClose != null) await this.handler.onClose(this);
             if (this.intent?.bringOnBack != null && this.intent.bringOnBack.pid != n) {
