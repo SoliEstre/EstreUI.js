@@ -2296,6 +2296,17 @@ class EstreCoverBarHandle {
     }
 
     setActiveByToken(token) {
+        // Passing null / undefined clears the active state. Useful for
+        // cumulative-state reconcile flows where the payload may legitimately
+        // have no active entry; without this the previously-active entry
+        // would stay highlighted indefinitely.
+        if (token == null) {
+            if (this.#activeToken == null) return true;
+            const prev = this.#entries.find(e => e.token === this.#activeToken);
+            prev?.element?.setAttribute("data-active", "");
+            this.#activeToken = null;
+            return true;
+        }
         if (this.#entries.findIndex(e => e.token === token) < 0) return false;
         if (this.#activeToken != null && this.#activeToken !== token) {
             const prev = this.#entries.find(e => e.token === this.#activeToken);

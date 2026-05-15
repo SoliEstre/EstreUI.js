@@ -112,6 +112,29 @@ describe('EstreCoverBarHandle — CRUD + rendering', () => {
         expect(instant.querySelector(`[data-cover-token="${b}"]`).getAttribute('data-active')).toBe('1');
     });
 
+    test('setActiveByToken(null) clears the active state', () => {
+        const a = handle.pushEntry({ title: 'A' });
+        handle.setActiveByToken(a);
+        expect(handle.activeToken).toBe(a);
+        expect(handle.setActiveByToken(null)).toBe(true);
+        expect(handle.activeToken).toBeNull();
+        expect(instant.querySelector(`[data-cover-token="${a}"]`).getAttribute('data-active')).toBe('');
+    });
+
+    test('setActiveByToken(null) is a no-op when no entry is active', () => {
+        handle.pushEntry({ title: 'A' });
+        expect(handle.activeToken).toBeNull();
+        expect(handle.setActiveByToken(null)).toBe(true);
+        expect(handle.activeToken).toBeNull();
+    });
+
+    test('setActiveByToken(undefined) clears like null', () => {
+        const a = handle.pushEntry({ title: 'A' });
+        handle.setActiveByToken(a);
+        expect(handle.setActiveByToken(undefined)).toBe(true);
+        expect(handle.activeToken).toBeNull();
+    });
+
     test('setMinimizedByToken toggles data-minimized', () => {
         const token = handle.pushEntry({ title: 'A' });
         handle.setMinimizedByToken(token, true);
