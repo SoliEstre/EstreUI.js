@@ -150,6 +150,15 @@
 
     <nav id="managedOverlay" data-exported="1">
     </nav>
+    <!--
+        Top layer — host surface that paints above every other layer including
+        embeds with extreme z-index. Pointer events on the container itself are
+        disabled; only mounted children (cover-bar overflow dropdowns, etc.)
+        receive input. Future generic-host UI (alerts that must outrank an embed
+        modal, etc.) can live here too. See EstreCoverBarHandle.
+    -->
+    <div id="topLayer" data-exported="1">
+    </div>
     <section id="handlePrototypes" style="display: none; " data-exported="1">
     </section>
 </body>

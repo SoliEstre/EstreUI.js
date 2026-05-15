@@ -247,6 +247,15 @@ footer#fixedBottom nav:not(#rootbar):last-child { padding-right: var(--right-pad
 footer#fixedBottom nav#customFixedSections { display: flex; flex-flow: row nowrap; align-items: stretch; gap: 4px; overflow: hidden; }
 footer#fixedBottom nav#instantSections { display: flex; flex-flow: row nowrap; align-items: stretch; justify-content: flex-end; gap: 4px; overflow: hidden; }
 
+/* Top layer — host surface that paints above every embed (including those that
+ * sit at extreme z-index). The container itself is pointer-event-transparent;
+ * only its mounted children take input, so it never blocks the page underneath.
+ * Mount points include cover-bar overflow dropdowns and any other generic-host
+ * UI that must outrank embeds. Z-index is set to the max safe signed-int value
+ * so an embed cannot accidentally outpaint it. */
+div#topLayer { position: fixed; z-index: 2147483647; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; }
+div#topLayer > * { pointer-events: auto; }
+
 /* Cover bar entries — see EstreCoverBarHandle. One button per opt-in page or
  * external embed window. Visual states are driven by data-active / data-minimized
  * so the controller can flip them with attr() without touching class lists. */

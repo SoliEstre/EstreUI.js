@@ -115,6 +115,7 @@ const estreUi = {
     $grabArea: null,
 
     $overwatchPanel: null,
+    $topLayer: null,
     get $panelSections() { return this.$panelBlock?.find(c.c + se + uis.blockItem) ?? $(); },
     $panelHeader: null,
     $panelHost: null,
@@ -267,6 +268,8 @@ const estreUi = {
         this.$fixedTop = $("header#fixedTop");
 
         this.$fixedBottom = $("#fixedBottom");
+
+        this.$topLayer = $("#topLayer");
 
         this.$handlePrototypes = $("section#handlePrototypes");
 
@@ -943,7 +946,7 @@ const estreUi = {
     initCoverBar() {
         if (this.coverBarHandle != null) return;
         if (this.$fixedBottom == null || this.$fixedBottom.length === 0) return;
-        this.coverBarHandle = new EstreCoverBarHandle(this.$fixedBottom);
+        this.coverBarHandle = new EstreCoverBarHandle(this.$fixedBottom, this.$topLayer);
     },
 
     showExactAppbar(component, container, article) {
@@ -2073,11 +2076,12 @@ class EstreCoverBarHandle {
 
     #instantSections = null;
     #customFixedSections = null;
+    #topLayer = null;
     #entries = [];
     #nextToken = 1;
     #activeToken = null;
 
-    constructor($fixedBottom) {
+    constructor($fixedBottom, $topLayer) {
         // Accept either a jQuery wrapper or a native element; the cover bar is
         // intentionally jQuery-agnostic internally so it stays usable under the
         // estreU0EEOZ jQuery fallback (jsdom test environment) as well as the
@@ -2085,10 +2089,16 @@ class EstreCoverBarHandle {
         const fb = $fixedBottom?.[0] ?? $fixedBottom;
         this.#instantSections = fb?.querySelector?.("nav#instantSections") ?? null;
         this.#customFixedSections = fb?.querySelector?.("nav#customFixedSections") ?? null;
+        // Top-layer host for overflow dropdowns (Phase 2C). Optional — falls
+        // back to null when the host hasn't mounted the slot. The bar still
+        // renders entries; overflow dropdowns simply do not appear.
+        const tl = $topLayer?.[0] ?? $topLayer;
+        this.#topLayer = tl ?? null;
     }
 
     get instantSections() { return this.#instantSections; }
     get customFixedSections() { return this.#customFixedSections; }
+    get topLayer() { return this.#topLayer; }
     /** @deprecated jQuery-flavoured getter kept for legacy callers; prefer `instantSections`. */
     get $instantSections() { return this.#instantSections == null ? null : $(this.#instantSections); }
     /** @deprecated jQuery-flavoured getter kept for legacy callers; prefer `customFixedSections`. */
