@@ -2178,6 +2178,7 @@ class EstreCoverBarHandle {
     #nextToken = 1;
     #activeToken = null;
     #openDropdown = null;
+    #openContextMenu = null;
     #onDocumentPointerDown = null;
     #onDocumentKeydown = null;
 
@@ -2229,14 +2230,21 @@ class EstreCoverBarHandle {
         // intent in clicking anywhere else is unambiguously "dismiss").
         const self = this;
         this.#onDocumentPointerDown = (event) => {
-            if (self.#openDropdown == null) return;
             const path = typeof event.composedPath === "function" ? event.composedPath() : [];
-            if (path.includes(self.#openDropdown.element)) return;
-            if (path.includes(self.#openDropdown.sentinel)) return;
-            self.#closeDropdown();
+            if (self.#openDropdown != null
+                && !path.includes(self.#openDropdown.element)
+                && !path.includes(self.#openDropdown.sentinel)) {
+                self.#closeDropdown();
+            }
+            if (self.#openContextMenu != null
+                && !path.includes(self.#openContextMenu.element)) {
+                self.#closeContextMenu();
+            }
         };
         this.#onDocumentKeydown = (event) => {
-            if (event.key === "Escape" && self.#openDropdown != null) self.#closeDropdown();
+            if (event.key !== "Escape") return;
+            if (self.#openContextMenu != null) self.#closeContextMenu();
+            else if (self.#openDropdown != null) self.#closeDropdown();
         };
         document.addEventListener("pointerdown", this.#onDocumentPointerDown, true);
         document.addEventListener("keydown", this.#onDocumentKeydown);
@@ -2401,6 +2409,7 @@ class EstreCoverBarHandle {
 
         const self = this;
         btn.addEventListener("click", () => self.#onEntryClicked(entry.token));
+        btn.addEventListener("contextmenu", (event) => self.#onEntryContextMenu(entry.token, event));
 
         entry.element = btn;
         this.#instantSections.appendChild(btn);
@@ -2647,6 +2656,10 @@ class EstreCoverBarHandle {
                 self.#closeDropdown();
                 self.#onEntryClicked(entry.token);
             });
+            row.addEventListener("contextmenu", (event) => {
+                self.#closeDropdown();
+                self.#onEntryContextMenu(entry.token, event);
+            });
             if (entry.closable) {
                 const close = document.createElement("span");
                 close.className = "cover_entry_close";
@@ -2684,6 +2697,96 @@ class EstreCoverBarHandle {
             element.style.left = `${Math.max(0, areaRect.left)}px`;
             element.style.right = "auto";
         }
+    }
+
+    /**
+     * Right-click on a cover-bar entry opens a small context menu in #topLayer:
+     *
+     *   ── title ──────────────────
+     *   화면 가운데로 이동           (placeholder until the embed exposes the API)
+     *   최소화 / 복원                (label flips on entry.minimized)
+     *   닫기                          (fires onAction("close"))
+     *
+     * Internal page-handle entries don't get the menu — they have their own
+     * navigation surface already. External-embed entries (onAction !== null)
+     * are the target audience. The menu is single-instance: opening one closes
+     * any prior open instance, and outside pointerdown / Escape close it (see
+     * the document-level listeners in the constructor).
+     */
+    #onEntryContextMenu(token, event) {
+        const entry = this.#entries.find(e => e.token === token);
+        if (entry == null || typeof entry.onAction !== "function") return;
+        if (this.#topLayer == null) return;
+        event.preventDefault();
+        if (this.#openContextMenu != null) this.#closeContextMenu();
+        this.#openContextMenu = this.#openContextMenuFor(entry, event.clientX, event.clientY);
+    }
+
+    #openContextMenuFor(entry, x, y) {
+        const menu = document.createElement("div");
+        menu.className = "cover_entry_menu";
+        menu.setAttribute("data-cover-token", entry.token);
+
+        const title = document.createElement("header");
+        title.className = "cover_menu_title";
+        title.textContent = entry.title ?? "";
+        menu.appendChild(title);
+
+        const self = this;
+        const addItem = (label, action, opts = {}) => {
+            const item = document.createElement("button");
+            item.type = "button";
+            item.className = "clean cover_menu_item";
+            item.setAttribute("data-action", action);
+            item.textContent = label;
+            if (opts.disabled) item.disabled = true;
+            item.addEventListener("click", (ev) => {
+                ev.stopPropagation();
+                self.#closeContextMenu();
+                self.#onContextMenuAction(entry.token, action);
+            });
+            menu.appendChild(item);
+        };
+
+        // "화면 가운데로 이동" — embed-side API is being added. The menu item
+        // is rendered as a placeholder so the layout is final once the embed
+        // ships the action; for now it fires onAction("center") which embed
+        // wirings can ignore or wire later.
+        addItem("화면 가운데로 이동", "center");
+        addItem(entry.minimized ? "복원" : "최소화", entry.minimized ? "restore" : "minimize");
+        addItem("닫기", "close");
+
+        const state = { token: entry.token, element: menu };
+        this.#topLayer.appendChild(menu);
+        this.#positionContextMenu(state, x, y);
+        return state;
+    }
+
+    #positionContextMenu(state, x, y) {
+        const { element } = state;
+        // Mount-then-measure so width/height reflect the rendered text.
+        const rect = element.getBoundingClientRect();
+        const margin = 4;
+        const left = Math.max(margin, Math.min(x, window.innerWidth - rect.width - margin));
+        const top = Math.max(margin, Math.min(y, window.innerHeight - rect.height - margin));
+        element.style.left = `${left}px`;
+        element.style.top = `${top}px`;
+    }
+
+    #closeContextMenu() {
+        if (this.#openContextMenu == null) return;
+        this.#openContextMenu.element.remove();
+        this.#openContextMenu = null;
+    }
+
+    /** Route a context-menu click to the right action. The first three actions
+     *  delegate to the same onAction surface as bar-click intent (so embed
+     *  wirings only need one handler); "center" is a placeholder action that
+     *  the embed may wire later as a window-center transition. */
+    #onContextMenuAction(token, action) {
+        const entry = this.#entries.find(e => e.token === token);
+        if (entry == null || typeof entry.onAction !== "function") return;
+        entry.onAction(action);
     }
 }
 

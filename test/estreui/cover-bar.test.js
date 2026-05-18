@@ -451,6 +451,123 @@ describe('EstreCoverBarHandle — overflow dropdown', () => {
 });
 
 
+// ── EstreCoverBarHandle — entry context menu (right-click) ────────────
+//
+// Right-click on an external-embed entry (onAction !== null) opens a small
+// menu in #topLayer with a title header and three action items: 화면
+// 가운데로 이동 (placeholder for the embed API), 최소화/복원 (label flips
+// on entry.minimized), 닫기. Each item delegates to entry.onAction with
+// the corresponding action token. Internal page-handle entries are not
+// targeted (they have their own navigation).
+
+describe('EstreCoverBarHandle — entry context menu', () => {
+
+    let handle;
+    let instant;
+    let topLayer;
+    let calls;
+    beforeEach(() => {
+        const fb = makeFixedBottomWithTopLayer();
+        handle = new EstreCoverBarHandle(fb.fixedBottom, fb.topLayer);
+        instant = handle.instantSections;
+        topLayer = fb.topLayer;
+        calls = [];
+    });
+
+    function rightClick(el) {
+        const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 100, clientY: 100 });
+        el.dispatchEvent(event);
+    }
+
+    test('contextmenu on external entry mounts a menu with title + 3 items', () => {
+        const token = handle.pushEntry({
+            title: 'Embed Title',
+            onAction: (action) => { calls.push(action); },
+        });
+        const btn = instant.querySelector(`[data-cover-token="${token}"]`);
+        rightClick(btn);
+        const menu = topLayer.querySelector('.cover_entry_menu');
+        expect(menu).not.toBeNull();
+        expect(menu.querySelector('header.cover_menu_title').textContent).toBe('Embed Title');
+        const items = menu.querySelectorAll('button.cover_menu_item');
+        expect(items.length).toBe(3);
+        expect(items[0].getAttribute('data-action')).toBe('center');
+        expect(items[1].getAttribute('data-action')).toBe('minimize');
+        expect(items[2].getAttribute('data-action')).toBe('close');
+    });
+
+    test('contextmenu on internal page-handle entry (no onAction) does NOT open', () => {
+        const pageHandle = { show: () => {}, hide: () => {} };
+        const token = handle.pushEntry({ pageHandle, title: 'P' });
+        const btn = instant.querySelector(`[data-cover-token="${token}"]`);
+        rightClick(btn);
+        expect(topLayer.querySelector('.cover_entry_menu')).toBeNull();
+    });
+
+    test('menu reflects entry.minimized → "복원" label + restore action', () => {
+        const token = handle.pushEntry({
+            title: 'A',
+            onAction: (action) => { calls.push(action); },
+        });
+        handle.setMinimizedByToken(token, true);
+        const btn = instant.querySelector(`[data-cover-token="${token}"]`);
+        rightClick(btn);
+        const items = topLayer.querySelectorAll('.cover_entry_menu > button.cover_menu_item');
+        expect(items[1].textContent).toBe('복원');
+        expect(items[1].getAttribute('data-action')).toBe('restore');
+    });
+
+    test('clicking menu items dispatches the right onAction + closes the menu', () => {
+        const token = handle.pushEntry({
+            title: 'A',
+            onAction: (action) => { calls.push(action); },
+        });
+        const btn = instant.querySelector(`[data-cover-token="${token}"]`);
+        rightClick(btn);
+        const items = topLayer.querySelectorAll('.cover_entry_menu > button.cover_menu_item');
+        items[2].click(); // 닫기
+        expect(calls).toEqual(['close']);
+        expect(topLayer.querySelector('.cover_entry_menu')).toBeNull();
+    });
+
+    test('opening a new context menu closes any prior one', () => {
+        const a = handle.pushEntry({ title: 'A', onAction: () => {} });
+        const b = handle.pushEntry({ title: 'B', onAction: () => {} });
+        rightClick(instant.querySelector(`[data-cover-token="${a}"]`));
+        expect(topLayer.querySelectorAll('.cover_entry_menu').length).toBe(1);
+        rightClick(instant.querySelector(`[data-cover-token="${b}"]`));
+        const menus = topLayer.querySelectorAll('.cover_entry_menu');
+        expect(menus.length).toBe(1);
+        expect(menus[0].getAttribute('data-cover-token')).toBe(String(b));
+    });
+
+    test('Escape closes the context menu', () => {
+        const token = handle.pushEntry({ title: 'A', onAction: () => {} });
+        rightClick(instant.querySelector(`[data-cover-token="${token}"]`));
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+        expect(topLayer.querySelector('.cover_entry_menu')).toBeNull();
+    });
+
+    test('outside pointerdown closes the context menu', () => {
+        const token = handle.pushEntry({ title: 'A', onAction: () => {} });
+        rightClick(instant.querySelector(`[data-cover-token="${token}"]`));
+        document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+        expect(topLayer.querySelector('.cover_entry_menu')).toBeNull();
+    });
+
+    test('"화면 가운데로 이동" fires onAction("center") as a placeholder', () => {
+        const token = handle.pushEntry({
+            title: 'A',
+            onAction: (action) => { calls.push(action); },
+        });
+        rightClick(instant.querySelector(`[data-cover-token="${token}"]`));
+        const items = topLayer.querySelectorAll('.cover_entry_menu > button.cover_menu_item');
+        items[0].click(); // 화면 가운데로 이동
+        expect(calls).toEqual(['center']);
+    });
+});
+
+
 // ── EstreCoverBarHandle — external embed entries (Phase 3) ────────────
 //
 // External entries carry an `onAction` callback instead of a pageHandle.

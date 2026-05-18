@@ -244,8 +244,30 @@ footer#fixedBottom nav:not(#rootbar) { width: -moz-available; width: -webkit-fil
 footer#fixedBottom nav:not(#rootbar):first-child { padding-left: var(--left-pad); }
 footer#fixedBottom nav:not(#rootbar):last-child { padding-right: var(--right-pad); }
 }
-footer#fixedBottom nav#customFixedSections { display: flex; flex-flow: row nowrap; align-items: stretch; gap: 4px; overflow: hidden; }
-footer#fixedBottom nav#instantSections { display: flex; flex-flow: row nowrap; align-items: stretch; justify-content: flex-start; gap: 4px; overflow: hidden; }
+footer#fixedBottom nav#customFixedSections { position: relative; display: flex; flex-flow: row nowrap; align-items: stretch; gap: 4px; overflow: hidden; }
+footer#fixedBottom nav#instantSections { position: relative; display: flex; flex-flow: row nowrap; align-items: stretch; justify-content: flex-start; gap: 4px; overflow: hidden; }
+
+/* Hairline separators between the rootbar tabs and the cover-bar areas — only on
+ * wide viewports where the three areas actually sit side-by-side. 1px wide,
+ * 66% tall and centered vertically; a soft vertical gradient fades to
+ * transparent at the top and bottom 20% so the bar doesn't get a hard edge. */
+@media all and (min-height: 700px) and (min-width: 740px) {
+    footer#fixedBottom nav#customFixedSections::after,
+    footer#fixedBottom nav#instantSections::before {
+        content: "";
+        position: absolute;
+        top: 17%; bottom: 17%;
+        width: 1px;
+        pointer-events: none;
+        background: linear-gradient(180deg,
+            transparent 0%,
+            var(--color-boundary-o5) 20%,
+            var(--color-boundary-o5) 80%,
+            transparent 100%);
+    }
+    footer#fixedBottom nav#customFixedSections::after { right: 0; }
+    footer#fixedBottom nav#instantSections::before { left: 0; }
+}
 
 /* Top layer — host surface that paints above every embed (including those that
  * sit at extreme z-index). The container itself is pointer-event-transparent;
@@ -272,18 +294,21 @@ div#topLayer > * { pointer-events: auto; }
 footer#fixedBottom nav#customFixedSections .cover_entry,
 footer#fixedBottom nav#instantSections .cover_entry {
     position: relative;
-    display: inline-flex; flex-flow: column nowrap; align-items: center; justify-content: center; gap: 2px;
-    padding: 4px 6px;
+    display: inline-flex; flex-flow: column nowrap; align-items: center; justify-content: center; gap: 0;
+    margin: 0; padding: 0;
     height: 100%;
     min-width: calc(var(--rootbar-height) * 6 / 7);
     max-width: calc(var(--rootbar-height) * 8 / 7);
     flex-shrink: 0;
+    border: 0; outline: 0;
     border-radius: 0;
     color: var(--color-text-pale, rgb(var(--ca) / 70%));
     background-color: transparent;
     cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
     transition-duration: 0.15s;
-    transition-property: background-color, color, opacity;
+    transition-property: color, opacity;
 }
 div#topLayer .cover_overflow_dropdown .cover_entry {
     position: relative;
@@ -413,6 +438,51 @@ div#topLayer .cover_overflow_dropdown {
     background-color: var(--color-background-elevated, rgb(var(--cb) / 98%));
     box-shadow: 0 6px 16px rgb(0 0 0 / 14%), 0 1px 4px rgb(0 0 0 / 8%);
 }
+
+/* Context menu — right-click affordance on cover-bar entries. Mounted in
+ * #topLayer so it paints above embed surfaces. Positioned at the cursor
+ * (clamped to the viewport) by #positionContextMenu. Vertical list of items
+ * with a non-interactive title header at the top. */
+div#topLayer .cover_entry_menu {
+    position: fixed;
+    display: flex; flex-flow: column nowrap;
+    min-width: 180px; max-width: 280px;
+    padding: 4px 0;
+    border-radius: 8px;
+    background-color: var(--color-background-elevated, rgb(var(--cb) / 98%));
+    box-shadow: 0 6px 16px rgb(0 0 0 / 14%), 0 1px 4px rgb(0 0 0 / 8%);
+}
+div#topLayer .cover_entry_menu > header.cover_menu_title {
+    margin: 0 0 4px 0;
+    padding: 6px 12px 6px;
+    border-bottom: 1px solid rgb(var(--ca) / 10%);
+    font-size: 0.75rem; line-height: 1rem;
+    color: var(--color-text-pale, rgb(var(--ca) / 60%));
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+div#topLayer .cover_entry_menu > button.cover_menu_item {
+    display: block;
+    width: 100%; margin: 0;
+    padding: 6px 12px;
+    border: 0; outline: 0;
+    background-color: transparent;
+    text-align: left;
+    font-size: 0.875rem; line-height: 1.25rem;
+    color: var(--color-text-darker, rgb(var(--ca) / 95%));
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    transition-duration: 0.15s;
+    transition-property: background-color;
+}
+div#topLayer .cover_entry_menu > button.cover_menu_item:hover { background-color: rgb(var(--ca) / 8%); }
+div#topLayer .cover_entry_menu > button.cover_menu_item:disabled,
+div#topLayer .cover_entry_menu > button.cover_menu_item[disabled] {
+    color: var(--color-text-pale, rgb(var(--ca) / 50%));
+    cursor: not-allowed;
+}
+div#topLayer .cover_entry_menu > button.cover_menu_item:disabled:hover,
+div#topLayer .cover_entry_menu > button.cover_menu_item[disabled]:hover { background-color: transparent; }
 
 
 /* session manager */
