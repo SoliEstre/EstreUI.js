@@ -2231,9 +2231,14 @@ class EstreCoverBarHandle {
         const self = this;
         this.#onDocumentPointerDown = (event) => {
             const path = typeof event.composedPath === "function" ? event.composedPath() : [];
+            // Dropdown close exception list: its own element, its sentinel, and
+            // any currently-open context menu (a context menu opened from a
+            // dropdown row mounts as a sibling in #topLayer, so the dropdown
+            // shouldn't treat clicks on the menu as "outside").
             if (self.#openDropdown != null
                 && !path.includes(self.#openDropdown.element)
-                && !path.includes(self.#openDropdown.sentinel)) {
+                && !path.includes(self.#openDropdown.sentinel)
+                && (self.#openContextMenu == null || !path.includes(self.#openContextMenu.element))) {
                 self.#closeDropdown();
             }
             if (self.#openContextMenu != null
@@ -2656,8 +2661,12 @@ class EstreCoverBarHandle {
                 self.#closeDropdown();
                 self.#onEntryClicked(entry.token);
             });
+            // Right-click inside the overflow dropdown opens the entry's
+            // context menu on top of it — the dropdown stays open so the user
+            // can pick another row after dismissing the menu. The document-
+            // level pointerdown handler also exempts the open context menu
+            // from closing the dropdown (see constructor).
             row.addEventListener("contextmenu", (event) => {
-                self.#closeDropdown();
                 self.#onEntryContextMenu(entry.token, event);
             });
             if (entry.closable) {
@@ -2733,12 +2742,19 @@ class EstreCoverBarHandle {
         menu.appendChild(title);
 
         const self = this;
-        const addItem = (label, action, opts = {}) => {
+        const addItem = (label, action, svgInner, opts = {}) => {
             const item = document.createElement("button");
             item.type = "button";
             item.className = "clean cover_menu_item";
             item.setAttribute("data-action", action);
-            item.textContent = label;
+            const iconSpan = document.createElement("span");
+            iconSpan.className = "cover_menu_item_icon";
+            iconSpan.innerHTML = svgInner;
+            item.appendChild(iconSpan);
+            const labelSpan = document.createElement("span");
+            labelSpan.className = "cover_menu_item_label";
+            labelSpan.textContent = label;
+            item.appendChild(labelSpan);
             if (opts.disabled) item.disabled = true;
             item.addEventListener("click", (ev) => {
                 ev.stopPropagation();
@@ -2748,13 +2764,37 @@ class EstreCoverBarHandle {
             menu.appendChild(item);
         };
 
-        // "화면 가운데로 이동" — embed-side API is being added. The menu item
-        // is rendered as a placeholder so the layout is final once the embed
-        // ships the action; for now it fires onAction("center") which embed
-        // wirings can ignore or wire later.
-        addItem("화면 가운데로 이동", "center");
-        addItem(entry.minimized ? "복원" : "최소화", entry.minimized ? "restore" : "minimize");
-        addItem("닫기", "close");
+        // SVG glyphs picked for visual parity with the hide-all toggle and the
+        // overflow sentinel — same stroke weight (1.6 ~ 1.8) and 14x14 viewBox,
+        // all in currentColor so hover / disabled inherit the menu's text tone.
+        const svgCenter =
+            '<svg viewBox="0 0 14 14" fill="none" aria-hidden="true" focusable="false">' +
+                '<rect x="5.5" y="5.5" width="3" height="3" rx="0.6" stroke="currentColor" stroke-width="1.5"/>' +
+                '<path d="M2 2l2.5 2.5M12 2L9.5 4.5M2 12l2.5-2.5M12 12L9.5 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>' +
+            '</svg>';
+        const svgMinimize =
+            '<svg viewBox="0 0 14 14" fill="none" aria-hidden="true" focusable="false">' +
+                '<path d="M3 10h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' +
+            '</svg>';
+        const svgRestore =
+            '<svg viewBox="0 0 14 14" fill="none" aria-hidden="true" focusable="false">' +
+                '<rect x="3" y="3" width="8" height="8" rx="1" stroke="currentColor" stroke-width="1.5"/>' +
+            '</svg>';
+        const svgClose =
+            '<svg viewBox="0 0 14 14" fill="none" aria-hidden="true" focusable="false">' +
+                '<path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' +
+            '</svg>';
+
+        // "화면 가운데로 이동" wires through onAction("center"). Embed wirings
+        // that haven't shipped the recenter API yet can ignore it; embeds that
+        // have shipped recenterRoom / recenterMainPanel handle it natively.
+        addItem("화면 가운데로 이동", "center", svgCenter);
+        addItem(
+            entry.minimized ? "복원" : "최소화",
+            entry.minimized ? "restore" : "minimize",
+            entry.minimized ? svgRestore : svgMinimize,
+        );
+        addItem("닫기", "close", svgClose);
 
         const state = { token: entry.token, element: menu };
         this.#topLayer.appendChild(menu);
