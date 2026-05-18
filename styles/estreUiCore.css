@@ -343,7 +343,7 @@ div#topLayer .cover_overflow_dropdown .cover_entry[data-active="1"] { color: var
 div#topLayer .cover_overflow_dropdown .cover_entry[data-minimized="1"] { opacity: 0.55; }
 div#topLayer .cover_overflow_dropdown .cover_entry[data-minimized="1"][data-active="1"] { opacity: 0.8; }
 /* Footer icon matches rootbar tab maskable_icon size (32x32) for visual line-up. */
-footer#fixedBottom nav .cover_entry > .cover_icon { display: inline-flex; flex-shrink: 0; width: 32px; height: 32px; align-items: center; justify-content: center; line-height: 0; }
+footer#fixedBottom nav .cover_entry > .cover_icon { display: inline-flex; flex-shrink: 0; width: 32px; height: 32px; margin-bottom: 5px; align-items: center; justify-content: center; line-height: 0; }
 div#topLayer .cover_overflow_dropdown .cover_entry > .cover_icon { display: inline-flex; flex-shrink: 0; width: 18px; height: 18px; align-items: center; justify-content: center; line-height: 0; }
 footer#fixedBottom nav .cover_entry > .cover_icon > img,
 div#topLayer .cover_overflow_dropdown .cover_entry > .cover_icon > img { display: block; width: 100%; height: 100%; }
