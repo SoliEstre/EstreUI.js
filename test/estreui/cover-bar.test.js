@@ -293,18 +293,19 @@ describe('EstreCoverBarHandle — overflow measurement', () => {
         expect(instant.querySelectorAll('[data-overflowed="1"]').length).toBe(0);
     });
 
-    test('sentinel reveals + oldest entries get data-overflowed when too many', () => {
+    test('sentinel reveals + newest entries get data-overflowed when too many', () => {
         const a = handle.pushEntry({ title: 'A' });
         const b = handle.pushEntry({ title: 'B' });
         const c = handle.pushEntry({ title: 'C' });
         const d = handle.pushEntry({ title: 'D' });
         expect(sentinel.hidden).toBe(false);
         // Sentinel(30) + 2 visible entries(200) = 230 ≤ 250 → 2 entries hidden.
-        // For instantSections (flex-end) we hide from the leading edge first.
-        expect(instant.querySelector(`[data-cover-token="${a}"]`).getAttribute('data-overflowed')).toBe('1');
-        expect(instant.querySelector(`[data-cover-token="${b}"]`).getAttribute('data-overflowed')).toBe('1');
-        expect(instant.querySelector(`[data-cover-token="${c}"]`).getAttribute('data-overflowed')).toBeNull();
-        expect(instant.querySelector(`[data-cover-token="${d}"]`).getAttribute('data-overflowed')).toBeNull();
+        // instantSections hides from the trailing edge — the most-recently
+        // pushed entries (closest to the sentinel) drop into the dropdown first.
+        expect(instant.querySelector(`[data-cover-token="${a}"]`).getAttribute('data-overflowed')).toBeNull();
+        expect(instant.querySelector(`[data-cover-token="${b}"]`).getAttribute('data-overflowed')).toBeNull();
+        expect(instant.querySelector(`[data-cover-token="${c}"]`).getAttribute('data-overflowed')).toBe('1');
+        expect(instant.querySelector(`[data-cover-token="${d}"]`).getAttribute('data-overflowed')).toBe('1');
     });
 
     test('removeEntry triggers recompute — sentinel re-hides once everything fits', () => {
@@ -354,18 +355,20 @@ describe('EstreCoverBarHandle — overflow dropdown', () => {
     });
 
     test('clicking sentinel mounts a dropdown into topLayer with overflowed rows', () => {
-        const a = handle.pushEntry({ title: 'A' });
-        const b = handle.pushEntry({ title: 'B' });
-        handle.pushEntry({ title: 'C' });
-        handle.pushEntry({ title: 'D' });
+        handle.pushEntry({ title: 'A' });
+        handle.pushEntry({ title: 'B' });
+        const c = handle.pushEntry({ title: 'C' });
+        const d = handle.pushEntry({ title: 'D' });
         sentinel.click();
         const dropdown = topLayer.querySelector('.cover_overflow_dropdown');
         expect(dropdown).not.toBeNull();
         expect(dropdown.getAttribute('data-area')).toBe('instant');
         const rows = dropdown.querySelectorAll('.cover_entry');
         expect(rows.length).toBe(2);
-        expect(rows[0].getAttribute('data-cover-token')).toBe(String(a));
-        expect(rows[1].getAttribute('data-cover-token')).toBe(String(b));
+        // Newest hidden first — d was pushed last so it sat closest to the
+        // sentinel; reading the dropdown top-down should show d → c.
+        expect(rows[0].getAttribute('data-cover-token')).toBe(String(d));
+        expect(rows[1].getAttribute('data-cover-token')).toBe(String(c));
         expect(sentinel.getAttribute('data-opened')).toBe('1');
     });
 
@@ -418,13 +421,14 @@ describe('EstreCoverBarHandle — overflow dropdown', () => {
             show: (...args) => { calls.push(['show', ...args]); },
             hide: () => { calls.push(['hide']); },
         };
-        const a = handle.pushEntry({ pageHandle, title: 'A' });
+        handle.pushEntry({ title: 'A' });
         handle.pushEntry({ title: 'B' });
         handle.pushEntry({ title: 'C' });
-        handle.pushEntry({ title: 'D' });
+        // d is the newest push → trailing hide puts it in the dropdown.
+        const d = handle.pushEntry({ pageHandle, title: 'D' });
         sentinel.click();
         const row = topLayer.querySelector(
-            `.cover_overflow_dropdown [data-cover-token="${a}"]`
+            `.cover_overflow_dropdown [data-cover-token="${d}"]`
         );
         row.click();
         expect(calls).toEqual([['show', true, true]]);
@@ -860,22 +864,23 @@ describe('estreUi — instant-section external embed wrappers', () => {
         });
         Object.defineProperty(instant, 'clientWidth', { configurable: true, get: () => 150 });
 
-        const tokenA = estreUi.pushInstantSectionEntry({
-            title: 'A',
-            closable: true,
-            onAction: (action) => { calls.push(['A', action]); },
-        });
+        estreUi.pushInstantSectionEntry({ title: 'A' });
         estreUi.pushInstantSectionEntry({ title: 'B' });
-        estreUi.pushInstantSectionEntry({ title: 'C' });
-        // Sentinel reveals; A is the oldest so it gets overflowed first.
+        const tokenC = estreUi.pushInstantSectionEntry({
+            title: 'C',
+            closable: true,
+            onAction: (action) => { calls.push(['C', action]); },
+        });
+        // Sentinel reveals; C is the newest so it gets overflowed first
+        // (instantSections hides from the trailing edge).
         const sent = instant.querySelector('.cover_overflow_sentinel');
         expect(sent.hidden).toBe(false);
         sent.click();
         const dropRow = mountTopLayer.querySelector(
-            `.cover_overflow_dropdown [data-cover-token="${tokenA}"]`,
+            `.cover_overflow_dropdown [data-cover-token="${tokenC}"]`,
         );
         expect(dropRow).not.toBeNull();
         dropRow.querySelector('.cover_entry_close').click();
-        expect(calls).toEqual([['A', 'close']]);
+        expect(calls).toEqual([['C', 'close']]);
     });
 });

@@ -2536,7 +2536,13 @@ class EstreCoverBarHandle {
      * width budget.
      */
     #recomputeOverflow() {
-        this.#recomputeAreaOverflow(this.#instantSections, this.#instantSentinel, "leading");
+        // Both areas hide from the trailing (DOM-end / most-recently-pushed)
+        // side. The sentinel sits at the trailing edge of the visible cluster
+        // (`order: 1`), so the entries that disappear are the ones closest to
+        // it — most-recently-pushed first. Users opening a fresh window see it
+        // get pushed into the dropdown as the bar fills up; older windows
+        // stay visible on the leading side where they were first placed.
+        this.#recomputeAreaOverflow(this.#instantSections, this.#instantSentinel, "trailing");
         this.#recomputeAreaOverflow(this.#customFixedSections, this.#customFixedSentinel, "trailing");
         if (this.#openDropdown != null) this.#refreshOpenDropdown();
     }
@@ -2631,7 +2637,14 @@ class EstreCoverBarHandle {
     #renderDropdownRows(state) {
         const { element, area } = state;
         element.replaceChildren();
-        const entries = this.#entriesForArea(area).filter(e => e.element?.getAttribute("data-overflowed") === "1");
+        // Newest hidden entries surface first — visually they sat closest to
+        // the sentinel before being pushed off, so the user reads them at
+        // the top of the dropdown. We hide from the trailing edge (most-
+        // recently-pushed first), so reversing the natural DOM order lines
+        // the dropdown rows up "newest → older" top to bottom.
+        const entries = this.#entriesForArea(area)
+            .filter(e => e.element?.getAttribute("data-overflowed") === "1")
+            .reverse();
         for (const entry of entries) {
             const row = document.createElement("button");
             row.type = "button";
