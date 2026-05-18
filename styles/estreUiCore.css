@@ -257,16 +257,38 @@ div#topLayer { position: fixed; z-index: 2147483647; top: 0; left: 0; right: 0; 
 div#topLayer > * { pointer-events: auto; }
 
 /* Cover bar entries — see EstreCoverBarHandle. One button per opt-in page or
- * external embed window. Visual states are driven by data-active / data-minimized
- * so the controller can flip them with attr() without touching class lists.
- * flex-shrink: 0 keeps entries readable — when they don't fit, the trailing
- * (or leading, for flex-end areas) ones get data-overflowed="1" and disappear
- * from layout via display: none. The sentinel + dropdown expose them. */
+ * external embed window. Two layouts share the same markup:
+ *   - footer-mounted (instantSections / customFixedSections): column-stacked
+ *     icon-on-top + label-below, sized as a near-square tile (6/7 ~ 8/7 of
+ *     rootbar-height) to line up with rootbar tab buttons.
+ *   - dropdown-mounted (#topLayer .cover_overflow_dropdown): row-laid out
+ *     icon-then-label, free-width — a horizontal list of overflowed entries.
+ * Visual states are driven by data-active / data-minimized so the controller
+ * can flip them with attr() without touching class lists.
+ * flex-shrink: 0 keeps entries readable — when they don't fit, the leading
+ * (instantSections) or trailing (customFixedSections) ones get
+ * data-overflowed="1" and disappear from layout via display:none. The
+ * sentinel + dropdown expose them. */
 footer#fixedBottom nav#customFixedSections .cover_entry,
-footer#fixedBottom nav#instantSections .cover_entry,
+footer#fixedBottom nav#instantSections .cover_entry {
+    position: relative;
+    display: inline-flex; flex-flow: column nowrap; align-items: center; justify-content: center; gap: 2px;
+    padding: 4px 6px;
+    height: 100%;
+    min-width: calc(var(--rootbar-height) * 6 / 7);
+    max-width: calc(var(--rootbar-height) * 8 / 7);
+    flex-shrink: 0;
+    border-radius: 0;
+    color: var(--color-text-pale, rgb(var(--ca) / 70%));
+    background-color: transparent;
+    cursor: pointer;
+    transition-duration: 0.15s;
+    transition-property: background-color, color, opacity;
+}
 div#topLayer .cover_overflow_dropdown .cover_entry {
+    position: relative;
     display: inline-flex; flex-flow: row nowrap; align-items: center; gap: 6px;
-    padding: 4px 10px; min-width: 0; flex-shrink: 0;
+    padding: 6px 10px; min-width: 0; flex-shrink: 0;
     border-radius: 8px;
     color: var(--color-text-pale, rgb(var(--ca) / 70%));
     background-color: transparent;
@@ -286,16 +308,68 @@ footer#fixedBottom nav .cover_entry > .cover_icon,
 div#topLayer .cover_overflow_dropdown .cover_entry > .cover_icon { display: inline-flex; flex-shrink: 0; width: 18px; height: 18px; align-items: center; justify-content: center; }
 footer#fixedBottom nav .cover_entry > .cover_icon > img,
 div#topLayer .cover_overflow_dropdown .cover_entry > .cover_icon > img { width: 100%; height: 100%; }
-footer#fixedBottom nav .cover_entry > label,
+/* footer label — small caption under the icon, follows rootbar tab label style. */
+footer#fixedBottom nav .cover_entry > label {
+    flex-shrink: 1; min-width: 0; max-width: 100%;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-size: 0.625rem; line-height: 0.75rem;
+    color: inherit;
+    cursor: inherit;
+}
+/* dropdown label — full readable text inline next to the icon. */
 div#topLayer .cover_overflow_dropdown .cover_entry > label { flex-shrink: 1; min-width: 0; max-width: 14em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.875rem; line-height: 1.25rem; cursor: inherit; }
 footer#fixedBottom nav .cover_entry[data-overflowed="1"] { display: none; }
+
+/* Top-edge indicator bar — Windows-11 taskbar-style. A pseudo-element sits at
+ * the top of each footer-mounted entry; its width and color reflect the state.
+ * The fixedBottom sits at the bottom of the viewport, so the bar lives on the
+ * *upper* edge of the button (opposite the taskbar). Default state is "open
+ * but inactive" (a cover-bar entry exists iff its embed is open) — the
+ * not-open state is represented by the absence of the entry itself.
+ *   - inactive          : short bar, pale color
+ *   - active            : long bar, accent color
+ *   - minimized         : short bar, dimmed (opacity)
+ *   - minimized+active  : long bar, dimmed (opacity)
+ * Dropdown rows do not carry the indicator — selection there is communicated
+ * with the background highlight only. */
+footer#fixedBottom nav .cover_entry::before {
+    content: "";
+    position: absolute; top: 0; left: 50%;
+    width: 30%; height: 2px;
+    transform: translateX(-50%);
+    background-color: rgb(var(--ca) / 35%);
+    border-radius: 0 0 2px 2px;
+    transition-duration: 0.2s;
+    transition-property: width, background-color, opacity;
+}
+footer#fixedBottom nav .cover_entry[data-active="1"]::before {
+    width: 70%;
+    background-color: var(--color-point-dark, rgb(var(--ca) / 80%));
+}
+footer#fixedBottom nav .cover_entry[data-active="1"] > label { color: var(--color-point-dark, rgb(var(--ca) / 95%)); }
 
 /* Per-entry close ✕ — rendered when the entry was pushed with closable:true
  * (Phase 3 external embed hook). Lives inside the entry button as a span so
  * the click handler can stopPropagation and route to onAction("close") without
  * the surrounding row registering as a focus/minimize click. The embed is
- * responsible for actually removing the entry; the ✕ only signals intent. */
-footer#fixedBottom nav .cover_entry > .cover_entry_close,
+ * responsible for actually removing the entry; the ✕ only signals intent.
+ * Footer entries are square tiles — the ✕ goes to the top-right corner
+ * (Windows-task-switcher hover affordance). Dropdown rows are linear —
+ * the ✕ sits inline at the trailing edge. */
+footer#fixedBottom nav .cover_entry > .cover_entry_close {
+    position: absolute; top: 2px; right: 2px;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    color: var(--color-text-pale, rgb(var(--ca) / 50%));
+    font-size: 0.625rem; line-height: 1;
+    cursor: pointer;
+    opacity: 0;
+    transition-duration: 0.15s;
+    transition-property: background-color, color, opacity;
+}
+footer#fixedBottom nav .cover_entry:hover > .cover_entry_close,
+footer#fixedBottom nav .cover_entry[data-active="1"] > .cover_entry_close { opacity: 1; }
 div#topLayer .cover_overflow_dropdown .cover_entry > .cover_entry_close {
     display: inline-flex; align-items: center; justify-content: center;
     flex-shrink: 0;
@@ -314,24 +388,28 @@ div#topLayer .cover_overflow_dropdown .cover_entry > .cover_entry_close:hover {
     color: var(--color-text-darker, rgb(var(--ca) / 95%));
 }
 
-/* Overflow sentinel — narrow ⌃ button at the leading edge of each area
+/* Overflow sentinel — narrow chevron button at the leading edge of each area
  * (right-aligned bars' clipped side). Visibility flips via the `hidden`
  * attribute from #recomputeOverflow. data-opened mirrors the dropdown's
- * open state so the sentinel feels pressed while its dropdown is up. */
+ * open state so the sentinel feels pressed while its dropdown is up.
+ * Rendered as a thin column-flex button with a small ^-chevron SVG glued
+ * to the top edge — the chevron points to the overflow dropdown that opens
+ * upward from above. */
 footer#fixedBottom nav .cover_overflow_sentinel {
-    display: inline-flex; align-items: center; justify-content: center;
+    display: inline-flex; flex-flow: column nowrap; align-items: center; justify-content: flex-start;
     flex-shrink: 0;
-    width: 24px; padding: 0;
-    border-radius: 8px;
-    color: var(--color-text-pale, rgb(var(--ca) / 70%));
+    width: 16px; height: 100%;
+    padding: 6px 0 0 0;
+    border-radius: 0;
+    color: var(--color-text-pale, rgb(var(--ca) / 60%));
     background-color: transparent;
     cursor: pointer;
-    font-size: 0.875rem; line-height: 1.25rem;
     transition-duration: 0.15s;
     transition-property: background-color, color;
 }
-footer#fixedBottom nav .cover_overflow_sentinel:hover { background-color: rgb(var(--ca) / 8%); }
-footer#fixedBottom nav .cover_overflow_sentinel[data-opened="1"] { color: var(--color-text-darker, rgb(var(--ca) / 95%)); background-color: rgb(var(--ca) / 12%); }
+footer#fixedBottom nav .cover_overflow_sentinel > svg { width: 10px; height: 6px; }
+footer#fixedBottom nav .cover_overflow_sentinel:hover { background-color: rgb(var(--ca) / 8%); color: var(--color-text-darker, rgb(var(--ca) / 90%)); }
+footer#fixedBottom nav .cover_overflow_sentinel[data-opened="1"] { color: var(--color-point-dark, rgb(var(--ca) / 95%)); background-color: rgb(var(--ca) / 12%); }
 footer#fixedBottom nav .cover_overflow_sentinel[hidden] { display: none; }
 
 /* Overflow dropdown — mounted in #topLayer, anchored above its sentinel.

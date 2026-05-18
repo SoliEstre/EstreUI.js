@@ -2488,6 +2488,12 @@ class EstreCoverBarHandle {
      * Create the per-area overflow sentinel button. Hidden by default; the
      * recompute pass flips `hidden` based on whether entries fit. Clicking
      * toggles the area's overflow dropdown (Phase 2C).
+     *
+     * The caret is rendered as an inline SVG so it can be precisely sized and
+     * positioned (top-aligned on a narrow button) regardless of the platform
+     * font. The shape mirrors the rootbar's chevron affordances — a thin
+     * upward chevron stroked in currentColor so hover / data-opened states
+     * pick up the surrounding color transitions for free.
      */
     #createSentinel(areaKey) {
         const btn = document.createElement("button");
@@ -2495,7 +2501,10 @@ class EstreCoverBarHandle {
         btn.className = "clean cover_overflow_sentinel";
         btn.setAttribute("data-area", areaKey);
         btn.setAttribute("aria-label", "Show overflowed entries");
-        btn.textContent = "⌃"; // ⌃ — Up Arrowhead (narrow caret)
+        btn.innerHTML =
+            '<svg viewBox="0 0 12 8" aria-hidden="true" focusable="false">' +
+            '<polyline points="2,6 6,2 10,6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+            '</svg>';
         btn.hidden = true;
         const self = this;
         btn.addEventListener("click", (event) => {

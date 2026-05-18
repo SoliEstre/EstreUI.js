@@ -275,6 +275,17 @@ describe('EstreCoverBarHandle — overflow measurement', () => {
         expect(sentinel.getAttribute('data-area')).toBe('instant');
     });
 
+    test('sentinel renders an inline ^-chevron SVG (not a unicode glyph)', () => {
+        // The chevron must be an SVG so it sizes / positions independently of
+        // the platform font, and so it picks up currentColor for hover state.
+        const svg = sentinel.querySelector('svg');
+        expect(svg).not.toBeNull();
+        expect(svg.getAttribute('viewBox')).toBe('0 0 12 8');
+        const polyline = svg.querySelector('polyline');
+        expect(polyline).not.toBeNull();
+        expect(polyline.getAttribute('stroke')).toBe('currentColor');
+    });
+
     test('sentinel stays hidden when entries fit', () => {
         handle.pushEntry({ title: 'A' });
         handle.pushEntry({ title: 'B' });
