@@ -371,7 +371,12 @@ div#topLayer .cover_overflow_dropdown .cover_entry > label {
     font-size: 0.875rem; line-height: 1.25rem;
     cursor: inherit;
 }
-footer#fixedBottom nav .cover_entry[data-overflowed="1"] { display: none; }
+/* Match the default cover_entry's specificity by repeating the nav id, so
+ * the display:none here actually wins. Without the id duplication the
+ * default rule `nav#instantSections .cover_entry { display: inline-flex }`
+ * outranks this one and overflowed entries stay visible. */
+footer#fixedBottom nav#customFixedSections .cover_entry[data-overflowed="1"],
+footer#fixedBottom nav#instantSections .cover_entry[data-overflowed="1"] { display: none; }
 
 /* Top-edge indicator bar — Windows-11 taskbar-style. A pseudo-element sits at
  * the top of each footer-mounted entry; its width and color reflect the state.
