@@ -2168,6 +2168,41 @@ const estreUi = {
  */
 class EstreCoverBarHandle {
 
+    /**
+     * Reusable 14x14 SVG glyphs for the context menu. Same stroke weight and
+     * currentColor convention as the hide-all toggle / overflow sentinel, so
+     * host code can grab the same icons when opening its own menus via
+     * openContextMenu(). New icons should follow the same 14x14 viewBox +
+     * stroke-only / currentColor pattern.
+     *
+     *   center   → 4-directional inward arrows pointing at the middle (cross
+     *              shape so users don't confuse it with the diagonal-X close)
+     *   minimize → single low bar (Windows-style _)
+     *   restore  → outlined rect (window frame)
+     *   close    → diagonal-X
+     */
+    static menuIcons = {
+        center:
+            '<svg viewBox="0 0 14 14" fill="none" aria-hidden="true" focusable="false" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'
+            + '<path d="M7 1.5v3.5M5.5 3.5L7 5l1.5-1.5"/>'
+            + '<path d="M7 12.5V9M5.5 10.5L7 9l1.5 1.5"/>'
+            + '<path d="M1.5 7h3.5M3.5 5.5L5 7l-1.5 1.5"/>'
+            + '<path d="M12.5 7H9M10.5 5.5L9 7l1.5 1.5"/>'
+            + '</svg>',
+        minimize:
+            '<svg viewBox="0 0 14 14" fill="none" aria-hidden="true" focusable="false">'
+            + '<path d="M3 10h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'
+            + '</svg>',
+        restore:
+            '<svg viewBox="0 0 14 14" fill="none" aria-hidden="true" focusable="false">'
+            + '<rect x="3" y="3" width="8" height="8" rx="1" stroke="currentColor" stroke-width="1.5"/>'
+            + '</svg>',
+        close:
+            '<svg viewBox="0 0 14 14" fill="none" aria-hidden="true" focusable="false">'
+            + '<path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'
+            + '</svg>',
+    };
+
     #instantSections = null;
     #customFixedSections = null;
     #topLayer = null;
@@ -2755,73 +2790,82 @@ class EstreCoverBarHandle {
     }
 
     #openContextMenuFor(entry, x, y) {
-        const menu = document.createElement("div");
-        menu.className = "cover_entry_menu";
-        menu.setAttribute("data-cover-token", entry.token);
-
-        const title = document.createElement("header");
-        title.className = "cover_menu_title";
-        title.textContent = entry.title ?? "";
-        menu.appendChild(title);
-
-        const self = this;
-        const addItem = (label, action, svgInner, opts = {}) => {
-            const item = document.createElement("button");
-            item.type = "button";
-            item.className = "clean cover_menu_item";
-            item.setAttribute("data-action", action);
-            const iconSpan = document.createElement("span");
-            iconSpan.className = "cover_menu_item_icon";
-            iconSpan.innerHTML = svgInner;
-            item.appendChild(iconSpan);
-            const labelSpan = document.createElement("span");
-            labelSpan.className = "cover_menu_item_label";
-            labelSpan.textContent = label;
-            item.appendChild(labelSpan);
-            if (opts.disabled) item.disabled = true;
-            item.addEventListener("click", (ev) => {
-                ev.stopPropagation();
-                self.#closeContextMenu();
-                self.#onContextMenuAction(entry.token, action);
-            });
-            menu.appendChild(item);
-        };
-
         // SVG glyphs picked for visual parity with the hide-all toggle and the
         // overflow sentinel — same stroke weight (1.6 ~ 1.8) and 14x14 viewBox,
         // all in currentColor so hover / disabled inherit the menu's text tone.
-        const svgCenter =
-            '<svg viewBox="0 0 14 14" fill="none" aria-hidden="true" focusable="false">' +
-                '<rect x="5.5" y="5.5" width="3" height="3" rx="0.6" stroke="currentColor" stroke-width="1.5"/>' +
-                '<path d="M2 2l2.5 2.5M12 2L9.5 4.5M2 12l2.5-2.5M12 12L9.5 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>' +
-            '</svg>';
-        const svgMinimize =
-            '<svg viewBox="0 0 14 14" fill="none" aria-hidden="true" focusable="false">' +
-                '<path d="M3 10h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' +
-            '</svg>';
-        const svgRestore =
-            '<svg viewBox="0 0 14 14" fill="none" aria-hidden="true" focusable="false">' +
-                '<rect x="3" y="3" width="8" height="8" rx="1" stroke="currentColor" stroke-width="1.5"/>' +
-            '</svg>';
-        const svgClose =
-            '<svg viewBox="0 0 14 14" fill="none" aria-hidden="true" focusable="false">' +
-                '<path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' +
-            '</svg>';
+        const SVG = EstreCoverBarHandle.menuIcons;
+        const items = [
+            { label: "화면 가운데로 이동", action: "center", svg: SVG.center },
+            entry.minimized
+                ? { label: "복원", action: "restore", svg: SVG.restore }
+                : { label: "최소화", action: "minimize", svg: SVG.minimize },
+            { label: "닫기", action: "close", svg: SVG.close },
+        ];
+        return this.openContextMenu({
+            x, y,
+            title: entry.title,
+            items,
+            onAction: (action) => this.#onContextMenuAction(entry.token, action),
+            anchorData: { "data-cover-token": entry.token },
+        });
+    }
 
-        // "화면 가운데로 이동" wires through onAction("center"). Embed wirings
-        // that haven't shipped the recenter API yet can ignore it; embeds that
-        // have shipped recenterRoom / recenterMainPanel handle it natively.
-        addItem("화면 가운데로 이동", "center", svgCenter);
-        addItem(
-            entry.minimized ? "복원" : "최소화",
-            entry.minimized ? "restore" : "minimize",
-            entry.minimized ? svgRestore : svgMinimize,
-        );
-        addItem("닫기", "close", svgClose);
+    /**
+     * Public context-menu surface — opens a menu in #topLayer at the cursor,
+     * matching the chrome the cover-bar uses internally for entry right-click.
+     * Host code (e.g. for a rootbar tab) calls this directly with its own
+     * items / onAction, instead of routing through a cover_entry.
+     *
+     * Items are `{ label, action, svg?, disabled? }`. The menu is single-
+     * instance — opening one closes any prior open menu. Outside pointerdown
+     * and Escape close it; both branches are wired in the constructor.
+     *
+     * Returns the menu state object (or null if #topLayer is missing).
+     */
+    openContextMenu({ x, y, title, items, onAction, anchorData }) {
+        if (this.#topLayer == null) return null;
+        if (this.#openContextMenu != null) this.#closeContextMenu();
 
-        const state = { token: entry.token, element: menu };
+        const menu = document.createElement("div");
+        menu.className = "cover_entry_menu";
+        if (anchorData != null) {
+            for (const [k, v] of Object.entries(anchorData)) menu.setAttribute(k, v);
+        }
+
+        if (title != null) {
+            const titleEl = document.createElement("header");
+            titleEl.className = "cover_menu_title";
+            titleEl.textContent = title;
+            menu.appendChild(titleEl);
+        }
+
+        const self = this;
+        for (const it of items ?? []) {
+            const item = document.createElement("button");
+            item.type = "button";
+            item.className = "clean cover_menu_item";
+            item.setAttribute("data-action", it.action);
+            const iconSpan = document.createElement("span");
+            iconSpan.className = "cover_menu_item_icon";
+            if (it.svg != null) iconSpan.innerHTML = it.svg;
+            item.appendChild(iconSpan);
+            const labelSpan = document.createElement("span");
+            labelSpan.className = "cover_menu_item_label";
+            labelSpan.textContent = it.label;
+            item.appendChild(labelSpan);
+            if (it.disabled) item.disabled = true;
+            item.addEventListener("click", (ev) => {
+                ev.stopPropagation();
+                self.#closeContextMenu();
+                onAction?.(it.action);
+            });
+            menu.appendChild(item);
+        }
+
+        const state = { element: menu };
         this.#topLayer.appendChild(menu);
         this.#positionContextMenu(state, x, y);
+        this.#openContextMenu = state;
         return state;
     }
 

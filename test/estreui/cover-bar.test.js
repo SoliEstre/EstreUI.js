@@ -586,6 +586,46 @@ describe('EstreCoverBarHandle — entry context menu', () => {
         expect(calls).toEqual(['center']);
     });
 
+    test('openContextMenu(public) mounts a menu without requiring a cover entry', () => {
+        // Host code (e.g. a rootbar tab) opens a menu directly via the public
+        // API. No cover_entry is required; the menu carries its own title +
+        // items + onAction.
+        const onAction = (action) => { calls.push(action); };
+        handle.openContextMenu({
+            x: 100, y: 100,
+            title: '망고톡',
+            items: [
+                { label: 'A', action: 'a' },
+                { label: 'B', action: 'b' },
+            ],
+            onAction,
+            anchorData: { 'data-host': 'rootbar' },
+        });
+        const menu = topLayer.querySelector('.cover_entry_menu:not([data-closing="1"])');
+        expect(menu).not.toBeNull();
+        expect(menu.getAttribute('data-host')).toBe('rootbar');
+        expect(menu.querySelector('header.cover_menu_title').textContent).toBe('망고톡');
+        const items = menu.querySelectorAll('button.cover_menu_item');
+        expect(items.length).toBe(2);
+        items[1].click();
+        expect(calls).toEqual(['b']);
+    });
+
+    test('EstreCoverBarHandle.menuIcons exposes reusable SVG glyphs', () => {
+        const icons = EstreCoverBarHandle.menuIcons;
+        expect(typeof icons.center).toBe('string');
+        expect(icons.center).toMatch(/<svg/);
+        expect(icons.center).toMatch(/viewBox="0 0 14 14"/);
+        // Center icon is the redesigned 4-arrow inward chevron — not the
+        // diagonal-X that close uses. The SVG should contain four <path>
+        // elements (one per axis-aligned arrow) instead of the old diagonal
+        // stroke + rect combo.
+        expect((icons.center.match(/<path/g) || []).length).toBe(4);
+        expect(icons.close).toMatch(/<svg/);
+        expect(icons.minimize).toMatch(/<svg/);
+        expect(icons.restore).toMatch(/<svg/);
+    });
+
     test('menu anchors to the cursor and picks a quadrant that opens toward viewport center', () => {
         const token = handle.pushEntry({ title: 'A', onAction: () => {} });
         const btn = instant.querySelector(`[data-cover-token="${token}"]`);
