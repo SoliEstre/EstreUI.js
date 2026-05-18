@@ -45,6 +45,20 @@ describe('EstreCoverBarHandle — CRUD + rendering', () => {
         expect(btn.querySelector(':scope > label').textContent).toBe('Hello');
     });
 
+    test('pushEntry sets the title attr to the cover title (native tooltip)', () => {
+        const token = handle.pushEntry({ title: '엠피솔루션학원 - 유성직원·유성교사·유성선생' });
+        const btn = instant.querySelector(`[data-cover-token="${token}"]`);
+        expect(btn.getAttribute('title')).toBe('엠피솔루션학원 - 유성직원·유성교사·유성선생');
+    });
+
+    test('updateEntry title rewrites the tooltip in sync with the label', () => {
+        const token = handle.pushEntry({ title: 'Old' });
+        handle.updateEntry(token, { title: 'New' });
+        const btn = instant.querySelector(`[data-cover-token="${token}"]`);
+        expect(btn.getAttribute('title')).toBe('New');
+        expect(btn.querySelector(':scope > label').textContent).toBe('New');
+    });
+
     test('default icon resolves by sectionBound (main → static)', () => {
         const token = handle.pushEntry({ title: 'P', sectionBound: 'main', icon: '' });
         const img = instant.querySelector(`[data-cover-token="${token}"] .cover_icon > img`);

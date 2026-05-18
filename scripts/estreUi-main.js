@@ -2346,6 +2346,12 @@ class EstreCoverBarHandle {
             entry.title = partial.title;
             const label = entry.element?.querySelector(":scope > label");
             if (label != null) label.textContent = entry.title ?? "";
+            // Mirror the title attr (native tooltip) so hover stays in sync
+            // with the visible label.
+            if (entry.element != null) {
+                if (entry.title != null) entry.element.setAttribute("title", entry.title);
+                else                     entry.element.removeAttribute("title");
+            }
         }
         if ("icon" in partial) {
             entry.icon = partial.icon;
@@ -2396,6 +2402,9 @@ class EstreCoverBarHandle {
         btn.className = "clean cover_entry";
         btn.setAttribute("data-cover-token", entry.token);
         if (entry.sectionBound != null) btn.setAttribute("data-section-bound", entry.sectionBound);
+        // Full title surfaces as the native tooltip — the visible label is
+        // ellipsis-clipped on narrow tiles, but hovering reveals the rest.
+        if (entry.title != null) btn.setAttribute("title", entry.title);
 
         const iconUrl = this.#resolveIconUrl(entry);
         if (iconUrl != null) {
@@ -2653,6 +2662,7 @@ class EstreCoverBarHandle {
             if (entry.sectionBound != null) row.setAttribute("data-section-bound", entry.sectionBound);
             if (this.#activeToken === entry.token) row.setAttribute("data-active", "1");
             if (entry.minimized) row.setAttribute("data-minimized", "1");
+            if (entry.title != null) row.setAttribute("title", entry.title);
 
             const iconUrl = this.#resolveIconUrl(entry);
             if (iconUrl != null) {
