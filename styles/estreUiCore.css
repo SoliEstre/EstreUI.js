@@ -265,8 +265,9 @@ footer#fixedBottom nav#instantSections { position: relative; display: flex; flex
             var(--color-boundary-o5) 80%,
             transparent 100%);
     }
-    footer#fixedBottom nav#customFixedSections::after { right: 0; }
-    footer#fixedBottom nav#instantSections::before { left: 0; }
+    /* Inset the separator slightly so cover-bar entries don't touch the line. */
+    footer#fixedBottom nav#customFixedSections::after { right: var(--basic-ui-inset-h-half); }
+    footer#fixedBottom nav#instantSections::before { left: var(--basic-ui-inset-h-half); }
 }
 
 /* Top layer — host surface that paints above every embed (including those that
@@ -307,6 +308,10 @@ footer#fixedBottom nav#instantSections .cover_entry {
     cursor: pointer;
     appearance: none;
     -webkit-appearance: none;
+    /* Zero out the user-agent button line-height baseline so the icon + label
+     * column stacks at the rootbar tab's exact pixel position. Children opt
+     * back in with their own line-height (label) or display:block (img). */
+    font-size: 0; line-height: 0;
     transition-duration: 0.15s;
     transition-property: color, opacity;
 }
@@ -332,10 +337,10 @@ div#topLayer .cover_overflow_dropdown .cover_entry[data-active="1"] { color: var
 div#topLayer .cover_overflow_dropdown .cover_entry[data-minimized="1"] { opacity: 0.55; }
 div#topLayer .cover_overflow_dropdown .cover_entry[data-minimized="1"][data-active="1"] { opacity: 0.8; }
 /* Footer icon matches rootbar tab maskable_icon size (32x32) for visual line-up. */
-footer#fixedBottom nav .cover_entry > .cover_icon { display: inline-flex; flex-shrink: 0; width: 32px; height: 32px; align-items: center; justify-content: center; }
-div#topLayer .cover_overflow_dropdown .cover_entry > .cover_icon { display: inline-flex; flex-shrink: 0; width: 18px; height: 18px; align-items: center; justify-content: center; }
+footer#fixedBottom nav .cover_entry > .cover_icon { display: inline-flex; flex-shrink: 0; width: 32px; height: 32px; align-items: center; justify-content: center; line-height: 0; }
+div#topLayer .cover_overflow_dropdown .cover_entry > .cover_icon { display: inline-flex; flex-shrink: 0; width: 18px; height: 18px; align-items: center; justify-content: center; line-height: 0; }
 footer#fixedBottom nav .cover_entry > .cover_icon > img,
-div#topLayer .cover_overflow_dropdown .cover_entry > .cover_icon > img { width: 100%; height: 100%; }
+div#topLayer .cover_overflow_dropdown .cover_entry > .cover_icon > img { display: block; width: 100%; height: 100%; }
 /* footer label — small caption under the icon, follows rootbar tab label style. */
 footer#fixedBottom nav .cover_entry > label {
     flex-shrink: 1; min-width: 0; max-width: 100%;
@@ -441,16 +446,34 @@ div#topLayer .cover_overflow_dropdown {
 
 /* Context menu — right-click affordance on cover-bar entries. Mounted in
  * #topLayer so it paints above embed surfaces. Positioned at the cursor
- * (clamped to the viewport) by #positionContextMenu. Vertical list of items
- * with a non-interactive title header at the top. */
+ * (clamped to the viewport) by #positionContextMenu, which picks a quadrant
+ * (origin corner) so the menu always opens toward viewport center. The
+ * --menu-origin inline custom property drives transform-origin for the
+ * scale-grow open animation. */
 div#topLayer .cover_entry_menu {
+    --menu-origin: top left;
     position: fixed;
     display: flex; flex-flow: column nowrap;
     min-width: 180px; max-width: 280px;
     padding: 4px 0;
+    border: 1px outset var(--color-boundary-o15);
     border-radius: 8px;
-    background-color: var(--color-background-elevated, rgb(var(--cb) / 98%));
+    background-color: color-mix(in srgb, var(--common-bg-color) 5%, transparent);
+    backdrop-filter: var(--basic-backdrop-blur);
+    -webkit-backdrop-filter: var(--basic-backdrop-blur);
     box-shadow: 0 6px 16px rgb(0 0 0 / 14%), 0 1px 4px rgb(0 0 0 / 8%);
+    transform-origin: var(--menu-origin);
+    animation: cover_menu_enter 0.2s ease-out;
+}
+div#topLayer .cover_entry_menu[data-closing="1"] {
+    opacity: 0;
+    transform: scale(1);
+    transition: opacity 0.2s ease;
+    animation: none;
+}
+@keyframes cover_menu_enter {
+    from { transform: scale(0.6); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
 }
 div#topLayer .cover_entry_menu > header.cover_menu_title {
     margin: 0 0 4px 0;

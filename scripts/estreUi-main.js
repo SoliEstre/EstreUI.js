@@ -2762,21 +2762,48 @@ class EstreCoverBarHandle {
         return state;
     }
 
+    /**
+     * Anchor the context menu at the cursor and pick a quadrant so it always
+     * opens *toward* the viewport center — bottom-right click → menu pinned to
+     * its bottom-right (= grows up-and-left), top-left click → menu pinned
+     * top-left (= grows down-and-right), etc. The transform-origin custom
+     * property is set inline so the scale-grow open animation pivots at the
+     * click point.
+     */
     #positionContextMenu(state, x, y) {
         const { element } = state;
-        // Mount-then-measure so width/height reflect the rendered text.
-        const rect = element.getBoundingClientRect();
-        const margin = 4;
-        const left = Math.max(margin, Math.min(x, window.innerWidth - rect.width - margin));
-        const top = Math.max(margin, Math.min(y, window.innerHeight - rect.height - margin));
-        element.style.left = `${left}px`;
-        element.style.top = `${top}px`;
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        const isRight = x > w / 2;
+        const isBottom = y > h / 2;
+        element.style.left = isRight ? "auto" : `${x}px`;
+        element.style.right = isRight ? `${Math.max(0, w - x)}px` : "auto";
+        element.style.top = isBottom ? "auto" : `${y}px`;
+        element.style.bottom = isBottom ? `${Math.max(0, h - y)}px` : "auto";
+        // Origin corner = the cursor-anchored corner; CSS uses keywords (`top`
+        // / `bottom` / `left` / `right`) for transform-origin so it stays
+        // pixel-exact regardless of layout shifts during animation.
+        const vert = isBottom ? "bottom" : "top";
+        const horiz = isRight ? "right" : "left";
+        element.style.setProperty("--menu-origin", `${vert} ${horiz}`);
     }
 
+    /**
+     * Fade the menu out (0.2s ease) before detaching, so the close looks like
+     * a deliberate dismiss rather than a pop. The element is removed on the
+     * transitionend; null-ing the state first prevents a re-entrant close from
+     * doubling up the fade.
+     */
     #closeContextMenu() {
         if (this.#openContextMenu == null) return;
-        this.#openContextMenu.element.remove();
+        const el = this.#openContextMenu.element;
         this.#openContextMenu = null;
+        el.setAttribute("data-closing", "1");
+        const remove = () => el.remove();
+        el.addEventListener("transitionend", remove, { once: true });
+        // Safety fallback — if the animation is interrupted (e.g. element no
+        // longer in DOM), still detach after the expected duration.
+        setTimeout(remove, 260);
     }
 
     /** Route a context-menu click to the right action. The first three actions

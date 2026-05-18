@@ -527,32 +527,34 @@ describe('EstreCoverBarHandle — entry context menu', () => {
         const items = topLayer.querySelectorAll('.cover_entry_menu > button.cover_menu_item');
         items[2].click(); // 닫기
         expect(calls).toEqual(['close']);
-        expect(topLayer.querySelector('.cover_entry_menu')).toBeNull();
+        // The fade-out animation leaves the element in the DOM for 0.2s with
+        // data-closing="1"; the live (non-closing) menu disappears immediately.
+        expect(topLayer.querySelector('.cover_entry_menu:not([data-closing="1"])')).toBeNull();
     });
 
     test('opening a new context menu closes any prior one', () => {
         const a = handle.pushEntry({ title: 'A', onAction: () => {} });
         const b = handle.pushEntry({ title: 'B', onAction: () => {} });
         rightClick(instant.querySelector(`[data-cover-token="${a}"]`));
-        expect(topLayer.querySelectorAll('.cover_entry_menu').length).toBe(1);
+        expect(topLayer.querySelectorAll('.cover_entry_menu:not([data-closing="1"])').length).toBe(1);
         rightClick(instant.querySelector(`[data-cover-token="${b}"]`));
-        const menus = topLayer.querySelectorAll('.cover_entry_menu');
-        expect(menus.length).toBe(1);
-        expect(menus[0].getAttribute('data-cover-token')).toBe(String(b));
+        const live = topLayer.querySelectorAll('.cover_entry_menu:not([data-closing="1"])');
+        expect(live.length).toBe(1);
+        expect(live[0].getAttribute('data-cover-token')).toBe(String(b));
     });
 
     test('Escape closes the context menu', () => {
         const token = handle.pushEntry({ title: 'A', onAction: () => {} });
         rightClick(instant.querySelector(`[data-cover-token="${token}"]`));
         document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
-        expect(topLayer.querySelector('.cover_entry_menu')).toBeNull();
+        expect(topLayer.querySelector('.cover_entry_menu:not([data-closing="1"])')).toBeNull();
     });
 
     test('outside pointerdown closes the context menu', () => {
         const token = handle.pushEntry({ title: 'A', onAction: () => {} });
         rightClick(instant.querySelector(`[data-cover-token="${token}"]`));
         document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
-        expect(topLayer.querySelector('.cover_entry_menu')).toBeNull();
+        expect(topLayer.querySelector('.cover_entry_menu:not([data-closing="1"])')).toBeNull();
     });
 
     test('"화면 가운데로 이동" fires onAction("center") as a placeholder', () => {
@@ -564,6 +566,36 @@ describe('EstreCoverBarHandle — entry context menu', () => {
         const items = topLayer.querySelectorAll('.cover_entry_menu > button.cover_menu_item');
         items[0].click(); // 화면 가운데로 이동
         expect(calls).toEqual(['center']);
+    });
+
+    test('menu anchors to the cursor and picks a quadrant that opens toward viewport center', () => {
+        const token = handle.pushEntry({ title: 'A', onAction: () => {} });
+        const btn = instant.querySelector(`[data-cover-token="${token}"]`);
+        // jsdom defaults: innerWidth = 1024, innerHeight = 768. Center ≈ (512, 384).
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+
+        const dispatchAt = (x, y) => {
+            btn.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: x, clientY: y }));
+        };
+
+        // bottom-right click → menu pinned bottom-right (grows up-and-left)
+        dispatchAt(w - 50, h - 50);
+        let menu = topLayer.querySelector('.cover_entry_menu:not([data-closing="1"])');
+        expect(menu.style.right).not.toBe('auto');
+        expect(menu.style.bottom).not.toBe('auto');
+        expect(menu.style.left).toBe('auto');
+        expect(menu.style.top).toBe('auto');
+        expect(menu.style.getPropertyValue('--menu-origin')).toBe('bottom right');
+
+        // top-left click → menu pinned top-left (grows down-and-right)
+        dispatchAt(50, 50);
+        menu = topLayer.querySelector('.cover_entry_menu:not([data-closing="1"])');
+        expect(menu.style.left).not.toBe('auto');
+        expect(menu.style.top).not.toBe('auto');
+        expect(menu.style.right).toBe('auto');
+        expect(menu.style.bottom).toBe('auto');
+        expect(menu.style.getPropertyValue('--menu-origin')).toBe('top left');
     });
 });
 
