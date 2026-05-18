@@ -245,7 +245,7 @@ footer#fixedBottom nav:not(#rootbar):first-child { padding-left: var(--left-pad)
 footer#fixedBottom nav:not(#rootbar):last-child { padding-right: var(--right-pad); }
 }
 footer#fixedBottom nav#customFixedSections { display: flex; flex-flow: row nowrap; align-items: stretch; gap: 4px; overflow: hidden; }
-footer#fixedBottom nav#instantSections { display: flex; flex-flow: row nowrap; align-items: stretch; justify-content: flex-end; gap: 4px; overflow: hidden; }
+footer#fixedBottom nav#instantSections { display: flex; flex-flow: row nowrap; align-items: stretch; justify-content: flex-start; gap: 4px; overflow: hidden; }
 
 /* Top layer — host surface that paints above every embed (including those that
  * sit at extreme z-index). The container itself is pointer-event-transparent;
@@ -296,15 +296,18 @@ div#topLayer .cover_overflow_dropdown .cover_entry {
     transition-duration: 0.15s;
     transition-property: background-color, color, opacity;
 }
-footer#fixedBottom nav .cover_entry:hover,
+/* Footer entries — keep the visual minimal: indicator bar + label color tell the
+ * state, no background fill. Dropdown rows are a contextual list so they keep
+ * the hover/active background highlight. */
+footer#fixedBottom nav .cover_entry[data-active="1"] { color: var(--color-text-darker, rgb(var(--ca) / 95%)); }
+footer#fixedBottom nav .cover_entry[data-minimized="1"] { opacity: 0.55; }
+footer#fixedBottom nav .cover_entry[data-minimized="1"][data-active="1"] { opacity: 0.8; }
 div#topLayer .cover_overflow_dropdown .cover_entry:hover { background-color: rgb(var(--ca) / 8%); }
-footer#fixedBottom nav .cover_entry[data-active="1"],
 div#topLayer .cover_overflow_dropdown .cover_entry[data-active="1"] { color: var(--color-text-darker, rgb(var(--ca) / 95%)); background-color: rgb(var(--ca) / 12%); }
-footer#fixedBottom nav .cover_entry[data-minimized="1"],
 div#topLayer .cover_overflow_dropdown .cover_entry[data-minimized="1"] { opacity: 0.55; }
-footer#fixedBottom nav .cover_entry[data-minimized="1"][data-active="1"],
 div#topLayer .cover_overflow_dropdown .cover_entry[data-minimized="1"][data-active="1"] { opacity: 0.8; }
-footer#fixedBottom nav .cover_entry > .cover_icon,
+/* Footer icon matches rootbar tab maskable_icon size (32x32) for visual line-up. */
+footer#fixedBottom nav .cover_entry > .cover_icon { display: inline-flex; flex-shrink: 0; width: 32px; height: 32px; align-items: center; justify-content: center; }
 div#topLayer .cover_overflow_dropdown .cover_entry > .cover_icon { display: inline-flex; flex-shrink: 0; width: 18px; height: 18px; align-items: center; justify-content: center; }
 footer#fixedBottom nav .cover_entry > .cover_icon > img,
 div#topLayer .cover_overflow_dropdown .cover_entry > .cover_icon > img { width: 100%; height: 100%; }
@@ -353,23 +356,10 @@ footer#fixedBottom nav .cover_entry[data-active="1"] > label { color: var(--colo
  * the click handler can stopPropagation and route to onAction("close") without
  * the surrounding row registering as a focus/minimize click. The embed is
  * responsible for actually removing the entry; the ✕ only signals intent.
- * Footer entries are square tiles — the ✕ goes to the top-right corner
- * (Windows-task-switcher hover affordance). Dropdown rows are linear —
- * the ✕ sits inline at the trailing edge. */
-footer#fixedBottom nav .cover_entry > .cover_entry_close {
-    position: absolute; top: 2px; right: 2px;
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 14px; height: 14px;
-    border-radius: 50%;
-    color: var(--color-text-pale, rgb(var(--ca) / 50%));
-    font-size: 0.625rem; line-height: 1;
-    cursor: pointer;
-    opacity: 0;
-    transition-duration: 0.15s;
-    transition-property: background-color, color, opacity;
-}
-footer#fixedBottom nav .cover_entry:hover > .cover_entry_close,
-footer#fixedBottom nav .cover_entry[data-active="1"] > .cover_entry_close { opacity: 1; }
+ * Footer tiles deliberately hide the ✕ to stay visually tidy — close is
+ * still reachable via the overflow dropdown row, where the ✕ sits inline at
+ * the trailing edge. */
+footer#fixedBottom nav .cover_entry > .cover_entry_close { display: none; }
 div#topLayer .cover_overflow_dropdown .cover_entry > .cover_entry_close {
     display: inline-flex; align-items: center; justify-content: center;
     flex-shrink: 0;
@@ -382,7 +372,6 @@ div#topLayer .cover_overflow_dropdown .cover_entry > .cover_entry_close {
     transition-duration: 0.15s;
     transition-property: background-color, color;
 }
-footer#fixedBottom nav .cover_entry > .cover_entry_close:hover,
 div#topLayer .cover_overflow_dropdown .cover_entry > .cover_entry_close:hover {
     background-color: rgb(var(--ca) / 15%);
     color: var(--color-text-darker, rgb(var(--ca) / 95%));
