@@ -250,14 +250,18 @@ footer#fixedBottom nav#instantSections { position: relative; display: flex; flex
 /* Hairline separators between the rootbar tabs and the cover-bar areas — only on
  * wide viewports where the three areas actually sit side-by-side. 1px wide,
  * 66% tall and centered vertically; a soft vertical gradient fades to
- * transparent at the top and bottom 20% so the bar doesn't get a hard edge. */
+ * transparent at the top and bottom 20% so the bar doesn't get a hard edge.
+ * Rendered as a relative-positioned flex item so margin-left/right (the inset
+ * away from the rootbar edge) actually pushes the line — absolute positioning
+ * would ignore those margins for layout. */
 @media all and (min-height: 700px) and (min-width: 740px) {
     footer#fixedBottom nav#customFixedSections::after,
     footer#fixedBottom nav#instantSections::before {
         content: "";
-        position: absolute;
-        top: 17%; bottom: 17%;
-        width: 1px;
+        position: relative;
+        flex: 0 0 1px;
+        align-self: center;
+        height: 66%;
         pointer-events: none;
         background: linear-gradient(180deg,
             transparent 0%,
@@ -265,9 +269,11 @@ footer#fixedBottom nav#instantSections { position: relative; display: flex; flex
             var(--color-boundary-o5) 80%,
             transparent 100%);
     }
-    /* Inset the separator slightly so cover-bar entries don't touch the line. */
-    footer#fixedBottom nav#customFixedSections::after { right: var(--basic-ui-inset-h-half); }
-    footer#fixedBottom nav#instantSections::before { left: var(--basic-ui-inset-h-half); }
+    /* Push the separator away from the cover-bar entries on its area side so
+     * the line doesn't touch a filled-out tile. The rootbar-facing edge stays
+     * flush against the rootbar so the boundary still reads as boundary. */
+    footer#fixedBottom nav#customFixedSections::after { margin-left: var(--basic-ui-inset-h-half); }
+    footer#fixedBottom nav#instantSections::before { margin-right: var(--basic-ui-inset-h-half); }
 }
 
 /* Top layer — host surface that paints above every embed (including those that
