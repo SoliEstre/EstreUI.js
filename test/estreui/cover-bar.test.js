@@ -172,6 +172,55 @@ describe('EstreCoverBarHandle — CRUD + rendering', () => {
         expect(instant.querySelector(`[data-cover-token="${token}"] .cover_icon`)).toBeNull();
     });
 
+    test('pushEntry with badge: 5 sets data-badge="5" on the cover_icon', () => {
+        const token = handle.pushEntry({ title: 'A', sectionBound: 'overlay', icon: '/x.svg', badge: 5 });
+        const icon = instant.querySelector(`[data-cover-token="${token}"] > .cover_icon`);
+        expect(icon).not.toBeNull();
+        expect(icon.getAttribute('data-badge')).toBe('5');
+    });
+
+    test('pushEntry with badge: 1 sets data-badge="" (dot via CSS [data-badge=""])', () => {
+        const token = handle.pushEntry({ title: 'A', sectionBound: 'overlay', icon: '/x.svg', badge: 1 });
+        const icon = instant.querySelector(`[data-cover-token="${token}"] > .cover_icon`);
+        expect(icon.getAttribute('data-badge')).toBe('');
+    });
+
+    test('pushEntry with badge > 99 caps the data-badge value at "99+"', () => {
+        const token = handle.pushEntry({ title: 'A', sectionBound: 'overlay', icon: '/x.svg', badge: 234 });
+        const icon = instant.querySelector(`[data-cover-token="${token}"] > .cover_icon`);
+        expect(icon.getAttribute('data-badge')).toBe('99+');
+    });
+
+    test('pushEntry without badge leaves the cover_icon free of [data-badge]', () => {
+        const token = handle.pushEntry({ title: 'A', sectionBound: 'overlay', icon: '/x.svg' });
+        const icon = instant.querySelector(`[data-cover-token="${token}"] > .cover_icon`);
+        expect(icon.hasAttribute('data-badge')).toBe(false);
+    });
+
+    test('updateEntry { badge: 0 } removes the data-badge attribute', () => {
+        const token = handle.pushEntry({ title: 'A', sectionBound: 'overlay', icon: '/x.svg', badge: 3 });
+        const icon = instant.querySelector(`[data-cover-token="${token}"] > .cover_icon`);
+        expect(icon.hasAttribute('data-badge')).toBe(true);
+        handle.updateEntry(token, { badge: 0 });
+        expect(icon.hasAttribute('data-badge')).toBe(false);
+    });
+
+    test('updateEntry rewrites data-badge in place on the same .cover_icon node', () => {
+        const token = handle.pushEntry({ title: 'A', sectionBound: 'overlay', icon: '/x.svg', badge: 1 });
+        const first = instant.querySelector(`[data-cover-token="${token}"] > .cover_icon`);
+        handle.updateEntry(token, { badge: 7 });
+        const second = instant.querySelector(`[data-cover-token="${token}"] > .cover_icon`);
+        expect(second).toBe(first); // same icon element
+        expect(second.getAttribute('data-badge')).toBe('7');
+    });
+
+    test('badge on icon-less entry (icon: "none") is a no-op (no .cover_icon host)', () => {
+        const token = handle.pushEntry({ title: 'A', icon: 'none', badge: 5 });
+        const btn = instant.querySelector(`[data-cover-token="${token}"]`);
+        expect(btn.querySelector('.cover_icon')).toBeNull();
+        expect(btn.hasAttribute('data-badge')).toBe(false);
+    });
+
     test('updateEntry icon → "" falls back to the sectionBound default', () => {
         const token = handle.pushEntry({ title: 'A', sectionBound: 'overlay', icon: '/x.svg' });
         handle.updateEntry(token, { icon: '' });

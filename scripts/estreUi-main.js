@@ -1922,6 +1922,7 @@ const estreUi = {
      * @param {string} [data.sectionBound] — "main" | "blind" | "overlay", drives the default icon
      * @param {(action: "focus"|"minimize"|"restore"|"close") => void} [data.onAction]
      * @param {boolean} [data.closable] — render an ✕ that fires onAction("close")
+     * @param {number} [data.badge] — unread / notification count (0 or null → no badge, 1 → dot, 2-99 → numeric, >99 → "99+")
      * @returns {number|null} token, or `null` if the cover bar isn't initialised
      */
     pushInstantSectionEntry(data) {
@@ -1935,6 +1936,7 @@ const estreUi = {
             sectionBound: data?.sectionBound,
             onAction: data?.onAction,
             closable: data?.closable,
+            badge: data?.badge,
         });
     },
 
@@ -2323,11 +2325,13 @@ class EstreCoverBarHandle {
             // with one of "focus" / "minimize" / "restore" / "close".
             onAction: typeof data.onAction === "function" ? data.onAction : null,
             closable: data.closable === true,
+            badge: typeof data.badge === "number" ? data.badge : null,
             minimized: false,
             element: null,
         };
         this.#entries.push(entry);
         this.#renderEntry(entry);
+        this.#refreshEntryBadge(entry);
         this.#recomputeOverflow();
         return token;
     }
@@ -2398,6 +2402,10 @@ class EstreCoverBarHandle {
         if ("closable" in partial) {
             entry.closable = partial.closable === true;
             this.#refreshEntryClose(entry);
+        }
+        if ("badge" in partial) {
+            entry.badge = typeof partial.badge === "number" ? partial.badge : null;
+            this.#refreshEntryBadge(entry);
         }
         this.#recomputeOverflow();
         return true;
@@ -2540,6 +2548,41 @@ class EstreCoverBarHandle {
         img.src = iconUrl;
         span.appendChild(img);
         entry.element.insertBefore(span, entry.element.firstChild);
+    }
+
+    /**
+     * Apply the project-wide [data-badge] attribute convention (see
+     * estreUi.css `article [data-badge]::after`) to an element. Display
+     * rules — kept consistent with `setMangoTalkBadge` / `setPushNotificationBadge`
+     * elsewhere in the host so themes can override `--badge-color` once:
+     *   - count null / 0 / negative → attribute removed
+     *   - count === 1               → data-badge="" → dot (CSS :empty variant)
+     *   - 2 ≤ count ≤ 99            → data-badge="<count>" → numeric pill
+     *   - count > 99                → data-badge="99+"
+     */
+    #setBadgeAttr(target, count) {
+        if (count == null || count <= 0) {
+            target.removeAttribute("data-badge");
+            return;
+        }
+        target.setAttribute("data-badge",
+            count === 1 ? "" :
+            count > 99  ? "99+" :
+                          String(count));
+    }
+
+    /**
+     * Sync the per-entry unread badge with `entry.badge`. The badge is
+     * surfaced as a [data-badge] attribute on the entry's .cover_icon —
+     * styled via the cover-bar-scoped ::after rule that mirrors the
+     * project-wide article [data-badge] convention. Text-only entries
+     * (icon: "none" / no .cover_icon host) silently no-op.
+     */
+    #refreshEntryBadge(entry) {
+        if (entry.element == null) return;
+        const iconHost = entry.element.querySelector(":scope > .cover_icon");
+        if (iconHost == null) return; // text-only entries can't host the badge
+        this.#setBadgeAttr(iconHost, entry.badge);
     }
 
     /**
@@ -2707,6 +2750,7 @@ class EstreCoverBarHandle {
                 img.alt = "";
                 img.src = iconUrl;
                 span.appendChild(img);
+                this.#setBadgeAttr(span, entry.badge);
                 row.appendChild(span);
             }
             const label = document.createElement("label");

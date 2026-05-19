@@ -406,6 +406,50 @@ footer#fixedBottom nav .cover_entry[data-active="1"]::before {
 }
 footer#fixedBottom nav .cover_entry[data-active="1"] > label { color: var(--color-point-dark, rgb(var(--ca) / 95%)); }
 
+/* Per-entry unread / notification badge — surfaces via [data-badge] on the
+ * entry's .cover_icon so it sits in the icon's top-right corner. Mirrors the
+ * project-wide `article [data-badge]::after` convention (see estreUi.css)
+ * so host themes can override `--badge-color` once and have it apply
+ * everywhere. Cover bar uses a slightly tighter --height than article badges
+ * to suit the 32px icon. Display rules (see #refreshEntryBadge):
+ *   data-badge=""    → dot
+ *   data-badge="<n>" → numeric pill (2 ≤ n ≤ 99)
+ *   data-badge="99+" → cap label
+ *   attribute absent → no badge */
+footer#fixedBottom nav .cover_entry > .cover_icon,
+div#topLayer .cover_overflow_dropdown .cover_entry > .cover_icon { position: relative; }
+
+footer#fixedBottom nav .cover_entry > .cover_icon[data-badge]::after,
+div#topLayer .cover_overflow_dropdown .cover_entry > .cover_icon[data-badge]::after {
+    --height: 14px;
+    --badge-color: var(--color-point);
+    content: attr(data-badge);
+    position: absolute; z-index: 1;
+    top: -2px; right: -6px;
+    display: flex; align-items: center; justify-content: center;
+    width: max-content;
+    min-width: var(--height); min-height: var(--height); max-height: var(--height);
+    padding: 0 4px;
+    box-sizing: border-box;
+    border-radius: var(--height);
+    background-color: var(--badge-color);
+    color: var(--color-text-inverse, #FFFFFF);
+    font-size: 0.625rem; line-height: var(--height); font-weight: 700;
+    text-align: center;
+    pointer-events: none;
+    transition-timing-function: ease;
+    transition-duration: 0.3s;
+}
+footer#fixedBottom nav .cover_entry > .cover_icon[data-badge=""]::after,
+div#topLayer .cover_overflow_dropdown .cover_entry > .cover_icon[data-badge=""]::after {
+    top: 0; right: -2px;
+    width: 8px; height: 8px;
+    min-width: 8px; min-height: 8px;
+    aspect-ratio: 1;
+    padding: 0;
+    border-radius: 100%;
+}
+
 /* Per-entry close ✕ — rendered when the entry was pushed with closable:true
  * (Phase 3 external embed hook). Lives inside the entry button as a span so
  * the click handler can stopPropagation and route to onAction("close") without
