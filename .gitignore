@@ -5,3 +5,7 @@ node_modules/
 *.zip
 *.7z
 *.pem
+
+# Agent/tooling artifacts
+.playwright-mcp/
+.claude/settings.local.json
