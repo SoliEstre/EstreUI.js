@@ -1,4 +1,4 @@
-const INSTALLATION_VERSION_NAME = "1.4.0-r20260424";
+const INSTALLATION_VERSION_NAME = "1.5.0-r20260524";
 // ^^ Use for check new update "Native application(webview) version(or Android/iOS version combo) - PWA release version"
 // ex) "1.0.1/1.0.0-r20251101k"
 
@@ -22,7 +22,7 @@ const INSTALLATION_FILE_LIST = [
 
 
 // Common files cache - Be changes some time but, well not changed very often
-const CACHE_NAME_COMMON_FILES = "common-files-cache-v1-20260424";
+const CACHE_NAME_COMMON_FILES = "common-files-cache-v1-20260524";
 
 const COMMON_FILES_TO_CACHE = [
     "./",
@@ -61,7 +61,7 @@ const COMMON_FILES_TO_CACHE = [
 
 
 // Static files cache - Rarely changes after release
-const CACHE_NAME_STATIC_FILES = "static-files-cache-v1-20260221";
+const CACHE_NAME_STATIC_FILES = "static-files-cache-v1-20260524";
 
 const STATIC_FILES_TO_CACHE = [
     "./favicon.ico",
@@ -97,6 +97,9 @@ const STATIC_FILES_TO_CACHE = [
 
     "./vectors/more_vertical_slim_icon.svg",
     "./vectors/app_icon.svg",
+    "./vectors/cover-icon-default-static.svg",
+    "./vectors/cover-icon-default-instant.svg",
+    "./vectors/cover-icon-default-overlay.svg",
 ];
 
 

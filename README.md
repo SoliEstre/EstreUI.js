@@ -61,7 +61,7 @@ Estre UI Demo Application
 #### File Structure
 *   `serviceLoader.html`: Service Worker Loader (handles updates before app launch).
 *   `scripts/`: Core libraries and logic.
-    *   `estreUi.js`: Main framework code.
+    *   `estreUi-*.js`: Main framework code — split into 8 modules (`estreUi-core` / `-dialog` / `-notation` / `-notification` / `-pageModel` / `-pageManager` / `-handles` / `-interaction` / `-main`), loaded in order via `<script defer>` (since v1.2.4; roadmap #002 phase 2). The `estreUi` singleton is also exposed on `window` for ES-module-realm host integrations.
     *   `estreU0EEOZ.js`: Estre Common library.
     *   `main.js`: Application entry point and configuration.
 *   `styles/`: CSS files for the framework and your app.
@@ -160,17 +160,17 @@ EstreUI pages have a distinct lifecycle, similar to Android Activities:
 *   Handles matching the UIS (UI specifier) in the HTML structure are initialized after onBring.
 
 #### Built-in Handles
-*   Includes `EstreUnifiedCalendarHandle`, `EstreDedicatedCalanderHandle`, etc. Refer to the default registered classes in the `EstreHandle` class in `estreUi.js`.
+*   Includes `EstreUnifiedCalendarHandle`, `EstreDedicatedCalanderHandle`, etc. Refer to the default registered classes in the `EstreHandle` class in `estreUi-handles.js`.
 
 #### Custom Handles
-*   You can register and use your own handles before Estre UI initialization. Refer to the implementation of the `EstreHandle` class in `estreUi.js`.
+*   You can register and use your own handles before Estre UI initialization. Refer to the implementation of the `EstreHandle` class in `estreUi-handles.js`.
 
 ### Handler (Direct Class Implementation)
 *   Reusable implementations that perform specific actions as needed are called handlers.
 *   Mainly initialized and used during page start callbacks.
 
 #### Built-in Handlers
-*   Includes `EstreSwipeHandler`, `EstreDraggableHandler`, etc. Refer to the default registered classes under the `// handlers` comment in `estreUi.js`.
+*   Includes `EstreSwipeHandler`, `EstreDraggableHandler`, etc. Refer to the default registered handler classes in `estreUi-interaction.js`.
 
 #### Custom Handlers
 *   There is no specific format for handler implementation, so feel free to implement them as needed.
@@ -332,7 +332,7 @@ Estre UI 데모 애플리케이션
 #### 파일 구조
 *   `serviceLoader.html`: 서비스 워커 로더 (앱 실행 전 업데이트 진행).
 *   `scripts/`: 핵심 라이브러리 및 로직.
-    *   `estreUi.js`: 메인 프레임워크 코드.
+    *   `estreUi-*.js`: 메인 프레임워크 코드 — 8개 모듈로 분할(`estreUi-core` / `-dialog` / `-notation` / `-notification` / `-pageModel` / `-pageManager` / `-handles` / `-interaction` / `-main`), `<script defer>`로 순서대로 로드(v1.2.4부터, roadmap #002 phase 2). `estreUi` 싱글톤은 ES-module-realm 호스트 통합을 위해 `window`에도 노출됩니다.
     *   `estreU0EEOZ.js`: Estre Common 라이브러리.
     *   `main.js`: 애플리케이션 진입점 및 설정.
 *   `styles/`: 프레임워크 및 앱을 위한 CSS 파일.
@@ -431,17 +431,17 @@ EstreUI 페이지는 Android Activity와 유사한 뚜렷한 라이프사이클�
 *   HTML 스트럭처 내 UIS(UI spceifier)에 따라 매칭되는 핸들이 onBring 이후 시점에 초기화됩니다.
 
 #### 기본 제공 핸들
-*   `EstreUnifiedCalendarHandle`, `EstreDedicatedCalanderHandle` 등의 기본 제공 핸들이 있습니다. 자세한 항목은 `estreUi.js`의 `EstreHandle` 클래스에 기본 등록된 클래스들을 참조하세요.
+*   `EstreUnifiedCalendarHandle`, `EstreDedicatedCalanderHandle` 등의 기본 제공 핸들이 있습니다. 자세한 항목은 `estreUi-handles.js`의 `EstreHandle` 클래스에 기본 등록된 클래스들을 참조하세요.
 
 #### 사용자 정의 핸들
-*   Estre UI의 초기화 전에 직접 구현한 핸들을 등록하여 사용할 수 있습니다. 자세한 사항은 `estreUi.js`의 `EstreHandle` 클래스의 구현을 참고하세요.
+*   Estre UI의 초기화 전에 직접 구현한 핸들을 등록하여 사용할 수 있습니다. 자세한 사항은 `estreUi-handles.js`의 `EstreHandle` 클래스의 구현을 참고하세요.
 
 ### 핸들러(handler) (직접 클래스 구현)
 *   필요에 따라 특정 작동을 수행하는 재사용 가능한 구현을 핸들러라고 칭합니다.
 *   주로 페이지 시작 콜백 중에 초기화하여 사용합니다.
 
 #### 기본 제공 핸들러
-*   `EstreSwipeHandler`, `EstreDraggableHandler` 등의 기본 제공 핸들러가 있습니다. 자세한 항목은 `estreUi.js`의 `// handlers` 주석 아래에 기본 등록된 클래스들을 참조하세요.
+*   `EstreSwipeHandler`, `EstreDraggableHandler` 등의 기본 제공 핸들러가 있습니다. 자세한 항목은 `estreUi-interaction.js`에 기본 등록된 핸들러 클래스들을 참조하세요.
 
 #### 사용자 정의 핸들러
 *   핸들러의 구현은 형식이 따로 없으므로 자유롭게 구현하여 사용하시기 바랍니다.
