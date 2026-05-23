@@ -2975,3 +2975,12 @@ class EstreCoverBarHandle {
 // surface. See review #011.
 window.estreUi = estreUi;
 
+// review #011 후속 — 페이지 시스템 공개 표면도 module-realm 에 노출한다. <script type="module">
+// 임베드(EstreUX estreui 변종 등)가 EstrePageHandler 를 상속해 페이지 핸들러를 정의하고,
+// pageManager 로 등록·bring 하며, 필요 시 커스텀 매니저/핸들까지 쓸 수 있도록. classic 스크립트는
+// 기존처럼 lexical const 로 그대로 접근하고, 이 줄들은 cross-realm 표면만 추가한다(호환성 영향 0).
+window.pageManager = pageManager;
+window.EstrePageHandler = EstrePageHandler;
+window.EstreUiCustomPageManager = EstreUiCustomPageManager;
+window.EstreHandle = EstreHandle;
+

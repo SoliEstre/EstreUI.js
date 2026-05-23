@@ -68,6 +68,7 @@ typeof window.estreUi.onBack
 
 - **다른 EstreUI 식별자도 같은 함정** — `pageManager`, `EstreHandle`, `EstreSwipeHandler`, `EstreUiPage`, `EstrePageHandler` 등 (test setup 의 globalThis 바인딩 목록 참고). 본 fix 는 의뢰서 §4 의 한 줄 권장 그대로 `estreUi` 만 노출. 다른 식별자가 module-realm 임베드에서 필요해지면 별도 의뢰/fix 시점에 동일 패턴 (`window.<name> = <name>;`) 적용.
 - **동일 예방 차원에서 `pageManager` 등을 같은 시점에 노출할지** 는 운영 정책 결정 — 현재 사용처가 명확한 표면만 노출하는 게 표면 관리상 깔끔.
+- **✅ 후속 (v1.5.1, 2026-05-24)** — EstreUX `estreui` 변종을 EstreUI 페이지 시스템에 마운트(`EstrePageHandler` 상속 + `pageManager.bringPage`)하려면 이 식별자들이 module-realm 에서 필요해짐. 위 "필요해지면 노출" 정책의 첫 발현으로 `window.pageManager` / `window.EstrePageHandler` / `window.EstreUiCustomPageManager` / `window.EstreHandle` 를 `estreUi-main.js` 끝에 추가 노출. `EstreSwipeHandler` / `EstreUiPage` / `EstrePageHandle` / `EstreCoverBarHandle` 등은 아직 사용처가 없어 보류.
 
 ## 검색 힌트
 

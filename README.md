@@ -61,7 +61,7 @@ Estre UI Demo Application
 #### File Structure
 *   `serviceLoader.html`: Service Worker Loader (handles updates before app launch).
 *   `scripts/`: Core libraries and logic.
-    *   `estreUi-*.js`: Main framework code — split into 8 modules (`estreUi-core` / `-dialog` / `-notation` / `-notification` / `-pageModel` / `-pageManager` / `-handles` / `-interaction` / `-main`), loaded in order via `<script defer>` (since v1.2.4; roadmap #002 phase 2). The `estreUi` singleton is also exposed on `window` for ES-module-realm host integrations.
+    *   `estreUi-*.js`: Main framework code — split into 8 modules (`estreUi-core` / `-dialog` / `-notation` / `-notification` / `-pageModel` / `-pageManager` / `-handles` / `-interaction` / `-main`), loaded in order via `<script defer>` (since v1.2.4; roadmap #002 phase 2). The `estreUi` singleton (and the page-system surface — `pageManager` / `EstrePageHandler` / `EstreUiCustomPageManager` / `EstreHandle`, since v1.5.1) is exposed on `window` for ES-module-realm host integrations.
     *   `estreU0EEOZ.js`: Estre Common library.
     *   `main.js`: Application entry point and configuration.
 *   `styles/`: CSS files for the framework and your app.
@@ -332,7 +332,7 @@ Estre UI 데모 애플리케이션
 #### 파일 구조
 *   `serviceLoader.html`: 서비스 워커 로더 (앱 실행 전 업데이트 진행).
 *   `scripts/`: 핵심 라이브러리 및 로직.
-    *   `estreUi-*.js`: 메인 프레임워크 코드 — 8개 모듈로 분할(`estreUi-core` / `-dialog` / `-notation` / `-notification` / `-pageModel` / `-pageManager` / `-handles` / `-interaction` / `-main`), `<script defer>`로 순서대로 로드(v1.2.4부터, roadmap #002 phase 2). `estreUi` 싱글톤은 ES-module-realm 호스트 통합을 위해 `window`에도 노출됩니다.
+    *   `estreUi-*.js`: 메인 프레임워크 코드 — 8개 모듈로 분할(`estreUi-core` / `-dialog` / `-notation` / `-notification` / `-pageModel` / `-pageManager` / `-handles` / `-interaction` / `-main`), `<script defer>`로 순서대로 로드(v1.2.4부터, roadmap #002 phase 2). `estreUi` 싱글톤(과 `pageManager` / `EstrePageHandler` / `EstreUiCustomPageManager` / `EstreHandle` 등 페이지 시스템 표면, v1.5.1부터)은 ES-module-realm 호스트 통합을 위해 `window`에 노출됩니다.
     *   `estreU0EEOZ.js`: Estre Common 라이브러리.
     *   `main.js`: 애플리케이션 진입점 및 설정.
 *   `styles/`: 프레임워크 및 앱을 위한 CSS 파일.
