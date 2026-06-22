@@ -13,7 +13,7 @@ const isSamsungMobile = isSamsungBrowser && isMobile;
 
 
 window.isLog = true;
-window.isDebug = location.host.replace("class.mangoedu.co.kr", "").length > 0;
+window.isDebug = true;
 window.isVerbose = false;
 Object.defineProperty(window, "isLogging", {
     "get": function () { return this.isLog || this.isDebug; },
@@ -422,7 +422,10 @@ if ("serviceWorker" in navigator) {
     };
 
     // window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./scripts/serviceWorker.js", { scope: "/", updateViaCache: "none" }).then(registration => {
+        navigator.serviceWorker.register("./serviceWorker.js", {
+            // scope: "/", // When use service worker file out of location of index.html, have to set scope with HTTP Server response Header 'Service-Worker-Allowed: /'
+            updateViaCache: "none",
+        }).then(registration => {
             serviceWorkerHandler.registeration = registration;
             if (isLogging) console.log("Service Worker registered with scope:", registration.scope);
 

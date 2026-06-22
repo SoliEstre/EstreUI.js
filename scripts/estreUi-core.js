@@ -1,5 +1,5 @@
 /*
-    EstreUI rimwork for MangoEdu @ MP Solutions inc.
+    EstreUI rimwork
 
     Author: Estre Soliette
     Established: 2024.06.10
