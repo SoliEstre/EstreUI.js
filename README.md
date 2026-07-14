@@ -165,6 +165,10 @@ EstreUI pages have a distinct lifecycle, similar to Android Activities:
 #### Custom Handles
 *   You can register and use your own handles before Estre UI initialization. Refer to the implementation of the `EstreHandle` class in `estreUi-handles.js`.
 
+#### On-demand Handle CSS (`estreUILoadCSS`, since v1.6.0)
+*   The first time a given specifier becomes active, the framework calls the optional global `window.estreUILoadCSS(specifier)` if the adopter has defined it. Define it to inject handle-scoped stylesheets on first use instead of loading every handle's CSS up front.
+*   The adopter owns the specifier-to-asset mapping; when the global is not defined, this is a no-op and nothing changes.
+
 ### Handler (Direct Class Implementation)
 *   Reusable implementations that perform specific actions as needed are called handlers.
 *   Mainly initialized and used during page start callbacks.
@@ -435,6 +439,10 @@ EstreUI 페이지는 Android Activity와 유사한 뚜렷한 라이프사이클�
 
 #### 사용자 정의 핸들
 *   Estre UI의 초기화 전에 직접 구현한 핸들을 등록하여 사용할 수 있습니다. 자세한 사항은 `estreUi-handles.js`의 `EstreHandle` 클래스의 구현을 참고하세요.
+
+#### 핸들 CSS 지연 로드 (`estreUILoadCSS`, v1.6.0부터)
+*   특정 specifier가 처음 활성화되는 시점에, 어댑터가 정의해 둔 전역 `window.estreUILoadCSS(specifier)`를 프레임워크가 호출합니다. 모든 핸들의 CSS를 미리 로드하는 대신, 첫 사용 시점에 해당 핸들 스코프의 스타일시트만 주입하고 싶을 때 정의하세요.
+*   specifier와 에셋의 매핑은 어댑터가 소유합니다. 전역이 정의되지 않은 경우 아무 동작도 하지 않으므로(no-op) 기존 동작과 동일합니다.
 
 ### 핸들러(handler) (직접 클래스 구현)
 *   필요에 따라 특정 작동을 수행하는 재사용 가능한 구현을 핸들러라고 칭합니다.
