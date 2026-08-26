@@ -9,8 +9,8 @@ nav#managedOverlay > section > div.container.blind:is([data-on-top="1"], [data-o
 nav#managedOverlay > section > div.container:not(.blind):is([data-on-top="1"], [data-on-top="0*"]) { height: fit-content; }
 nav#managedOverlay > section > div.container[data-on-top=""] { display: none; }
 nav#managedOverlay > section > div.container[data-on-top="1"] { z-index: 410; }
-nav#managedOverlay > section > div.container > article { }
-nav#managedOverlay > section > div.container > article[data-on-top="1"] { z-index: 411; }
+nav#managedOverlay > section > div.container > article { isolation: isolate; }
+nav#managedOverlay > section > div.container > article[data-on-top^="1"] { z-index: 411; }
 nav#managedOverlay > section > div.container > .container_master_float { z-index: 412; }
 
 nav#managedOverlay > section#functional > div.container > article.constraint {  }

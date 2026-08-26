@@ -4,8 +4,8 @@ main#staticDoc > section { z-index: 0; padding: var(--top-pad) var(--right-pad) 
 main#staticDoc > section[data-on-top="1"] { z-index: 10; opacity: 1; }
 main#staticDoc > section > div.container { z-index: 0; padding: var(--top-pad) var(--right-pad) var(--bottom-pad) var(--left-pad); }
 main#staticDoc > section > div.container[data-on-top="1"] { z-index: 1; }
-main#staticDoc > section > div.container > article { }
-main#staticDoc > section > div.container > article[data-on-top="1"] { z-index: 1; }
+main#staticDoc > section > div.container > article { isolation: isolate; } /* contain child z-index within each article — a positioned child of a lower article must not stack (and take hits) above the on-top sibling */
+main#staticDoc > section > div.container > article[data-on-top^="1"] { z-index: 1; } /* ^= also covers the transitional "1*" tick (see EstreHostedContent.show) */
 main#staticDoc > section > div.container > article.constraint { padding-top: var(--top-pad); padding-bottom: var(--bottom-pad); }
 main#staticDoc > section > div.container > article.constraint.extended { top: 0; bottom: 0; height: 100wv; padding-top: 0; padding-bottom: 0; }
 main#staticDoc > section > div.container > article.constraint.extended.top_padded { padding-top: var(--top-pad); }
@@ -58,8 +58,8 @@ header#fixedTop > section > div.container[data-on-top="1*"] { z-index: 130; }
 header#fixedTop > section > div.container:is([data-on-top="1"], [data-on-top="0"]) { z-index: 131; }
 header#fixedTop > section > div.container:not(:is([data-on-top^="1"], [data-on-top^="0"])) { display: none; }
 header#fixedTop > section > div.container:not([data-on-top="1"]) { opacity: 0; }
-header#fixedTop > section > div.container > article { }
-header#fixedTop > section > div.container > article[data-on-top="1"] { z-index: 131; }
+header#fixedTop > section > div.container > article { isolation: isolate; }
+header#fixedTop > section > div.container > article[data-on-top^="1"] { z-index: 131; }
 header#fixedTop > section > div.container > article button { position: relative; height: 100%; margin: 0; font-size: 1rem; }
 header#fixedTop > section > div.container > article button.square { aspect-ratio: 1; }
 header#fixedTop > section > div.container > article button#mainMenuBtn { overflow: hidden; }
@@ -629,8 +629,8 @@ main#instantDoc > section > div.container[data-on-top="1*"] { z-index: 200; }
 main#instantDoc > section > div.container:is([data-on-top="1"], [data-on-top="0"]) { z-index: 201; }
 main#instantDoc > section > div.container:not(:is([data-on-top^="1"], [data-on-top^="0"])) { display: none; }
 main#instantDoc > section > div.container:not([data-on-top="1"]) { opacity: 0; }
-main#instantDoc > section > div.container > article { }
-main#instantDoc > section > div.container > article[data-on-top="1"] { z-index: 201; }
+main#instantDoc > section > div.container > article { isolation: isolate; }
+main#instantDoc > section > div.container > article[data-on-top^="1"] { z-index: 201; }
 main#instantDoc > section > div.container > article:has(.appbar_pad.fixed_pad) { padding-top: 0; }
 main#instantDoc > section > div.container > .container_master_float { z-index: 212; }
 
